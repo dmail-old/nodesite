@@ -1,0 +1,13 @@
+CACHE MANIFEST
+
+# Met en cache les URL suivantes
+/index.html
+/js/object.js
+
+# Ne met pas en cache les URLS suivantes
+NETWORK:
+*
+
+# Fournit la réponse d'une autre URL lorsque la principale n'est pas utilisable
+FALLBACK:
+

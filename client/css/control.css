@@ -1,0 +1,27 @@
+/*
+---
+
+name: control
+
+description: Lorsque l'arbre est un groupe de boutons
+
+...
+*/
+
+.control{
+	height: 25px;
+	line-height: 26px;
+	margin-bottom: 5px;
+	padding-top: 3px;
+	position: relative;
+	overflow: visible;
+}
+.control .trunk{ background: none; float: left; position: relative; z-index: 3; height: 26px; width: 27px; }
+.control .trunk.disabled{ opacity: 0.3; }
+
+.control .node{ background: none; width: 27px; height: 26px; }
+.control .node div{ width: 27px; height: 26px; position: absolute; background: url(../img/button.png) no-repeat; }
+.control .node .ctrl{ z-index: 3; }
+.control .node .fond{ z-index: 1; /*opacity: 0;*/ }
+.control .node .fondon{ z-index: 2; background-position: -27px; }
+.control .sep{ background: none; border-left: 1px solid black; height: 18px; width: 1px; margin: 5 5 0 5px; }

@@ -1,0 +1,178 @@
+<!--
+<div id="drag_container" style="border:1px solid black;overflow:auto;width:100px;height:200px;position:relative">
+
+<div style="position:absolute;width:1px;height:400px"></div>
+	
+<div id="drag" draggable="true" style="background:red;width:50px;height:50px"></div>
+</div>
+-->
+
+<h3>Local Tree</h3>
+<div id="container" style="border:1px solid lightGrey"></div>
+lorem ipsum
+
+<style>
+#container .tree{
+	height: 120px;
+}
+
+.choicelist{
+	text-align: center;
+	padding: 0.4em 2em;
+	background-color: #F0F0F0;
+	width: 400px;
+}
+
+.choicelist>h1{
+	color: white;
+	font-size: 14px;
+	font-weight: normal;
+	text-shadow: 0 -1px 1px #111111;
+}
+
+.choicelist>button{
+	display: block;
+	cursor: pointer;
+    display: block;
+	width: 100%;
+	
+	margin: 0.5em 0;
+    padding: 0.6em 2em;
+	
+	font-size: 16px;
+	
+	/*
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+	background: linear-gradient(#FFFFFF, #F1F1F1) repeat scroll 0 0 #EEEEEE;	
+	border: 4px solid #323339;
+	border-radius: 1em;
+	font-weight: bold;
+	color: #222222;
+	
+	padding-top: 0.8em;
+	padding-bottom: 0.8em;
+	border-width: 1px;
+	border-radius: 0px;
+	background: linear-gradient(#FDFDFD, #EEEEEE) repeat scroll 0 0 #EEEEEE;
+    border-color: #CCCCCC;
+    color: #444444;
+	*/
+	
+	/*text-shadow: 0 1px 1px white;*/
+}
+
+.choicelist>button.main{
+	
+}
+
+/* IMPORTANT: chrome définit maargin-top: 0.83em, computedSize retourne alors des float qui gène DOMRectangle.checkDimension */
+h2{
+	margin-top: 0.8em;
+	margin-bottom: 0.8em;
+}
+</style>
+
+<script>
+/*
+$('drag_container').on('dragover', function(e){
+	this.scrollTop+= 10;
+});
+
+$('drag').on('dragstart', function(e){
+	e.event.dataTransfer.effectAllowed = 'all';
+	e.event.dataTransfer.setData('mytype', 'testdata');
+});
+
+$('drag').on('dragenter', Function.EMPTY);
+$('drag').on('dragleave', Function.EMPTY);
+$('drag').on('dragover', function(e){
+	e.preventDefault();
+});
+$('drag').on('dragend', Function.EMPTY);
+$('drag').on('drop', function(e){
+	e.preventDefault();
+	e.stop();
+});
+*/
+
+var tree = new Tree();
+
+tree.root.adopt({
+	name: './testroot',
+	children: [
+		{name:'node0', noinsert: true, selected:!true},
+		{name:'node1', expanded: false, children: [{name:'node0', children:['youpi', 'youpa']}, 'abra','cadra']},
+		{name:'node2'},
+		{name:'node3'},
+		{name:'enode4'}
+	],
+	expanded: true
+});
+
+var view = new ExplorerTreeView().bindModel(tree);
+$('container').appendChild(view.element);
+view.root.children[0].expand();
+
+/*
+tree.setSchema('listed', 'default', true);
+tree.setSchema('name', 'unique', true);
+
+tree.on('expand', function(node){ console.log('expand', node.name); });
+tree.on('contract', function(node){ console.log('contract', node.name); });
+
+tree.on('move', function(node, into, index){ console.log('déplace "'+node.name+'" dans "'+into.name+'" en position', index); });
+tree.on('copy', function(node, into, index){ console.log('copie "'+node.name+'" dans "'+into.name+'" en position', index); });
+tree.on('remove', function(node){ console.log('supprime le noeud', node.name); });
+tree.on('insert', function(node, child){ console.log('ajoute dans "'+node.name+'" le noeud "'+child.name+'" en position '+child.index); });
+tree.on('rename', function(node, name){ console.log('renomme', node, name); });
+*/
+
+/*
+tree.addPlugin('explorer');
+$('container').appendChild(tree.element);
+tree.element.className = 'tree vx line unselectable';
+*/
+
+//var tree2 = new Tree();
+//tree2.setRoot(tree.root.clone());
+
+// tree.remove(['node1','node2']);
+// tree.rename('node0', 'node0_rename');
+// tree.rename('node1', 'node1_rename');
+// tree.move('node1', tree.root, 1);
+// tree.move('node1', 'node2', 'after');
+// tree.move('node4', 'node3', 'before');
+
+// exemple parfait d'un mouvement dont le résultat ne déplace pas node2 qui reste à l'index 1 
+// tree.move(['node1', 'node0','node2','cadra','abra'], tree.root, 'inside');
+//tree.move(['cadra','abra'], tree.root, 2);
+
+/*tree.demon.lock();
+tree.move(['node1', 'node0','node2'], tree.root, 'inside');
+tree.rename('node1', 'node1 othername');
+tree.move(['node0','node1','node2'], tree.root, 2);
+tree.demon.unlock();
+*/
+
+// tree.move(['node1', 'node2','node3'], tree.root, 'inside');
+// tree.contract('node1'); tree.move(['node3','node2'], 'node1', 'before');
+</script>
+
+<h3>File Tree linked to a directory</h3>
+<div id="test" style="border:1px solid lightGrey;"></div>
+
+<script>
+/*
+var fileTree = new FileTree('img/tile');
+
+fileTree.on('rename', function(){ console.log('rename', arguments); });
+
+fileTree.addPlugin('explorer');
+$('test').appendChild(fileTree.element);
+fileTree.element.style.minHeight = '100px';
+*/
+
+</script>

@@ -1,0 +1,32 @@
+<div id="test" style="margin-left:50px; margin-top:50px;border:1px solid red;padding:0px;height:120px;width:200px;position:relative;overflow:auto;">
+	<div style="height:200px;width:600px;position:absolute;"></div>
+	<div id="drag" data-draggable="true" tabindex="0" style="position:relative;background: green; width: 80px; height: 90px;"></div>
+</div>
+
+<div id="resize" data-draggable="true" data-resizable="true" style="position:absolute; left: 100px; background: red; width: 80px; height: 90px;padding:10px;border:10px solid yellow">
+	<div data-resizable="true">
+	<!--
+	mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm<br>
+	mmmmmmmmmmmmmm
+	-->
+	</div>
+	<!--<div style="padding:20px;border:1px solid white;width:10px;height:10px;background: orange;" data-resizable="true"></div>-->
+</div>
+
+<div id="info" style="width:700px;border:1px solid grey;background:lightGrey;min-height:40px;word-wrap:break-word;"></div>
+
+<script>
+$('drag').wrapVectors('small');
+var drag = new DOMRectangle($('drag'));
+
+$('resize').wrapVectors('big');
+var resize = new DOMRectangle($('resize'));
+
+/*
+var resize = new Resize({
+	offset: 6 // dû au vecteur de resize
+});
+
+resize.attach($('resize'));
+*/
+</script>

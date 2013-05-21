@@ -1,0 +1,17 @@
+<!--
+<div id="container" style="position:absolute;left:0;top:0;background:red;width:30px;height:30px">
+</div>
+-->
+
+<script>
+var popup = new Popup({
+	content: 'coucou'
+});
+
+//popup.append(document.body);
+popup.open();
+
+</script>
+
+<button onclick="valid('Validez vous ce message?', function(choice){ alert('Vous avez répondu: ' + choice); });">Valid popup</button>
+<button onclick="suggest('Titre', 'Que choisissez vous?', ['a','b','c'], function(choice){ console.log('Vous avez répondu: ' + choice.value); });">Suggest popup</button>

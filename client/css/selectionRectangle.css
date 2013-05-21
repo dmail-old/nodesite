@@ -1,0 +1,33 @@
+.selectionRectangle{
+	opacity: 0.5;
+	box-shadow: none;
+	border-color: #3799f0;
+	background-color: #a8caed;
+}
+.selectionRectangle.all{
+	border-color: #3399FF;
+	background-color: rgba(161, 211, 222, 0.5);
+}
+.selectionRectangle.vx{
+	opacity: 1.0;
+	border-color: black;
+	background-color: transparent;
+}
+.selectionRectangle.vx:focus{ box-shadow: none; }
+.selectionRectangle.vx:after{ border-color: white; }
+.selectionRectangle.vx:before{ border-color: black; }
+.selectionRectangle.vx.rect:after{ border-color: #8EC31E; }
+.selectionRectangle.vx.pot:after{ border-color: #CD5963; }
+.selectionRectangle.vx.gum:after{ border-color: grey; }
+.selectionRectangle.vx.drag:after{ border-color: #A0A0A0; }
+
+.selectionRectangle{
+	position: absolute; left: 0; top: 0;
+	border-width: 1px;
+	border-style: solid;
+}
+.selectionRectangle.vx:after, .selectionRectangle.vx:before{ content: ""; position: absolute; border-style: solid; }
+.selectionRectangle.vx:after{ border-width: 2px; top: 0; left: 0; right: 0; bottom: 0; }
+.selectionRectangle.vx:before{ border-width: 1px; top: 2px; left: 2px; right: 2px; bottom: 2px; }
+
+

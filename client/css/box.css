@@ -1,0 +1,23 @@
+.box{
+	-moz-box-shadow: 	0 0 5px 3px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.3);
+	box-shadow:			0 0 5px 3px rgba(0, 0, 0, 0.3);
+}
+
+.box.focus{
+	-moz-box-shadow: 	0 0 5px 5px rgba(0, 0, 0, 0.6);
+	-webkit-box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.6);
+	box-shadow:			0 0 5px 5px rgba(0, 0, 0, 0.6);
+}
+
+.box.small{
+	-moz-box-shadow: 	0 0 5px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+	box-shadow:			0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.box.small.focus{
+	-moz-box-shadow: 	0 0 5px rgba(0, 0, 0, 0.6);
+	-webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+	box-shadow:			0 0 5px rgba(0, 0, 0, 0.6);
+}

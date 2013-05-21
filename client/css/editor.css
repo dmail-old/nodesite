@@ -1,0 +1,92 @@
+.editor>.left{
+	float: left;
+	width: 277px;
+}
+
+/* selector make 100% width */
+.editor>.left>.selector{ display: block; }
+
+.tile, .explorer{
+	padding: 1px;
+	border: 1px solid grey;
+	background: white;
+}
+
+.explorer{
+	margin-top: 3px;
+}
+
+.tile>.container{ 
+	background-image: url(../img/mapback.png);
+	width: 273px;
+	height: 320px;
+	overflow-y: scroll;
+	overflow-x: hidden;  
+	position: relative;
+}
+.tile>.container>img{ float: left; }
+
+/*
+#tile{ z-index: 1; width: 256px; height: 100%; }
+#tile canvas{ position: absolute; left: 0px; }
+*/
+
+.tile>.tabs{ background: #CEDEF3; overflow: hidden; }
+.tile>.tabs>ul{
+	border-top: 1px solid #8699A8;
+	margin-top: 2px;
+	position: relative;
+	cursor: default;
+	padding-left: 2px;
+}
+.tile>.tabs>ul>li{
+	width: 50px; height: 17px;
+	float: left;
+	text-align: center; font-size: 13px; color: #647896;
+	border: 1px solid #8699A8;
+	border-top-width: 0;
+	border-right-width: 0;
+	
+	/*border-color: #d9d9d9;*/
+	background-color: #a5d6de;
+	background-image: -webkit-linear-gradient(#7cb4de, #a5d6de);
+	background-image:    -moz-linear-gradient(#7cb4de, #a5d6de);
+	background-image:     -ms-linear-gradient(#7cb4de, #a5d6de);
+	background-image:      -o-linear-gradient(#7cb4de, #a5d6de);
+	background-image:         linear-gradient(#7cb4de, #a5d6de);
+}
+.tile>.tabs>ul>li:last-child{ border-right-width: 1px; }
+.tile>.tabs>ul>li.on{
+	border-right-width: 1px;
+	background: #CEDEF3;
+	color: black;
+	position: relative; z-index: 1;
+	padding-left: 2px; margin-left: -2px;
+	padding-top: 1px; margin-top: -1px;
+	padding-right: 2px; margin-right: -2px;
+	padding-bottom: 2px;
+}
+/* Evite un décalement de 1px du a l'apparition d'un bord sur le li.on */
+.tile>.tabs>ul>li.on+li{ border-left-width: 0; }
+.tile>.tabs>ul>li.on:first-child:before{
+	content: "";
+	position: absolute;
+	top: -3px;
+	left: 0px;
+	height: 2px;
+	width: 1px;
+	background: #8699A8;
+}
+
+#right_bloc{ margin-left: 278px; }
+#map_container{
+	background: url(../img/mapback_empty.png); overflow: auto; position: relative; width: 704px; height: 448px; border: 1px solid #8699A8;
+}
+#map{
+	background: url(../img/mapback.png);
+	position: relative;
+	overflow: hidden;
+}
+
+#info{ height: 20px; width: 100%; font-family: Times New Roman; font-size: 13px; padding-top: 3px; cursor: default; }
+#info div{ float: left; height: 16px; }

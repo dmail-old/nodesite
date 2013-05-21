@@ -1,0 +1,130 @@
+/*
+---
+
+name: selector
+
+description:
+
+...
+*/
+
+.selector>.tool>.arrow{ background: url(../img/arrow.png) 0px -30px; }
+
+.selector{
+	border-color: grey;
+	background-color: white;
+}
+.selector[disabled]{ opacity: 0.5; }
+.selector>.tool:hover{
+	background: #c4e2fe;
+	background-image: -webkit-linear-gradient(#fbfbff, #c4e2fe);
+	background-image:    -moz-linear-gradient(#fbfbff, #c4e2fe);
+	background-image:     -ms-linear-gradient(#fbfbff, #c4e2fe);
+	background-image:      -o-linear-gradient(#fbfbff, #c4e2fe);
+	background-image:         linear-gradient(#fbfbff, #c4e2fe);
+}
+.selector>.tool.active, .selector.opened>.tool{
+	background: #A1D3DE;
+	background-image: -webkit-linear-gradient(#81b8df, #A1D3DE);
+	background-image:    -moz-linear-gradient(#81b8df, #A1D3DE);
+	background-image:     -ms-linear-gradient(#81b8df, #A1D3DE);
+	background-image:      -o-linear-gradient(#81b8df, #A1D3DE);
+	background-image:         linear-gradient(#81b8df, #A1D3DE);	
+}
+.selector[disabled]>.tool:hover, .selector[disabled]>.tool.active, .selector.opened[disabled]>.tool{ background: none; }
+/* Evite le box shadow lorsqu'il a le focus, le background bleu suffit à comprendre que la balise à le focus */
+.selector>.input:focus{ box-shadow: none; }
+.selector>.input:focus, .tree.line.vx .selected>.node{
+	color: white;
+	border-color: #0064c8;
+	background: #00a0f8;
+	background-image: -webkit-linear-gradient(#0068cb, #00a0f8);
+	background-image:    -moz-linear-gradient(#0068cb, #00a0f8);
+	background-image:     -ms-linear-gradient(#0068cb, #00a0f8);
+	background-image:      -o-linear-gradient(#0068cb, #00a0f8);
+	background-image:         linear-gradient(#0068cb, #00a0f8);
+}
+.selector.opened>.input:focus{
+	color: inherit;
+	border-color: transparent;
+	background: none;
+}
+
+
+
+.selector{
+	display: inline-block;
+	position: relative;
+	margin: 5px 0px;
+	border-width: 1px;
+	border-style: solid;
+	cursor: default;
+}
+.selector>.input{
+	height: 14px; line-height: 14px; padding: 2px; margin: 2px; overflow: hidden;
+	margin-right: 19px;
+	font-size: 12px;
+	font-family: helvetica;
+	border: 1px solid transparent;
+}
+.selector>.tool{
+	position: absolute; right: 0; top: 0; bottom: 0;
+	line-height: 100%; vertical-align: middle; 
+	/* 17px: largeur de la scrollbar si elle apparait */
+	width: 17px;
+	text-align: center;
+	font-weight: bold;
+}
+.selector>.tool>.arrow{
+	position: absolute; top: 50%; left: 50%;
+	width: 15px; height: 15px;
+	margin-left: -7px; margin-top: -8px;
+}
+
+/*
+---
+
+name: select
+
+description: Lorsque l'arbre est la lise d'option d'une balise select
+
+...
+*/
+
+.selector>.tree{
+	position: absolute;
+	z-index: 10; /* Doit passer par dessus le reste */
+	left: -1px; /* Taille du border */
+	top: 100%;
+	border: 1px solid grey;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.selector>.tree .branch{ padding: 0px; }
+.selector>.tree .trunk:nth-child(2n+2)>.node{ background-color: #e4ecf2; }
+.selector>.tree.vx .expanded>.node>.name{ font-weight: bold; }
+
+/*
+---
+
+name: select multi
+
+description: L'arbre est la liste d'option d'une balise multiselect
+
+...
+*/
+
+.tree.multi:focus{ box-shadow: none; }
+
+.tree.multi{
+	position: relative; /* pour que selectionRectangle sache que tree est son offsetParent et scroll */
+	z-index: 0;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	min-height: 60px;
+	display: inline-block;
+	border: 1px solid grey;
+	width: auto;
+	min-width: 50px;
+}

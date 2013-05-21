@@ -1,0 +1,61 @@
+<style>
+#container_vx{
+	float: left;
+	width: 273px; height: 320px;
+	overflow: auto;
+	position: relative;
+	background:url(./img/mapback.png);
+}
+
+#container{
+	float: left;
+	background: url(./img/mapback_empty.png);
+	border: 1px solid grey;
+	margin-left: 50px;
+	margin-top: 20px;
+	width: 256px; height: 320px;
+	overflow: auto;
+	position: relative;
+}
+
+/*
+.selectionRectangle{
+	min-width: 32px;
+	min-height: 32px;
+}
+*/
+
+</style>
+
+<div style="margin-left: 50px;margin-top: 20px;padding:1px;border: 1px solid grey;background: white;float: left;">
+
+<div id="container_vx">
+	<div id="tile" style="width:100%;height:640px;"></div>
+</div>
+
+</div>
+
+<div id="container">
+	<div style="width:10px;height:640px"></div>
+</div>
+
+<div id="dialog" style="clear: both; margin-top: 10px; border:1px solid grey; bakcground: lightGrey">
+	mouseX: <div id="mousex"></div>
+	mouseY: <div id="mousey"></div>
+	origine: <div id="origin"></div>
+	
+	positionX: <div id="positionx"></div>
+	positionY: <div id="positiony"></div>
+	sizeX: <div id="sizex"></div>
+	sizeY: <div id="sizey"></div>
+</div>
+
+<script>
+var VX = new SelectionRectangle($('container_vx'), {step: 32, visible: true});
+VX.element.addClass('vx');
+//VX.element.style.border = 'none';
+
+// FIX: le scroll de ce rectangle est buggé
+
+var selection = new SelectionRectangle($('container'), {visible: true});
+</script>

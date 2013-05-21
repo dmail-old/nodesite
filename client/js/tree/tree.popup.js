@@ -1,0 +1,1 @@
+Tree.definePlugin('popup', {	tree: {		setPopup: function(popup){			this.popup = popup;			popup.tree = this;			popup.on('close', function(){ delete this.tree.popup; });		}	},		init: function(){				}});

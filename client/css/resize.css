@@ -1,0 +1,25 @@
+.resizable{ position: relative; }
+
+.resizable>.vector{ width: 16px; height: 16px; position: absolute; z-index: 5; }
+.resizable.small>.vector{ width: 6px; height: 6px; }
+
+.resizable>.vector.nw{ cursor: nw-resize; }
+.resizable>.vector.n{ cursor: n-resize; }
+.resizable>.vector.ne{ cursor: ne-resize; }
+.resizable>.vector.e{ cursor: e-resize; }
+.resizable>.vector.sw{ cursor: sw-resize; }
+.resizable>.vector.s{ cursor: s-resize; }
+.resizable>.vector.se{ cursor: se-resize; }
+.resizable>.vector.w{ cursor: w-resize; }
+
+.resizable>.vector.e, .resizable>.vector.w{ height: 100%; bottom: 0; }
+.resizable>.vector.n, .resizable>.vector.s{ width: 100%; right: 0; }
+.resizable>.vector.nw, .resizable>.vector.n, .resizable>.vector.ne{ top: -11px; }
+.resizable>.vector.sw, .resizable>.vector.s, .resizable>.vector.se{ bottom: -11px; }
+.resizable>.vector.ne, .resizable>.vector.e, .resizable>.vector.se{ right: -11px; }
+.resizable>.vector.nw, .resizable>.vector.w, .resizable>.vector.sw{ left: -11px; }
+
+.resizable.small>.vector.nw, .resizable.small>.vector.n, .resizable.small>.vector.ne{ top: -6px; }
+.resizable.small>.vector.sw, .resizable.small>.vector.s, .resizable.small>.vector.se{ bottom: -6px; }
+.resizable.small>.vector.ne, .resizable.small>.vector.e, .resizable.small>.vector.se{ right: -6px; }
+.resizable.small>.vector.nw, .resizable.small>.vector.w, .resizable.small>.vector.sw{ left: -6px; }

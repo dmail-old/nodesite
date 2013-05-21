@@ -1,0 +1,99 @@
+/*.popup{ background: url(../img/mer.jpg) 0 -120px repeat-x #3A81AD; }*/
+.popup >*>.header>button{ background-image: url(../img/close.png); }
+.popup.focus>*>.header>button{ background-position: 0px -25px; }
+.popup>*>.header>button:hover{ background-position: 0px -50px; }
+
+/* Couleurs */
+
+.popup{
+	border-color: grey;
+	background-color: rgba(178, 215, 255, 0.85);
+}
+.popup.focus{
+	border-color: black;
+}
+.popup.small{
+	border-color: black;
+}
+.popup>*>.header>h1{
+	text-shadow: 0 0 0.2em #FFFFFF, 0 0 0.5em #FFFFFF;
+}
+.popup>*>form{	
+	border-color: #445944;
+	/*background-color: #CEDEF3;*/
+	background-color: #F0F0F0;
+}
+.popup>*>*>.content{
+	border-color: #898C95;
+	background-color: white;
+}
+
+/* Structure */
+
+.popup{
+	padding: 5px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 5px;
+}
+.popup>*>.header{
+	position: relative;
+	margin-top: -5px;
+	height: 25px;
+	cursor: default;
+}
+.popup>*>.header>img, .popup>*>.header>h1{ padding-top: 0.25em; }
+.popup>*>.header>img{ }
+.popup>*>.header>h1{
+	position: absolute; left: 20px; right: 20px; top: 0; bottom: 0;
+	overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+	margin: 0; padding-left: 0.2em; padding-right: 0; padding-bottom: 0;
+	font-size: 14px; font-weight: bold; font-family: Trebuchet MS;
+}
+.popup>*>.header>button{
+	position: absolute; top: 0; right: -5px;
+	padding: 0; border: none;
+	height: 25px; width: 25px;
+	outline: none; box-shadow: none;
+	background-color: transparent;
+}
+.popup>*>form{ border-width: 1px; border-style: solid; }
+.popup>*>*>.content{
+	border-width: 1px;
+	border-style: solid;
+	margin: 10px;
+	padding: 1px;
+	min-height: 20px;
+	position: relative;
+	text-align: center;
+}
+.popup>*>*>.footer{
+	text-align: right; overflow: hidden; padding: 10px;
+	/* Très important: les boutons ne doivent pas se chevaucher */
+	white-space: nowrap;
+}
+.popup>*>*>.footer>button, .popup>*>*>.footer>input{
+	min-width: 7em; font-size: 12px;
+}
+
+/* obsolete */
+
+.box.valid .footer{
+	border-top: 1px solid #DFDFDF;
+	background-color: #F0F0F0;
+	margin: 0;
+}
+
+.box.valid>*>*>.content{
+	margin: 0; padding: 10px;
+	border: none;
+}
+
+.popup iframe{ }
+.popup .content.loading{ background: url(../img/load.gif) center center no-repeat white; }
+
+.pop_msg{ height: 20px; width: 200px; }
+.pop_buttons .dialog{ float: left; }
+.dialog.error{
+	background: url(../img/exclamation.png) no-repeat 0px 50%; font-size: 12px; padding-left: 20px; height: 19px; line-height: 19px; 
+}
