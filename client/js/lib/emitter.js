@@ -10,68 +10,70 @@ require: Class, Object
 
 window.Emitter = new Class({
 	$events: {},
-	
+
 	getEvents: function(){
 		if( !this.hasOwnProperty('$events') ) this.$events = Object.clone(this.$events);
 		return this.$events;
 	},
-	
+
 	deleteEvents: function(){
 		delete this.$events;
 	},
-	
+
 	onaddlistener: function(){
 		this.applyListeners('addListener', arguments);
 	},
-	
+
 	onremovelistener: function(){
 		this.applyListeners('removeListener', arguments);
 	},
-	
+
 	onapplylisteners: function(){
 		this.applyListeners('applyListener', arguments);
 	},
-	
+
 	listeners: function(name, create){
 		var events = this.getEvents(), listeners = false;
-		
+
 		if( name in events ) listeners = events[name];
 		else if( create ) listeners = events[name] = [];
-		
+
 		return listeners;
 	},
-	
-	addListener: function(name, listener){		
+
+	addListener: function(name, listener){
 		if( typeof name != 'string' ) throw new TypeError('string expected for event name');
 		if( typeof listener != 'function' && typeof listener != 'object' ){ console.trace(); throw new TypeError('listener should be a function or object'); }
-		
+
 		this.onaddlistener.apply(this, arguments);
 		this.listeners(name, true).push(listener);
-		
+
 		return this;
 	},
-	
+
 	removeListener: function(name, listener){
 		var events = this.getEvents(), list, retain, i, j, item;
-		
+
 		if( name == null ){
 			for(name in events) this.removeListener(name, listener);
 			if( !listener ) this.deleteEvents();
 		}
 		else if( listener == null ){
-			if( name in events ) [].concat(events[name]).forEach(function(listener){
-				this.removeListener(name, listener);
-			}, this);
+			if( name in events ){
+				[].concat(events[name]).forEach(function(listener){
+					this.removeListener(name, listener);
+				}, this);
+			}
 		}
 		else if( name in events ){
 			list = events[name];
 			retain = events[name] = [];
 			i = 0;
 			j = list.length;
-			
+
 			for(;i<j;i++){
 				item = list[i];
-				
+
 				if( item === listener || item.__listener === listener ){
 					this.onremovelistener.apply(this, arguments);
 				}
@@ -84,48 +86,48 @@ window.Emitter = new Class({
 
 		return this;
 	},
-	
+
 	addVolatileListener: function(name){
 		var self = this, once, args = arguments;
-		
+
 		// transform the second argument (supposed to be a function) into a function that remove herself before calling original function
-		once = function(){		
+		once = function(){
 			self.removeListener.apply(self, args);
 			return once.__listener.apply(this, arguments);
 		};
 		once.__listener = args[1];
 		args[1] = once;
-		
+
 		return this.addListener.apply(this, args);
 	},
-	
+
 	applyListener: function(listener, name, args){
 		if( typeof listener == 'object' ) return this.applyHandler(listener, name, args);
 		else return listener.apply(this, args);
 	},
-	
+
 	applyHandler: function(handler, name, args){
 		return handler.handleListener(name, args);
 	},
-	
+
 	applyListeners: function(name, args){
 		var listeners = this.listeners(name), i, j;
-		
+
 		if( name != 'applyListener' ) this.onapplylisteners.apply(this, arguments);
-		
+
 		if( listeners ){
 			i = -1;
 			j = listeners.length;
 			while(++i < j) this.applyListener(listeners[i], name, args);
 		}
-		
+
 		return this;
 	},
-	
+
 	callListeners: function(name){
 		return this.applyListeners(name, toArray(arguments, 1));
 	},
-	
+
 	/*
 	implement multiple event writing style:
 	on({focus: function(){}, blur: function(){}});
@@ -134,7 +136,7 @@ window.Emitter = new Class({
 	*/
 	eachEvent: function(method, args){
 		var name = args[0];
-		
+
 		if( !name ){
 			method.call(this);
 		}
@@ -152,42 +154,84 @@ window.Emitter = new Class({
 				method.apply(this, [key, value].concat(args));
 			}, this);
 		}
-		
+
 		return this;
 	},
-	
+
 	on: function(){
 		return this.eachEvent(this.addListener, arguments);
 	},
-		
+
 	off: function(){
 		return this.eachEvent(this.removeListener, arguments);
 	},
-	
+
 	once: function(){
 		return this.eachEvent(this.addVolatileListener, arguments);
 	},
-	
+
 	emit: function(){
 		return this.eachEvent(this.callListeners, arguments);
 	}
 });
 
-window.ListenerHandler = {
-	listeners: {},
-	
-	handleListener: function(e){		
-		var handler = this.listeners[e.type], bind = this;
-			
+window.ListenerHandler = new Class({
+	handlers: {},
+
+	initialize: function(emitter, handlers, listener){
+		this.emitter = emitter;
+		if( handlers ) this.handlers = handlers;
+		this.listener = listener || this;
+	},
+
+	handleListener: function(name, args){
+		var listener = this.listener, handler = this.handlers[name];
+
 		if( typeof handler == 'string' ){
-			handler = this[handler];
+			handler = listener[handler];
 		}
 		if( typeof handler == 'object' ){
-			bind = handler;
+			listener = handler;
 			handler = handler.handleListener;
 		}
 		if( typeof handler == 'function' ){
-			return handler.call(bind, e);
+			return handler.apply(listener, args);
 		}
+	},
+
+	toggle: function(value, args){
+		var emitter = this.emitter;
+
+		if( emitter ){
+			emitter[value ? 'on' : 'off'].apply(emitter, args);
+		}
+
+		return this;
+	},
+
+	add: function(){
+		return this.toggle(true, arguments);
+	},
+
+	remove: function(){
+		return this.toggle(false, arguments);
+	},
+
+	enable: function(name){
+		return this.add(name, this);
+	},
+
+	disable: function(name){
+		return this.remove(name, this);
+	},
+
+	enableAll: function(){
+		Object.eachPair(this.handlers, this.enable, this);
+		return this;
+	},
+
+	disableAll: function(){
+		Object.eachPair(this.handlers, this.disable, this);
+		return this;
 	}
-};
+});
