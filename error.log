@@ -62,3 +62,6 @@ Error: listen EADDRINUSE
     at Server.listen (net.js:994:9)
     at dns.js:71:18
     at process.startup.processNextTick.process._tickCallback (node.js:244:9)
+Error: read ECONNRESET
+    at errnoException (net.js:884:11)
+    at Pipe.onread (net.js:539:19)
