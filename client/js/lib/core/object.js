@@ -8,22 +8,20 @@ provides: Object.clone, Object.cloneOf
 
 */
 
-(function(){
-
 Object.cloneOf = function(source){
 	if( typeof source == 'object' && source != null ){
 		if( typeof source.clone == 'function' ) source = source.clone();
 		else source = Object.clone(source);
 	}
-	
+
 	return source;
 };
 
 Object.clone = function(source){
 	var clone = {}, key;
-	
+
 	for(key in source) clone[key] = Object.cloneOf(source[key]);
-	
+
 	return clone;
 };
 
@@ -31,13 +29,11 @@ RegExp.prototype.clone = Function.THIS;
 Date.prototype.clone = Function.THIS;
 Array.prototype.clone = function(){
 	var i = this.length, clone = new Array(i);
-	
+
 	while(i--) clone[i] = Object.cloneOf(this[i]);
-	
+
 	return clone;
 };
-
-})();
 
 /*
 
@@ -46,17 +42,15 @@ name: Object.overload
 description: Overloading properties of object
 
 provides:
-	Object.getInstance, Object.eachPair, Array.prototype.eachPair, 
+	Object.getInstance, Object.eachPair, Array.prototype.eachPair,
 	Object.appendPair, Object.completePair, Object.mergePair,
 	Object.appendThis, Object.completeThis, Object.mergeThis,
 	Object.append, Object.complete, Object.merge
 
 */
 
-(function(){
-
 Object.getInstance = function(fn){
-	return new fn;
+	return new fn();
 };
 
 Object.eachPair = function(source, fn, bind){
@@ -67,38 +61,43 @@ Object.eachPair = function(source, fn, bind){
 // call fn on every pair of this array
 Array.prototype.eachPair = function(fn, bind){
 	var i = 0, j = this.length, item, name;
-	
+
 	for(;i<j;i++){
 		item = this[i];
 		if( item instanceof Function ) item = Object.getInstance(item);
-		
+
 		switch(typeof item){
-			case 'string': fn.call(bind, item, this[i+1]); i++; break;
-			case 'object': Object.eachPair(item, fn, bind); break;
+		case 'string':
+			fn.call(bind, item, this[i+1]);
+			i++;
+			break;
+		case 'object':
+			Object.eachPair(item, fn, bind);
+			break;
 		}
 	}
-	
+
 	return this;
 };
 
 // append key.value pair to this
 Object.appendPair = function appendPair(key, value){
 	this[key] = value;
-	
+
 	return this;
 };
 
 // append key/valuepair to this if not present
 Object.completePair = function(key, value){
 	if( !(key in this) ) this[key] = value;
-	
+
 	return this;
 };
 
 // append key/value pair but clone objets (array,regexp,date,...) and merge object when they already exists in source
 Object.mergePair = function(key, value){
 	var current;
-	
+
 	if( typeof value == 'object' && value != null ){
 		current = this[key];
 		if( typeof current == 'object' ){
@@ -113,7 +112,7 @@ Object.mergePair = function(key, value){
 	else{
 		this[key] = value;
 	}
-	
+
 	return this;
 };
 
@@ -148,8 +147,6 @@ Object.merge = function(source){
 	return Object.mergeThis.apply(source, toArray(arguments, 1));
 };
 
-}).call(window);
-
 /*
 
 name: Object.util
@@ -160,36 +157,32 @@ provides: Object.forEach, Object.map, Object.isEmpty, Object.keys, Object.values
 
 */
 
-(function(){
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-	
 Object.complete(Object, {
 	forEach: function(object, fn, bind){
 		for(var key in object){
-			if( hasOwnProperty.call(object, key) ) fn.call(bind, object[key], key, object);
+			if( Object.prototype.hasOwnProperty.call(object, key) ) fn.call(bind, object[key], key, object);
 		}
 	},
-	
+
 	map: function(object, fn, bind){
 		var results = {}, key;
 		for(key in object){
-			if( hasOwnProperty.call(object, key) ) results[key] = fn.call(bind, object[key], key, object);
+			if( Object.prototype.hasOwnProperty.call(object, key) ) results[key] = fn.call(bind, object[key], key, object);
 		}
 		return results;
 	},
-	
+
 	isEmpty: function(object){
 		for(var key in object){
-			if( hasOwnProperty.call(object, key) ) return false;
+			if( Object.prototype.hasOwnProperty.call(object, key) ) return false;
 		}
 		return true;
 	},
-	
+
 	keys: function(object){
 		var key, keys = [];
 		for(key in object){
-			if( hasOwnProperty.call(object, key) ) keys.push(key);
+			if( Object.prototype.hasOwnProperty.call(object, key) ) keys.push(key);
 		}
 		return keys;
 	},
@@ -197,15 +190,15 @@ Object.complete(Object, {
 	values: function(object){
 		var key, values = [];
 		for(key in object){
-			if( hasOwnProperty.call(object, key) ) values.push(object[key]);
+			if( Object.prototype.hasOwnProperty.call(object, key) ) values.push(object[key]);
 		}
 		return values;
 	},
-	
+
 	pairs: function(object){
 		var key, keys = [], values = [];
 		for(key in object){
-			if( hasOwnProperty.call(object, key) ){
+			if( Object.prototype.hasOwnProperty.call(object, key) ){
 				keys.push(key);
 				values.push(object[key]);
 			}
@@ -213,9 +206,6 @@ Object.complete(Object, {
 		return [keys, values];
 	}
 });
-
-})();
-
 
 /*
 
@@ -229,8 +219,6 @@ provides:
 	Array.implement, Array.complement
 	Function.prototype.implement, Function.prototype.complement
 */
-
-(function(){
 
 Object.implementThis = function(){
 	Array.prototype.eachPair.call(arguments, Object.mergePair, this.prototype);
@@ -251,5 +239,3 @@ Function.implement({
 	implement: Object.implementThis,
 	complement: Object.complementThis
 });
-
-})();
