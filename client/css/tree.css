@@ -150,6 +150,12 @@ on peut envisager quelque chose comme au lieu des paddings sur les spans
 .tree.compact li{ clear: both; }
 .tree.compact li:after{ content: ""; display: block; clear: both; }
 
+/* une version plus simple:
+.tree.compact li{ float: left; }
+.tree.compact ul:after{ content: ""; display: block; clear: both; }
+cependant, dans ce cas je pards le fait que le li mesure toute la largeur et déclenche dragover
+ */
+
 /* pour qu'on puisse toujours cliquer hors des noeud j'avait mit max-width: 70% sur les noeuds */
 .tree.line li>div{ display: block; /*max-width: 70%;*/ }
 
