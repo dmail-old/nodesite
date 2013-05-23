@@ -1,4 +1,4 @@
-/* global EventHandler, View, NodeView, NodeListView */
+/* global ListenerHandler, EventHandler, View, NodeView, NodeListView, viewDocument */
 
 /*
 
@@ -8,6 +8,9 @@ le scroll auto lors de expand/contract cherche à garder visibles les éléments
 mais ne tiens pas compte de la largeur qui est importante: celle du texte
 il prend la largeur de l'élément, souvent 100% et scroll sans qu'on en ait besoin
 
+si on met l'arbre en mode compact le ul peut si on met les lie en float left faire la largeur de son contenu
+cependant on perds alors la possibilité de drop un fichier hors d'un li
+
 TODO
 
 - faire la balise select, certaines portions de codes sont communes et doivents être regroupées
@@ -15,31 +18,22 @@ TODO
 */
 
 var ViewController = new Class({
-	//Implements: EventHandler,
+	Extends: EventHandler,
 
 	initialize: function(view){
+		EventHandler.prototype.initialize.call(this);
+
 		this.view = view;
-		Object.eachPair(this.events, function(name){ this.view.events[name] = this; }, this);
+		Object.eachPair(this.handlers, function(name){ this.view.events[name] = this; }, this);
 	}
 });
 
-var NavViewController = new Class({
-	//Extends: ViewController,
-	activeView: null,
-	keyMethodNames: {
-		'left': 'goLeft',
-		'up': 'goUp',
-		'right': 'goRight',
-		'down': 'goDown',
-		'pageup': 'goPageUp',
-		'pagedown': 'goPageDow',
-		'home': 'goFirst',
-		'end': 'goLast'
-	},
-	visibles: [],
-	loop: false,
-
-	events: {
+// this controller exists to keep the first/last/empty class on nodeview
+var CSSViewController = new Class({
+	Extends: ViewController,
+	//  on pourrait écrire 'view:append': true
+	// renommer changeVisibility en handleEvent, et handle tout direct dedans
+	handlers: {
 		'view:append': function(e){
 			this.changeVisibility(e, false);
 		},
@@ -54,24 +48,55 @@ var NavViewController = new Class({
 
 		'view:show': function(e){
 			this.changeVisibility(e, false);
-		},
+		}
+	},
 
+	isVisible: function(element){
+		return !element.hasClass('hidden');
+	},
+
+	// FIX: this function is also called for listView
+	changeVisibility: function(e, hidden){
+		var view = View(e), element = view.element, parent, prev = element.getPrev(this.isVisible), next = element.getNext(this.isVisible);
+
+		if( prev && !next ) prev.toggleClass('last', hidden);
+		else if( next && !prev ) next.toggleClass('first', hidden);
+		element.toggleClass('first', Boolean(prev) == Boolean(hidden));
+		element.toggleClass('last', Boolean(next) == Boolean(hidden));
+
+		if( this.view.element != element ){
+			// ajout d'un enfant visible
+			if( !hidden ) view.parentView.element.removeClass('empty');
+			// suppression du dernier enfant visible
+			else if( !prev && !next ) view.parentView.element.addClass('empty');
+		}
+	}
+});
+
+var NavViewController = new Class({
+	Extends: ViewController,
+	keyMethodNames: {
+		'left': 'goLeft',
+		'up': 'goUp',
+		'right': 'goRight',
+		'down': 'goDown',
+		'pageup': 'goPageUp',
+		'pagedown': 'goPageDow',
+		'home': 'goFirst',
+		'end': 'goLast'
+	},
+	loop: false,
+
+	handlers: {
 		'view:expand': function(e){
 			var view = View(e);
-
-			if( this.contains(view.element) ){
-				//if( this.view.element.hasFocus() ) view.scrollTo('ul');
-				this.updateVisibles();
-			}
+			//if( this.view.element.hasFocus() ) view.scrollTo('ul');
 		},
 
 		'view:contract': function(e){
 			var view = View(e);
 
-			if( this.contains(view.element) ){
-				//if( this.view.element.hasFocus() ) view.scrollTo('ul');
-				this.updateVisibles();
-			}
+			//if( this.view.element.hasFocus() ) view.scrollTo('ul');
 		},
 
 		'view:focus': function(e){
@@ -86,86 +111,20 @@ var NavViewController = new Class({
 				// blur d'un noeud sans qu'aucun autre ne prenne se place
 				this.activeView = View(element.getSibling() || element.parentNode.parentNode || this.view);
 			}
+		},
+
+		'mousedown': function(e){
+			var view = View(e);
+
+			if( view && view.focus ){
+				view.focus(e);
+			}
 		}
 	},
 
 	/* methods concerning visibles list	*/
 	isRoot: function(element){
 		return this.view.element == element;
-	},
-
-	isViewElement: function(element){
-		return element.hasProperty(View.instanceKey);
-	},
-
-	isVisible: function(element){
-		return !element.hasClass('hidden');
-	},
-
-	mayHaveVisibleDescendant: function(element){
-		return this.isRoot(element) || element.hasClass('expanded');
-	},
-
-	updateVisibles: function(){
-		this.visibles = [];
-
-		/* list the visibles view elements, an element is visible if:
-		- it has not the 'hidden' class
-		- his parent is expanded
-		*/
-
-		this.view.element.crossAll(function(element){
-			// only check element of view
-			if( !this.isViewElement(element) ) return;
-
-			// view is hidden, ignore all descendant
-			if( !this.isVisible(element) ) return 'continue';
-			this.visibles.push(element);
-			// view cant have visible decendant, ignore all descendant
-			if( !this.mayHaveVisibleDescendant(element) ) return 'continue';
-
-		}, this);
-
-		return this;
-	},
-
-	getVisibleIndex: function(element){
-		return this.visibles.indexOf(element);
-	},
-
-	contains: function(element){
-		return this.isRoot(element) || this.getVisibleIndex(element) > -1;
-	},
-
-	changeVisibility: function(e, hidden){
-		var view = View(e), element = view.element, isRoot, parent, prev = element.getPrev(this.isVisible), next = element.getNext(this.isVisible);
-
-		if( prev && !next ) prev.toggleClass('last', hidden);
-		else if( next && !prev ) next.toggleClass('first', hidden);
-		element.toggleClass('first', Boolean(prev) == Boolean(hidden));
-		element.toggleClass('last', Boolean(next) == Boolean(hidden));
-
-		if( this.isVisible(element) ){
-			isRoot = this.isRoot(element);
-			if( !isRoot ){
-				parent = element.parentNode.parentNode;
-
-				// ajout d'un enfant visible
-				if( !hidden ) parent.removeClass('empty');
-				// suppression du dernier enfant visible
-				else if( !prev && !next ) parent.addClass('empty');
-			}
-
-			// si l'action se passe sur root ou sur un noeud qui est visible (le parent est expanded et visible) -> updateVisibles
-			if( isRoot || (this.mayHaveVisibleDescendant(parent) && this.contains(parent)) ){
-				this.updateVisibles();
-			}
-		}
-	},
-
-	/* naviguation over visibles methods */
-	getList: function(){
-		return this.visibles;
 	},
 
 	getPageCount: function(element){
@@ -181,8 +140,8 @@ var NavViewController = new Class({
 
 	matchLetter: function(element, letter){
 		if( !this.isValid(element) ) return false;
-		var span = element.querySelector('div span');
-		return span && span.innerHTML.startsWith(letter);
+		var name = element.querySelector('div name');
+		return name && name.innerHTML.startsWith(letter);
 	},
 
 	goLeft: function(element, e){
@@ -289,49 +248,76 @@ var NavViewController = new Class({
 	}
 });
 
-/*
-Conserve une liste des vues qui sont sélectionnées
-et donne des méthodes pour les manipuler
-*/
-
 var SelectionViewController = new Class({
-	//Extends: ViewController,
-	selected: null,
+	Extends: ViewController,
 
-	events: {
+	handlers: {
 		'view:select': function(e){
+			if( this.selected ) this.selected.unselect(e);
 			this.selected = View(e);
-			// e.detail.args[1] contient l'event qui à lancé select genre mousedown
-			this.unselect(e.detail.args[1]);
 		},
 
 		'view:unselect': function(e){
-			if( this.selected == View(e) ) this.selected = null;
+			delete this.selected;
 		}
+	}
+});
+
+Element.implement({
+	getCommonAncestor: function(element){
+		var self = this, parents = [], ancestor = null;
+
+		while(self){
+			self = self.parentNode;
+			if( !self ) break;
+			parents.push(self);
+		}
+		while(element){
+			element = element.parentNode;
+			if( !element ) break;
+			if( parents.contains(element) ){
+				ancestor = element;
+				break;
+			}
+		}
+
+		return ancestor;
 	},
 
-	add: function(view, e){
-		view.select(e);
-	},
+	crossInterval: function(element, fn){
+		var from = this, to = element, ancestor, after = false;
 
-	remove: function(view, e){
-		view.unselect(e);
-	},
+		// if we pass an element before this one in the document order
+		if( this.compareDocumentPosition(to) & Node.DOCUMENT_POSITION_PRECEDING ){
+			from = element;
+			to = this;
+		}
 
-	unselect: function(e){
-		if( this.selected ) this.remove(this.selected, e);
+		ancestor = this.getCommonAncestor(from, to);
+
+		if( !ancestor ) return;
+
+		ancestor.crossAll(function(descendant){
+			// im before the from element
+			if( !after ) after = descendant == from;
+			// im at the to element, break the loop
+			else if( descendant == to ) return true;
+			// im between from & to
+			else return fn(descendant);
+		});
+
 	}
 });
 
 var MultipleSelectionViewController = new Class({
-	//Extends: SelectionViewController,
-	shiftView: null,
+	Extends: SelectionViewController,
+	selecteds: [],
 
-	events: {
+	handlers: {
 		'view:naviguate': function(e){
 			var view = View(e);
 
-			e = e.detail.args[1];
+			e = e.detail.args[0];
 
 			// important car l'event 'view:select' ne se déclenche pas si l'élément est selected mias on doit quand même unselect les autres
 			if( view.hasState('selected') ) this.unselectOther(view, e);
@@ -340,11 +326,11 @@ var MultipleSelectionViewController = new Class({
 				if( e.shift ){
 					e.preventDefault();
 					this.shiftView = this.shiftView || this.view.nav.activeView || View(this.view.nav.visibles[0]);
-					this.selectRange(this.shiftView, view, e);
+					this.selectRange(this.createRange(this.shiftView, view), e);
 				}
 				else{
 					if( e.type == 'keydown' ) e.preventDefault();
-					this.shiftView = null;
+					delete this.shiftView;
 				}
 			}
 		},
@@ -352,20 +338,20 @@ var MultipleSelectionViewController = new Class({
 		'view:select': function(e){
 			var view = View(e);
 
-			// e.detail.args[1] contient l'event qui à lancé select genre mousedown
-			this.unselectOther(view, e.detail.args[1]);
-			this.list.push(view);
+			// e.detail.args[0] contient l'event qui à lancé select genre mousedown
+			this.unselectOther(view, e.detail.args[0]);
+			this.selecteds.push(view);
 		},
 
 		'view:unselect': function(e){
 			var view = View(e);
-			this.list.remove(view);
+			this.selecteds.remove(view);
 		}
 	},
 
 	initialize: function(view){
 		SelectionViewController.prototype.initialize.call(this, view);
-		this.list = [];
+		this.selecteds = [];
 	},
 
 	unselectOther: function(view, e){
@@ -373,120 +359,81 @@ var MultipleSelectionViewController = new Class({
 		// n'unselect pas si control ou shift appuyé, ou mousemove (compat avec selectionRectangle)
 		if( e.control || e.shift ) return;
 
-		[].concat(this.list).forEach(function(selected){
-			if( selected != view ) this.remove(selected, e);
+		[].concat(this.selecteds).forEach(function(selected){
+			if( selected != view ) selected.unselect(e);
 		}, this);
 	},
 
-	unselect: function(e){
-		// [].concat puisque le tableau selecteds est modifié par unselect
-		[].concat(this.list).forEach(function(selected){ this.remove(selected, e); }, this);
+	unselectAll: function(e){
+		// NOTE: need to loop that way because the selecteds array is spliced during the loop
+		var i = this.selecteds.length;
+		while(i--) this.selecteds[0].unselect(e);
 	},
 
-	createRange: function(elementA, elementB){
-		var from, to, min, max, unselectList, selectList, i;
+	createRange: function(viewA, viewB){
+		viewA = View(viewA);
+		viewB = View(viewB);
+		var range = [];
 
-		if( !elementA || !elementB ) return null;
-
-		from = this.view.nav.getVisibleIndex(elementA);
-		to = this.view.nav.getVisibleIndex(elementB);
-
-		if( from == -1 || to == -1 ) return null;
-
-		if( from > to ){ min = to; max = from; }
-		else{ min = from; max = to; }
-
-		// désélectionne tout les noeuds selectionné qui ne sont pas dans l'intervalle
-		unselectList = this.list.filter(function(selected){
-			var index = this.view.nav.getVisibleIndex(selected.element);
-			return index < min || index > max;
-		}, this);
-
-		unselectList = unselectList.map(function(view){ return view.element; });
-
-		// sélectionne les noeuds de l'intervalle
-		selectList = [];
-		i = max - min + 1;
-		while(i){
-			i--;
-			selectList.push(this.view.nav.visibles[i + min]);
+		if( viewA && viewB ){
+			// cross all element between the two specified to get the views between them
+			viewA.element.crossInterval(viewB.element, function(element){
+				if( !viewDocument.isElementView(element) ) return;
+				if( element.hasClass('hidden') ) return 'continue';
+				range.push(View(element));
+				if( !element.hasClass('expanded') ) return 'continue';
+			});
 		}
 
-		return {
-			selectList: selectList,
-			unselectList: unselectList
-		};
+		return range;
 	},
 
-	selectRange: function(viewA, viewB, e){
-		var range = this.createRange(viewA.element, viewB.element);
-
-		if( range ){
-			range.unselectList.forEach(function(item){ View(item).unselect(e); }, this);
-			range.selectList.forEach(function(item){ View(item).select(e); }, this);
-		}
-
-		return this;
+	selectRange: function(range, e){
+		// unselect view not in the range of the selection
+		[].concat(this.selecteds).forEach(function(selected){
+			if( !range.contains(selected) ) selected.unselect(e);
+		});
+		// select view in the range
+		range.forEach(function(view){ view.select(e); });
 	}
 });
 
-var baseViewController = new EventHandler(document, {
-	'view:focus': function(e){
-		View(e).scrollTo();
-	},
-	'view:expand': function(e){
-		var view = View(e);
-		if( view.childrenView ) view.childrenView.element.removeProperty('hidden');
-		else view.createChildrenView();
-	},
-	'view:contract': function(e){
-		var view = View(e);
-		if( view.childrenView ){
-			view.childrenView.element.setProperty('hidden', 'hidden');
+var LightedViewController = new Class({
+	Extends: ViewController,
+	handlers: {
+		'mouseover': function(e){
+			var view = View(e);
+
+			if( view && view.light ){
+				view.light(e);
+			}
+			else if( this.lighted ) {
+				this.lighted.unlight(e);
+			}
+		},
+
+		'view:light': function(e){
+			if( this.lighted ) this.lighted.unlight(e);
+			this.lighted = View(e);
+		},
+
+		'view:unlight': function(e){
+			delete this.lighted;
 		}
 	}
 });
-baseViewController.enableAll();
-
-/*
-Store the lighted view and allow only one view to be lighted at once
-*/
-var lightedViewHandler = new EventHandler(document, {
-	'mouseover': function(e){
-		var view = View(e);
-
-		if( view && view.light ){
-			view.light(e);
-		}
-		else if( this.view ) {
-			this.view.unlight(e);
-		}
-	},
-
-	'view:light': function(e){
-		var prev = this.view;
-		this.view = View(e);
-		if( prev && prev != this.view ){
-			prev.unlight(e);
-		}
-	},
-
-	'view:unlight': function(e){
-		if( this.view == View(e) ) this.view = null;
-	}
-});
-lightedViewHandler.enableAll();
 
 var TreeView = new Class({
 	Extends: View,
 	tagName: 'div',
 	multiSelection: true,
 	events: {
+		/*
 		mousedown: function(e){
 			var view = this.getViewFromEvent(e);
 
 			if( view ){
-				if( e.target.tagName.toLowerCase() == 'ins' ){ view.focus(e); view.toggleState('expanded', e); }
+				if( e.target.tagName.toLowerCase() == 'tool' ){ view.focus(e); view.toggleState('expanded', e); }
 				if( this.multiSelection && e.control ){ view.focus(e); view.toggleState('selected', e); }
 				else{
 					this.nav.go(view, e);
@@ -510,7 +457,7 @@ var TreeView = new Class({
 			var view = this.getViewFromEvent(e);
 
 			if( view ){
-				if( e.target.tagName.toLowerCase() != 'ins' ){
+				if( e.target.tagName.toLowerCase() != 'tool' ){
 					if( this.menu ) this.menu.activeFirst(e);
 					else view.toggleState('expanded', e);
 				}
@@ -525,11 +472,13 @@ var TreeView = new Class({
 				this.nav.keydown(e);
 			}
 		}
+		*/
 	},
 
 	attributes: {
 		'tabindex': 0,
-		'class': 'tree line'
+		'class': 'tree line',
+		//'data-treeview': true
 	},
 
 	initialize: function(root, hideRoot){
@@ -537,8 +486,9 @@ var TreeView = new Class({
 		this.hideRoot = hideRoot;
 		this.createRootView();
 
-		//this.nav = new NavViewController(this);
-		//this.selection = this.multiSelection ? new MultipleSelectionViewController(this) : new SelectionViewController(this);
+		this.lighted = new LightedViewController(this);
+		this.selection = new MultipleSelectionViewController(this);
+		this.cssController = new CSSViewController(this);
 	},
 
 	getLine: function(element){

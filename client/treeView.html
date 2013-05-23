@@ -3,7 +3,9 @@ var treeData = {
 	name: 'rootnode',
 	children: [
 		{name: 'node0', children: [{name: 'node0.1'}]},
-		{name: 'node1'}
+		{name: 'node1'},
+		{name: 'node2'},
+		{name: 'node3'}
 	]
 };
 
@@ -18,15 +20,15 @@ treeView.rootView.expand();
 var FileModel = new Class({
 	Extends: NodeModel,
 	Implements: Model.serverMethods,
-	
+
 	initialize: function(path){
 		NodeModel.prototype.initialize.call(this, typeof path == 'string' ? {path: path} : path);
 	},
-	
+
 	sync: function(action, callback){
 		server.applyAction('filesystem/' + action.name, action.args, callback);
 	},
-	
+
 	rename: function(name, callback){
 		return this.send('rename', [this.get('path'), name], callback);
 	}
