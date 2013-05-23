@@ -1,4 +1,4 @@
-/* global ListenerHandler, EventHandler, View, NodeView, NodeListView, viewDocument */
+/* global ListenerHandler, EventHandler, View, NodeView, viewDocument */
 
 /*
 
@@ -33,8 +33,12 @@ var CSSViewController = new Class({
 	Extends: ViewController,
 	//  on pourrait écrire 'view:append': true
 	// renommer changeVisibility en handleEvent, et handle tout direct dedans
+	padding: 18,
 	handlers: {
 		'view:append': function(e){
+			// when the background of the node take full width we have to set a padding manually here
+			//if( this.view.element.hasClass('line') )
+			View(e).getDom('div').style.paddingLeft = this.padding * View(e).getLevel() + 'px';
 			this.changeVisibility(e, false);
 		},
 
@@ -51,24 +55,24 @@ var CSSViewController = new Class({
 		}
 	},
 
-	isVisible: function(element){
-		return !element.hasClass('hidden');
+	isVisible: function(){
+		return !this.element.hasClass('hidden');
 	},
-
+	
 	// FIX: this function is also called for listView
 	changeVisibility: function(e, hidden){
-		var view = View(e), element = view.element, parent, prev = element.getPrev(this.isVisible), next = element.getNext(this.isVisible);
+		var view = View(e), prev = view.getPrev(this.isVisible), next = view.getNext(this.isVisible);
 
-		if( prev && !next ) prev.toggleClass('last', hidden);
-		else if( next && !prev ) next.toggleClass('first', hidden);
-		element.toggleClass('first', Boolean(prev) == Boolean(hidden));
-		element.toggleClass('last', Boolean(next) == Boolean(hidden));
+		if( prev && !next ) prev.element.toggleClass('last', hidden);
+		else if( next && !prev ) next.element.toggleClass('first', hidden);
+		view.element.toggleClass('first', Boolean(prev) == Boolean(hidden));
+		view.element.toggleClass('last', Boolean(next) == Boolean(hidden));
 
-		if( this.view.element != element ){
+		if( this.view != view ){
 			// ajout d'un enfant visible
-			if( !hidden ) view.parentView.element.removeClass('empty');
+			if( !hidden ) view.parentNode.element.removeClass('empty');
 			// suppression du dernier enfant visible
-			else if( !prev && !next ) view.parentView.element.addClass('empty');
+			else if( !prev && !next ) view.parentNode.element.addClass('empty');
 		}
 	}
 });
@@ -263,51 +267,10 @@ var SelectionViewController = new Class({
 	}
 });
 
-Element.implement({
-	getCommonAncestor: function(element){
-		var self = this, parents = [], ancestor = null;
-
-		while(self){
-			self = self.parentNode;
-			if( !self ) break;
-			parents.push(self);
-		}
-		while(element){
-			element = element.parentNode;
-			if( !element ) break;
-			if( parents.contains(element) ){
-				ancestor = element;
-				break;
-			}
-		}
-
-		return ancestor;
-	},
-
-	crossInterval: function(element, fn){
-		var from = this, to = element, ancestor, after = false;
-
-		// if we pass an element before this one in the document order
-		if( this.compareDocumentPosition(to) & Node.DOCUMENT_POSITION_PRECEDING ){
-			from = element;
-			to = this;
-		}
-
-		ancestor = this.getCommonAncestor(from, to);
-
-		if( !ancestor ) return;
-
-		ancestor.crossAll(function(descendant){
-			// im before the from element
-			if( !after ) after = descendant == from;
-			// im at the to element, break the loop
-			else if( descendant == to ) return true;
-			// im between from & to
-			else return fn(descendant);
-		});
-
-	}
-});
+// used in Element.prototype.crossInterval and no better way to do
+NodeView.prototype.compareDocumentPosition = function(nodeview){
+	return this.element.compareDocumentPosition(nodeview.element);
+};
 
 var MultipleSelectionViewController = new Class({
 	Extends: SelectionViewController,
@@ -371,17 +334,14 @@ var MultipleSelectionViewController = new Class({
 	},
 
 	createRange: function(viewA, viewB){
-		viewA = View(viewA);
-		viewB = View(viewB);
 		var range = [];
 
 		if( viewA && viewB ){
 			// cross all element between the two specified to get the views between them
-			viewA.element.crossInterval(viewB.element, function(element){
-				if( !viewDocument.isElementView(element) ) return;
-				if( element.hasClass('hidden') ) return 'continue';
-				range.push(View(element));
-				if( !element.hasClass('expanded') ) return 'continue';
+			viewA.crossInterval(viewB, function(view){
+				if( view.hasState('hidden') ) return 'continue';
+				range.push(view);
+				if( !view.hasState('expanded') ) return 'continue';
 			});
 		}
 
@@ -404,9 +364,15 @@ var LightedViewController = new Class({
 		'mouseover': function(e){
 			var view = View(e);
 
-			if( view && view.light ){
-				view.light(e);
+			if( view ){
+				if( !view.light ) view = null;
+				// when light only occur on the name element 
+				else if( this.view.element.hasClass('compact') && e.target != view.getDom('name') ) view = null;				
 			}
+			
+			if( view ){
+				view.light(e);
+			}			
 			else if( this.lighted ) {
 				this.lighted.unlight(e);
 			}
@@ -423,6 +389,7 @@ var LightedViewController = new Class({
 	}
 });
 
+// TODO: option hideRoot
 var TreeView = new Class({
 	Extends: View,
 	tagName: 'div',
@@ -500,12 +467,7 @@ var TreeView = new Class({
 	},
 
 	createRootView: function(){
-		if( this.hideRoot ){
-			this.rootView = new NodeListView(this.model.children);
-		}
-		else{
-			this.rootView = new NodeView(this.model);
-		}
+		this.rootView = new NodeView(this.model);
 	},
 
 	append: function(){
@@ -515,6 +477,7 @@ var TreeView = new Class({
 
 		if( this.hideRoot ){
 			this.rootView.append(this.element);
+			this.rootView.createChildrenView();
 		}
 		else{
 			var ul = new Element('ul');

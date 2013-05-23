@@ -36,6 +36,23 @@ Element.sorter = (function(){
 	return Function.ZERO;
 })();
 
+Element.prototype.getCommonAncestor = function(element){
+	var parentA = this, parents = [], parentB = element;
+
+	while(parent){
+		parent = parent.parentNode;
+		if( !parent ) return this;
+		parents.push(parent);
+	}
+	while(parentB){
+		parentB = parentB.parentNode;
+		if( !parentB ) return element;
+		if( parents.contains(parentB) ) return parentB;
+	}
+
+	return ancestor;
+};
+
 var TreeCrosser = {
 	// call fn on every child of the element, returns true to break the loop
 	cross: function(fn, bind){
@@ -97,6 +114,28 @@ var TreeCrosser = {
 
 	crossAround: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
+	},
+	
+	crossInterval: function(element, fn){
+		var from = this, to = element, ancestor, after;
+
+		// if we pass an element before this one in the document order
+		if( this.compareDocumentPosition(to) & Node.DOCUMENT_POSITION_PRECEDING ){
+			from = element;
+			to = this;
+		}
+
+		ancestor = Element.prototype.getCommonAncestor.call(from, to);
+		after = ancestor == from;
+		ancestor.crossAll(function(descendant){
+			// im before the from element
+			if( !after ) after = descendant == from;
+			// im at the to element, break the loop
+			else if( descendant == to ) return true;
+			// im between from & to
+			else return fn(descendant);
+		});
+
 	}
 };
 
