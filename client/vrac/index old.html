@@ -1,0 +1,122 @@
+<div id="console"></div>
+
+<!--<script src="/socket.io/socket.io.js"></script>-->
+<script>
+var House = {
+	connect: function(host){
+		this.socket = io.connect(host);
+		
+		this.on('connect', this.onconnect.bind(this));
+		this.on('close', this.onclose.bind(this));
+		this.on('message', this.onmessage.bind(this));
+		this.on('error', this.onerror.bind(this));
+		
+		this.console = document.getElementById('console');
+		this.rooms = {};
+	},
+	
+	onerror: function(error){
+		console.log(error);
+		this.console.innerHTML+= 'websocket error <br />'; 
+	},
+	
+	onconnect: function(socket){
+		this.console.innerHTML+= 'socket connectée <br />';		
+	},
+	
+	onclose: function(){
+		this.console.innerHTML+= 'socket fermée <br />'; 
+	},
+
+	onmessage: function(message){
+		console.log('socket message', message);
+		this.console.innerHTML+= 'message recu '+message.data+' <br />'; 
+	},
+	
+	send: function(message){
+		this.socket.send(message);
+		this.console.innerHTML+= 'envoie le message '+message+' <br />'; 
+	},
+	
+	on: function(event, callback){
+		this.socket.on(event, callback);
+	},
+	
+	emit: function(){
+		return this.socket.emit.apply(this.socket, arguments);
+	},
+	
+	join: function(room, callback){
+		return this.demand('join', room, function(error){
+			callback(new Room(room));
+		});
+	},
+	
+	leave: function(room, callback){
+		return this.demand('leave', room, function(){
+			
+		});
+	},
+	
+	demand: function(action){
+		var args = ['demand'].concat(toArray(arguments));
+		return this.emit.apply(this, args);
+	}
+};
+
+var Room = new Class({
+	initialize: function(name){
+		this.name = name || '';
+	},
+	
+	getKey: function(key){
+		return this.name == '' ? key : this.name + '/' + key;
+	},
+	
+	on: function(event, callback){
+		House.on(this.getKey(event), callback);
+		return this;
+	},
+	
+	emit: function(event){
+		arguments[0] = this.getKey(event);
+		House.emit.apply(this.socket, arguments);		
+		return this;
+	},
+	
+	demand: function(action){
+		arguments[0] = this.getKey(action);
+		House.demand.apply(House, arguments);
+		return this;
+	}
+});
+
+/*
+House.connect('http://localhost');
+
+House.on('connect', function(){
+	House.join('namespace', function(namespace){
+		namespace.demand('action');
+	});
+});
+
+House.on('join', function(client, room){
+	if( client.id == me.id ){
+		alert('je me retrouve dans' + room);
+	}
+});
+
+House.on('news', function(data){
+	console.log('Je recois une news du serveur', data);
+	//socket.emit('ping', function(){ console.log('Ping success'); });
+	//socket.emit('alert', 'OK', function(value){ alert(value); });
+	//socket.emit('recu', 'tobi', function(data){ console.log('recu des datas', data); });
+	//socket.emit('ping');
+	House.send('coucou');
+	House.demand('ping', function(){
+		console.log('ping ok');
+	});
+});
+*/
+
+</script>

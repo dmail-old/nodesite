@@ -1,0 +1,42 @@
+<div id="console"></div>
+
+<!--<script src="/socket.io/socket.io.js"></script>-->
+<script>
+var Socket = new Class({
+	initialize: function(host){
+		this.socket = new WebSocket(host); 
+		this.console = document.getElementById('console');
+		
+		this.socket.onopen = this.onopen.bind(this);
+		this.socket.onmessage = this.onmessage.bind(this);
+		this.socket.onclose = this.onclose.bind(this);
+		this.socket.onerror = this.onerror.bind(this);
+	},
+	
+	onerror: function(error){
+		console.log(error); 
+		 this.console.innerHTML+ 'websocket error <br />'; 
+	},
+	
+	onopen: function(socket){
+		console.log('socket opened');
+		this.console.innerHTML = this.console.innerHTML + 'socket opened Welcome - status ' + socket.readyState + '<br />';
+	},
+	
+	onmessage: function(message){
+		console.log(message);
+		this.console.innerHTML+ 'message event lanched <br />';
+    }, 
+
+	onclose: function(){
+	   this.console.innerHTML+= 'websocket closed - server not running<br />'; 
+	},
+	
+	send: function(message){
+		this.socket.send(JSON.stringify(message));
+		this.console.innerHTML+= 'websocket message send <br />'; 
+	}
+});
+
+var socket = new Socket('ws://localhost:8124');
+</script>

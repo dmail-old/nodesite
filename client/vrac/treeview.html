@@ -1,0 +1,336 @@
+<script>
+// model & collection
+var Model = new Class({
+	Implements: Emitter,
+	validationError: null,
+	id: 0,
+	
+	initialize: function(properties){
+		this.properties = properties ? this.parse(properties) : {};
+		this.id = this.id++;
+	},
+	
+	create: function(data){
+		return data instanceof this.constructor ? data : new this.constructor(data);
+	},
+	
+	destroy: function(){
+		this.emit('destroy');
+		return this;
+	},
+	
+	toString: function(){
+		return 'Model';
+	},
+	
+	parse: function(properties){
+		return properties;
+	},
+	
+	encode: function(key, value){
+		return value;
+	},
+	
+	valid: function(key, value){
+		this.validationError = this.validate(key, value) || null;
+		return !this.validationError;
+	},
+	
+	validate: Function.EMPTY,
+	
+	compare: function(key, a, b){
+		return a === b;
+	},
+	
+	get: function(key){
+		return this.properties[key];
+	},
+	
+	has: function(key){
+		return key in this.properties;
+	},
+	
+	set: function(key, value){
+		var current;
+		
+		value = this.encode(key, value);
+		
+		if( !this.valid(key, value) ){
+			this.emit('invalid', key, value, this.validationError);
+		}
+		else{
+			current = this.get(key);
+			if( !this.compare(key, current, value) ){
+				this.properties[key] = value;		
+				this.emit('change', key, value, current);
+			}
+		}
+			
+		return this;
+	},
+	
+	unset: function(key){
+		var current;
+		
+		if( this.has(name) ){
+			current = this.get(name);
+			delete this.properties[name];
+			this.emit('change', key, undefined, current);
+		}
+		
+		return this;
+	}
+});
+
+var Collection = new Class({
+	Extends: Array,
+	Implements: Emitter,
+	Model: Model,
+	
+	initialize: function(){
+		this.reset();
+		this.append(arguments);
+	},
+	
+	toString: function(){
+		return 'Collection';
+	},
+	
+	reset: function(){
+		this.ids = {};
+	},
+	
+	add: function(model){
+		if( !(model instanceof this.Model) ) model = new this.Model(model);
+		if( Array.prototype.add.call(this, model) ){
+			model.collection = this;
+			this.ids[model.id] = this;
+			model.on(this.modelEvents);
+			this.emit('add', model);
+		}
+	},
+	
+	remove: function(model){
+		if( Array.prototype.remove.call(this, model) ){
+			delete model.collection;
+			delete this.ids[model.id];
+			model.off(this.modelEvents);
+			this.emit('remove', model);
+		}
+	},
+	
+	append: function(array){
+		if( array ) Array.prototype.forEach.call(array, this.add, this);
+		return this;
+	}
+});
+
+Collection.prototype.modelEvents = {
+	'change:id': function(id, previous){
+		delete this.collection.ids[previous];
+		this.collection.ids[id] = this;
+	},
+	
+	destroy: function(){
+		this.collection.remove(this);
+	},
+	
+	applyListeners: function(name, args){
+		//this.collection.applyListeners(name, [this].concat(args));
+	}
+};
+
+var TreeNode = new Class({
+	Extends: Model,
+	
+	initialize: function(){
+		Model.prototype.initialize.apply(this, arguments);
+		
+		this.name = this.get('name') || '';
+		
+		this.collection = new TreeNodeCollection();
+		this.collection.on('add', function(child){ child.parentNode = this; }.bind(this));
+		this.collection.append(this.parseChildren(this.get('children')));
+		
+		this.children = this.collection;
+	},
+	
+	toString: function(){
+		return 'TreeNode';
+	},
+	
+	parseChildren: function(children){
+		return children;
+	},
+	
+	setChildren: function(children){
+		children = this.parseChildren(children);
+		
+		// ceci permet de regrouper les logiques d'insertion et de supression dans adopt et emancipate
+					
+		// supprime les enfants actuels avant de mettre les nouveaux
+		var i = this.children.length;
+		while(i--) this.children[0].emancipate();
+		// appelle adopt sur chaque child
+		children.forEach(this.adopt, this);
+		
+		return this;
+	},
+	
+	adopt: function(child, index){
+		child = this.create(child);
+		index = typeof index != 'number' ? this.children.length : index.limit(0, this.children.length);
+		
+		child.parentNode = this;
+		this.children.splice(index, 0, child);
+		//child.crossAll(function(node){ node.emit('enter'); }, null, true);
+		this.emit('adopt', child, index);
+		
+		return this;
+	},
+	
+	emancipate: function(){
+		if( this.parentNode ){
+			this.parentNode.children.remove(this);
+			delete this.parentNode;	
+		}
+		//this.crossAll(function(node){ node.emit('leave'); }, null, true);
+		this.emit('emancipate');
+		
+		return this;
+	}
+});
+
+var TreeNodeCollection = new Class({
+	Extends: Collection,
+	Model: TreeNode,
+	
+	toString: function(){
+		return 'TreeNodeCollection';
+	}
+});
+
+var treeData = {
+	name: 'rootnode',
+	children: [
+		{name: 'node0', children: [{name: 'node0.1'}]},
+		{name: 'node1'}
+	]
+};
+
+var root = new TreeNode(treeData);
+
+// view of model & collection
+var View = new Class({
+	tagName: 'div',
+	
+	initialize: function(model){
+		this.model = model;
+	},
+	
+	getHTML: function(){
+		return '';
+	},
+	
+	createElement: function(){
+		var element = new Element(this.tagName);
+		
+		if( this.className ) element.className = this.className;
+		element.innerHTML = this.getHTML();
+		
+		return element;
+	},
+	
+	setElement: function(element){
+		this.element = element;
+		return this;
+	},
+	
+	render: function(){
+		this.setElement(this.createElement());
+		return this;
+	}
+});
+
+var CollectionView = new Class({
+	Extends: View,
+	View: View,
+	
+	initialize: function(collection){
+		this.collection = collection;
+	},
+	
+	createView: function(model){
+		return new this.View(model);
+	},
+	
+	render: function(){
+		this.setElement(this.createElement());
+		
+		this.collection.forEach(function(model){
+			var view = this.createView(model);
+			view.render();
+			this.element.appendChild(view.element);
+		}, this);
+		return this;
+	}
+});
+
+var TreeNodeView = new Class({
+	Extends: View,
+	tagName: 'li',
+	className: 'node',
+	
+	initialize: function(treeNode){
+		this.model = treeNode;
+		this.branch = new TreeNodeCollectionView(treeNode);
+	},
+	
+	getHTML: function(){
+		return '<span>' + this.model.name + '</span>';
+	},
+	
+	createElement: function(){
+		var element = View.prototype.createElement.call(this);		
+		if( this.model.children.length ) element.appendChild(this.branch.render().element);
+		return element;
+	}
+});
+
+var TreeNodeCollectionView = new Class({
+	Extends: CollectionView,
+	View: TreeNodeView,
+	tagName: 'ul',
+	className: 'branch',
+	
+	initialize: function(treeNode){
+		CollectionView.prototype.initialize.call(this, treeNode.children);
+	}
+});
+
+/*
+var TreeView = new Class({
+	Extends: View,
+	
+	initialize: function(model){
+		this.collection = model.children;
+	}
+});
+
+// The tree's root: a simple collection view that renders 
+// a recursive tree structure for each item in the collection
+var TreeRoot = new Class({
+	Extends: CollectionView,
+	View: TreeView
+});
+
+var treeView = new TreeRoot({
+    collection: tree
+});
+*/
+
+var rootView = new TreeNodeCollectionView(root);
+rootView.render();
+console.log(rootView.element);
+
+</script>
