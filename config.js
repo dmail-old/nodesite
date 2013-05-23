@@ -30,11 +30,11 @@ config.js = [].concat(
 	].prefix('/lib/core/'),
 	[
 		"object.at", "finder", "array.iterate", "array.find",
-		"random", "emitter", "stringList", "memory", "path"
+		"random", "emitter", "list", "stringList", "memory", "path"
 	].prefix('lib/'),
 	[
 		"browser", "element", "element.properties", "element.styles", "element.measure", "element.keepIntoView", "element.find",
-		"event", "eventEmitter", "request", "eventList"
+		"event", "eventEmitter", "request"
 	].prefix('browser/'),
 	[
 		"fx"

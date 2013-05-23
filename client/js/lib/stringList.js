@@ -9,12 +9,12 @@ require: String, Array, Class
 */
 
 var StringList = new Class({
-	Extends: Array,
+	Extends: List,
 	
 	initialize: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) this.push.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) List.prototype.initialize.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},
