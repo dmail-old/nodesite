@@ -225,12 +225,12 @@ window.ListenerHandler = new Class({
 		return this.remove(name, this);
 	},
 
-	enableAll: function(){
+	listen: function(){
 		Object.eachPair(this.handlers, this.enable, this);
 		return this;
 	},
 
-	disableAll: function(){
+	stopListening: function(){
 		Object.eachPair(this.handlers, this.disable, this);
 		return this;
 	}

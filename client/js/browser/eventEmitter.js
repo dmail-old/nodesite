@@ -50,3 +50,4 @@ var EventHandler = new Class({
 		}
 	}
 });
+delete EventHandler.prototype.handleListener;
