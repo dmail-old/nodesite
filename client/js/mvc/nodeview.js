@@ -6,6 +6,9 @@ var NodeView = new Class({
 	listeners: {
 		//'change:name': NodeView.prototype.updateName
 	},
+	attributes: {
+		//'data-lightable': true
+	},
 
 	getAttributes: function(){
 		var attr = View.prototype.getAttributes.call(this), className = new StringList();
@@ -51,7 +54,7 @@ var NodeView = new Class({
 	},
 
 	getHTML: function(){
-		return '<div><ins></ins><span>' + this.model.name + '</span></div>';
+		return '<div><tool></tool><name>' + this.model.name + '</name></div>';
 	},
 
 	getDom: function(what){
@@ -59,7 +62,7 @@ var NodeView = new Class({
 		case 'li':
 			return this.element;
 		case 'ul':
-			return this.childrenView.element;
+			return this.childrenView ? this.childrenView.element : null;
 		case 'div':
 			return this.element.getChild(what);
 		default:
@@ -68,7 +71,7 @@ var NodeView = new Class({
 	},
 
 	updateName: function(name){
-		this.getDom('span').innerHTML = name;
+		this.getDom('name').innerHTML = name;
 	},
 
 	hasState: function(state){
@@ -110,6 +113,7 @@ var NodeView = new Class({
 	},
 
 	expand: function(e){
+		if( !this.childrenView ) this.createChildrenView();
 		return this.setState('expanded', true, e);
 	},
 
@@ -118,11 +122,43 @@ var NodeView = new Class({
 	},
 
 	focus: function(e){
+		//this.scrollTo();
 		return this.setState('focused', true, e);
 	},
 
 	blur: function(e){
 		return this.setState('focused', false, e);
+	},
+
+	hide: function(e){
+		return this.setState('hidden', true, e);
+	},
+
+	show: function(e){
+		return this.setState('hidden', false, e);
+	},
+
+	isVisible: function(element){
+		return !element.hasClass('hidden');
+	},
+
+	getParentView: function(){
+		return View(this.element.parentNode.parentNode);
+	},
+
+	// même chose avec prev
+	// même chose ou on fait next puis prev
+	// pour pagedown et pageup à voir
+	// pour home et end on crée getfirstvisible getlastvisible
+	// faudras qu'on puisse recup nextvisible et prev y compris en repartant du début (loop)
+	getNextVisible: function(match){
+		var visible = this.element.getNext(this.isVisible);
+
+		if( visible ) return visible;
+
+		var parent = this.getParentView();
+
+		return parent ? parent.getNextVisible() : null;
 	}
 });
 
