@@ -41,6 +41,32 @@ TreeCrosser.crossAllAfter = function(fromNode, fn){
 // et encore pas le plus profond mais le plus proche en terme de nextSibling
 // hors actuellement je part du noeud et je descend
 // voir avec lastchild
+
+// treewalker est cool puisqu'il dispose toujours de currentNode qui correspond à activeView dans mon cas
+// voir https://github.com/Krinkle/dom-TreeWalker-polyfill/blob/master/src/TreeWalker-polyfill.js
+/* créer un treewalker pour ma naviguation c'est juste le top, en attendant la fonction pour le crossAllbefore
+doit s'inspirer de ça:
+
+faut vraiment que je fasse un treewalker pour séparer les logiques
+
+function getPreviousSibling(element){
+	return element.parentNode.children[element.parentNode.children.indexOf(element) - 1];
+}
+
+var prev = getPreviousSibling(element);
+
+function getLastChild(element){
+	return element.children[element.children.length-1];
+}
+
+var lastChild;
+while( lastChild = getLastChild(element) ){	
+	if( !lastChild.hasState('expanded') ) break;
+}
+
+fn(lastChild);
+
+*/
 TreeCrosser.crossAllBefore = function(fromNode, fn){
 	var current = fromNode, ret = false;
 	
