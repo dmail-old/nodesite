@@ -12,17 +12,15 @@ provides: Finder
 ...
 */
 
-(function(){
-
-var Finder = this.Finder = {
+var Finder = window.Finder = {
 	getProperty: function(item, key){
 		return Object.getAt(item, key);
 	},
-	
+
 	hasProperty: function(item, key){
 		return item ? item.hasOwnProperty(key) : false;
 	},
-	
+
 	matchPart: function(item, part){
 		if( part.operator ) return part.test(String(Finder.getProperty(item, part.key)).toLowerCase());
 		return Finder.hasProperty(item, part.key);
@@ -50,17 +48,17 @@ Finder.parser = function(match, key, operator, quotedValue, value){
 		}
 		if( !key ) key = 'name';
 		if( !operator ) operator = ':';
-		
+
 		if( operator == ':' ){
-			var star = value.indexOf('*',1), len = value.length;	
-			
+			var star = value.indexOf('*',1), len = value.length;
+
 			if( star != -1 ){
 				// ~= a star is in middle of the value -> test by regexp
 				if( star != len-1 ) operator = '~:';
 				// else star si at the begining or at the end or both
 				else{
 					var firstChar = value.charAt(0), lastChar = value.charAt(len-1);
-					
+
 					if( firstChar in {'"':1, '*':1} && firstChar == lastChar ){
 						operator = '*:';
 						value = value.substring(1, len-1);
@@ -76,25 +74,39 @@ Finder.parser = function(match, key, operator, quotedValue, value){
 				}
 			}
 		}
-		
+
 		// default case insensitivity over the value
 		// value = value.toLowerCase();
-		
+
 		var test;
 		switch(operator){
-			case ':': test = function(data){ return data === value; }; break;
-			case '>': test = function(data){ return data > value; }; break;
-			case '<': test = function(data){ return data < value; }; break;
-			case '!:': test = function(data){ return data != value; }; break;
-			case '*:': test = function(data){ return data.contains(value); }; break;
-			case '^:': test = function(data){ return data.startsWith(value); }; break;
-			case '$:': test = function(data){ return data.endsWith(value); }; break;
-			case '~:':
-				var regexp = new RegExp(value.escapeRegExp().replace(/\\\*/g,'.'));
-				test = function(data){ return data && regexp.test(data); };
+		case ':':
+			test = function(data){ return data === value; };
+			break;
+		case '>':
+			test = function(data){ return data > value; };
+			break;
+		case '<':
+			test = function(data){ return data < value; };
+			break;
+		case '!:':
+			test = function(data){ return data != value; };
+			break;
+		case '*:':
+			test = function(data){ return data.contains(value); };
+			break;
+		case '^:':
+			test = function(data){ return data.startsWith(value); };
+			break;
+		case '$:':
+			test = function(data){ return data.endsWith(value); };
+			break;
+		case '~:':
+			var regexp = new RegExp(value.escapeRegExp().replace(/\\\*/g,'.'));
+			test = function(data){ return data && regexp.test(data); };
 			break;
 		}
-		
+
 		Finder.parsed.push({
 			key: key,
 			operator: operator,
@@ -102,7 +114,7 @@ Finder.parser = function(match, key, operator, quotedValue, value){
 			test: test
 		});
 	}
-	
+
 	return '';
 };
 
@@ -110,7 +122,7 @@ Finder.cache = {};
 Finder.parse = function(expression){
 	expression = String(expression).trim(); // remove begining and ending spaces
 	var parsed = Finder.cache[expression];
-	
+
 	if( !parsed ){
 		parsed = Finder.parsed = [];
 		parsed.isParse = true;
@@ -118,7 +130,7 @@ Finder.parse = function(expression){
 		while( expression != (expression = expression.replace(Finder.regexp, Finder.parser)) );
 		Finder.cache[parsed.raw] = parsed;
 	}
-	
+
 	return parsed;
 };
 
@@ -126,68 +138,66 @@ Finder.parse = function(expression){
 // ex: Finder.from('name:hello') -> function(item){ return item.name == 'hello'; };
 Finder.from = function(expression, reverse){
 	if( expression == null ) return reverse ? Function.TRUE : Function.FALSE;
-	
+
 	var match;
 	switch(typeof expression){
-		case 'function':
-			match = expression;
+	case 'function':
+		match = expression;
 		break;
-		case 'number':
-			var number = expression;
-			match = function(){
-				if( number === 0 ){ number = null;/*number = expression;*/ return true; }
-				number--;
-				return false;
-			};
+	case 'number':
+		var number = expression;
+		match = function(){
+			if( number === 0 ){ number = null;/*number = expression;*/ return true; }
+			number--;
+			return false;
+		};
 		break;
-		case 'string':
-			expression = Finder.parse(expression); // no break to go to expression.isParse			
-		case 'object':
-			if( expression.isParse ){
-				match = function(item){
-					var i = expression.length;
-					while(i--) if( !Finder.matchPart(item, expression[i]) ) return false;
-					return true;
-				}
-				break;
-			}
-			
-			if( Array.isArray(expression) ){
+	case 'string':
+		expression = Finder.parse(expression); // no break to go to expression.isParse
+	case 'object':
+		if( expression.isParse ){
+			match = function(item){
 				var i = expression.length;
-				if( i === 0 ) match = Function.FALSE;
-				else if( i === 1 ) match = Finder.from(expression[0], reverse);
-				else{
-					// each array item is turned into a function
-					var matchers = expression.map(function(exp){ return Finder.from(exp, reverse); });
-					match = function(item){
-						var i = 0, j = matchers.length;
-						for(;i<j;i++) if( !matchers[i](item) ) return false;
-						return true;
-					}
-				}
-			}
-			else if( expression instanceof RegExp ){
-				match = expression.test;
-			}
+				while(i--) if( !Finder.matchPart(item, expression[i]) ) return false;
+				return true;
+			};
+			break;
+		}
+
+		if( Array.isArray(expression) ){
+			var i = expression.length;
+			if( i === 0 ) match = Function.FALSE;
+			else if( i === 1 ) match = Finder.from(expression[0], reverse);
 			else{
-				match = function(item){ return item == expression; };
+				// each array item is turned into a function
+				var matchers = expression.map(function(exp){ return Finder.from(exp, reverse); });
+				match = function(item){
+					var i = 0, j = matchers.length;
+					for(;i<j;i++) if( !matchers[i](item) ) return false;
+					return true;
+				};
 			}
+		}
+		else if( expression instanceof RegExp ){
+			match = expression.test;
+		}
+		else{
+			match = function(item){ return item == expression; };
+		}
 		break;
-		case 'boolean':
-			return expression || reverse ? Function.TRUE : Function.FALSE;
-		break;
-		default:
-			throw new TypeError('Unknow type'); // never supposed to happen
-		break;
+	case 'boolean':
+		return expression || reverse ? Function.TRUE : Function.FALSE;
+	default:
+		throw new TypeError('Unknow type'); // never supposed to happen
 	}
-	
+
 	return reverse ? function(item){ return !match(item); } : match;
-}
+};
 
 // iterator supply items to test, we returns the first or all items passing the test
 Finder.matchIterator = function(iterator, match, first){
 	var found = first ? null : [];
-	
+
 	match = Finder.from(match);
 	if( match != Function.FALSE ){
 		iterator.call(this, function(item){
@@ -200,16 +210,16 @@ Finder.matchIterator = function(iterator, match, first){
 			}
 		});
 	}
-	
+
 	return found;
 };
 
 // not implemented, would allow an option to tell to test a property with indexOf instead of == without having to pass '*'
 function getPartial(expression){
-	var parsed = Finder.parse(expression), j = parsed.length;
-	
+	var parsed = Finder.parse(expression);
+
 	function match(item){
-		var i = j;
+		var i = parsed.length, part;
 		while(i--){
 			part = parsed[i];
 			if( part.operator == ':' && part.key.endsWith('name') ){
@@ -222,8 +232,6 @@ function getPartial(expression){
 		}
 		return true;
 	}
-	
-	return match;
-};
 
-}).call(window);
+	return match;
+}
