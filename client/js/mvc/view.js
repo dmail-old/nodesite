@@ -83,7 +83,11 @@ var View = new Class({
 
 		this.emit('create');
 	},
-
+	
+	create: function(model){
+		return new this.constructor(model);
+	},
+	
 	emit: function(name){
 		viewDocument.handleEmit(this, name, arguments);
 		return this;
@@ -167,50 +171,3 @@ Element.prototype.toView = function(){ return viewDocument.findElementView(this)
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 View.prototype.toView = Function.THIS;
-
-
-Object.defineProperty(View.prototype, 'parentView', {
-	get: function(){
-		return View(this.element.parentNode.parentNode);
-	}
-});
-
-Object.defineProperty(View.prototype, 'parentNode', {
-	get: function(){ return this.parentView; }
-});
-
-// listview should be an instanceof Array, or at least implement the Array behaviour
-// that way i could write return View(this.element.getChild('ul')) || []; for get children
-
-Object.defineProperty(View.prototype, 'children', {
-	get: function(){
-		return View(this.element.parentNode.parentNode);
-	}
-});
-
-var ListView = new Class({
-	Extends: Array,
-	View: View,
-
-	createView: function(model){
-		return new this.View(model);
-	},
-
-	add: function(view, index){
-		this.splice(index, 0, view);
-		view.append(this.element, index ? this.element.children[index] : null);
-	},
-
-	createList: function(){
-		this.model.forEach(function(model){
-			this.add(this.createView(model));
-		}, this);
-	}
-});
-
-ListView.implement(View.prototype);
-
-ListView.prototype.initialize = function(collection){
-	View.prototype.initialize.call(this, collection);
-	//this.push.apply(this, collection);
-};

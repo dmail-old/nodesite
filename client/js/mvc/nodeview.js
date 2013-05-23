@@ -1,7 +1,8 @@
-/* global StringList, View, ListView */
+/* global View */
 
 var NodeView = new Class({
 	Extends: View,
+	Implements: [TreeCrosser, TreeFinder],
 	tagName: 'li',
 	listeners: {
 		//'change:name': NodeView.prototype.updateName
@@ -9,7 +10,12 @@ var NodeView = new Class({
 	attributes: {
 		//'data-lightable': true
 	},
-
+	
+	initialize: function(){
+		View.prototype.initialize.apply(this, arguments);
+		this.children = [];
+	},
+	
 	getAttributes: function(){
 		var attr = View.prototype.getAttributes.call(this), className = new StringList();
 
@@ -29,24 +35,29 @@ var NodeView = new Class({
 	},
 
 	adopt: function(view, index){
-		// childrenView existe ? suffit d'ajouter une vue enfant
-		if( this.childrenView ) this.childrenView.add(view, index);
-		// sinon on créer childrenView qui tiendras compte de cette adoption
-		else this.createChildrenView();
+		if( !this.getDom('ul') ){
+			this.createChildren();
+		}
+		else{
+			view.append(this.getDom('ul'), index ? this.children[index].element : null);
+			this.children.splice(index, 0, view);
+		}
+	},
+	
+	appendChild: function(model, index){
+		var view = this.create(model);
+		this.children[index] = view;
+		view.parentNode = this;
+		view.append(this.getDom('ul'));
+		
+		return view;
 	},
 
-	createChildrenView: function(element){
-		this.childrenView = new NodeListView(this.model.children);
-
+	createChildren: function(element){
 		// IMPORTANT: conserver cet ordre pour que les events des li dans createList remontent bien le DOM par le ul et son parent
-
-		// on crée l'élément ul
-		this.childrenView.render();
-		// on met le ul dans le DOM
-		this.childrenView.append(element || this.element);
-		// on crée la liste de li
-		this.childrenView.createList();
-
+		var ul = new Element('ul');
+		this.element.appendChild(ul);
+		this.model.children.forEach(this.appendChild, this);
 	},
 
 	isEmpty: function(){
@@ -61,9 +72,7 @@ var NodeView = new Class({
 		switch(what){
 		case 'li':
 			return this.element;
-		case 'ul':
-			return this.childrenView ? this.childrenView.element : null;
-		case 'div':
+		case 'ul': case 'div':
 			return this.element.getChild(what);
 		default:
 			return this.getDom('div').getChild(what);
@@ -113,7 +122,7 @@ var NodeView = new Class({
 	},
 
 	expand: function(e){
-		if( !this.childrenView ) this.createChildrenView();
+		if( !this.getDom('ul') ) this.createChildren();
 		return this.setState('expanded', true, e);
 	},
 
@@ -141,11 +150,16 @@ var NodeView = new Class({
 	isVisible: function(element){
 		return !element.hasClass('hidden');
 	},
-
-	getParentView: function(){
-		return View(this.element.parentNode.parentNode);
+	
+	getLevel: function(){
+		var level = 0, parent = this.parentNode;
+		while(parent){
+			level++;
+			parent = parent.parentNode;	
+		}
+		return level;
 	},
-
+	
 	// même chose avec prev
 	// même chose ou on fait next puis prev
 	// pour pagedown et pageup à voir
@@ -156,7 +170,7 @@ var NodeView = new Class({
 
 		if( visible ) return visible;
 
-		var parent = this.getParentView();
+		var parent = this.parentNode;
 
 		return parent ? parent.getNextVisible() : null;
 	}
@@ -170,15 +184,3 @@ NodeView.states = {
 	hidden: ['hide', 'show'],
 	actived: ['active', 'unactive']
 };
-
-var NodeListView = new Class({
-	Extends: ListView,
-	View: NodeView,
-	tagName: 'ul',
-
-	// allow NodeView to be considered as the view of the NodeListView element
-	getAttributes: function(){
-		// the goal is to prevent the element to get the View.instanceKey attributes
-		return Object.clone(this.attributes);
-	}
-});
