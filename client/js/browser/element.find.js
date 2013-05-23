@@ -13,14 +13,14 @@ Element.sorter = (function(){
 			return a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
 		};
 	}
-	
+
 	if( 'sourceIndex' in document.html ){
 		return function(a, b){
 			if( !a.sourceIndex || !b.sourceIndex ) return 0;
 			return a.sourceIndex - b.sourceIndex;
 		};
 	}
-	
+
 	if( document.createRange ){
 		return function(a, b){
 			if (!a.ownerDocument || !b.ownerDocument) return 0;
@@ -29,27 +29,25 @@ Element.sorter = (function(){
 			aRange.setEnd(a, 0);
 			bRange.setStart(b, 0);
 			bRange.setEnd(b, 0);
-			return aRange.compareBoundaryPoints(Range.START_TO_END, bRange);
+			return aRange.compareBoundaryPoints(window.Range.START_TO_END, bRange);
 		};
 	}
-	
+
 	return Function.ZERO;
 })();
 
-(function(){
-
-Element.implement({
+var TreeCrosser = {
 	// call fn on every child of the element, returns true to break the loop
 	cross: function(fn, bind){
 		var children = this.children, i = 0, j = children.length;
-		
+
 		for(;i<j;i++){
 			if( fn.call(bind, children[i], i) === true ) break;
 		}
-		
+
 		return this;
 	},
-	
+
 	// call fn on every descendant of the element, returns true to break the loop or 'continue' to ignore the descendant of the current element
 	crossAll: function(fn, bind, includeSelf){
 		function run(node){
@@ -57,24 +55,24 @@ Element.implement({
 			if( ret ) return ret != 'continue';
 			node.cross(run);
 		}
-		
+
 		if( includeSelf ) run(this); else this.cross(run);
-		
+
 		return this;
 	},
-	
+
 	// call fn on every parent of the element, return true to break the loop
 	crossUp: function(fn, bind){
 		var parent = this.parentNode, i = 0;
-		
+
 		while(parent){
 			if( fn.call(bind, parent, i++) === true ) break;
 			parent = parent.parentNode;
 		}
-		
+
 		return this;
 	},
-	
+
 	crossDirection: function(direction, fn, bind){
 		var parent = this.parentNode, children, index;
 
@@ -84,30 +82,32 @@ Element.implement({
 			if( bind ) fn = fn.bind(bind);
 			Array.prototype.iterate.call(children, fn, direction, index);
 		}
-		
+
 		return this;
 	},
-	
+
 	// call fn on every element around that element (sibling), return true to break the loop
 	crossLeft: function(fn, bind){
 		return this.crossDirection('left', fn, bind);
 	},
-	
+
 	crossRight: function(fn, bind){
 		return this.crossDirection('right', fn, bind);
 	},
-	
+
 	crossAround: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
-	},
-	
+	}
+};
+
+var TreeFinder = {
 	matchIterator: function(iterator, match, first){
-		return Finder.matchIterator.call(this, iterator, match, first);
+		return window.Finder.matchIterator.call(this, iterator, match, first);
 	},
-	
+
 	matchFirst: function(iterator){
 		var i, j = arguments.length, item;
-	
+
 		if( j === 1 ){
 			item = this.matchIterator(iterator, true, true);
 		}
@@ -117,13 +117,13 @@ Element.implement({
 				if( item ) break;
 			}
 		}
-		
+
 		return item;
 	},
-	
+
 	matchAll: function(iterator){
 		var i, j = arguments.length, found;
-	
+
 		if( j === 1 ){
 			found = this.matchIterator(iterator, true);
 		}
@@ -131,39 +131,41 @@ Element.implement({
 			found = this.matchIterator(iterator, arguments[1]);
 			for(i=2;i<j;i++) found = found.concat(this.matchIterator(iterator, arguments[i]));
 		}
-		
+
 		return found;
 	}
-});
+};
 
 Object.forEach({
-	element: Element.prototype.crossAll,
-	parent: Element.prototype.crossUp,
-	child: Element.prototype.cross,
+	node: TreeCrosser.crossAll,
+	parent: TreeCrosser.crossUp,
+	child: TreeCrosser.cross,
 	// lastchild: function(match, first){
 		// return Array.prototype.matchIterator.call(this.children, match, first, 'left');
 	// },
-	next: Element.prototype.crossRight,
-	prev: Element.prototype.crossLeft,
-	sibling: Element.prototype.crossAround
+	next: TreeCrosser.crossRight,
+	prev: TreeCrosser.crossLeft,
+	sibling: TreeCrosser.crossAround
 }, function(iterator, name){
 	var maj = name.capitalize();
-	Element.prototype['get' + maj] = Element.prototype.matchFirst.curry(iterator);
-	Element.prototype['get' + maj + 's'] = Element.prototype.matchAll.curry(iterator);
+
+	TreeFinder['get' + maj] = TreeFinder.matchFirst.curry(iterator);
+	TreeFinder['get' + maj + 's'] = TreeFinder.matchAll.curry(iterator);
 });
 
 Element.prototype.match = function(){
 	var i = 0, j = arguments.length;
-	
+
 	for(;i<j;i++){
-		if( Finder.from(arguments[i])(this) ) return true;
+		if( window.Finder.from(arguments[i])(this) ) return true;
 	}
-	
+
 	return false;
 };
 
-document.getElement = document.html.getElement.bind(document.html);
-document.getElements = document.html.getElements.bind(document.html);
-window.$$ = document.getElements.bind(document);
+Element.implement(TreeCrosser);
+Element.implement(TreeFinder);
 
-})();
+document.getNode = document.html.getNode.bind(document.html);
+document.getNodes = document.html.getNodes.bind(document.html);
+window.$$ = document.getNodes.bind(document);
