@@ -17,6 +17,54 @@ TODO
 
 */
 
+// this function should call fn on every element after fromNode without getting out of this Node
+TreeCrosser.crossAllAfter = function(fromNode, fn){
+	var current = fromNode, ret = false;
+	
+	function run(element){
+		ret = fn(element);
+		if( ret == true ) return ret;
+		if( ret == 'continue' ) return;
+		element.cross(function(afterNode){
+			ret = fn(afterNode);
+			return ret;
+		}, null, true);
+	}
+		
+	while(current && current != this && ret !== true){
+		current.crossRight(run);
+		current = current.parentNode;
+	}
+};
+
+// pour cross before le problème c'est que je dois partir du noeud le plus profond et remonter
+// et encore pas le plus profond mais le plus proche en terme de nextSibling
+// hors actuellement je part du noeud et je descend
+// voir avec lastchild
+TreeCrosser.crossAllBefore = function(fromNode, fn){
+	var current = fromNode, ret = false;
+	
+	function run(element){
+		ret = fn(element);
+		if( ret == true ) return ret;
+		if( ret == 'continue' ) return;
+		element.cross(function(afterNode){
+			ret = fn(afterNode);
+			return ret;
+		}, null, true);
+	}
+		
+	while(current && current != this && ret !== true){
+		current.crossLeft(run);
+		current = current.parentNode;
+	}
+};
+
+Element.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
+NodeView.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
+Element.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
+NodeView.prototype.crossAllBefore = TreeCrosser.crossAllBefore;
+
 var ViewController = new Class({
 	Extends: EventHandler,
 
@@ -31,7 +79,7 @@ var ViewController = new Class({
 // this controller exists to keep the first/last/empty class on nodeview
 var CSSViewController = new Class({
 	Extends: ViewController,
-	//  on pourrait écrire 'view:append': true
+	// on pourrait écrire 'view:append': true
 	// renommer changeVisibility en handleEvent, et handle tout direct dedans
 	padding: 18,
 	handlers: {
@@ -144,33 +192,48 @@ var NavViewController = new Class({
 
 	matchLetter: function(element, letter){
 		if( !this.isValid(element) ) return false;
-		var name = element.querySelector('div name');
+		var name = element.getNode('name');
 		return name && name.innerHTML.startsWith(letter);
 	},
 
-	goLeft: function(element, e){
-		if( element.hasClass('expanded') ){
-			View(element).contract(e);
+	goLeft: function(view, e){
+		if( view.hasState('expanded') ){
+			view.contract(e);
 		}
 		else{
-			return this.goTo(element.parentNode.parentNode, e);
+			return this.goTo(view.parentNode, e);
 		}
 
 		return false;
 	},
 
-	goRight: function(element, e){
-		if( !element.hasClass('expanded') && !element.hasClass('empty') ){
-			View(element).expand(e);
+	goRight: function(view, e){
+		if( !view.hasState('expanded') && !view.element.hasClass('empty') ){
+			view.expand(e);
 		}
 		else{
-			var ul = element.getChild('ul');
-			if( ul ) return this.goTo(ul.getChild(this.isVisible), e);
+			return this.goTo(view.getChild(this.isVisible), e);
 		}
 		return false;
 	},
-
-	goUp: function(element, e){
+	
+	// todo: this function should cross node considered visible (not hidden and parent expanded) from view to the end
+	crossNextVisible: function(view, fn, loop){
+		var parent = view.parentNode, next, ret;
+		
+		while(view){
+			ret = view.crossRight(function(right){
+				right.crossAll(function(descendant){
+					
+				});
+			});
+			if( ret ) return;
+			// si pas de nextsibling continue de chercher si un parent possède un nextsibling
+			view = view.parentNode;
+		}
+	},
+	
+	goUp: function(view, e){		
 		return this.goTo(this.getList().find(this.isValid, 'left', this.getVisibleIndex(element), this.loop), e);
 	},
 
@@ -198,21 +261,19 @@ var NavViewController = new Class({
 		return this.goTo(this.getList().find(this.isValid, 'right', from, to), e);
 	},
 
-	goFirst: function(element, e){
-		return this.goTo(this.getList[0], e);
+	goFirst: function(view, e){
+		return this.goTo(this.view.getNode(this.isVisible), e);
 	},
 
 	goLast: function(element, e){
-		return this.goTo(this.getList()[this.getList().length - 1], e);
+		return this.goTo(this.view, e);
 	},
 
 	goNextLetter: function(element, letter, e){
 		return this.goTo(this.getList().find(this.matchLetter, 'right', this.getVisibleIndex(element), true), e);
 	},
 
-	goTo: function(element, e){
-		var view = View(element);
-
+	goTo: function(view, e){
 		if( view && !this.isRoot(view.element) ){
 			this.go(view, e);
 			return view;
@@ -242,11 +303,11 @@ var NavViewController = new Class({
 					return this.goTo(this.visibles[0], e);
 				}
 				else{
-					return this[methodName].call(this, this.activeView.element, e);
+					return this[methodName].call(this, this.activeView, e);
 				}
 			}
 			else if( !e.control && (typeof e.key == 'number' || e.key.match(/^[a-zA-Z]$/)) ){
-				return this.goNextLetter(this.activeView.element || this.visibles[0], e.key, e);
+				return this.goNextLetter(this.activeView || this.visibles[0], e.key, e);
 			}
 		}
 	}

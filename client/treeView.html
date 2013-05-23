@@ -4,7 +4,7 @@ var treeData = {
 	children: [
 		{name: 'node0', children: [{name: 'node0.1'}]},
 		{name: 'node1'},
-		{name: 'node2'},
+		{name: 'node2', children: [{name: 'node2.1'}, {name: 'node2.2'}]},
 		{name: 'node3'}
 	]
 };
@@ -16,6 +16,7 @@ treeView.append(document.body);
 
 treeView.rootView.expand();
 treeView.rootView.children[0].expand();
+treeView.rootView.children[2].expand();
 
 /*
 var FileModel = new Class({
