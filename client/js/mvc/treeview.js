@@ -1,4 +1,4 @@
-/* global ListenerHandler, EventHandler, View, NodeView, viewDocument */
+/* global EventHandler, View, NodeView, viewDocument, TreeExplorer, TreeIterator */
 
 /*
 
@@ -8,7 +8,7 @@ le scroll auto lors de expand/contract cherche à garder visibles les éléments
 mais ne tiens pas compte de la largeur qui est importante: celle du texte
 il prend la largeur de l'élément, souvent 100% et scroll sans qu'on en ait besoin
 
-si on met l'arbre en mode compact le ul peut si on met les lie en float left faire la largeur de son contenu
+si on met l'arbre en mode compact le ul peut si on met les lis en float left faire la largeur de son contenu
 cependant on perds alors la possibilité de drop un fichier hors d'un li
 
 TODO
@@ -16,80 +16,6 @@ TODO
 - faire la balise select, certaines portions de codes sont communes et doivents être regroupées
 
 */
-
-// this function should call fn on every element after fromNode without getting out of this Node
-TreeCrosser.crossAllAfter = function(fromNode, fn){
-	var current = fromNode, ret = false;
-	
-	function run(element){
-		ret = fn(element);
-		if( ret == true ) return ret;
-		if( ret == 'continue' ) return;
-		element.cross(function(afterNode){
-			ret = fn(afterNode);
-			return ret;
-		}, null, true);
-	}
-		
-	while(current && current != this && ret !== true){
-		current.crossRight(run);
-		current = current.parentNode;
-	}
-};
-
-// pour cross before le problème c'est que je dois partir du noeud le plus profond et remonter
-// et encore pas le plus profond mais le plus proche en terme de nextSibling
-// hors actuellement je part du noeud et je descend
-// voir avec lastchild
-
-// treewalker est cool puisqu'il dispose toujours de currentNode qui correspond à activeView dans mon cas
-// voir https://github.com/Krinkle/dom-TreeWalker-polyfill/blob/master/src/TreeWalker-polyfill.js
-/* créer un treewalker pour ma naviguation c'est juste le top, en attendant la fonction pour le crossAllbefore
-doit s'inspirer de ça:
-
-faut vraiment que je fasse un treewalker pour séparer les logiques
-
-function getPreviousSibling(element){
-	return element.parentNode.children[element.parentNode.children.indexOf(element) - 1];
-}
-
-var prev = getPreviousSibling(element);
-
-function getLastChild(element){
-	return element.children[element.children.length-1];
-}
-
-var lastChild;
-while( lastChild = getLastChild(element) ){	
-	if( !lastChild.hasState('expanded') ) break;
-}
-
-fn(lastChild);
-
-*/
-TreeCrosser.crossAllBefore = function(fromNode, fn){
-	var current = fromNode, ret = false;
-	
-	function run(element){
-		ret = fn(element);
-		if( ret == true ) return ret;
-		if( ret == 'continue' ) return;
-		element.cross(function(afterNode){
-			ret = fn(afterNode);
-			return ret;
-		}, null, true);
-	}
-		
-	while(current && current != this && ret !== true){
-		current.crossLeft(run);
-		current = current.parentNode;
-	}
-};
-
-Element.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
-NodeView.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
-Element.prototype.crossAllAfter = TreeCrosser.crossAllAfter;
-NodeView.prototype.crossAllBefore = TreeCrosser.crossAllBefore;
 
 var ViewController = new Class({
 	Extends: EventHandler,
@@ -102,6 +28,10 @@ var ViewController = new Class({
 	}
 });
 
+viewDocument.isVisible = function(view){
+	return !view.hasState('hidden');
+};
+
 // this controller exists to keep the first/last/empty class on nodeview
 var CSSViewController = new Class({
 	Extends: ViewController,
@@ -110,10 +40,14 @@ var CSSViewController = new Class({
 	padding: 18,
 	handlers: {
 		'view:append': function(e){
-			// when the background of the node take full width we have to set a padding manually here
-			//if( this.view.element.hasClass('line') )
-			View(e).getDom('div').style.paddingLeft = this.padding * View(e).getLevel() + 'px';
-			this.changeVisibility(e, false);
+			var view = View(e);
+
+			if( view instanceof NodeView){
+				// when the background of the node take full width we have to set a padding manually here
+				view.getDom('div').style.paddingLeft = this.padding * view.getLevel() + 'px';
+				this.changeVisibility(e, false);
+
+			}
 		},
 
 		'view:remove': function(e){
@@ -129,27 +63,30 @@ var CSSViewController = new Class({
 		}
 	},
 
-	isVisible: function(){
-		return !this.element.hasClass('hidden');
-	},
-	
 	// FIX: this function is also called for listView
 	changeVisibility: function(e, hidden){
-		var view = View(e), prev = view.getPrev(this.isVisible), next = view.getNext(this.isVisible);
+		var view = View(e), prev, next;
+
+		if( view.parentNode == null ) return;
+
+		prev = view.getPrev(viewDocument.isVisible);
+		next = view.getNext(viewDocument.isVisible);
 
 		if( prev && !next ) prev.element.toggleClass('last', hidden);
 		else if( next && !prev ) next.element.toggleClass('first', hidden);
 		view.element.toggleClass('first', Boolean(prev) == Boolean(hidden));
 		view.element.toggleClass('last', Boolean(next) == Boolean(hidden));
 
-		if( this.view != view ){
-			// ajout d'un enfant visible
-			if( !hidden ) view.parentNode.element.removeClass('empty');
-			// suppression du dernier enfant visible
-			else if( !prev && !next ) view.parentNode.element.addClass('empty');
-		}
+		// ajout d'un enfant visible
+		if( !hidden ) view.parentNode.element.removeClass('empty');
+		// suppression du dernier enfant visible
+		else if( !prev && !next ) view.parentNode.element.addClass('empty');
 	}
 });
+
+viewDocument.isTargetable = function(view){
+	return !view.hasState('disabled');
+};
 
 var NavViewController = new Class({
 	Extends: ViewController,
@@ -185,9 +122,9 @@ var NavViewController = new Class({
 
 		'view:blur': function(e){
 			if( !this.activeView ){
-				var view = View(e), element = view.element;
+				var view = View(e);
 				// blur d'un noeud sans qu'aucun autre ne prenne se place
-				this.activeView = View(element.getSibling() || element.parentNode.parentNode || this.view);
+				this.activeView = view.getSibling() || this.parentNode || this.view.rootView;
 			}
 		},
 
@@ -212,13 +149,8 @@ var NavViewController = new Class({
 		return count;
 	},
 
-	isValid: function(element){
-		return !element.hasClass('focused');
-	},
-
-	matchLetter: function(element, letter){
-		if( !this.isValid(element) ) return false;
-		var name = element.getNode('name');
+	matchLetter: function(view, letter){
+		var name = view.getDom('name');
 		return name && name.innerHTML.startsWith(letter);
 	},
 
@@ -227,7 +159,7 @@ var NavViewController = new Class({
 			view.contract(e);
 		}
 		else{
-			return this.goTo(view.parentNode, e);
+			return this.go(view.parentNode, e);
 		}
 
 		return false;
@@ -238,77 +170,90 @@ var NavViewController = new Class({
 			view.expand(e);
 		}
 		else{
-			return this.goTo(view.getChild(this.isVisible), e);
+			return this.go(view.getChild(viewDocument.isVisible), e);
 		}
 		return false;
 	},
-	
-	// todo: this function should cross node considered visible (not hidden and parent expanded) from view to the end
-	crossNextVisible: function(view, fn, loop){
-		var parent = view.parentNode, next, ret;
-		
-		while(view){
-			ret = view.crossRight(function(right){
-				right.crossAll(function(descendant){
-					
-				});
-			});
-			if( ret ) return;
-			// si pas de nextsibling continue de chercher si un parent possède un nextsibling
-			view = view.parentNode;
+
+	getPrev: function(view, filter, limit){
+		var prev = view;
+
+		while(prev = view.prevNode()){
+			if( limit && prev == limit ) return null;
+			if( filter(prev) ) return prev;
 		}
-	},
-	
-	goUp: function(view, e){		
-		return this.goTo(this.getList().find(this.isValid, 'left', this.getVisibleIndex(element), this.loop), e);
-	},
 
-	goDown: function(element, e){
-		return this.goTo(this.getList().find(this.isValid, 'right', this.getVisibleIndex(element), this.loop), e);
-	},
-
-	goPageDown: function(element, e){
-		var index = this.getVisibleIndex(element), count, from, to;
-
-		count = this.getPageCount(element);
-		from = Math.min(index + count, this.getList().length - 1 ) + 1;
-		to = index;
-
-		return this.goTo(this.getList().find(this.isValid, 'left', from, to), e);
-	},
-
-	goPageUp: function(element, e){
-		var index = this.getVisibleIndex(element), count, from, to;
-
-		count = this.getPageCount(element);
-		from = Math.max(index - count, 0) - 1;
-		to = index;
-
-		return this.goTo(this.getList().find(this.isValid, 'right', from, to), e);
-	},
-
-	goFirst: function(view, e){
-		return this.goTo(this.view.getNode(this.isVisible), e);
-	},
-
-	goLast: function(element, e){
-		return this.goTo(this.view, e);
-	},
-
-	goNextLetter: function(element, letter, e){
-		return this.goTo(this.getList().find(this.matchLetter, 'right', this.getVisibleIndex(element), true), e);
-	},
-
-	goTo: function(view, e){
-		if( view && !this.isRoot(view.element) ){
-			this.go(view, e);
-			return view;
-		}
 		return null;
 	},
 
+	crossPrevNode: function(view, filter, loop){
+		var prev = view;
+
+		while( prev = prev.prevNode() ){
+			// return the first valid view
+			if( filter(prev) ) return prev;
+		}
+
+		// search from the lastnode if there is a valid view
+		if( loop ) return this.crossPrevRange(this.rootView.lastNode(), view, filter);
+		return null;
+	},
+
+	crossPrevRange: function(from, to, filter){
+		if( filter(from) ) return from;
+
+		while( from = from.prevNode() ){
+			if( from == to ) return null;
+			if( filter(from) ) return from;
+		}
+
+		return null;
+	},
+
+	goUp: function(view, e){
+		return this.go(this.crossPrevNode(view, viewDocument.isTargetable, this.loop));
+	},
+
+	goDown: function(element, e){
+
+	},
+
+	goPageUp: function(view, e){
+		var count = this.getPageCount(view.element);
+		var idealPrevious = this.getPrevNode(view, function(){
+			count--;
+			if( count === 0 ) return true;
+		});
+
+		return this.go(this.crossNextRange(idealPrevious, view, viewDocument.isTargetable), e);
+	},
+
+	goPageDown: function(view, e){
+
+	},
+
+	goFirst: function(view, e){
+		return this.go(this.view.getNode(viewDocument.isVisible), e);
+	},
+
+	goLast: function(view, e){
+		return this.go(this.view.visiblesExplorer.lastNode(this.view.rootView), e);
+	},
+
+	goNextLetter: function(view, letter, e){
+		return this.go(
+			this.getNext(
+				view,
+				function(view){
+					return this.isValid(view) && this.matchLetter(view, letter);
+				}.bind(this),
+				true
+			),
+		e);
+	},
+
 	go: function(view, e){
-		this.naviguate(view, e);
+		if( view ) this.naviguate(view, e);
 	},
 
 	naviguate: function(view, e){
@@ -326,14 +271,14 @@ var NavViewController = new Class({
 
 			if( methodName ){
 				if( !this.activeView ){
-					return this.goTo(this.visibles[0], e);
+					return this.go(this.rootView, e);
 				}
 				else{
 					return this[methodName].call(this, this.activeView, e);
 				}
 			}
 			else if( !e.control && (typeof e.key == 'number' || e.key.match(/^[a-zA-Z]$/)) ){
-				return this.goNextLetter(this.activeView || this.visibles[0], e.key, e);
+				return this.goNextLetter(this.activeView || this.rootView, e.key, e);
 			}
 		}
 	}
@@ -354,11 +299,6 @@ var SelectionViewController = new Class({
 	}
 });
 
-// used in Element.prototype.crossInterval and no better way to do
-NodeView.prototype.compareDocumentPosition = function(nodeview){
-	return this.element.compareDocumentPosition(nodeview.element);
-};
-
 var MultipleSelectionViewController = new Class({
 	Extends: SelectionViewController,
 	selecteds: [],
@@ -375,7 +315,7 @@ var MultipleSelectionViewController = new Class({
 			if( e ){
 				if( e.shift ){
 					e.preventDefault();
-					this.shiftView = this.shiftView || this.view.nav.activeView || View(this.view.nav.visibles[0]);
+					this.shiftView = this.shiftView || this.view.nav.activeView || this.view.rootView;
 					this.selectRange(this.createRange(this.shiftView, view), e);
 				}
 				else{
@@ -402,6 +342,7 @@ var MultipleSelectionViewController = new Class({
 	initialize: function(view){
 		SelectionViewController.prototype.initialize.call(this, view);
 		this.selecteds = [];
+
 	},
 
 	unselectOther: function(view, e){
@@ -421,15 +362,20 @@ var MultipleSelectionViewController = new Class({
 	},
 
 	createRange: function(viewA, viewB){
-		var range = [];
+		var range = [], from = viewA, to = viewB;
 
 		if( viewA && viewB ){
-			// cross all element between the two specified to get the views between them
-			viewA.crossInterval(viewB, function(view){
-				if( view.hasState('hidden') ) return 'continue';
-				range.push(view);
-				if( !view.hasState('expanded') ) return 'continue';
-			});
+			// ensure we respect document order
+			if( viewA.element.compareDocumentPosition(viewB.element) & Node.DOCUMENT_POSITION_PRECEDING ){
+				from = viewB;
+				to = viewA;
+			}
+
+			while(from != to){
+				from = from.nextNode();
+				if( from ) range.push(from);
+				else break;
+			}
 		}
 
 		return range;
@@ -453,13 +399,13 @@ var LightedViewController = new Class({
 
 			if( view ){
 				if( !view.light ) view = null;
-				// when light only occur on the name element 
-				else if( this.view.element.hasClass('compact') && e.target != view.getDom('name') ) view = null;				
+				// when light only occur on the name element
+				else if( this.view.element.hasClass('compact') && e.target != view.getDom('name') ) view = null;
 			}
-			
+
 			if( view ){
 				view.light(e);
-			}			
+			}
 			else if( this.lighted ) {
 				this.lighted.unlight(e);
 			}
@@ -479,6 +425,7 @@ var LightedViewController = new Class({
 // TODO: option hideRoot
 var TreeView = new Class({
 	Extends: View,
+	NodeView: NodeView,
 	tagName: 'div',
 	multiSelection: true,
 	events: {
@@ -531,8 +478,7 @@ var TreeView = new Class({
 
 	attributes: {
 		'tabindex': 0,
-		'class': 'tree line',
-		//'data-treeview': true
+		'class': 'tree line'
 	},
 
 	initialize: function(root, hideRoot){
@@ -554,7 +500,7 @@ var TreeView = new Class({
 	},
 
 	createRootView: function(){
-		this.rootView = new NodeView(this.model);
+		this.rootView = new this.NodeView(this.model);
 	},
 
 	append: function(){

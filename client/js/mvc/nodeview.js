@@ -1,8 +1,8 @@
-/* global View */
+/* global View, TreeIterator, TreeFinder, StringList, TreeExplorer */
 
 var NodeView = new Class({
 	Extends: View,
-	Implements: [TreeCrosser, TreeFinder],
+	Implements: [TreeIterator, TreeFinder],
 	tagName: 'li',
 	listeners: {
 		//'change:name': NodeView.prototype.updateName
@@ -10,12 +10,12 @@ var NodeView = new Class({
 	attributes: {
 		//'data-lightable': true
 	},
-	
+
 	initialize: function(){
 		View.prototype.initialize.apply(this, arguments);
 		this.children = [];
 	},
-	
+
 	getAttributes: function(){
 		var attr = View.prototype.getAttributes.call(this), className = new StringList();
 
@@ -43,13 +43,13 @@ var NodeView = new Class({
 			this.children.splice(index, 0, view);
 		}
 	},
-	
+
 	appendChild: function(model, index){
 		var view = this.create(model);
 		this.children[index] = view;
 		view.parentNode = this;
 		view.append(this.getDom('ul'));
-		
+
 		return view;
 	},
 
@@ -72,7 +72,8 @@ var NodeView = new Class({
 		switch(what){
 		case 'li':
 			return this.element;
-		case 'ul': case 'div':
+		case 'ul':
+		case 'div':
 			return this.element.getChild(what);
 		default:
 			return this.getDom('div').getChild(what);
@@ -150,16 +151,16 @@ var NodeView = new Class({
 	isVisible: function(element){
 		return !element.hasClass('hidden');
 	},
-	
+
 	getLevel: function(){
 		var level = 0, parent = this.parentNode;
 		while(parent){
 			level++;
-			parent = parent.parentNode;	
+			parent = parent.parentNode;
 		}
 		return level;
 	},
-	
+
 	// même chose avec prev
 	// même chose ou on fait next puis prev
 	// pour pagedown et pageup à voir
@@ -183,4 +184,9 @@ NodeView.states = {
 	focused: ['focus', 'blur'],
 	hidden: ['hide', 'show'],
 	actived: ['active', 'unactive']
+};
+
+NodeView.implement(TreeExplorer);
+NodeView.prototype.acceptDescendant = function(view){
+	return view.hasState('expanded') && !view.hasState('hidden');
 };

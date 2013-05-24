@@ -1,6 +1,6 @@
 Array.prototype.prefix = function(prefix){
 	return this.map(function(value){ return prefix + value; });
-}
+};
 
 var config = {
 	// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
@@ -30,7 +30,8 @@ config.js = [].concat(
 	].prefix('/lib/core/'),
 	[
 		"object.at", "finder", "array.iterate", "array.find",
-		"random", "emitter", "list", "stringList", "memory", "path"
+		"random", "emitter", "list", "stringList", "memory", "path",
+		"treeIterator", "treeFinder", "treeArrayExplorer"
 	].prefix('lib/'),
 	[
 		"browser", "element", "element.properties", "element.styles", "element.measure", "element.keepIntoView", "element.find",
@@ -43,7 +44,7 @@ config.js = [].concat(
 		"tree", "tree.list", "tree.sort", "tree.swap",
 		"tree.demon", "tree.memory", "tree.ajax", "tree.problems", "tree.unique",
 		"tree.proto", "tree.types", "tree.trash", "fileTree",
-		
+
 		"tree.dropfile", "tree.clipboard", "tree.edition", "tree.selectionRectangle", "tree.popup",
 		"treeView", "tree.explorer", "tree.drag",
 		"tree.keynav", "tree.selector", "tree.keyshortcut", "menu", "tree.menu",
@@ -72,7 +73,7 @@ config.actions = {
 		return true;
 	},
 	"filesystem": function(action, args){
-		// lorsque le client demande à effectué une action sur le filesystem, il agit toujours dans le dossier client/ 
+		// lorsque le client demande à effectué une action sur le filesystem, il agit toujours dans le dossier client/
 		args[0] = 'client/' + args[0];
 		return true;
 	}
