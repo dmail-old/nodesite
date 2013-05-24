@@ -22,7 +22,7 @@ sauf que ce tableau filtre certains éléments (non expanded, hidden)
 
 */
 
-function getLastNode
+
 
 // à renommer TreeIterator, et TreeIterator on renommeras autrement
 
@@ -35,16 +35,32 @@ var TreeArrayExplorer = new Class({
 		this.current = this.root;
 	},
 
+	isRoot: function(node){
+		return node == this.root;
+	},
+
+	__getLastNode: function(node){
+		var last = null;
+
+		while( this.acceptDescendant(node) ){
+			node = node.getLast();
+			if( node ) last = node;
+			else break;
+		}
+
+		return last;
+	},
+
 	first: function(){
 		return this.rootView;
 	},
 
 	last: function(){
-
+		return this.__getLastNode(this.rootView);
 	},
 
 	next: function(){
-		var node = this.current;
+		var node = this.current, next;
 
 		if( this.acceptDescendant(node) ){
 			if( node.children.length ){
@@ -57,7 +73,7 @@ var TreeArrayExplorer = new Class({
 			next = node.getNext();
 			if( next ){
 				this.current = next;
-				return next;
+				return this.current;
 			}
 		}
 
@@ -69,110 +85,14 @@ var TreeArrayExplorer = new Class({
 
 		if( this.isRoot(node) ) return null;
 
-		var prev = node.getPrev(), last = null;
+		var prev = node.getPrev();
+
 		if( prev ){
-			last = prev;
-			while( this.acceptDescendant(last) ){
-				last = last.getLast();
-			}
+			this.current = this.__getLastNode(prev) || prev;
+			return this.current;
 		}
 
 		this.current = node.parentNode;
 		return this.current;
-	},
-
-	isRoot: function(){
-		return this.parentNode == null;
-	},
-
-	firstNode: function(){
-		var node = this, result;
-
-		while( this.acceptDescendant(node) ){
-			node = node.children[0];
-			if( !node ) break;
-			result = this.acceptNode(node);
-			if( result === true ) return node;
-			else if( result === false ) break;
-			else if( result == 'skip' ) continue;
-		}
-
-		return null;
-	},
-
-	lastNode: function(){
-		var node = this, last = null, result;
-
-		while( this.acceptDescendant(node) ){
-			node = node.getLast();
-			if( !node ) break;
-			result = this.acceptNode(node);
-			// when a lastChild is accepted it is considered the lastNode until a deeper lastChild is accepted
-			if( result === true ) last = node;
-			else if( result === false ) break;
-			else if( result == 'skip' ) continue;
-		}
-
-		return last;
-	},
-
-	prevNode: function(){
-		var node = this, prev, last, result;
-
-		while( !node.isRoot() ){
-			// the previous sibling
-			while( prev = node.getPrev() ){
-				node = prev;
-				// if we accept that sibling, try to return his lastNode else return the sibling
-				if( this.acceptNode(node) === true ){
-					return node.lastNode() || node;
-				}
-			}
-			if( node.isRoot() ) break;
-			// else try to return the parentNode
-			node = node.parentNode;
-			if( this.acceptNode(node) === true ){
-				return node;
-			}
-		}
-
-		return null;
-	},
-
-	nextSkippingChildren: function(){
-		var node = this, next;
-
-		while( !node.isRoot() ){
-			next = node.getNext();
-			if( next ) return next;
-			node = node.parentNode;
-		}
-
-		return null;
-	},
-
-	nextNode: function(){
-		var node = this, first, next, result = true;
-
-		while( true ){
-			// we dont iterate over the node if he was previously refused (skipped is ok)
-			if( result !== false ){
-				first = node.firstNode();
-				if( first ) return first;
-			}
-
-			// firsNode refused, try to return the next sibling, the deeper first
-			next = node.nextSkippingChildren();
-			if( next ){
-				node = next;
-				result = this.acceptNode(node);
-				if( result === true ) return node;
-			}
-			else{
-				break;
-			}
-		}
-
-		return null;
 	}
 });
