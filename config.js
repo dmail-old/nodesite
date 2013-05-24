@@ -31,7 +31,7 @@ config.js = [].concat(
 	[
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "emitter", "list", "stringList", "memory", "path",
-		"treeIterator", "treeFinder", "treeArrayExplorer"
+		"treeTraversal", "treeFinder", "treeIterator"
 	].prefix('lib/'),
 	[
 		"browser", "element", "element.properties", "element.styles", "element.measure", "element.keepIntoView", "element.find",

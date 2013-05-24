@@ -1,4 +1,4 @@
-/* global EventHandler, View, NodeView, viewDocument, TreeExplorer, TreeIterator */
+/* global EventHandler, View, NodeView, viewDocument */
 
 /*
 
@@ -175,36 +175,24 @@ var NavViewController = new Class({
 		return false;
 	},
 
-	getPrev: function(view, filter, limit){
-		var prev = view;
-
-		while(prev = view.prevNode()){
-			if( limit && prev == limit ) return null;
-			if( filter(prev) ) return prev;
-		}
-
-		return null;
-	},
-
 	crossPrevNode: function(view, filter, loop){
-		var prev = view;
-
-		while( prev = prev.prevNode() ){
+		this.iterator.current = view;
+		while( this.iterator.prev() ){
 			// return the first valid view
-			if( filter(prev) ) return prev;
+			if( filter(this.iterator.current) ) return this.iterator.current;
 		}
 
 		// search from the lastnode if there is a valid view
-		if( loop ) return this.crossPrevRange(this.rootView.lastNode(), view, filter);
+		if( loop ) return this.crossPrevRange(this.iterator.last(), view, filter);
 		return null;
 	},
 
 	crossPrevRange: function(from, to, filter){
 		if( filter(from) ) return from;
-
-		while( from = from.prevNode() ){
-			if( from == to ) return null;
-			if( filter(from) ) return from;
+		
+		this.iterator.current = from;
+		while( this.iterator.prev() && this.iterator.current != to ){
+			if( filter(this.iterator.current) ) return this.iterator.current;
 		}
 
 		return null;
@@ -370,11 +358,10 @@ var MultipleSelectionViewController = new Class({
 				from = viewB;
 				to = viewA;
 			}
-
-			while(from != to){
-				from = from.nextNode();
-				if( from ) range.push(from);
-				else break;
+						
+			this.iterator.current = from;
+			while(this.iterator.next() && this.iterator.current != to){
+				range.push(this.iterator.current);
 			}
 		}
 

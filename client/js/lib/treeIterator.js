@@ -1,95 +1,131 @@
-window.TreeIterator = {
-	// call fn on every child of the element, returns true to break the loop
-	cross: function(fn, bind){
-		var children = this.children, i = 0, j = children.length;
+/*
+inspired by treewalker and mostly by:
+https://github.com/Krinkle/dom-TreeWalker-polyfill/blob/master/src/TreeWalker-polyfill.js
 
-		for(;i<j;i++){
-			if( fn.call(bind, children[i], i) === true ) break;
+the main purpose of this class is to provide nextNode & prevNode to cross a tree structure.
+
+it also allow to:
+- ignore descendants based on acceptDescendant
+- only getting node matching acceptNode
+
+if a node doesn't match we have two choice:
+return 'skip',  we dont reject the node descendants
+return false, the node and all his descendant are rejected
+
+TODO: instead of getLast, getPrev, use node.children[node.children.length-1] for example
+because getLast is more expansive due to call to TreeFinder
+
+ce que ej veux est plutot simple: je veux être capable de me ballader dans ma structure
+avec des méthodes next, prev, first, last comme si la structure était un tableau
+
+sauf que ce tableau filtre certains éléments (non expanded, hidden)
+
+*/
+
+var TreeIterator = new Class({
+	initialize: function(root){
+		this.root = root;
+		this.current = this.root;
+	},
+	
+	// helpers
+	firstChild: function(node){
+		return node.children.length === 0 ? null : node.children[0];
+	},
+	
+	lastChild: function(node){
+		return node.children.length === 0 ? null : node.children[node.children.length - 1];
+	},
+	
+	lastNode: function(node){
+		var last = null;
+
+		while( node = this.lastChild(node) ){
+			last = node;
 		}
 
-		return this;
+		return last;
 	},
-
-	// call fn on every descendant of the element, returns true to break the loop or 'continue' to ignore the descendant of the current element
-	crossAll: function(fn, bind, includeSelf){
-		function run(node){
-			var ret = fn.call(bind, node);
-			if( ret ) return ret != 'continue';
-			node.cross(run);
-		}
-
-		if( includeSelf ) run(this); else this.cross(run);
-
-		return this;
-	},
-
-	crossReverse: function(fn, bind){
-		var children = this.children, i = children.length;
-
-		while(i--){
-			if( fn.call(bind, children[i], i) === true ) break;
-		}
-
-		return this;
-	},
-
-	// call fn on every parent of the element, return true to break the loop
-	crossUp: function(fn, bind){
-		var parent = this.parentNode, i = 0;
-
-		while(parent){
-			if( fn.call(bind, parent, i++) === true ) break;
-			parent = parent.parentNode;
-		}
-
-		return this;
-	},
-
-	crossDirection: function(direction, fn, bind){
-		var parent = this.parentNode, children, index;
-
+	
+	nextSibling: function(node){
+		var parent = node.parentNode, next = null;
+		
 		if( parent ){
-			children = parent.children;
-			index = Array.prototype.indexOf.call(children, this);
-			if( bind ) fn = fn.bind(bind);
-			Array.prototype.iterate.call(children, fn, direction, index);
+			next = parent.children[parent.children.indexOf(node) + 1] || null;
+		}
+		
+		return next;
+	},
+	
+	prevSibling: function(node){
+		var parent = node.parentNode, prev = null;
+		
+		if( parent ){
+			prev = parent.children[parent.children.indexOf(node) - 1] || null;
+		}
+		
+		return prev;	
+	},
+
+	isRoot: function(node){
+		return node == this.root;
+	},
+
+	// core methods
+	first: function(){
+		return this.root;
+	},
+
+	last: function(){
+		return this.lastNode(this.root);
+	},
+	
+	next: function(){
+		var node = this.current, next, first;
+		
+		var first = this.firstChild(node);
+		if( first ){
+			this.current = first;
+			return this.current;
 		}
 
-		return this;
-	},
-
-	// call fn on every element around that element (sibling), return true to break the loop
-	crossLeft: function(fn, bind){
-		return this.crossDirection('left', fn, bind);
-	},
-
-	crossRight: function(fn, bind){
-		return this.crossDirection('right', fn, bind);
-	},
-
-	crossAround: function(fn, bind){
-		return this.crossDirection('both', fn, bind);
-	},
-
-	crossInterval: function(element, fn){
-		var from = this, to = element, ancestor, after;
-
-		// if we pass an element before this one in the document order
-		if( this.compareDocumentPosition(to) & Node.DOCUMENT_POSITION_PRECEDING ){
-			from = element;
-			to = this;
+		while( !this.isRoot(node) ){
+			next = this.nextSibling(node);
+			if( next ){
+				this.current = next;
+				return this.current;
+			}
 		}
 
-		ancestor = Element.prototype.getCommonAncestor.call(from, to);
-		after = ancestor == from;
-		ancestor.crossAll(function(descendant){
-			// im before the from element
-			if( !after ) after = descendant == from;
-			// im at the to element, break the loop
-			else if( descendant == to ) return true;
-			// im between from & to
-			else return fn(descendant);
-		});
+		return null;
+	},
 
+	prev: function(){
+		var node = this.current;
+
+		if( this.isRoot(node) ) return null;
+
+		var prev = this.prevSibling(node);
+
+		if( prev ){
+			this.current = this.lastNode(prev) || prev;
+			return this.current;
+		}
+
+		this.current = node.parentNode;
+		return this.current;
 	}
+});
+
+// et voilà ce qu'il suffit de faire pour mon itérateur qui évite les noeuds hidden et non expanded
+var VisiblesIterator = new TreeIterator();
+VisiblesIterator.lastChild = function(node){
+	if( node.hasState('hidden') || !node.hasState('expanded') ) return null;
+	return TreeIterator.prototype.lastChild.call(this, node);
 };
+VisiblesIterator.firstChild = function(node){
+	if( node.hasState('hidden') || !node.hasState('expanded') ) return null;
+	return TreeIterator.prototype.firstChild.call(this, node);
+};
+
+

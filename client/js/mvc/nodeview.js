@@ -1,8 +1,8 @@
-/* global View, TreeIterator, TreeFinder, StringList, TreeExplorer */
+/* global View, TreeTraversal, TreeFinder, StringList, TreeExplorer */
 
 var NodeView = new Class({
 	Extends: View,
-	Implements: [TreeIterator, TreeFinder],
+	Implements: [TreeTraversal, TreeFinder],
 	tagName: 'li',
 	listeners: {
 		//'change:name': NodeView.prototype.updateName
