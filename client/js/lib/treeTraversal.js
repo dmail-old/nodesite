@@ -51,8 +51,7 @@ window.TreeTraversal = {
 		if( parent ){
 			children = parent.children;
 			index = Array.prototype.indexOf.call(children, this);
-			if( bind ) fn = fn.bind(bind);
-			Array.prototype.iterate.call(children, fn, direction, index);
+			Array.prototype.iterate.call(children, fn, direction, index, null, bind);
 		}
 
 		return this;
@@ -70,7 +69,8 @@ window.TreeTraversal = {
 	crossAround: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
 	},
-
+	
+	/*
 	crossInterval: function(element, fn){
 		var from = this, to = element, ancestor, after;
 
@@ -92,4 +92,5 @@ window.TreeTraversal = {
 		});
 
 	}
+	*/
 };

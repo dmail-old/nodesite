@@ -195,13 +195,13 @@ Finder.from = function(expression, reverse){
 };
 
 // iterator supply items to test, we returns the first or all items passing the test
-Finder.matchIterator = function(iterator, match, first){
+Finder.matchIterator = function(iterator, match, first, bind){
 	var found = first ? null : [];
 
 	match = Finder.from(match);
 	if( match != Function.FALSE ){
 		iterator.call(this, function(item){
-			if( match.call(item, item) === true ){
+			if( match.call(bind, item) === true ){
 				if( first ){
 					found = item;
 					return true;
