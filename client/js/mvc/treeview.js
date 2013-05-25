@@ -35,8 +35,7 @@ viewDocument.isVisible = function(view){
 // this controller exists to keep the first/last/empty class on nodeview
 var CSSViewController = new Class({
 	Extends: ViewController,
-	// on pourrait écrire 'view:append': true
-	// renommer changeVisibility en handleEvent, et handle tout direct dedans
+	visibles: [],
 	padding: 18,
 	handlers: {
 		'view:append': function(e){
@@ -63,24 +62,46 @@ var CSSViewController = new Class({
 		}
 	},
 
-	// FIX: this function is also called for listView
 	changeVisibility: function(e, hidden){
-		var view = View(e), prev, next;
+		var view = View(e), prev, next, parent = view.parentNode;
 
-		if( view.parentNode == null ) return;
+		if( parent ){
+			prev = view.getPrev(viewDocument.isVisible);
+			next = view.getNext(viewDocument.isVisible);
 
-		prev = view.getPrev(viewDocument.isVisible);
-		next = view.getNext(viewDocument.isVisible);
+			if( prev && !next ) prev.element.toggleClass('last', hidden);
+			else if( next && !prev ) next.element.toggleClass('first', hidden);
+			view.element.toggleClass('first', Boolean(prev) == Boolean(hidden));
+			view.element.toggleClass('last', Boolean(next) == Boolean(hidden));
 
-		if( prev && !next ) prev.element.toggleClass('last', hidden);
-		else if( next && !prev ) next.element.toggleClass('first', hidden);
-		view.element.toggleClass('first', Boolean(prev) == Boolean(hidden));
-		view.element.toggleClass('last', Boolean(next) == Boolean(hidden));
+			// ajout d'un enfant visible
+			if( !hidden ) parent.element.removeClass('empty');
+			// suppression du dernier enfant visible
+			else if( !prev && !next ) parent.element.addClass('empty');
+		}
+		
+		if( !parent || (parent.hasState('expanded') && this.visibles.contains(parent)) ){
+			this.updateVisibles();
+		}	
+	},
+	
+	updateVisibles: function(){
+		this.visibles = [];
 
-		// ajout d'un enfant visible
-		if( !hidden ) view.parentNode.element.removeClass('empty');
-		// suppression du dernier enfant visible
-		else if( !prev && !next ) view.parentNode.element.addClass('empty');
+		/* list the visibles view elements, an element is visible if:
+		- it has not the 'hidden' class
+		- his parent is expanded
+		*/
+
+		this.view.crossAll(function(view){
+			// view is hidden, ignore all descendant
+			if( view.hasState('hidden') ) return 'continue';
+			this.visibles.push(view);
+			// view cant have visible decendant, ignore all descendant
+			if( !view.hasState('expanded') ) return 'continue';
+		}, this);
+
+		return this;
 	}
 });
 
@@ -170,74 +191,42 @@ var NavViewController = new Class({
 			view.expand(e);
 		}
 		else{
-			return this.go(view.getChild(viewDocument.isVisible), e);
+			return this.go(view.getChild(viewDocument.isTargetable), e);
 		}
 		return false;
 	},
 
-	crossPrevNode: function(view, filter, loop){
-		this.iterator.current = view;
-		while( this.iterator.prev() ){
-			// return the first valid view
-			if( filter(this.iterator.current) ) return this.iterator.current;
-		}
-
-		// search from the lastnode if there is a valid view
-		if( loop ) return this.crossPrevRange(this.iterator.last(), view, filter);
-		return null;
-	},
-
-	crossPrevRange: function(from, to, filter){
-		if( filter(from) ) return from;
-		
-		this.iterator.current = from;
-		while( this.iterator.prev() && this.iterator.current != to ){
-			if( filter(this.iterator.current) ) return this.iterator.current;
-		}
-
-		return null;
-	},
-
 	goUp: function(view, e){
-		return this.go(this.crossPrevNode(view, viewDocument.isTargetable, this.loop));
+		var list = this.getList(), index = list.indexOf(view);
+		return this.goTo(list.find(viewDocument.isTargetable, 'left', index, this.loop), e);
 	},
 
-	goDown: function(element, e){
-
+	goDown: function(view, e){
+		var list = this.getList(), index = list.indexOf(view);
+		return this.goTo(list.find(viewDocument.isTargetable, 'right', index, this.loop), e);
 	},
 
 	goPageUp: function(view, e){
-		var count = this.getPageCount(view.element);
-		var idealPrevious = this.getPrevNode(view, function(){
-			count--;
-			if( count === 0 ) return true;
-		});
-
-		return this.go(this.crossNextRange(idealPrevious, view, viewDocument.isTargetable), e);
+		var list = this.getList(), index = list.indexOf(view), count = this.getPageCount(view.element), from = Math.max(index - count, 0) - 1; ;
+		return this.go(list.find(viewDocument.isTargetable, 'right', from, index), e);
 	},
 
 	goPageDown: function(view, e){
-
+		var list = this.getList(), index = list.indexOf(view), count = this.getPageCount(view.element), from = Math.min(index + count, list.length - 1 ) + 1;
+		return this.go(list.find(viewDocument.isTargetable, 'left', from, index), e);
 	},
 
 	goFirst: function(view, e){
-		return this.go(this.view.getNode(viewDocument.isVisible), e);
+		return this.go(this.getList()[0], e);
 	},
 
 	goLast: function(view, e){
-		return this.go(this.view.visiblesExplorer.lastNode(this.view.rootView), e);
+		return this.go(this.getList()[this.getList().length - 1], e);
 	},
 
 	goNextLetter: function(view, letter, e){
-		return this.go(
-			this.getNext(
-				view,
-				function(view){
-					return this.isValid(view) && this.matchLetter(view, letter);
-				}.bind(this),
-				true
-			),
-		e);
+		var list = this.getList(), index = list.indexOf(view);
+		return this.goTo(list.find(this.matchLetter, 'right', index, true), e);
 	},
 
 	go: function(view, e){
@@ -330,7 +319,6 @@ var MultipleSelectionViewController = new Class({
 	initialize: function(view){
 		SelectionViewController.prototype.initialize.call(this, view);
 		this.selecteds = [];
-
 	},
 
 	unselectOther: function(view, e){
@@ -350,19 +338,21 @@ var MultipleSelectionViewController = new Class({
 	},
 
 	createRange: function(viewA, viewB){
-		var range = [], from = viewA, to = viewB;
-
+		var range = [];
+		
 		if( viewA && viewB ){
-			// ensure we respect document order
-			if( viewA.element.compareDocumentPosition(viewB.element) & Node.DOCUMENT_POSITION_PRECEDING ){
-				from = viewB;
-				to = viewA;
-			}
-						
-			this.iterator.current = from;
-			while(this.iterator.next() && this.iterator.current != to){
-				range.push(this.iterator.current);
-			}
+			var ancestor = Element.prototype.getCommonAncestor.call(viewA, viewB);
+			var firstFound = false;
+
+			ancestor.crossAll(function(view){
+				if( !firstFound ) firstFound = view == viewA || view == viewB; 
+				else{
+					if( view == viewA || view == viewB ) return true;
+					if( view.hasState('hidden') ) return 'continue';
+					range.push(view);
+					if( !view.hasState('expanded') ) return 'continue';
+				}
+			});
 		}
 
 		return range;

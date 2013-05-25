@@ -1,4 +1,4 @@
-/* global View, TreeTraversal, TreeFinder, StringList, TreeExplorer */
+/* global View, TreeTraversal, TreeFinder, StringList */
 
 var NodeView = new Class({
 	Extends: View,
@@ -184,9 +184,4 @@ NodeView.states = {
 	focused: ['focus', 'blur'],
 	hidden: ['hide', 'show'],
 	actived: ['active', 'unactive']
-};
-
-NodeView.implement(TreeExplorer);
-NodeView.prototype.acceptDescendant = function(view){
-	return view.hasState('expanded') && !view.hasState('hidden');
 };
