@@ -54,16 +54,38 @@ Object.getInstance = function(fn){
 };
 
 Object.eachPair = function(source, fn, bind){
-	for(var name in source) fn.call(bind, name, source[name]);
+	for(var name in source) fn.call(bind, name, source[name], source);
 	return source;
 };
 
 // call fn on every pair of this array
 Array.prototype.eachPair = function(fn, bind){
-	var i = 0, j = this.length, item, name;
+	var i = 0, j = this.length, item;
 
 	for(;i<j;i++){
 		item = this[i];
+		
+		/*
+		
+		function ownProperty(propertyName, source){
+			Object.defineProperty(
+				this instanceof Function ? this.prototype : this,
+				ownPropertyName,
+				Object.getOwnPropertyDescriptor(source, ownPropertyName)
+			);
+		}
+		
+		if( ownProperty ){
+			if( typeof item == 'object' ){
+				Object.getOwnPropertyNames(item).forEach(function(ownPropertyName){ ownProperty.call(bind, ownPropertyName, item); }, this);
+			}
+			else if( item instanceof Function ){
+				Object.getOwnPropertyNames(item.prototype).forEach(function(ownPropertyName){ ownProperty.call(bind, ownPropertyName, item.prototype); }, this);
+			}
+		}	
+		
+		*/
+		
 		if( item instanceof Function ) item = Object.getInstance(item);
 
 		switch(typeof item){
@@ -81,7 +103,7 @@ Array.prototype.eachPair = function(fn, bind){
 };
 
 // append key.value pair to this
-Object.appendPair = function appendPair(key, value){
+Object.appendPair = function(key, value, origin){	
 	this[key] = value;
 
 	return this;
@@ -95,21 +117,22 @@ Object.completePair = function(key, value){
 };
 
 // append key/value pair but clone objets (array,regexp,date,...) and merge object when they already exists in source
-Object.mergePair = function(key, value){
+// origin is the item from wich key & value a coming from, can be null if the pair come from an arguments keypair call Object.merge({}, 'key', 10);
+Object.mergePair = function(key, value, origin){
 	var current;
 
 	if( typeof value == 'object' && value != null ){
 		current = this[key];
 		if( typeof current == 'object' ){
 			for(key in value){
-				Object.mergePair.call(current, key, value[key]);
+				Object.mergePair.call(current, key, value[key], value);
 			}
 		}
 		else{
 			this[key] = Object.cloneOf(value);
 		}
 	}
-	else{
+	else{	
 		this[key] = value;
 	}
 
