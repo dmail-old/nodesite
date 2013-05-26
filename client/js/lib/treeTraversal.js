@@ -68,29 +68,121 @@ window.TreeTraversal = {
 
 	crossAround: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
-	},
-	
-	/*
-	crossInterval: function(element, fn){
-		var from = this, to = element, ancestor, after;
+	}
+};
 
-		// if we pass an element before this one in the document order
-		if( this.compareDocumentPosition(to) & Node.DOCUMENT_POSITION_PRECEDING ){
-			from = element;
-			to = this;
+/*
+
+unused, cross next or prev node
+
+TreeTraversal.crossNext = function(fn, bind){
+	var node = this, next, first, ret;
+	
+	while( true ){
+		first = node.firstChild;
+		if( first ){
+			node = first;
+			ret = fn.call(bind, node);
+			if( ret === true ) break;
+		}
+		
+		while( node.parentNode ){
+			next = node.nextSibling;
+			if( next ){
+				node = next;
+				ret = fn.call(bind, node);
+				if( ret === true ) return this;
+				else break;
+			}
+			node = node.parentNode;
+		}
+	}
+	
+	return this;
+};
+
+TreeTraversal.crossPrev = function(fn, bind){
+	var node = this, parent, prev, last, ret;
+	
+	while( true ){
+		parent = node.parentNode;
+		if( !parent ) break;
+		
+		prev = node.previousSibling;
+		if( prev ){
+			node = prev;
+			last = prev.lastNode;
+			if( last ) node = last;
+			ret = fn.call(bind, node);
+			if( ret == true ) break;
+		}
+		
+		node = parent;
+		ret = fn.call(bind, node);
+		if( ret === true ) break;
+	}
+
+	return this;	
+};
+
+in the case we want to add it to Element.prototype we have to add the lastNode property
+
+Object.defineProperty(Element.prototype, 'lastNode', {
+	'get': function(){
+		var node = this, last = null;
+
+		while( node = node.lastChild ){
+			last = node;
 		}
 
-		ancestor = Element.prototype.getCommonAncestor.call(from, to);
-		after = ancestor == from;
-		ancestor.crossAll(function(descendant){
-			// im before the from element
-			if( !after ) after = descendant == from;
-			// im at the to element, break the loop
-			else if( descendant == to ) return true;
-			// im between from & to
-			else return fn(descendant);
-		});
-
+		return last;
 	}
-	*/
-};
+});
+
+in case we want to add it to any Item implementing TreeStructure we have to add 'firstChild', 'lastChild', 'previousSibling', 'nextSibling'
+to be able to use those methods
+
+NOTE: calling Class.implement(TreeStructure) currently call Object.mergePair on object
+it doesn't copy properties defined by Object.defineProperty
+Object.create should be used for that or TreeStructure have to be a Class with prototype and not and object
+if we want to copy those hidden properties we have to do it manually
+
+Object.defineProperties(TreeStructure, {
+	'firstChild': {
+		'get': function(){
+			return this.children.length === 0 ? null : this.children[0];
+		}
+	},
+	
+	'lastChild': {
+		'get': function(){
+			return this.children.length === 0 ? null : this.children[this.children.length - 1];
+		}
+	},
+	
+	'nextSibling': {
+		'get': function(){
+			var node = this, parent = node.parentNode, next = null;
+			
+			if( parent ){
+				next = parent.children[parent.children.indexOf(node) + 1] || null;
+			}
+			
+			return next;
+		}
+	},
+	
+	'previousSibling': {		
+		'get': function(){		
+			var node = this, parent = node.parentNode, prev = null;
+			
+			if( parent ){
+				prev = parent.children[parent.children.indexOf(node) - 1] || null;
+			}
+			
+			return prev;
+		}
+	}
+});
+
+*/

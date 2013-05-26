@@ -44,13 +44,13 @@ var TreeFinder = window.TreeFinder = {
 
 		return false;
 	},
-
-	createFindMethod: function(name, iterator){
-		this[name] = this.matchFirst.curry(iterator);
+	
+	createFindMethod: function(iterator){
+		return this.matchFirst.curry(iterator);
 	},
 
-	createFindAllMethod: function(name, iterator){
-		this[name] = this.matchAll.curry(iterator);
+	createFindAllMethod: function(iterator){
+		return this.matchAll.curry(iterator);
 	}
 };
 
@@ -65,6 +65,15 @@ Object.forEach({
 }, function(iteratorName, axis){
 	var maj = axis.capitalize();
 
-	TreeFinder.createFindMethod('get' + maj, TreeIterator[iteratorName]);
-	TreeFinder.createFindAllMethod('get' + maj + 's', TreeIterator[iteratorName]);
+	TreeFinder['get' + maj] = TreeFinder.createFindMethod(TreeTraversal[iteratorName]);
+	TreeFinder['get' + maj + 's'] = TreeFinder.createFindAllMethod(TreeTraversal[iteratorName]);
 });
+
+/*
+
+unused
+
+TreeFinder.getPrevNode = TreeFinder.createFindMethod(TreeTraversal.crossPrev);
+TreeFinder.getNextNode = TreeFinder.createFindMethod(TreeTraversal.crossNext);
+
+*/

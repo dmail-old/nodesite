@@ -1,4 +1,4 @@
-/* global TreeIterator, TreeFinder */
+/* global TreeTraversal, TreeFinder */
 
 /* finder
 
@@ -55,7 +55,7 @@ Element.prototype.getCommonAncestor = function(element){
 	return null;
 };
 
-Element.implement(TreeIterator);
+Element.implement(TreeTraversal);
 Element.implement(TreeFinder);
 
 document.getNode = document.html.getNode.bind(document.html);

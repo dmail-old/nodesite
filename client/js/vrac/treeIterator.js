@@ -118,6 +118,7 @@ var TreeIterator = new Class({
 });
 
 // et voilà ce qu'il suffit de faire pour mon itérateur qui évite les noeuds hidden et non expanded
+/*
 var VisiblesIterator = new TreeIterator();
 VisiblesIterator.lastChild = function(node){
 	if( node.hasState('hidden') || !node.hasState('expanded') ) return null;
@@ -127,5 +128,6 @@ VisiblesIterator.firstChild = function(node){
 	if( node.hasState('hidden') || !node.hasState('expanded') ) return null;
 	return TreeIterator.prototype.firstChild.call(this, node);
 };
+*/
 
 
