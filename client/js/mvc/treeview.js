@@ -38,7 +38,7 @@ var CSSViewController = new Class({
 	visibles: [],
 	padding: 18,
 	handlers: {
-		'view:append': function(e){
+		'view:insertElement': function(e){
 			var view = View(e);
 
 			if( view instanceof NodeView){
@@ -93,13 +93,13 @@ var CSSViewController = new Class({
 		- his parent is expanded
 		*/
 
-		this.view.crossAll(function(view){
+		this.view.rootView.crossAll(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
 			if( !view.hasState('expanded') ) return 'continue';
-		}, this);
+		}, this, this.view.hideRoot);
 
 		return this;
 	}
@@ -344,6 +344,7 @@ var MultipleSelectionViewController = new Class({
 			var ancestor = Element.prototype.getCommonAncestor.call(viewA, viewB);
 			var firstFound = false;
 
+			// marche pas ancestor == null pour root, on va utiliser visibles
 			ancestor.crossAll(function(view){
 				if( !firstFound ) firstFound = view == viewA || view == viewB; 
 				else{
@@ -480,19 +481,19 @@ var TreeView = new Class({
 		this.rootView = new this.NodeView(this.model);
 	},
 
-	append: function(){
-		View.prototype.append.apply(this, arguments);
+	insertElement: function(){
+		View.prototype.insertElement.apply(this, arguments);
 
 		this.rootView.render();
 
 		if( this.hideRoot ){
-			this.rootView.append(this.element);
-			this.rootView.createChildrenView();
+			this.rootView.insertElement(this.element);
+			this.rootView.createChildren();
 		}
 		else{
 			var ul = new Element('ul');
 			this.element.appendChild(ul);
-			this.rootView.append(ul);
+			this.rootView.insertElement(ul);
 		}
 
 		return this;

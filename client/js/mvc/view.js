@@ -83,11 +83,7 @@ var View = new Class({
 
 		this.emit('create');
 	},
-	
-	create: function(model){
-		return new this.constructor(model);
-	},
-	
+		
 	emit: function(name){
 		viewDocument.handleEmit(this, name, arguments);
 		return this;
@@ -132,11 +128,11 @@ var View = new Class({
 		this.setElement(this.createElement());
 		return this;
 	},
-
-	append: function(element, before){
+	
+	insertElement: function(into, before){
 		if( !this.element ) this.render();
-		element.insertBefore(this.element, before);
-		this.emit('append');
+		into.insertBefore(this.element, before);
+		this.emit('insertElement');
 		return this;
 	},
 

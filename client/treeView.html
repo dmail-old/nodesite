@@ -11,22 +11,13 @@ var treeData = {
 
 var root = new NodeModel(treeData);
 var treeView = new TreeView(root, false);
-treeView.append(document.body);
+treeView.insertElement(document.body);
 //treeView.rootView.select();
 
 treeView.rootView.expand();
 treeView.rootView.children[0].expand();
 treeView.rootView.children[2].expand();
 treeView.rootView.children[3].expand();
-
-console.log('lastnode of tree ', treeView.rootView.lastNode().getDom('name').innerHTML);
-console.log('previous node of ', 'node1', treeView.rootView.children[1].prevNode().getDom('name').innerHTML);
-console.log('previous node of ', 'node3.1', treeView.rootView.children[3].children[0].prevNode().getDom('name').innerHTML);
-
-console.log('next node of ', 'node0.1', treeView.rootView.children[0].children[0].nextNode().getDom('name').innerHTML);
-console.log('next node of ', 'node1', treeView.rootView.children[1].nextNode().getDom('name').innerHTML);
-
-
 
 /*
 var FileModel = new Class({
