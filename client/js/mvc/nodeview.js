@@ -1,8 +1,8 @@
-/* global View, TreeTraversal, TreeFinder, StringList */
+/* global View, TreeStructure, TreeTraversal, TreeFinder, StringList */
 
 var NodeView = new Class({
 	Extends: View,
-	Implements: [TreeTraversal, TreeFinder],
+	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
 	listeners: {
 		//'change:name': NodeView.prototype.updateName
@@ -21,7 +21,7 @@ var NodeView = new Class({
 
 		if( this.isEmpty() ) className.add('empty');
 		//if( this.has('class') ) className+= ' ' + this.get('class');
-
+		
 		attr['class'] = className;
 
 		return attr;
@@ -33,31 +33,29 @@ var NodeView = new Class({
 
 		return this;
 	},
-
-	adopt: function(view, index){
-		if( !this.getDom('ul') ){
-			this.createChildren();
-		}
-		else{
-			view.append(this.getDom('ul'), index ? this.children[index].element : null);
-			this.children.splice(index, 0, view);
-		}
+	
+	insertBefore: function(child, sibling){
+		child = TreeStructure.insertBefore.call(this, child, sibling);
+		if( !this.getDom('ul') ) this.createChildren();
+		else child.insertBefore(this.getDom('ul'), sibling ? sibling.element : null);
+		return child;
+	},
+	
+	adopt: function(child, index){
+		this.insertBefore(child, index ? this.children[index] : null);
 	},
 
-	appendChild: function(model, index){
-		var view = this.create(model);
-		this.children[index] = view;
-		view.parentNode = this;
-		view.append(this.getDom('ul'));
-
-		return view;
+	appendChild: function(child){
+		child = TreeStructure.appendChild.call(this, child);
+		child.insertElement(this.getDom('ul'));
+		return child;
 	},
 
 	createChildren: function(element){
 		// IMPORTANT: conserver cet ordre pour que les events des li dans createList remontent bien le DOM par le ul et son parent
 		var ul = new Element('ul');
 		this.element.appendChild(ul);
-		this.model.children.forEach(this.appendChild, this);
+		this.parseChildren(this.model.children).forEach(this.appendChild, this);
 	},
 
 	isEmpty: function(){
@@ -148,10 +146,6 @@ var NodeView = new Class({
 		return this.setState('hidden', false, e);
 	},
 
-	isVisible: function(element){
-		return !element.hasClass('hidden');
-	},
-
 	getLevel: function(){
 		var level = 0, parent = this.parentNode;
 		while(parent){
@@ -159,21 +153,6 @@ var NodeView = new Class({
 			parent = parent.parentNode;
 		}
 		return level;
-	},
-
-	// même chose avec prev
-	// même chose ou on fait next puis prev
-	// pour pagedown et pageup à voir
-	// pour home et end on crée getfirstvisible getlastvisible
-	// faudras qu'on puisse recup nextvisible et prev y compris en repartant du début (loop)
-	getNextVisible: function(match){
-		var visible = this.element.getNext(this.isVisible);
-
-		if( visible ) return visible;
-
-		var parent = this.parentNode;
-
-		return parent ? parent.getNextVisible() : null;
 	}
 });
 
