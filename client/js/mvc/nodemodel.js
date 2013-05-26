@@ -5,10 +5,10 @@ var NodeModel = new Class({
 	
 	initialize: function(){
 		Model.prototype.initialize.apply(this, arguments);
+		TreeStructure.prototype.initialize.call(this);
 		
 		if( this.has('name') ) this.name = this.get('name');
 		if( this.has('children') ) this.children = this.parseChildren(this.get('children'));
-		else this.children = [];
 	},
 	
 	toString: function(){
@@ -16,8 +16,7 @@ var NodeModel = new Class({
 	},
 	
 	setChildren: function(children){		
-		children = this.parseChildren(children);
-		children.forEach(this.appendChild, this);
+		this.parseChildren(children).forEach(this.appendChild, this);
 		return this;
 	},
 	

@@ -13,7 +13,7 @@ var NodeView = new Class({
 
 	initialize: function(){
 		View.prototype.initialize.apply(this, arguments);
-		this.children = [];
+		TreeStructure.prototype.initialize.call(this);
 	},
 
 	getAttributes: function(){
