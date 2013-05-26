@@ -112,8 +112,7 @@ description: Affichage en arborescence
 }
 .popup>*>*>.content>.tree{ width: auto; }
 
-.tree ul{ margin: 0; padding: 0; }
-.tree li{ list-style: none; }
+.tree ul{ margin: 0; padding: 0; list-style: none; }
 .tree li>ul{ display: none; }
 .tree li.expanded>ul{ display: list-item; }
 
