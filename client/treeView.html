@@ -10,14 +10,14 @@ var treeData = {
 };
 
 var root = new NodeModel(treeData);
-var treeView = new TreeView(root, false);
+var treeView = new TreeView(root);
 treeView.insertElement(document.body);
-//treeView.rootView.select();
+//treeView.root.select();
 
-treeView.rootView.expand();
-treeView.rootView.children[0].expand();
-treeView.rootView.children[2].expand();
-treeView.rootView.children[3].expand();
+treeView.root.expand();
+treeView.root.children[0].expand();
+treeView.root.children[2].expand();
+treeView.root.children[3].expand();
 
 /*
 var FileModel = new Class({
