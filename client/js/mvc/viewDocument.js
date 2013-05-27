@@ -6,7 +6,8 @@ var viewDocument = Object.append(Object.clone(Emitter), {
 	lastID: 0,
 
 	handleEmit: function(view, name, args){
-		this.emit(name, view, args);
+		this.applyListeners(name, [view].concat(args));
+		//this.emit(name, view, args);
 
 		if( view.element ){
 			var event = this.createEvent(view, name, args);

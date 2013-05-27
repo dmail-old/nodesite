@@ -7,6 +7,10 @@ window.ListenerHandler = new Class({
 		this.listener = listener || this;
 	},
 
+	applyHandler: function(handler, bind, args){
+		return handler.apply(bind, args);
+	},
+
 	handleListener: function(name, args){
 		var listener = this.listener, handler = this.handlers[name];
 
@@ -18,7 +22,7 @@ window.ListenerHandler = new Class({
 			handler = handler.handleListener;
 		}
 		if( typeof handler == 'function' ){
-			return handler.apply(listener, args);
+			return this.applyHandler(handler, listener, args);
 		}
 	},
 

@@ -1,10 +1,10 @@
 /* global
 	View, NodeView,
-	ViewController,
-	ViewControllerSelection,
-	ViewControllerMultipleSelection,
-	ViewControllerLighted,
-	ViewControllerCSS
+	Controller,
+	ControllerSelection,
+	ControllerMultipleSelection,
+	ControllerLighted,
+	ControllerCSS
 */
 
 /*
@@ -84,9 +84,9 @@ var TreeView = new Class({
 
 		this.root = new NodeView(root);
 
-		this.lighted = new ViewControllerLighted(this);
-		this.selection = new ViewControllerMultipleSelection(this);
-		this.cssController = new ViewControllerCSS(this);
+		//this.lighted = new ControllerLighted(this);
+		//this.selection = new ControllerSelection(this);
+		//this.cssController = new ControllerCSS(this);
 	},
 
 	insertElement: function(){

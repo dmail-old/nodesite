@@ -1,7 +1,7 @@
-/* global viewDocument, ViewController, View */
+/* global viewDocument, Controller, View */
 
-var NavViewController = new Class({
-	Extends: ViewController,
+var ControllerNav = new Class({
+	Extends: Controller,
 	keyMethodNames: {
 		'left': 'goLeft',
 		'up': 'goUp',

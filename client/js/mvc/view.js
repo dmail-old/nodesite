@@ -4,13 +4,13 @@ var View = new Class({
 	tagName: 'div',
 	attributes: {},
 	listeners: {},
-	events: {},
+	// events: {},
 
 	initialize: function(model){
 		// ListenerHandler will take care to bind this.model, this.listeners and this as context
 		this.modelEvents = new ListenerHandler(null, this.listeners, this);
 		// EventHandler will take care to bind this.element, this.events and this as context
-		this.elementEvents = new EventHandler(null, this.events, this);
+		// this.elementEvents = new EventHandler(null, this.events, this);
 
 		this.setModel(model);
 
@@ -60,10 +60,23 @@ var View = new Class({
 
 	setElement: function(element){
 		this.element = element;
-		this.elementEvents.emitter = this.element;
-		this.elementEvents.listen();
+		//this.elementEvents.emitter = this.element;
+		//this.elementEvents.listen();
 		this.modelEvents.listen();
+		this.emit('setElement', element);
 		return this;
+	},
+
+	unsetElement: function(){
+		if( this.element ){
+			this.removeElement();
+
+			this.emit('unsetElement', this.element);
+
+			this.element.destroy();
+			delete this.element;
+			//this.elementEvents.stopListening();
+		}
 	},
 
 	render: function(){
@@ -76,6 +89,13 @@ var View = new Class({
 		into.insertBefore(this.element, before);
 		this.emit('insertElement');
 		return this;
+	},
+
+	removeElement: function(){
+		if( this.element ){
+			this.emit('removeElement');
+			this.element.dispose();
+		}
 	},
 
 	hasClass: function(name){
@@ -100,22 +120,9 @@ var View = new Class({
 		}
 	},
 
-	dispose: function(){
-		if( this.element ){
-			this.emit('dispose');
-			this.element.dispose();
-		}
-	},
-
 	destroy: function(){
 		this.emit('destroy');
-
-		if( this.element ){
-			this.dispose();
-			this.elementEvents.stopListening();
-			this.element.destroy();
-		}
-
+		this.unsetElement();
 		this.modelEvents.stopListening();
 	}
 });

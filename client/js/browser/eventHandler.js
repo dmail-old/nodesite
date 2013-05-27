@@ -3,6 +3,10 @@
 var EventHandler = new Class({
 	Extends: ListenerHandler,
 
+	callHandler: function(handler, bind, e){
+		return handler.call(bind, e);
+	},
+
 	handleEvent: function(e){
 		var listener = this.listener, handler = this.handlers[e.type];
 
@@ -14,7 +18,7 @@ var EventHandler = new Class({
 			handler = handler.handleEvent;
 		}
 		if( typeof handler == 'function' ){
-			return handler.call(listener, e);
+			return this.callHandler(handler, listener, e);
 		}
 	}
 });

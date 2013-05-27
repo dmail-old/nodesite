@@ -1,15 +1,30 @@
-/* global ViewControllerSelection, View */
+/* global Controller, ControllerSelection, View, TreeView */
 
-var ViewControllerMultipleSelection = new Class({
-	Extends: ViewControllerSelection,
+var ControllerMultipleSelection = new Class({
+	Extends: ControllerSelection,
 	selecteds: [],
+	events: {
+		'mousedown': function(view, e){
+			console.log('mousedown multiple');
+			if( view ){
+				if( e.control ) view.toggleState('selected', e);
+				else view.select(e);
+			}
+			else{
+				this.unselectAll(e);
+			}
+		},
 
-	handlers: {
-		'view:naviguate': function(e){
-			var view = View(e);
+		click: function(view, e){
+			if( view ){
+				this.unselectOther(view, e);
+			}
+			else{
+				this.unselectAll(e);
+			}
+		},
 
-			e = e.detail.args[0];
-
+		'view:naviguate': function(view, e){
 			// important car l'event 'view:select' ne se déclenche pas si l'élément est selected mias on doit quand même unselect les autres
 			if( view.hasState('selected') ) this.unselectOther(view, e);
 
@@ -26,22 +41,18 @@ var ViewControllerMultipleSelection = new Class({
 			}
 		},
 
-		'view:select': function(e){
-			var view = View(e);
-
-			// e.detail.args[0] contient l'event qui à lancé select genre mousedown
-			this.unselectOther(view, e.detail.args[0]);
+		'view:select': function(view, e){
+			this.unselectOther(view, e);
 			this.selecteds.push(view);
 		},
 
-		'view:unselect': function(e){
-			var view = View(e);
+		'view:unselect': function(view){
 			this.selecteds.remove(view);
 		}
 	},
 
 	initialize: function(view){
-		ViewControllerSelection.prototype.initialize.call(this, view);
+		ControllerSelection.prototype.initialize.apply(this, arguments);
 		this.selecteds = [];
 	},
 
@@ -88,5 +99,12 @@ var ViewControllerMultipleSelection = new Class({
 		});
 		// select view in the range
 		range.forEach(function(view){ view.select(e); });
+	}
+});
+
+View.addController(TreeView, 'multiSelection', ControllerMultipleSelection);
+View.defineController(TreeView, 'selection', {
+	condition: function(view){
+		return view.multiSelection !== true;
 	}
 });

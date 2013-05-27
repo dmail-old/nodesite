@@ -42,10 +42,10 @@ config.js = [].concat(
 	[
 		"model", "nodemodel",
 		"viewDocument", "view",
+		"controller",
 		"nodeview", "treeview",
-		"viewController",
-		"viewControllerCSS", "viewControllerLighted",
-		"viewControllerSelection", "viewControllerMultipleSelection", "viewControllerNav"
+		"controllerCSS", "controllerLighted",
+		"controllerSelection", "controllerMultipleSelection", "controllerNav"
 	].prefix('mvc/'),
 	[
 		"fx"

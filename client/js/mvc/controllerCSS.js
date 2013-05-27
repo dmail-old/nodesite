@@ -1,37 +1,35 @@
-/* global ViewController, viewDocument, View, NodeView */
+/* global Controller, viewDocument, View, NodeView, TreeView */
 
-var ViewControllerCSS = new Class({
-	Extends: ViewController,
+var ControllerCSS = new Class({
+	Extends: Controller,
 	visibles: [],
 	padding: 18,
-	handlers: {
-		'view:insertElement': function(e){
-			var view = View(e);
-
+	events: {
+		'view:insertElement': function(view){
 			if( view instanceof NodeView){
 				// when the background of the node take full width we have to set a padding manually here
 				var level = view.getLevel();
 				if( this.view.hasClass('hideRoot') ) level--;
 				view.getDom('div').style.paddingLeft = this.padding * level + 'px';
-				this.changeVisibility(e, false);
+				this.changeVisibility(view, false);
 			}
 		},
 
-		'view:remove': function(e){
-			this.changeVisibility(e, true);
+		'view:remove': function(view){
+			this.changeVisibility(view, true);
 		},
 
-		'view:hide': function(e){
-			this.changeVisibility(e, true);
+		'view:hide': function(view){
+			this.changeVisibility(view, true);
 		},
 
-		'view:show': function(e){
-			this.changeVisibility(e, false);
+		'view:show': function(view){
+			this.changeVisibility(view, false);
 		}
 	},
 
-	changeVisibility: function(e, hidden){
-		var view = View(e), prev, next, parent = view.parentNode;
+	changeVisibility: function(view, hidden){
+		var prev, next, parent = view.parentNode;
 
 		if( parent ){
 			prev = view.getPrev(viewDocument.isVisible);
@@ -76,3 +74,5 @@ var ViewControllerCSS = new Class({
 viewDocument.isVisible = function(view){
 	return !view.hasState('hidden');
 };
+
+TreeView.prototype.controllers.push(ControllerCSS);
