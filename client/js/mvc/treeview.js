@@ -1,4 +1,4 @@
-/* global EventHandler, View, NodeView, viewDocument */
+/* global EventHandler, View, NodeView, viewDocument, TreeNodeView */
 
 /*
 
@@ -43,9 +43,10 @@ var CSSViewController = new Class({
 
 			if( view instanceof NodeView){
 				// when the background of the node take full width we have to set a padding manually here
-				view.getDom('div').style.paddingLeft = this.padding * view.getLevel() + 'px';
+				var level = view.getLevel();
+				if( this.view.element.hasClass('hideRoot') ) level--;
+				view.getDom('div').style.paddingLeft = this.padding * level + 'px';
 				this.changeVisibility(e, false);
-
 			}
 		},
 
@@ -69,22 +70,22 @@ var CSSViewController = new Class({
 			prev = view.getPrev(viewDocument.isVisible);
 			next = view.getNext(viewDocument.isVisible);
 
-			if( prev && !next ) prev.element.toggleClass('last', hidden);
-			else if( next && !prev ) next.element.toggleClass('first', hidden);
-			view.element.toggleClass('first', Boolean(prev) == Boolean(hidden));
-			view.element.toggleClass('last', Boolean(next) == Boolean(hidden));
+			if( prev && !next ) prev.toggleClass('last', hidden);
+			else if( next && !prev ) next.toggleClass('first', hidden);
+			view.toggleClass('first', Boolean(prev) == Boolean(hidden));
+			view.toggleClass('last', Boolean(next) == Boolean(hidden));
 
 			// ajout d'un enfant visible
-			if( !hidden ) parent.element.removeClass('empty');
+			if( !hidden ) parent.removeClass('empty');
 			// suppression du dernier enfant visible
-			else if( !prev && !next ) parent.element.addClass('empty');
+			else if( !prev && !next ) parent.addClass('empty');
 		}
-		
+
 		if( !parent || (parent.hasState('expanded') && this.visibles.contains(parent)) ){
 			this.updateVisibles();
-		}	
+		}
 	},
-	
+
 	updateVisibles: function(){
 		this.visibles = [];
 
@@ -93,13 +94,13 @@ var CSSViewController = new Class({
 		- his parent is expanded
 		*/
 
-		this.view.rootView.crossAll(function(view){
+		this.view.root.crossAll(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
 			if( !view.hasState('expanded') ) return 'continue';
-		}, this, this.view.hideRoot);
+		}, this, false);
 
 		return this;
 	}
@@ -145,7 +146,7 @@ var NavViewController = new Class({
 			if( !this.activeView ){
 				var view = View(e);
 				// blur d'un noeud sans qu'aucun autre ne prenne se place
-				this.activeView = view.getSibling() || this.parentNode || this.view.rootView;
+				this.activeView = view.getSibling() || this.parentNode || this.view.root;
 			}
 		},
 
@@ -207,7 +208,7 @@ var NavViewController = new Class({
 	},
 
 	goPageUp: function(view, e){
-		var list = this.getList(), index = list.indexOf(view), count = this.getPageCount(view.element), from = Math.max(index - count, 0) - 1; ;
+		var list = this.getList(), index = list.indexOf(view), count = this.getPageCount(view.element), from = Math.max(index - count, 0) - 1;
 		return this.go(list.find(viewDocument.isTargetable, 'right', from, index), e);
 	},
 
@@ -248,14 +249,14 @@ var NavViewController = new Class({
 
 			if( methodName ){
 				if( !this.activeView ){
-					return this.go(this.rootView, e);
+					return this.go(this.root, e);
 				}
 				else{
 					return this[methodName].call(this, this.activeView, e);
 				}
 			}
 			else if( !e.control && (typeof e.key == 'number' || e.key.match(/^[a-zA-Z]$/)) ){
-				return this.goNextLetter(this.activeView || this.rootView, e.key, e);
+				return this.goNextLetter(this.activeView || this.root, e.key, e);
 			}
 		}
 	}
@@ -292,7 +293,7 @@ var MultipleSelectionViewController = new Class({
 			if( e ){
 				if( e.shift ){
 					e.preventDefault();
-					this.shiftView = this.shiftView || this.view.nav.activeView || this.view.rootView;
+					this.shiftView = this.shiftView || this.view.nav.activeView || this.view.root;
 					this.selectRange(this.createRange(this.shiftView, view), e);
 				}
 				else{
@@ -338,23 +339,21 @@ var MultipleSelectionViewController = new Class({
 	},
 
 	createRange: function(viewA, viewB){
-		var range = [];
-		
-		if( viewA && viewB ){
-			var ancestor = Element.prototype.getCommonAncestor.call(viewA, viewB);
-			var firstFound = false;
+		if( !viewA || !viewB ) throw new Error('no view to create range');
 
-			// marche pas ancestor == null pour root, on va utiliser visibles
-			ancestor.crossAll(function(view){
-				if( !firstFound ) firstFound = view == viewA || view == viewB; 
-				else{
-					if( view == viewA || view == viewB ) return true;
-					if( view.hasState('hidden') ) return 'continue';
-					range.push(view);
-					if( !view.hasState('expanded') ) return 'continue';
-				}
-			});
+		var range = [], list = this.view.visibles, from = list.indexOf(viewA), to = list.indexOf(viewB);
+
+		if( from === -1 || to === -1 ) throw new Error('cant create range from invisible view');
+		// respect order
+		if( from > to ){
+			var temp = to;
+			to = from;
+			from = temp;
 		}
+
+		list.iterate(function(view){
+			range.push(view);
+		}, 'right', from, to);
 
 		return range;
 	},
@@ -400,10 +399,8 @@ var LightedViewController = new Class({
 	}
 });
 
-// TODO: option hideRoot
 var TreeView = new Class({
 	Extends: View,
-	NodeView: NodeView,
 	tagName: 'div',
 	multiSelection: true,
 	events: {
@@ -456,17 +453,34 @@ var TreeView = new Class({
 
 	attributes: {
 		'tabindex': 0,
-		'class': 'tree line'
+		'class': 'tree line hideRoot'
 	},
 
-	initialize: function(root, hideRoot){
+	initialize: function(root){
 		View.prototype.initialize.call(this, root);
-		this.hideRoot = hideRoot;
-		this.createRootView();
+
+		this.root = new NodeView(root);
 
 		this.lighted = new LightedViewController(this);
 		this.selection = new MultipleSelectionViewController(this);
 		this.cssController = new CSSViewController(this);
+	},
+
+	insertElement: function(){
+		View.prototype.insertElement.apply(this, arguments);
+
+		var ul = this.element.appendChild(new Element('ul'));
+
+		this.root.render();
+
+		if( this.element.hasClass('hideRoot') ){
+			this.root.insertChildren(ul);
+		}
+		else{
+			this.root.insertElement(ul);
+		}
+
+		return this;
 	},
 
 	getLine: function(element){
@@ -475,42 +489,5 @@ var TreeView = new Class({
 		// tention pour control ce seras 'size', 'x'
 		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds
 		return element.getChild('div').measure('size', 'y') - 1;
-	},
-
-	createRootView: function(){
-		this.rootView = new this.NodeView(this.model);
-	},
-
-	insertElement: function(){
-		View.prototype.insertElement.apply(this, arguments);
-
-		this.rootView.render();
-
-		if( this.hideRoot ){
-			this.rootView.insertElement(this.element);
-			this.rootView.createChildren();
-		}
-		else{
-			var ul = new Element('ul');
-			this.element.appendChild(ul);
-			this.rootView.insertElement(ul);
-		}
-
-		return this;
-	},
-
-	getViewFromEvent: function(e){
-		var view = View(e);
-
-		if( view && !this.checkView(view, e) ) view = null;
-
-		return view;
-	},
-
-	// check is the view is a valid view for that event
-	checkView: function(view, e){
-		if( view == this ) return false;
-		if( this.element.hasClass('compact') && view.element == e.target ) return false;
-		return true;
 	}
 });

@@ -1,6 +1,6 @@
-/*global Emitter, ListenerHandler, EventHandler*/
+/* global Emitter, ListenerHandler, EventHandler */
 
-var viewDocument = Object.append(new Emitter(), {
+var viewDocument = Object.append(Object.clone(Emitter), {
 	views: [],
 	viewAttribute: 'data-view',
 	lastID: 0,
@@ -74,16 +74,25 @@ var View = new Class({
 	events: {},
 
 	initialize: function(model){
-		this.model = model;
-
 		// ListenerHandler will take care to bind this.model, this.listeners and this as context
-		this.modelEvents = new ListenerHandler(this.model, this.listeners, this);
+		this.modelEvents = new ListenerHandler(null, this.listeners, this);
 		// EventHandler will take care to bind this.element, this.events and this as context
 		this.elementEvents = new EventHandler(null, this.events, this);
 
+		this.setModel(model);
+
 		this.emit('create');
 	},
-		
+
+	toString: function(){
+		return 'View';
+	},
+
+	setModel: function(model){
+		this.model = model;
+		this.modelEvents.emitter = model;
+	},
+
 	emit: function(name){
 		viewDocument.handleEmit(this, name, arguments);
 		return this;
@@ -128,12 +137,34 @@ var View = new Class({
 		this.setElement(this.createElement());
 		return this;
 	},
-	
+
 	insertElement: function(into, before){
 		if( !this.element ) this.render();
 		into.insertBefore(this.element, before);
 		this.emit('insertElement');
 		return this;
+	},
+
+	hasClass: function(name){
+		return this.element && this.element.hasClass(name);
+	},
+
+	addClass: function(name){
+		if( this.element ){
+			this.element.addClass(name);
+		}
+	},
+
+	removeClass: function(name){
+		if( this.element ){
+			this.element.removeClass(name);
+		}
+	},
+
+	toggleClass: function(name, value){
+		if( this.element ){
+			this.element.toggleClass(name, value);
+		}
 	},
 
 	dispose: function(){

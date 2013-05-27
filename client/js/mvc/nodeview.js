@@ -9,19 +9,86 @@ var NodeView = new Class({
 	},
 	attributes: {
 		//'data-lightable': true
+		'class': 'node'
 	},
 
-	initialize: function(){
-		View.prototype.initialize.apply(this, arguments);
-		TreeStructure.prototype.initialize.call(this);
+	initialize: function(model){
+		TreeStructure.init.call(this);
+		View.prototype.initialize.call(this, model);
+	},
+
+	setModel: function(model){
+		View.prototype.setModel.call(this, model);
+		if( model && model.children ){
+			this.setChildren(model.children);
+		}
+	},
+
+	insertBefore: function(child, sibling){
+		child = TreeStructure.insertBefore.call(this, child, sibling);
+
+		var childrenElement = this.getChildrenElement();
+		// si cette vue possède un élément, on insère visuellement l'enfant
+		if( childrenElement ){
+			child.insertElement(childrenElement, sibling ? sibling.element : null);
+		}
+
+		return child;
+	},
+
+	appendChild: function(child){
+		child = TreeStructure.appendChild.call(this, child);
+
+		var childrenElement = this.getChildrenElement();
+		// si cette vue possède un élément, on insère visuellement l'enfant
+		if( childrenElement ){
+			child.insertElement(childrenElement);
+		}
+
+		return child;
+	},
+
+	toString: function(){
+		return this.model.get('name');
+	},
+
+	getChildrenElement: function(){
+		return this.childrenElement;
+	},
+
+	setChildrenElement: function(element){
+		this.childrenElement = element;
+	},
+
+	createChildrenElement: function(element){
+		return new Element('ul');
+	},
+
+	insertChildren: function(element){
+		this.setChildrenElement(element);
+		this.children.forEach(function(child){ child.insertElement(element); });
+	},
+
+	renderChildren: function(){
+		var childrenElement = this.createChildrenElement();
+		this.element.appendChild(childrenElement);
+		this.insertChildren(childrenElement);
+	},
+
+	adopt: function(child, index){
+		this.insertBefore(child, index ? this.children[index] : null);
+	},
+
+	isEmpty: function(){
+		return this.children.length === 0;
 	},
 
 	getAttributes: function(){
-		var attr = View.prototype.getAttributes.call(this), className = new StringList();
+		var attr = View.prototype.getAttributes.call(this), className = new StringList(attr['class']);
 
 		if( this.isEmpty() ) className.add('empty');
 		//if( this.has('class') ) className+= ' ' + this.get('class');
-		
+
 		attr['class'] = className;
 
 		return attr;
@@ -32,34 +99,6 @@ var NodeView = new Class({
 		if( element ) element.keepIntoView();
 
 		return this;
-	},
-	
-	insertBefore: function(child, sibling){
-		child = TreeStructure.insertBefore.call(this, child, sibling);
-		if( !this.getDom('ul') ) this.createChildren();
-		else child.insertBefore(this.getDom('ul'), sibling ? sibling.element : null);
-		return child;
-	},
-	
-	adopt: function(child, index){
-		this.insertBefore(child, index ? this.children[index] : null);
-	},
-
-	appendChild: function(child){
-		child = TreeStructure.appendChild.call(this, child);
-		child.insertElement(this.getDom('ul'));
-		return child;
-	},
-
-	createChildren: function(element){
-		// IMPORTANT: conserver cet ordre pour que les events des li dans createList remontent bien le DOM par le ul et son parent
-		var ul = new Element('ul');
-		this.element.appendChild(ul);
-		this.parseChildren(this.model.children).forEach(this.appendChild, this);
-	},
-
-	isEmpty: function(){
-		return this.model.children.length === 0;
 	},
 
 	getHTML: function(){
@@ -72,7 +111,7 @@ var NodeView = new Class({
 			return this.element;
 		case 'ul':
 		case 'div':
-			return this.element.getChild(what);
+			return this.getDom('li').getChild(what);
 		default:
 			return this.getDom('div').getChild(what);
 		}
@@ -83,12 +122,12 @@ var NodeView = new Class({
 	},
 
 	hasState: function(state){
-		return this.element.hasClass(state);
+		return this.hasClass(state);
 	},
 
 	setState: function(state, value, e){
 		if( this.hasState(state) == value ) return false;
-		this.element.toggleClass(state, value);
+		this.toggleClass(state, value);
 		this.emit(NodeView.states[state][value ? 0 : 1], e);
 		return true;
 	},
@@ -121,7 +160,7 @@ var NodeView = new Class({
 	},
 
 	expand: function(e){
-		if( !this.getDom('ul') ) this.createChildren();
+		if( !this.childrenElement ) this.renderChildren();
 		return this.setState('expanded', true, e);
 	},
 
