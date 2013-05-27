@@ -40,7 +40,12 @@ config.js = [].concat(
 		"event", "eventEmitter", "eventHandler", "request"
 	].prefix('browser/'),
 	[
-		"model", "view", "nodemodel", "nodeview", "treeview"
+		"model", "nodemodel",
+		"viewDocument", "view",
+		"nodeview", "treeview",
+		"viewController",
+		"viewControllerCSS", "viewControllerLighted",
+		"viewControllerSelection", "viewControllerMultipleSelection", "viewControllerNav"
 	].prefix('mvc/'),
 	[
 		"fx"
