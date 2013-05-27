@@ -30,13 +30,18 @@ config.js = [].concat(
 	].prefix('/lib/core/'),
 	[
 		"object.at", "finder", "array.iterate", "array.find",
-		"random", "emitter", "list", "stringList", "memory", "path",
+		"random", "list", "stringList", "memory", "path",
+		"emitter", "listenerHandler",
 		"treeTraversal", "treeFinder", "treeStructure"
 	].prefix('lib/'),
 	[
-		"browser", "element", "element.properties", "element.styles", "element.measure", "element.keepIntoView", "element.find",
-		"event", "eventEmitter", "request"
+		"browser", "element", "element.properties",
+		"element.styles", "element.measure", "element.keepIntoView", "element.find",
+		"event", "eventEmitter", "eventHandler", "request"
 	].prefix('browser/'),
+	[
+		"model", "view", "nodemodel", "nodeview", "treeview"
+	].prefix('mvc/'),
 	[
 		"fx"
 	],
@@ -50,9 +55,6 @@ config.js = [].concat(
 		"tree.keynav", "tree.selector", "tree.keyshortcut", "menu", "tree.menu",
 	].prefix('tree/'),
 	*/
-	[
-		"model", "view", "nodemodel", "nodeview", "treeview"
-	].prefix('mvc/'),
 	[
 		"fx.scroll", "DOMRectangle", "element.wrapVectors", "box", "popup", "popup.valid", "selectionRectangle"
 	].prefix('box/'),

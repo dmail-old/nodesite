@@ -1,9 +1,6 @@
-/* global Emitter, ListenerHandler */
+/* global Emitter */
 
-// eventEmitter
-var EventEmitter = new Class({
-	Extends: Emitter,
-
+var EventEmitter = Object.append(Object.clone(Emitter), {
 	getEvents: function(){
 		if( !this.storage.has('listeners') ) this.storage.set('listeners', {});
 		return this.storage.get('listeners');
@@ -29,25 +26,8 @@ var EventEmitter = new Class({
 	}
 });
 
-delete EventEmitter.prototype.$events;
-[Element.prototype, window, document].callEach(Object.appendThis, EventEmitter);
+delete EventEmitter.$events;
 
-var EventHandler = new Class({
-	Extends: ListenerHandler,
-
-	handleEvent: function(e){
-		var listener = this.listener, handler = this.handlers[e.type];
-
-		if( typeof handler == 'string' ){
-			handler = listener[handler];
-		}
-		if( typeof handler == 'object' ){
-			listener = handler;
-			handler = handler.handleEvent;
-		}
-		if( typeof handler == 'function' ){
-			return handler.call(listener, e);
-		}
-	}
-});
-delete EventHandler.prototype.handleListener;
+Object.merge(Element.prototype, EventEmitter);
+Object.merge(window, EventEmitter);
+Object.merge(document, EventEmitter);
