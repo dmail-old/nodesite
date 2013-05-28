@@ -3,6 +3,12 @@
 	[
 		{
 			"path": "/home/damien/nodesite"
+		},
+		{
+			"path": "/home/damien/hellobutler"
+		},
+		{
+			"path": "/home/damien/iot-butler/SmartMobile/SmartMobile-Android"
 		}
 	]
 }

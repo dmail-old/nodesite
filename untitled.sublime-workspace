@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"Contr",
+				"ControllerMultipleSelection"
+			],
+			[
 				"view",
 				"View"
 			]
@@ -12,58 +16,40 @@
 	"buffers":
 	[
 		{
+			"file": "client/treeView.html",
+			"settings":
+			{
+				"buffer_size": 1803,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "/* global View, NodeView */\n\n/*\n	mousedown: function(e){\n		var view = this.getViewFromEvent(e);\n\n		if( view ){\n			if( e.target.tagName.toLowerCase() == 'tool' ){ view.focus(e); view.toggleState('expanded', e); }\n			if( this.multiSelection && e.control ){ view.focus(e); view.toggleState('selected', e); }\n			else{\n				this.nav.go(view, e);\n			}\n		}\n		else{\n			this.selection.unselect(e);\n		}\n	}\n*/\n\nvar TreeView = new Class({\n	Extends: View,\n	tagName: 'div',\n	attributes: {\n		'tabindex': 0,\n		'class': 'tree line hideRoot'\n	},\n\n	initialize: function(){\n		View.prototype.initialize.call(this);\n		this.root = new NodeView(root);\n	},\n\n	insertElement: function(){\n		View.prototype.insertElement.apply(this, arguments);\n\n		var ul = this.element.appendChild(new Element('ul'));\n\n		this.root.render();\n\n		if( this.element.hasClass('hideRoot') ){\n			this.root.insertChildren(ul);\n		}\n		else{\n			this.root.insertElement(ul);\n		}\n\n		return this;\n	},\n\n	getLine: function(element){\n		if( !element ) return 0;\n\n		// tention pour control ce seras 'size', 'x'\n		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds\n		return element.getChild('div').measure('size', 'y') - 1;\n	}\n});\n",
 			"file": "client/js/mvc/treeview.js",
+			"file_size": 1424,
+			"file_write_time": 1369754427000000,
 			"settings":
 			{
-				"buffer_size": 2544,
+				"buffer_size": 1227,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "client/js/mvc/controller.js",
+			"contents": "/* global Controller, ControllerSelection */\n\n/*\n\nselection scenario:\n\nOK	mousedown on nothing -> unselectAll\nOK	mousedown on selected -> nothing\nOK	mousedown on unselected -> select\nOK	mousedown + ctrl on selected -> unselect only (thanks to if( e.control || e.shift ) return; )\nOK	mousedown + ctrl on unselected -> select only (thanks to if( e.control || e.shift ) return; )\nOK  mousedown + shift on selected -> check the shift range\nOK  mousedown + shift on unselected -> check the shift range\n\nOK	click on nothing -> unselectAll\nOK	click on selected -> unselect other\n\nbut i have to consider the following scenario\n\nNO  keydown on unselected ->\nNO  keydown on selected \n\n*/\n\n\nvar ControllerMultiSelection = new Class({\n	Extends: ControllerSelection,\n	events: {\n		'view:focus': function(view, e){\n			if( view.hasState('selected') ){\n				this.unselectOther(view, e);\n			}\n		},\n\n		'view:select': function(view, e){\n			this.unselectOther(view, e);\n			this.selecteds.push(view);\n		},\n\n		'view:unselect': function(view){\n			this.selecteds.remove(view);\n		},\n\n		'mousedown': function(view, e){\n			if( view ){\n				if( e.control ) view.toggleState('selected', e);\n				else{\n					this.checkShift(view, e);\n					view.select(e);\n				}\n			}\n			else{\n				this.unselectAll(e);\n			}\n		},\n\n		click: function(view, e){\n			if( view ){\n				this.unselectOther(view, e);\n			}\n			else{\n				this.unselectAll(e);\n			}\n		}\n	},\n\n	initialize: function(view){\n		ControllerSelection.prototype.initialize.apply(this, arguments);\n		this.selecteds = [];\n	},\n\n	checkShift: function(view, e){\n		if( e ){\n			if( e.shift ){\n				e.preventDefault();\n				this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;\n				this.selectRange(this.createRange(this.shiftView, view), e);\n				return;\n			}\n			delete this.shiftView;\n		}\n	},\n\n	unselectOther: function(view, e){\n		if( !e ) return;\n		// n'unselect pas si control ou shift appuyé, ou mousemove (compat avec selectionRectangle)\n		if( e.control || e.shift ) return;\n\n		[].concat(this.selecteds).forEach(function(selected){\n			if( selected != view ) selected.unselect(e);\n		}, this);\n	},\n\n	unselectAll: function(e){\n		// NOTE: need to loop that way because the selecteds array is spliced during the loop\n		var i = this.selecteds.length;\n		while(i--) this.selecteds[0].unselect(e);\n	},\n\n	createRange: function(viewA, viewB){\n		if( !viewA || !viewB ) throw new Error('no view to create range');\n\n		var range = [], list = this.view.visibles, from = list.indexOf(viewA), to = list.indexOf(viewB);\n\n		if( from === -1 || to === -1 ) throw new Error('cant create range from invisible view');\n		// respect order\n		if( from > to ){\n			var temp = to;\n			to = from;\n			from = temp;\n		}\n\n		list.iterate(function(view){\n			range.push(view);\n		}, 'right', from - 1, to);\n\n		return range;\n	},\n\n	selectRange: function(range, e){\n		// unselect view not in the range of the selection\n		[].concat(this.selecteds).forEach(function(selected){\n			if( !range.contains(selected) ) selected.unselect(e);\n		});\n		// select view in the range\n		range.forEach(function(view){ view.select(e); });\n	}\n});\n\nController.register('multiSelection', ControllerMultiSelection);\n",
+			"file": "client/js/mvc/controllerMultiSelection.js",
+			"file_size": 3072,
+			"file_write_time": 1369757047000000,
 			"settings":
 			{
-				"buffer_size": 1897,
+				"buffer_size": 3173,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "client/js/mvc/controllerLighted.js",
+			"file": "client/js/mvc/controllerNav.js",
 			"settings":
 			{
-				"buffer_size": 684,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "client/js/mvc/controllerCSS.js",
-			"settings":
-			{
-				"buffer_size": 2181,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "client/js/mvc/view.js",
-			"settings":
-			{
-				"buffer_size": 3235,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "client/js/mvc/controllerSelection.js",
-			"settings":
-			{
-				"buffer_size": 611,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "client/js/mvc/controllerMultipleSelection.js",
-			"settings":
-			{
-				"buffer_size": 2852,
+				"buffer_size": 3355,
 				"line_ending": "Unix"
 			}
 		}
@@ -92,16 +78,40 @@
 	},
 	"file_history":
 	[
-		"/home/damien/nodesite/client/js/browser/eventHandler.js",
-		"/home/damien/nodesite/client/js/lib/listenerHandler.js",
-		"/home/damien/nodesite/client/js/mvc/viewDocument.js",
-		"/home/damien/nodesite/client/js/mvc/controllerNav.js",
-		"/home/damien/nodesite/client/js/mvc/viewController.js",
+		"/home/damien/nodesite/client/js/mvc/controllerVisibles.js",
+		"/home/damien/nodesite/client/js/lib/core/array.js",
+		"/home/damien/nodesite/client/js/mvc/controllerFocused.js",
+		"/home/damien/nodesite/client/js/mvc/nodeview.js",
+		"/home/damien/nodesite/client/js/mvc/controllerTool.js",
 		"/home/damien/nodesite/config.js",
-		"/home/damien/nodesite/client/js/mvc/controllerSelection.js",
-		"/home/damien/nodesite/client/js/mvc/controllerCSS.js",
-		"/home/damien/nodesite/client/js/mvc/controllerLighted.js",
+		"/home/damien/nodesite/client/css/tree.css",
 		"/home/damien/nodesite/client/js/mvc/controllerMultipleSelection.js",
+		"/home/damien/nodesite/client/js/mvc/controllerLighted.js",
+		"/home/damien/nodesite/client/js/mvc/controllerSelection.js",
+		"/home/damien/nodesite/client/js/mvc/controllerIndent.js",
+		"/home/damien/nodesite/client/js/mvc/controllerNav.js",
+		"/home/damien/nodesite/client/js/mvc/controllerCSS.js",
+		"/home/damien/nodesite/client/js/mvc/view.js",
+		"/home/damien/nodesite/client/js/mvc/controller.js",
+		"/home/damien/nodesite/client/js/lib/emitter.js",
+		"/home/damien/nodesite/client/js/browser/eventEmitter.js",
+		"/home/damien/nodesite/client/js/browser/event.js",
+		"/home/damien/nodesite/client/js/lib/listenerHandler.js",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/index.html",
+		"/home/damien/hellobutler/src/eu/butler/hellobutler/MainActivity.java",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/src/com/borismus/webintent/WebIntent.java",
+		"/home/damien/nodesite/client/js/mvc/selectView.js",
+		"/home/damien/nodesite/client/js/mvc/viewDocument.js",
+		"/home/damien/hellobutler/AndroidManifest.xml",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/js/webintent.js",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/js/fastbutton.js",
+		"/usr/local/apache2/htdocs/butler/js/fastbutton.js",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/js/index.js",
+		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/src/eu/butler/smartmobile/SmartMobile.java",
+		"/home/damien/nodesite/.gitignore",
+		"/home/damien/nodesite/client/js/mvc/treeview.js",
+		"/home/damien/nodesite/client/js/browser/eventHandler.js",
+		"/home/damien/nodesite/client/js/mvc/viewController.js",
 		"/home/damien/nodesite/client/js/canvas.js",
 		"/home/damien/.config/sublime-text-2/Packages/User/SublimeLinter.sublime-settings"
 	],
@@ -121,6 +131,43 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"shift",
+			"visibles",
+			"activeView",
+			"naviguate",
+			"name",
+			"padding:",
+			"padding-top:",
+			"tool",
+			"View",
+			"istargetable",
+			"isTargetable",
+			"View.isvisible",
+			"EventHandler",
+			"ListenerHandler",
+			"multiselection",
+			"concat",
+			"emit",
+			"bubble",
+			"emit",
+			"emitbubble",
+			"emit",
+			"emitEvent",
+			"emitBubble",
+			"emit",
+			"emit(",
+			"emit",
+			"elementeven",
+			"viewDocument",
+			"emit",
+			"getFocusableElement",
+			"isFocusable",
+			"onNewIntentCallback",
+			"succes",
+			"success",
+			"CallbackContext",
+			"callbackId",
+			"onnewintentcallback",
 			"alert",
 			"handleListener",
 			"controllerLighted",
@@ -143,23 +190,132 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "client/js/mvc/treeview.js",
+					"file": "client/treeView.html",
 					"settings":
 					{
-						"buffer_size": 2544,
+						"buffer_size": 1803,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1898,
-								1898
+								604,
+								604
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "client/js/mvc/treeview.js",
+					"settings":
+					{
+						"buffer_size": 1227,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								394,
+								394
 							]
 						],
 						"settings":
@@ -250,133 +406,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 679.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "client/js/mvc/controller.js",
-					"settings":
-					{
-						"buffer_size": 1897,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1160,
-								1171
-							]
-						],
-						"settings":
-						{
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"csslint_options":
-							{
-								"floats": false,
-								"font-sizes": false,
-								"ids": false,
-								"important": false,
-								"outline-none": false
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"boss": true,
-								"browser": true,
-								"devel": true,
-								"eqeqeq": false,
-								"eqnull": true,
-								"es5": true,
-								"globals":
-								{
-									"Class": true,
-									"CustomEvent": true,
-									"Event": true,
-									"FS": true,
-									"File": true,
-									"config": true,
-									"lang": true,
-									"logger": true,
-									"root": true,
-									"toArray": true
-								},
-								"globalstrict": false,
-								"indent": 4,
-								"node": true,
-								"sub": true,
-								"undef": true,
-								"white": false
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": true,
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": false,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": true,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 433.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "client/js/mvc/controllerLighted.js",
+					"file": "client/js/mvc/controllerMultiSelection.js",
 					"settings":
 					{
-						"buffer_size": 684,
+						"buffer_size": 3173,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								627,
-								627
+								673,
+								673
 							]
 						],
 						"settings":
@@ -474,127 +522,18 @@
 				},
 				{
 					"buffer": 3,
-					"file": "client/js/mvc/controllerCSS.js",
+					"file": "client/js/mvc/controllerNav.js",
 					"settings":
 					{
-						"buffer_size": 2181,
+						"buffer_size": 3355,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2180,
-								2180
-							]
-						],
-						"settings":
-						{
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"csslint_options":
-							{
-								"floats": false,
-								"font-sizes": false,
-								"ids": false,
-								"important": false,
-								"outline-none": false
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"boss": true,
-								"browser": true,
-								"devel": true,
-								"eqeqeq": false,
-								"eqnull": true,
-								"es5": true,
-								"globals":
-								{
-									"Class": true,
-									"CustomEvent": true,
-									"Event": true,
-									"FS": true,
-									"File": true,
-									"config": true,
-									"lang": true,
-									"logger": true,
-									"root": true,
-									"toArray": true
-								},
-								"globalstrict": false,
-								"indent": 4,
-								"node": true,
-								"sub": true,
-								"undef": true,
-								"white": false
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": true,
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": false,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": true,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1071.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "client/js/mvc/view.js",
-					"settings":
-					{
-						"buffer_size": 3235,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								125,
-								125
+								677,
+								677
 							]
 						],
 						"settings":
@@ -686,224 +625,6 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "client/js/mvc/controllerSelection.js",
-					"settings":
-					{
-						"buffer_size": 611,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								596,
-								596
-							]
-						],
-						"settings":
-						{
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"csslint_options":
-							{
-								"floats": false,
-								"font-sizes": false,
-								"ids": false,
-								"important": false,
-								"outline-none": false
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"boss": true,
-								"browser": true,
-								"devel": true,
-								"eqeqeq": false,
-								"eqnull": true,
-								"es5": true,
-								"globals":
-								{
-									"Class": true,
-									"CustomEvent": true,
-									"Event": true,
-									"FS": true,
-									"File": true,
-									"config": true,
-									"lang": true,
-									"logger": true,
-									"root": true,
-									"toArray": true
-								},
-								"globalstrict": false,
-								"indent": 4,
-								"node": true,
-								"sub": true,
-								"undef": true,
-								"white": false
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": true,
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": false,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": true,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "client/js/mvc/controllerMultipleSelection.js",
-					"settings":
-					{
-						"buffer_size": 2852,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2654,
-								2654
-							]
-						],
-						"settings":
-						{
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"csslint_options":
-							{
-								"floats": false,
-								"font-sizes": false,
-								"ids": false,
-								"important": false,
-								"outline-none": false
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"boss": true,
-								"browser": true,
-								"devel": true,
-								"eqeqeq": false,
-								"eqnull": true,
-								"es5": true,
-								"globals":
-								{
-									"Class": true,
-									"CustomEvent": true,
-									"Event": true,
-									"FS": true,
-									"File": true,
-									"config": true,
-									"lang": true,
-									"logger": true,
-									"root": true,
-									"toArray": true
-								},
-								"globalstrict": false,
-								"indent": 4,
-								"node": true,
-								"sub": true,
-								"undef": true,
-								"white": false
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": true,
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": false,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": true,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1224.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -917,7 +638,7 @@
 	},
 	"input":
 	{
-		"height": 0.0
+		"height": 33.0
 	},
 	"layout":
 	{
@@ -967,6 +688,6 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 216.0,
+	"side_bar_width": 206.0,
 	"status_bar_visible": true
 }
