@@ -1,21 +1,13 @@
-/* global Controller, viewDocument, View, NodeView, TreeView */
+/* global Controller, NodeView */
 
-var ControllerCSS = new Class({
+var ControllerVisibles = new Class({
 	Extends: Controller,
-	visibles: [],
-	padding: 18,
 	events: {
 		'view:insertElement': function(view){
-			if( view instanceof NodeView){
-				// when the background of the node take full width we have to set a padding manually here
-				var level = view.getLevel();
-				if( this.view.hasClass('hideRoot') ) level--;
-				view.getDom('div').style.paddingLeft = this.padding * level + 'px';
-				this.changeVisibility(view, false);
-			}
+			this.changeVisibility(view, false);
 		},
 
-		'view:remove': function(view){
+		'view:removeElement': function(view){
 			this.changeVisibility(view, true);
 		},
 
@@ -25,15 +17,28 @@ var ControllerCSS = new Class({
 
 		'view:show': function(view){
 			this.changeVisibility(view, false);
+		},
+
+		'view:expand': function(view){
+			if( this.view.visibles.contains(view) ) this.updateVisibles();
+		},
+
+		'view:contract': function(view){
+			if( this.view.visibles.contains(view) ) this.updateVisibles();
 		}
+	},
+
+	setView: function(view){
+		if( view ) view.visibles = [];
+		return Controller.prototype.setView.call(this, view);
 	},
 
 	changeVisibility: function(view, hidden){
 		var prev, next, parent = view.parentNode;
 
 		if( parent ){
-			prev = view.getPrev(viewDocument.isVisible);
-			next = view.getNext(viewDocument.isVisible);
+			prev = view.getPrev(NodeView.isVisible);
+			next = view.getNext(NodeView.isVisible);
 
 			if( prev && !next ) prev.toggleClass('last', hidden);
 			else if( next && !prev ) next.toggleClass('first', hidden);
@@ -52,7 +57,7 @@ var ControllerCSS = new Class({
 	},
 
 	updateVisibles: function(){
-		this.visibles = [];
+		this.view.visibles = [];
 
 		/* list the visibles view elements, an element is visible if:
 		- it has not the 'hidden' class
@@ -62,7 +67,7 @@ var ControllerCSS = new Class({
 		this.view.root.crossAll(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
-			this.visibles.push(view);
+			this.view.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
 			if( !view.hasState('expanded') ) return 'continue';
 		}, this, !this.view.hasClass('hideRoot'));
@@ -71,8 +76,8 @@ var ControllerCSS = new Class({
 	}
 });
 
-viewDocument.isVisible = function(view){
+NodeView.isVisible = function(view){
 	return !view.hasState('hidden');
 };
 
-TreeView.prototype.controllers.push(ControllerCSS);
+Controller.register('visibles', ControllerVisibles);

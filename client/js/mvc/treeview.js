@@ -1,92 +1,42 @@
-/* global
-	View, NodeView,
-	Controller,
-	ControllerSelection,
-	ControllerMultipleSelection,
-	ControllerLighted,
-	ControllerCSS
-*/
+/* global View, NodeView */
 
 /*
+	mousedown: function(e){
+		var view = this.getViewFromEvent(e);
 
-NOTE
+		if( view ){
+			if( e.target.tagName.toLowerCase() == 'tool' ){ view.focus(e); view.toggleState('expanded', e); }
+			if( this.multiSelection && e.control ){ view.focus(e); view.toggleState('selected', e); }
+			else{
+				this.nav.go(view, e);
+			}
+		}
+		else{
+			this.selection.unselect(e);
+		}
+	},
 
-le scroll auto lors de expand/contract cherche à garder visibles les 'ul'
-mais les 'um' font 100% de largeur au lieu de la largeur de leur contenu
-
-idée1:
-- si on met l'arbre en mode compact le 'ul' pourras si en plus on met les 'li' en float left
-faire la largeur de son contenu
-
-- on perds alors la possibilité de drop un fichier hors d'un li
-
+	keydown: function(e){
+		if( e.control && e.key == 'a' ){
+			if( this.multiSelection ) this.nav.visibles.forEach(function(el){ View(el).select(e); });
+		}
+		else{
+			this.nav.keydown(e);
+		}
+	}
 */
 
 var TreeView = new Class({
 	Extends: View,
 	tagName: 'div',
-	multiSelection: true,
-	events: {
-		/*
-		mousedown: function(e){
-			var view = this.getViewFromEvent(e);
-
-			if( view ){
-				if( e.target.tagName.toLowerCase() == 'tool' ){ view.focus(e); view.toggleState('expanded', e); }
-				if( this.multiSelection && e.control ){ view.focus(e); view.toggleState('selected', e); }
-				else{
-					this.nav.go(view, e);
-				}
-			}
-			else{
-				this.selection.unselect(e);
-			}
-		},
-
-		click: function(e){
-			var view = this.getViewFromEvent(e);
-
-			if( view ){
-				if( this.multiSelection ) this.selection.unselectOther(view, e);
-			}
-			else this.selection.unselect(e);
-		},
-
-		dblclick: function(e){
-			var view = this.getViewFromEvent(e);
-
-			if( view ){
-				if( e.target.tagName.toLowerCase() != 'tool' ){
-					if( this.menu ) this.menu.activeFirst(e);
-					else view.toggleState('expanded', e);
-				}
-			}
-		},
-
-		keydown: function(e){
-			if( e.control && e.key == 'a' ){
-				if( this.multiSelection ) this.nav.visibles.forEach(function(el){ View(el).select(e); });
-			}
-			else{
-				this.nav.keydown(e);
-			}
-		}
-		*/
-	},
-
 	attributes: {
 		'tabindex': 0,
 		'class': 'tree line hideRoot'
 	},
 
-	initialize: function(root){
-		View.prototype.initialize.call(this, root);
-
+	initialize: function(){
+		View.prototype.initialize.call(this);
 		this.root = new NodeView(root);
-
-		//this.lighted = new ControllerLighted(this);
-		//this.selection = new ControllerSelection(this);
-		//this.cssController = new ControllerCSS(this);
 	},
 
 	insertElement: function(){

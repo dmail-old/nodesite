@@ -4,7 +4,7 @@ var NodeView = new Class({
 	Extends: View,
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
-	listeners: {
+	modelEvents: {
 		//'change:name': NodeView.prototype.updateName
 	},
 	attributes: {
@@ -102,7 +102,7 @@ var NodeView = new Class({
 	},
 
 	getHTML: function(){
-		return '<div><tool></tool><name>' + this.model.name + '</name></div>';
+		return '<div><ins class="tool"></ins><name>' + this.model.name + '</name></div>';
 	},
 
 	getDom: function(what){

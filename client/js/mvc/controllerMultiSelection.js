@@ -1,14 +1,48 @@
-/* global Controller, ControllerSelection, View, TreeView */
+/* global Controller, ControllerSelection */
 
-var ControllerMultipleSelection = new Class({
+/*
+
+selection scenario:
+
+OK	mousedown on nothing -> unselectAll
+OK	mousedown on selected -> nothing
+OK	mousedown on unselected -> select
+OK	mousedown + ctrl on selected -> unselect only (thanks to if( e.control || e.shift ) return; )
+OK	mousedown + ctrl on unselected -> select only (thanks to if( e.control || e.shift ) return; )
+NO  mousedown + shift on selected -> check the shift range
+NO  mousedown + shift on unselected -> check the shift range
+
+OK	click on nothing -> unselectAll
+OK	click on selected -> unselect other
+
+*/
+
+
+var ControllerMultiSelection = new Class({
 	Extends: ControllerSelection,
-	selecteds: [],
 	events: {
+		'view:focus': function(view, e){
+			if( view.hasState('selected') ){
+				this.unselectOther(view, e);
+			}
+		},
+
+		'view:select': function(view, e){
+			this.unselectOther(view, e);
+			this.selecteds.push(view);
+		},
+
+		'view:unselect': function(view){
+			this.selecteds.remove(view);
+		},
+
 		'mousedown': function(view, e){
-			console.log('mousedown multiple');
 			if( view ){
 				if( e.control ) view.toggleState('selected', e);
-				else view.select(e);
+				else{
+					this.checkShift(view, e);
+					view.select(e);
+				}
 			}
 			else{
 				this.unselectAll(e);
@@ -22,38 +56,24 @@ var ControllerMultipleSelection = new Class({
 			else{
 				this.unselectAll(e);
 			}
-		},
-
-		'view:naviguate': function(view, e){
-			// important car l'event 'view:select' ne se déclenche pas si l'élément est selected mias on doit quand même unselect les autres
-			if( view.hasState('selected') ) this.unselectOther(view, e);
-
-			if( e ){
-				if( e.shift ){
-					e.preventDefault();
-					this.shiftView = this.shiftView || this.view.nav.activeView || this.view.root;
-					this.selectRange(this.createRange(this.shiftView, view), e);
-				}
-				else{
-					if( e.type == 'keydown' ) e.preventDefault();
-					delete this.shiftView;
-				}
-			}
-		},
-
-		'view:select': function(view, e){
-			this.unselectOther(view, e);
-			this.selecteds.push(view);
-		},
-
-		'view:unselect': function(view){
-			this.selecteds.remove(view);
 		}
 	},
 
 	initialize: function(view){
 		ControllerSelection.prototype.initialize.apply(this, arguments);
 		this.selecteds = [];
+	},
+
+	checkShift: function(view, e){
+		if( e ){
+			if( e.shift ){
+				e.preventDefault();
+				this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;
+				this.selectRange(this.createRange(this.shiftView, view), e);
+				return;
+			}
+			delete this.shiftView;
+		}
 	},
 
 	unselectOther: function(view, e){
@@ -87,7 +107,7 @@ var ControllerMultipleSelection = new Class({
 
 		list.iterate(function(view){
 			range.push(view);
-		}, 'right', from, to);
+		}, 'right', from - 1, to);
 
 		return range;
 	},
@@ -102,9 +122,4 @@ var ControllerMultipleSelection = new Class({
 	}
 });
 
-View.addController(TreeView, 'multiSelection', ControllerMultipleSelection);
-View.defineController(TreeView, 'selection', {
-	condition: function(view){
-		return view.multiSelection !== true;
-	}
-});
+Controller.register('multiSelection', ControllerMultiSelection);

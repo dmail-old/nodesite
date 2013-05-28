@@ -9,8 +9,18 @@ var treeData = {
 	]
 };
 
+// plus tard on aura surement des méthodes raccourcies pour créer un MVC complet tel que treeView
+
 var root = new NodeModel(treeData);
 var treeView = new TreeView(root);
+
+Controller.add(treeView, 'indent');
+Controller.add(treeView, 'tool');
+Controller.add(treeView, 'lighted');
+Controller.add(treeView, 'focused');
+Controller.add(treeView, 'visibles');
+Controller.add(treeView, 'multiSelection'); // 'selection');
+
 treeView.insertElement(document.body);
 //treeView.root.select();
 
@@ -18,6 +28,7 @@ treeView.root.expand();
 treeView.root.children[0].expand();
 treeView.root.children[2].expand();
 treeView.root.children[3].expand();
+
 
 /*
 var FileModel = new Class({

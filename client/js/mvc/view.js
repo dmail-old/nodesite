@@ -1,20 +1,27 @@
-/* global viewDocument, ListenerHandler, EventHandler */
+/* global Emitter, ListenerHandler */
 
 var View = new Class({
+	Implements: Emitter,
 	tagName: 'div',
 	attributes: {},
-	listeners: {},
-	// events: {},
+	modelEvents: {},
 
 	initialize: function(model){
-		// ListenerHandler will take care to bind this.model, this.listeners and this as context
-		this.modelEvents = new ListenerHandler(null, this.listeners, this);
-		// EventHandler will take care to bind this.element, this.events and this as context
-		// this.elementEvents = new EventHandler(null, this.events, this);
+		View.instances[this.elementID = View.elementID++] = this;
 
-		this.setModel(model);
+		// ListenerHandler call this.handlers over this.model events with this as context
+		this.modelEventsHandler = new ListenerHandler(null, this.modelEvents, this);
 
 		this.emit('create');
+
+		this.setModel(model);
+	},
+
+	destroy: function(){
+		this.emit('destroy');
+		this.unsetElement();
+		this.unsetModel();
+		delete View.instances[this.elementID];
 	},
 
 	toString: function(){
@@ -22,19 +29,24 @@ var View = new Class({
 	},
 
 	setModel: function(model){
-		this.model = model;
-		this.modelEvents.emitter = model;
+		if( model ){
+			this.model = model;
+			this.modelEventsHandler.emitter = model;
+			this.modelEventsHandler.listen();
+		}
 	},
 
-	emit: function(name){
-		viewDocument.handleEmit(this, name, arguments);
-		return this;
+	unsetModel: function(){
+		if( this.model ){
+			this.modelEventsHandler.stopListening();
+			delete this.modelEventsHandler.emitter;
+		}
 	},
 
 	getAttributes: function(){
 		var attr = Object.clone(this.attributes);
 
-		attr[viewDocument.viewAttribute] = this.DOMID;
+		attr[View.elementAttribute] = this.elementID;
 
 		return attr;
 	},
@@ -60,9 +72,6 @@ var View = new Class({
 
 	setElement: function(element){
 		this.element = element;
-		//this.elementEvents.emitter = this.element;
-		//this.elementEvents.listen();
-		this.modelEvents.listen();
 		this.emit('setElement', element);
 		return this;
 	},
@@ -70,17 +79,10 @@ var View = new Class({
 	unsetElement: function(){
 		if( this.element ){
 			this.removeElement();
-
 			this.emit('unsetElement', this.element);
-
 			this.element.destroy();
 			delete this.element;
-			//this.elementEvents.stopListening();
 		}
-	},
-
-	render: function(){
-		this.setElement(this.createElement());
 		return this;
 	},
 
@@ -93,9 +95,15 @@ var View = new Class({
 
 	removeElement: function(){
 		if( this.element ){
-			this.emit('removeElement');
+			this.emit('removeElement', this.element);
 			this.element.dispose();
 		}
+		return this;
+	},
+
+	render: function(){
+		this.setElement(this.createElement());
+		return this;
 	},
 
 	hasClass: function(name){
@@ -118,23 +126,64 @@ var View = new Class({
 		if( this.element ){
 			this.element.toggleClass(name, value);
 		}
-	},
-
-	destroy: function(){
-		this.emit('destroy');
-		this.unsetElement();
-		this.modelEvents.stopListening();
 	}
 });
 
-// View.toInstance is automatically called when View() without new, his purpose is to convert the argument into an instance of the Class
+View.instances = {};
+View.elementAttribute = 'data-view';
+View.elementID = 0;
+
+View.isElementView = function(element){
+	return element.hasAttribute && element.hasAttribute(this.elementAttribute);
+};
+
+View.getElementView = function(element){
+	var view = null;
+
+	if( this.isElementView(element) ){
+		view = this.instances[element.getAttribute(this.elementAttribute)];
+	}
+
+	return view;
+};
+
+View.findElementView = function(element){
+	var view = null;
+
+	while( element ){
+		view = this.getElementView(element);
+		if( view ) break;
+		element = element.parentNode;
+	}
+
+	return view;
+};
+
+// View.toInstance is automatically called when we call View() without new
+// his purpose is to convert the argument into an instance of the Class
 View.toInstance = function(item){
 	if( item != null && typeof item.toView == 'function' ) return item.toView();
 	return null;
 };
 
 // retourne le noeud qui détient element ou null
-Element.prototype.toView = function(){ return viewDocument.findElementView(this); };
+Element.prototype.toView = function(){ return View.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 View.prototype.toView = Function.THIS;
+
+// View émet des évènements via le DOM de son élément
+View.prototype.on('*', function(name, args){
+	if( this.element ){
+		var event = new CustomEvent('view:' + name, {
+			bubbles: true,
+			cancelable: true,
+			detail: {
+				view: this,
+				name: name,
+				args: args
+			}
+		});
+		this.element.dispatchEvent(event);
+	}
+});

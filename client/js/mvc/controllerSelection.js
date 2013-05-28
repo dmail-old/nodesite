@@ -2,19 +2,7 @@
 
 var ControllerSelection = new Class({
 	Extends: Controller,
-
 	events: {
-		mousedown: function(view, e){
-			console.log('mousedown single')
-
-			if( view ){
-				view.select(e);
-			}
-			else if( this.selected ){
-				this.selected.unselect(e);
-			}
-		},
-
 		'view:select': function(view, e){
 			if( this.selected ) this.selected.unselect(e);
 			this.selected = view;
@@ -22,13 +10,17 @@ var ControllerSelection = new Class({
 
 		'view:unselect': function(){
 			delete this.selected;
+		},
+
+		mousedown: function(view, e){
+			if( view ){
+				view.select(e);
+			}
+			else if( this.selected ){
+				this.selected.unselect(e);
+			}
 		}
 	}
 });
 
-
-View.defineController(TreeView, 'selection', {
-	constructor: ControllerSelection
-});
-
-TreeView.prototype.addController('selection');
+Controller.register('selection', ControllerSelection);
