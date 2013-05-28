@@ -11,12 +11,12 @@ description: Affichage en arborescence
 /* background image */
 
 .tree .node>div>.ajax{ background-image: url(../img/ajax.gif); background-repeat: no-repeat; background-position: right center; }
-.tree .node>div>tool{ background-image: url(../img/tree/tool.png); background-repeat: no-repeat; background-position: 0px 50%; }
-.tree .node>div>tool:hover{ background-position: -18px 50%; }
-.tree .node.empty>div>tool, .tree .node.disabled>div>tool{ background-image: none; }
-.tree .node.expanded>div>tool{ background-position: -36px 50%; }
-.tree .node.expanded>div>tool:hover{ background-position: -54px 50%; }
-.menu .node>div>tool, .menu .node>div>tool:hover{ background-position: -72px 50%; }
+.tree .node>div>.tool{ background-image: url(../img/tree/tool.png); background-repeat: no-repeat; background-position: 0px 50%; }
+.tree .node>div>.tool:hover{ background-position: -18px 50%; }
+.tree .node.empty>div>.tool, .tree .node.disabled>div>.tool{ background-image: none; }
+.tree .node.expanded>div>.tool{ background-position: -36px 50%; }
+.tree .node.expanded>div>.tool:hover{ background-position: -54px 50%; }
+.menu .node>div>.tool, .menu .node>div>.tool:hover{ background-position: -72px 50%; }
 
 .tree.dot .node{ background-image: url(../img/tree/dot.gif); background-repeat: repeat-y; background-position: 8px 0px; }
 .tree.dot .node.last{ background-repeat: no-repeat; }
@@ -116,7 +116,7 @@ description: Affichage en arborescence
 .tree .node>ul{ display: none; }
 .tree .node.expanded>ul{ display: list-item; }
 
-.tree .node>div>tool{ padding-left: 16px; height: 22px; }
+.tree .node>div>.tool{ padding-left: 16px; height: 22px; padding-top: 4px; padding-bottom: 4px; }
 .tree.compact .node>div>name, .tree.line .node>div{ border: 1px solid transparent; }
 
 .tree .node>div>name{ cursor: default; }
@@ -218,7 +218,7 @@ cependant, dans ce cas je pards le fait que le li mesure toute la largeur et dé
 .menu .node>div>name:first-letter{ text-transform: uppercase; }
 .menu .node>div>kbd{ position: absolute; right: 16px; padding: 0; text-align: right; }
 .menu .node>div>kbd:first-letter{ text-transform: uppercase; }
-.menu .node>div>tool{ position: absolute; right: 0; height: 100%; }
+.menu .node>div>.tool{ position: absolute; right: 0; height: 100%; }
 
 /* Tree Drag */
 
