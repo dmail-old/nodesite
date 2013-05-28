@@ -28,8 +28,11 @@ window.Emitter = {
 		this.applyListeners('removeListener', arguments);
 	},
 
-	onapplylisteners: function(){
+	onapplylisteners: function(name){
 		this.applyListeners('applyListener', arguments);
+		if( name != 'addListener' && name != 'removeListener' && name != '*' ){
+			this.applyListeners('*', arguments);
+		}
 	},
 
 	listeners: function(name, create){
