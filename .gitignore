@@ -1,6 +1,7 @@
 img/
 *.log
-*.sublime*
+*.sublime-project
+*.sublime-workspace
 
 #################
 ## Eclipse

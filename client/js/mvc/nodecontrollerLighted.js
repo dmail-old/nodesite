@@ -1,7 +1,7 @@
-/* global Controller, View, TreeView */
+/* global Controller, NodeController */
 
-var ControllerLighted = new Class({
-	Extends: Controller,
+var NodeControllerLighted = new Class({
+	Extends: NodeController,
 	events: {
 		'view:light': function(view, e){
 			if( this.lighted ) this.lighted.unlight(e);
@@ -28,4 +28,4 @@ var ControllerLighted = new Class({
 	}
 });
 
-Controller.register('lighted', ControllerLighted);
+Controller.register('lighted', NodeControllerLighted);

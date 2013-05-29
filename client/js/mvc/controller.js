@@ -1,20 +1,5 @@
 /* global View, ListenerHandler, EventHandler */
 
-var ControllerEventHandler = new Class({
-	Extends: EventHandler,
-
-	callHandler: function(handler, bind, e){
-		var view = View(e);
-
-		// e.detail.args contient les arguments passé quand on a créé l'event
-		if( e instanceof CustomEvent ){
-			return handler.apply(bind, [view].concat(e.detail.args));
-		}
-
-		return handler.call(bind, view, e);
-	}
-});
-
 var Controller = new Class({
 	viewEvents: {
 		'setElement': function(element){
@@ -32,7 +17,7 @@ var Controller = new Class({
 	events: {},
 
 	initialize: function(view){
-		this.eventsHandler = new ControllerEventHandler(null, this.events, this);
+		this.eventsHandler = new EventHandler(null, this.events, this);
 		this.viewEventsHandler = new ListenerHandler(null, this.viewEvents, this);
 		this.setView(view);
 	},

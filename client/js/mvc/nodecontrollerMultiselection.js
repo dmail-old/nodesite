@@ -1,4 +1,4 @@
-/* global Controller, ControllerSelection */
+/* global Controller, NodeControllerSelection */
 
 /*
 
@@ -9,8 +9,8 @@ OK	mousedown on selected -> nothing
 OK	mousedown on unselected -> select
 OK	mousedown + ctrl on selected -> unselect only (thanks to if( e.control || e.shift ) return; )
 OK	mousedown + ctrl on unselected -> select only (thanks to if( e.control || e.shift ) return; )
-NO  mousedown + shift on selected -> check the shift range
-NO  mousedown + shift on unselected -> check the shift range
+OK  mousedown + shift on selected -> check the shift range
+OK  mousedown + shift on unselected -> check the shift range
 
 OK	click on nothing -> unselectAll
 OK	click on selected -> unselect other
@@ -18,15 +18,9 @@ OK	click on selected -> unselect other
 */
 
 
-var ControllerMultiSelection = new Class({
-	Extends: ControllerSelection,
+var NodeControllerMultiselection = new Class({
+	Extends: NodeControllerSelection,
 	events: {
-		'view:focus': function(view, e){
-			if( view.hasState('selected') ){
-				this.unselectOther(view, e);
-			}
-		},
-
 		'view:select': function(view, e){
 			this.unselectOther(view, e);
 			this.selecteds.push(view);
@@ -38,10 +32,11 @@ var ControllerMultiSelection = new Class({
 
 		'mousedown': function(view, e){
 			if( view ){
-				if( e.control ) view.toggleState('selected', e);
+				if( e.control ){
+					view.toggleState('selected', e);
+				}
 				else{
 					this.checkShift(view, e);
-					view.select(e);
 				}
 			}
 			else{
@@ -60,19 +55,19 @@ var ControllerMultiSelection = new Class({
 	},
 
 	initialize: function(view){
-		ControllerSelection.prototype.initialize.apply(this, arguments);
+		NodeControllerSelection.prototype.initialize.apply(this, arguments);
 		this.selecteds = [];
 	},
 
 	checkShift: function(view, e){
-		if( e ){
-			if( e.shift ){
-				e.preventDefault();
-				this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;
-				this.selectRange(this.createRange(this.shiftView, view), e);
-				return;
-			}
+		if( e && e.shift ){
+			e.preventDefault();
+			this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;
+			this.selectRange(this.createRange(this.shiftView, view), e);
+		}
+		else{
 			delete this.shiftView;
+			view.select(e);
 		}
 	},
 
@@ -122,4 +117,4 @@ var ControllerMultiSelection = new Class({
 	}
 });
 
-Controller.register('multiSelection', ControllerMultiSelection);
+Controller.register('multiselection', NodeControllerMultiselection);

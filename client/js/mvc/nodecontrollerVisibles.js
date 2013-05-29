@@ -1,7 +1,7 @@
-/* global Controller, NodeView */
+/* global Controller, NodeController, NodeView */
 
-var ControllerVisibles = new Class({
-	Extends: Controller,
+var NodeControllerVisibles = new Class({
+	Extends: NodeController,
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);
@@ -30,7 +30,7 @@ var ControllerVisibles = new Class({
 
 	setView: function(view){
 		if( view ) view.visibles = [];
-		return Controller.prototype.setView.call(this, view);
+		return NodeController.prototype.setView.call(this, view);
 	},
 
 	changeVisibility: function(view, hidden){
@@ -80,4 +80,4 @@ NodeView.isVisible = function(view){
 	return !view.hasState('hidden');
 };
 
-Controller.register('visibles', ControllerVisibles);
+Controller.register('visibles', NodeControllerVisibles);

@@ -1,7 +1,7 @@
-/* global Controller */
+/* global Controller, NodeController */
 
-var ControllerIndent = new Class({
-	Extends: Controller,
+var NodeControllerIndent = new Class({
+	Extends: NodeController,
 	events: {
 		'view:insertElement': function(view){
 			// when the background of the node take full width we have to set a padding manually here
@@ -13,4 +13,4 @@ var ControllerIndent = new Class({
 	padding: 18
 });
 
-Controller.register('indent', ControllerIndent);
+Controller.register('indent', NodeControllerIndent);

@@ -1,7 +1,7 @@
-/* global Controller, View, TreeView */
+/* global Controller, NodeController */
 
-var ControllerSelection = new Class({
-	Extends: Controller,
+var NodeControllerSelection = new Class({
+	Extends: NodeController,
 	events: {
 		'view:select': function(view, e){
 			if( this.selected ) this.selected.unselect(e);
@@ -23,4 +23,4 @@ var ControllerSelection = new Class({
 	}
 });
 
-Controller.register('selection', ControllerSelection);
+Controller.register('selection', NodeControllerSelection);

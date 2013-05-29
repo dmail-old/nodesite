@@ -79,6 +79,7 @@ var NodeView = new Class({
 		this.insertBefore(child, index ? this.children[index] : null);
 	},
 
+	// NOTE: should be override by FileNodeView -> should not be considered empty until loaded
 	isEmpty: function(){
 		return this.children.length === 0;
 	},
@@ -160,6 +161,7 @@ var NodeView = new Class({
 	},
 
 	expand: function(e){
+		if( this.isEmpty() ) return false;
 		if( !this.childrenElement ) this.renderChildren();
 		return this.setState('expanded', true, e);
 	},

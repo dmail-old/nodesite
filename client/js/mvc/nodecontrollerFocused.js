@@ -1,4 +1,4 @@
-/* global Controller */
+/* global Controller, NodeController */
 
 /*
 
@@ -15,8 +15,8 @@ faire la largeur de son contenu
 
 */
 
-var ControllerFocused = new Class({
-	Extends: Controller,
+var NodeControllerFocused = new Class({
+	Extends: NodeController,
 	events: {
 		'view:focus': function(view, e){
 			var current = this.view.focused;
@@ -40,6 +40,7 @@ var ControllerFocused = new Class({
 		},
 
 		'mousedown': function(view, e){
+			// FIX: mousedown peut se produire sur tree qui ne dispose pas de fonction focus
 			if( view ){
 				view.focus(e);
 			}
@@ -47,4 +48,4 @@ var ControllerFocused = new Class({
 	}
 });
 
-Controller.register('focused', ControllerFocused);
+Controller.register('focused', NodeControllerFocused);

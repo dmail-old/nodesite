@@ -9,6 +9,9 @@
 		},
 		{
 			"path": "/home/damien/iot-butler/SmartMobile/SmartMobile-Android"
+		},
+		{
+			"path": "/home/damien/phonegap-plugins/Android/WebIntent"
 		}
 	]
 }
