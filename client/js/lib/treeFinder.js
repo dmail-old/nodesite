@@ -55,13 +55,13 @@ var TreeFinder = window.TreeFinder = {
 };
 
 Object.forEach({
-	node: 'crossAll',
-	parent: 'crossUp',
-	child: 'cross',
+	node: 'crossNode',
+	parent: 'crossParent',
+	child: 'crossChild',
 	last: 'crossReverse',
-	next: 'crossRight',
-	prev: 'crossLeft',
-	sibling: 'crossAround'
+	next: 'crossNext',
+	prev: 'crossPrev',
+	sibling: 'crossSibling'
 }, function(iteratorName, axis){
 	var maj = axis.capitalize();
 
@@ -73,7 +73,7 @@ Object.forEach({
 
 unused
 
-TreeFinder.getPrevNode = TreeFinder.createFindMethod(TreeTraversal.crossPrev);
-TreeFinder.getNextNode = TreeFinder.createFindMethod(TreeTraversal.crossNext);
+TreeFinder.getPrevNode = TreeFinder.createFindMethod(TreeTraversal.crossPrevNode);
+TreeFinder.getNextNode = TreeFinder.createFindMethod(TreeTraversal.crossNextNode);
 
 */

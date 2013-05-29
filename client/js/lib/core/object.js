@@ -59,33 +59,11 @@ Object.eachPair = function(source, fn, bind){
 };
 
 // call fn on every pair of this array
-Array.prototype.eachPair = function(fn, bind){
+Array.prototype.eachPair = function(fn, bind, each){
 	var i = 0, j = this.length, item;
 
 	for(;i<j;i++){
 		item = this[i];
-		
-		/*
-		
-		function ownProperty(propertyName, source){
-			Object.defineProperty(
-				this instanceof Function ? this.prototype : this,
-				ownPropertyName,
-				Object.getOwnPropertyDescriptor(source, ownPropertyName)
-			);
-		}
-		
-		if( ownProperty ){
-			if( typeof item == 'object' ){
-				Object.getOwnPropertyNames(item).forEach(function(ownPropertyName){ ownProperty.call(bind, ownPropertyName, item); }, this);
-			}
-			else if( item instanceof Function ){
-				Object.getOwnPropertyNames(item.prototype).forEach(function(ownPropertyName){ ownProperty.call(bind, ownPropertyName, item.prototype); }, this);
-			}
-		}	
-		
-		*/
-		
 		if( item instanceof Function ) item = Object.getInstance(item);
 
 		switch(typeof item){
@@ -93,8 +71,8 @@ Array.prototype.eachPair = function(fn, bind){
 			fn.call(bind, item, this[i+1]);
 			i++;
 			break;
-		case 'object':
-			Object.eachPair(item, fn, bind);
+		case 'object':			
+			(each || Object.eachPair)(item, fn, bind);
 			break;
 		}
 	}
@@ -243,8 +221,26 @@ provides:
 	Function.prototype.implement, Function.prototype.complement
 */
 
+Object.appendDescriptor = function(source, key, value){
+	Object.defineProperty(source, key, value);
+	return object;
+};
+
+Object.eachDescriptor = function(source, fn, bind){
+	var own = Object.getOwnPropertyNames(source), keys = Object.keys(source);
+	
+	own.forEach(function(name){
+		if( keys.indexOf(name) === -1 ){			
+			fn.call(bind, name, Object.getOwnPropertyDescriptor(source, name), source);
+		}
+	});
+	
+	return source;	
+};
+
 Object.implementThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.mergePair, this.prototype);
+	Array.prototype.eachPair.call(arguments, Object.mergePair, this.prototype, Object.eachProto);
+	//Array.prototype.eachPair.call(arguments, Object.appendDescriptor, this.prototype, Object.eachDescriptor);
 	return this;
 };
 

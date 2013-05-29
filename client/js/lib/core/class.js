@@ -112,14 +112,7 @@ new Class({
 
 var Class = window.Class = function(proto){
 	var fn = function(){
-		// called with new
-		if( this instanceof fn ){
-			return this.initialize ? this.initialize.apply(this, arguments) : this;
-		}
-		// called without new
-		else{
-			return fn.toInstance ? fn.toInstance.apply(fn, arguments) : this;
-		}
+		return this.initialize ? this.initialize.apply(this, arguments) : this;
 	};
 
 	if( proto ){

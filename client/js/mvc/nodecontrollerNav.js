@@ -5,37 +5,31 @@ var NodeControllerNav = new Class({
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
-			var key = String(e.key), keySelector = e.key, method;
-
-			if( e.control ) keySelector = 'ctrl+' + keySelector;
-			method = this.keys[keySelector];
-			if( !method && keySelector.length == 1 && RegExp.alphanum.test(keySelector)  ){
-				method = this.keys['*'];
+			var key = String(e.key), method = this.keys[key];
+						
+			if( !method && (key.length == 1 && RegExp.alphanum.test(key)) ){
+				method = '*';
 			}
-
 			if( method ){
 				this.currentView = this.getActiveView();
 				this.list = this.getList();
 				this.target = null;
 
 				// no currentView -> naviguate to home view
-				if( !this.currentView ){
+				if( !this.currentView && method != '*' ){
 					method = this.keys['home'];
 				}
 
 				method.call(this, e);
-				if( this.target ) this.go(this.target, e);
+				if( this.target ){
+					this.go(this.target, e);
+					e.preventDefault();
+				}
 			}
 		}
 	},
 	loop: false,
 	keys: {
-		'ctrl+a': function(e){
-			this.list.forEach(function(view){
-				view.select(e);
-			});
-		},
-
 		'enter': function(e){
 			// activate currentView, do nothing if no view is active
 			this.currentView.active(e);
@@ -94,6 +88,9 @@ var NodeControllerNav = new Class({
 		},
 
 		'*': function(e){
+			// avoid conflict with shortcut like ctrl+a, ctrl+c
+			if( e.control ) return;
+			
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
@@ -105,15 +102,13 @@ var NodeControllerNav = new Class({
 	go: function(view, e){
 		if( view ){
 			view.focus(e);
-			//if( !e ||  !e.control ) view.select(e);
+			//if( !e || !e.control ) view.select(e);
 			if( e && e.type == 'keydown' ) e.preventDefault();
 			return true;
 		}
 		return false;
 	},
-
-
-
+	
 	getLine: function(element){
 		if( !element ) return 0;
 

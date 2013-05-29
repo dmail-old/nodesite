@@ -64,7 +64,7 @@ var NodeControllerVisibles = new Class({
 		- his parent is expanded
 		*/
 
-		this.view.root.crossAll(function(view){
+		this.view.root.crossNode(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
 			this.view.visibles.push(view);

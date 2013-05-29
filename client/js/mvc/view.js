@@ -1,13 +1,22 @@
 /* global Emitter, ListenerHandler */
 
-var View = new Class({
-	Implements: Emitter,
+var View = function(item){
+	// called without new
+	if( !(this instanceof View) ){
+		if( item != null && typeof item.toView == 'function' ) return item.toView();
+		return null;
+	}
+	
+	return this.initialize ? this.initialize.apply(this, arguments) : this;
+};
+
+View.implement(Emitter, {
 	tagName: 'div',
 	attributes: {},
 	modelEvents: {},
 
 	initialize: function(model){
-		View.instances[this.elementID = View.elementID++] = this;
+		View.instances[this.id = View.lastID++] = this;
 
 		// ListenerHandler call this.handlers over this.model events with this as context
 		this.modelEventsHandler = new ListenerHandler(null, this.modelEvents, this);
@@ -21,7 +30,7 @@ var View = new Class({
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
-		delete View.instances[this.elementID];
+		delete View.instances[this.id];
 	},
 
 	toString: function(){
@@ -46,7 +55,7 @@ var View = new Class({
 	getAttributes: function(){
 		var attr = Object.clone(this.attributes);
 
-		attr[View.elementAttribute] = this.elementID;
+		attr[View.IDAttribute] = this.id;
 
 		return attr;
 	},
@@ -130,18 +139,18 @@ var View = new Class({
 });
 
 View.instances = {};
-View.elementAttribute = 'data-view';
-View.elementID = 0;
+View.IDAttribute = 'data-view';
+View.lastID = 0;
 
 View.isElementView = function(element){
-	return element.hasAttribute && element.hasAttribute(this.elementAttribute);
+	return element.hasAttribute && element.hasAttribute(this.IDAttribute);
 };
 
 View.getElementView = function(element){
 	var view = null;
 
 	if( this.isElementView(element) ){
-		view = this.instances[element.getAttribute(this.elementAttribute)];
+		view = this.instances[element.getAttribute(this.IDAttribute)];
 	}
 
 	return view;
@@ -157,13 +166,6 @@ View.findElementView = function(element){
 	}
 
 	return view;
-};
-
-// View.toInstance is automatically called when we call View() without new
-// his purpose is to convert the argument into an instance of the Class
-View.toInstance = function(item){
-	if( item != null && typeof item.toView == 'function' ) return item.toView();
-	return null;
 };
 
 // retourne le noeud qui détient element ou null
