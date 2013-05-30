@@ -1,4 +1,4 @@
-(function(){
+/* global Chain, Emitter, Options */
 
 Object.toQueryString = function(object, base){
 	var queryString = [];
@@ -6,7 +6,7 @@ Object.toQueryString = function(object, base){
 	Object.forEach(object, function(value, key){
 		if( base ) key = base + '[' + key + ']';
 		var result;
-		
+
 		if( typeof value == 'object' ){
 			if( typeof value.toQueryString == 'function' ) value = value.toQueryString();
 			result = Object.toQueryString(value, key);
@@ -14,27 +14,27 @@ Object.toQueryString = function(object, base){
 		else{
 			result = key + '=' + encodeURIComponent(value);
 		}
-		
+
 		if( value != null ) queryString.push(result);
 	});
-	
+
 	return queryString.join('&');
 };
 
 Array.prototype.toQueryString = function(){
 	var queryString = {};
-	
+
 	this.forEach(function(value, i){ queryString[i] = value; });
-	
+
 	return queryString;
 };
 
 Element.prototype.toQueryString = function(){
 	var queryString = [];
-	
+
 	this.getElements(function(el){ return el.tagName.match(/input|select|textarea/i); }).each(function(el){
 		var type = el.type, value;
-		
+
 		if( !el.name || el.disabled || type == 'submit' || type == 'reset' || type == 'file' || type == 'image' ) return;
 		if( el.get('tag') == 'select' ){
 			value = el.getSelected().map(function(opt){ return opt.get('value'); });
@@ -51,17 +51,13 @@ Element.prototype.toQueryString = function(){
 			if( typeof val != 'undefined' ) queryString.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(val));
 		});
 	});
-	
+
 	return queryString.join('&');
 };
 
-var
-	empty = function(){},
-	progressSupport = ('onprogress' in new XMLHttpRequest());
-;
+var progressSupport = 'onprogress' in new XMLHttpRequest();
 
 var Request = this.Request = new Class({
-	Implements: [Emitter, Options, Chain],
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
@@ -93,31 +89,33 @@ var Request = this.Request = new Class({
 		timeout: 0,
 		noCache: false
 	},
-	
-	initialize: function(options){
+
+	constructor: function(options){
 		this.resetXhr();
 		this.setOptions(options);
 		this.headers = this.options.headers;
+
+		Chain.prototype.constructor.call(this);
 	},
-	
+
 	resetXhr: function(){
 		this.xhr = new XMLHttpRequest();
 	},
-	
+
 	onStateChange: function(){
 		var xhr = this.xhr;
 		if( xhr.readyState != 4 || !this.running ) return;
 		this.running = false;
 		this.status = 0;
-		
+
 		try{
 			var status = xhr.status;
 			this.status = (status == 1223) ? 204 : status;
 		}
-		catch(e){};
-		
-		xhr.onreadystatechange = empty;
-		if( progressSupport ) xhr.onprogress = xhr.onloadstart = empty;
+		catch(e){}
+
+		xhr.onreadystatechange = Function.EMPTY;
+		if( progressSupport ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
 		clearTimeout(this.timer);
 
 		this.response = {text: this.xhr.responseText || '', xml: this.xhr.responseXML};
@@ -137,7 +135,7 @@ var Request = this.Request = new Class({
 	isRunning: function(){
 		return !!this.running;
 	},
-	
+
 	success: function(text, xml){
 		this.onSuccess(text.stripScripts(), xml);
 	},
@@ -182,10 +180,16 @@ var Request = this.Request = new Class({
 
 	check: function(){
 		if( !this.running ) return true;
+
 		switch(this.options.link){
-			case 'cancel': this.cancel(); return true;
-			case 'chain': this.chain(this.send, this, arguments); return false;
+		case 'cancel':
+			this.cancel();
+			return true;
+		case 'chain':
+			this.chain(this.send, this, arguments);
+			return false;
 		}
+
 		return false;
 	},
 
@@ -200,9 +204,9 @@ var Request = this.Request = new Class({
 		var old = this.options;
 		options = Object.append({data: old.data, url: old.url, method: old.method}, options);
 		var data = options.data, url = String(options.url), method = options.method.toLowerCase();
-		
+
 		if( typeof data == 'object' ) data = Object.toQueryString(data);
-		
+
 		if( this.options.format ){
 			var format = 'format=' + this.options.format;
 			data = (data) ? format + '&' + data : format;
@@ -239,9 +243,9 @@ var Request = this.Request = new Class({
 
 		xhr.open(method.toUpperCase(), url, this.options.async, this.options.user, this.options.password);
 		if( this.options.user && 'withCredentials' in xhr ) xhr.withCredentials = true;
-		
+
 		xhr.onreadystatechange = this.onStateChange.bind(this);
-		
+
 		for(var header in this.headers){
 			try{
 				xhr.setRequestHeader(header, this.headers[header]);
@@ -264,12 +268,12 @@ var Request = this.Request = new Class({
 		var xhr = this.xhr;
 		xhr.abort();
 		clearTimeout(this.timer);
-		xhr.onreadystatechange = empty;
-		if( progressSupport ) xhr.onprogress = xhr.onloadstart = empty;
+		xhr.onreadystatechange = Function.EMPTY;
+		if( progressSupport ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
 		this.xhr = new XMLHttpRequest();
 		this.emit('cancel');
 		return this;
 	}
 });
 
-})();
+Request.implement(Emitter, Options, Chain);

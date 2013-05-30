@@ -1,3 +1,4 @@
+/* global Chain, Emitter, Bound, Options */
 
 /*
 ---
@@ -15,10 +16,7 @@ provides: Fx
 ...
 */
 
-(function(){
-
 var Fx = this.Fx = new Class({
-	Implements: [Chain, Emitter, Options],
 	options: {
 		fps: 60,
 		unit: false,
@@ -27,12 +25,13 @@ var Fx = this.Fx = new Class({
 		frameSkip: true,
 		link: 'ignore'
 	},
-	
+
 	initialize: function(options){
+		Chain.prototype.constructor.call(this);
 		this.subject = this;
 		this.setOptions(options);
 	},
-	
+
 	getTransition: function(){
 		return function(p){
 			return -(Math.cos(Math.PI * p) - 1) / 2;
@@ -68,10 +67,16 @@ var Fx = this.Fx = new Class({
 
 	check: function(){
 		if (!this.isRunning()) return true;
+
 		switch (this.options.link){
-			case 'cancel': this.cancel(); return true;
-			case 'chain': this.chain(this.start, this, arguments); return false;
+		case 'cancel':
+			this.cancel();
+			return true;
+		case 'chain':
+			this.chain(this.start, this, arguments);
+			return false;
 		}
+
 		return false;
 	},
 
@@ -134,11 +139,13 @@ var Fx = this.Fx = new Class({
 	}
 });
 
+Fx.implement(Chain, Emitter, Options);
+
 Object.append(Fx, {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},
-	
+
 	Durations: {
 		'short': 250,
 		'normal': 500,
@@ -156,13 +163,13 @@ function loop(){
 		var instance = this[i];
 		if (instance) instance.step(now);
 	}
-};
+}
 
 function pushInstance(fps){
 	var list = instances[fps] || (instances[fps] = []);
 	list.push(this);
 	if (!timers[fps]) timers[fps] = setInterval(loop.bind(list), Math.round(1000 / fps));
-};
+}
 
 function pullInstance(fps){
 	var list = instances[fps];
@@ -173,7 +180,5 @@ function pullInstance(fps){
 			timers[fps] = clearInterval(timers[fps]);
 		}
 	}
-};
-
-})();
+}
 

@@ -16,7 +16,7 @@ var Controller = new Class({
 	},
 	events: {},
 
-	initialize: function(view){
+	constructor: function(view){
 		this.eventsHandler = new EventHandler(null, this.events, this);
 		this.viewEventsHandler = new ListenerHandler(null, this.viewEvents, this);
 		this.setView(view);

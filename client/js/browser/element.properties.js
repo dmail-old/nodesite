@@ -1,5 +1,3 @@
-(function(){
-
 Element.Properties = {};
 
 Element.Properties.tagName = Element.Properties.name = {
@@ -36,7 +34,7 @@ Object.append(propertyGetters, {
 	'class': function(){
 		return 'className' in this ? this.className || null : this.getAttribute('class');
 	},
-	
+
 	'for': function(){
 		return 'htmlFor' in this ? this.htmlFor : this.getAttribute('for');
 	},
@@ -66,15 +64,18 @@ Object.append(propertyGetters, {
 
 Object.append(propertySetters, {
 	'class': function(value){
-		('className' in this) ? this.className = (value || '') : this.setAttribute('class', value);
+		if( 'className' in this ) this.className = value || '';
+		else this.setAttribute('class', value);
 	},
 
 	'for': function(value){
-		('htmlFor' in this) ? this.htmlFor = value : this.setAttribute('for', value);
+		if( 'htmlFor' in this ) this.htmlFor = value;
+		else this.setAttribute('for', value);
 	},
 
 	'style': function(value){
-		(this.style) ? this.style.cssText = value : this.setAttribute('style', value);
+		if( this.style ) this.style.cssText = value;
+		else this.setAttribute('style', value);
 	},
 
 	'value': function(value){
@@ -82,11 +83,11 @@ Object.append(propertySetters, {
 	}
 });
 
-Element.implement({	
+Element.implement({
 	hasProperty: function(name){
 		return this.hasAttribute(name);
 	},
-	
+
 	setProperty: function(name, value){
 		var setter = propertySetters[name.toLowerCase()];
 		if( setter ) setter.call(this, value);
@@ -123,61 +124,60 @@ Element.implement({
 
 	set: function(prop, value){
 		var property = Element.Properties[prop];
-		(property && property.set) ? property.set.call(this, value) : this.setProperty(prop, value);
+		if( property && property.set ) property.set.call(this, value);
+		else this.setProperty(prop, value);
 	}.overloadSetter(),
 
 	get: function(prop){
 		var property = Element.Properties[prop];
-		return (property && property.get) ? property.get.apply(this) : this.getProperty(prop);
+		if( property && property.get ) return property.get.apply(this);
+		else return this.getProperty(prop);
 	}.overloadGetter(),
 
 	erase: function(prop){
 		var property = Element.Properties[prop];
-		(property && property.erase) ? property.erase.apply(this) : this.removeProperty(prop);
+		if( property && property.erase ) property.erase.apply(this);
+		else this.removeProperty(prop);
 		return this;
 	}
 });
 
-// fix IE button submit 
+// fix IE button submit
 (function(){
+	var input = document.createElement('input');
+	input.value = 't';
+	input.type = 'submit';
 
-var input = document.createElement('input');
-input.value = 't';
-input.type = 'submit';
-
-if( input.value != 't' ){
-	propertySetters.type = function(type){ var value = this.value; this.type = type; this.value = value; };
-}
-
-})();
-
+	if( input.value != 't' ){
+		propertySetters.type = function(type){ var value = this.value; this.type = type; this.value = value; };
+	}
 })();
 
 var Storage = new Class({
-	initialize: function(){
+	constructor: function(){
 		this.clear();
 	},
-	
+
 	clear: function(){
 		this.store = {};
 		this.length = 0;
 		return this;
 	},
-	
+
 	contains: function(name){
 		return name in this.store;
 	},
-	
+
 	get: function(name){
 		return this.store[name];
 	},
-	
+
 	set: function(name, value){
 		this.store[name] = value;
 		this.length++;
 		return this;
 	},
-	
+
 	remove: function(name){
 		delete this.store[name];
 		this.length--;

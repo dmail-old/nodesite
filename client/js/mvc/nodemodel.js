@@ -1,14 +1,12 @@
 /* global Model, TreeStructure */
 
-var NodeModel = new Class({
-	Extends: Model,
-	Implements: TreeStructure,
+var NodeModel = new Class(Model, {
 	name: '',
 
 	initialize: function(){
 		Model.prototype.initialize.apply(this, arguments);
-		TreeStructure.init.call(this, this.get('children'));
 
+		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');
 	},
 
@@ -38,4 +36,6 @@ var NodeModel = new Class({
 
 	}
 });
+
+NodeModel.implement(TreeStructure);
 

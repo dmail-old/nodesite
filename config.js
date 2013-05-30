@@ -27,7 +27,8 @@ var config = {
 config.js = [].concat(
 	[
 		"util", "object", "string", "number", "function", "array", "class"
-	].prefix('/lib/core/'),
+	].prefix('/lib/core/')
+	/*
 	[
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "list", "stringList", "memory", "path",
@@ -41,15 +42,20 @@ config.js = [].concat(
 	].prefix('browser/'),
 	[
 		"model", "view", "controller",
-		"nodemodel", "nodeview", "nodecontroller",
-		"treeview",
-	].prefix('mvc/'),
+		//"nodemodel",
+		//"nodeview",
+		// "nodecontroller",
+		//"treeview",
+	].prefix('mvc/')
+	*/
+	/*
 	[
 		"Tool", "Indent", "Visibles", "Lighted", "Focused", "Selection", "Multiselection", "Nav"
 	].prefix('mvc/nodecontroller'),
 	[
 		"fx"
 	],
+	*/
 	/*[
 		"tree", "tree.list", "tree.sort", "tree.swap",
 		"tree.demon", "tree.memory", "tree.ajax", "tree.problems", "tree.unique",
@@ -60,12 +66,14 @@ config.js = [].concat(
 		"tree.keynav", "tree.selector", "tree.keyshortcut", "menu", "tree.menu",
 	].prefix('tree/'),
 	*/
+	/*
 	[
 		"fx.scroll", "DOMRectangle", "element.wrapVectors", "box", "popup", "popup.valid", "selectionRectangle"
 	].prefix('box/'),
 	[
-		//"selector", "multiSelector", "popupSelector"
+		"selector", "multiSelector", "popupSelector"
 	].prefix('ui/')
+	*/
 );
 
 // fichier css qu'on donne au client

@@ -1,3 +1,5 @@
+/* global List */
+
 /*
 
 name: StringList
@@ -8,30 +10,28 @@ require: String, Array, Class
 
 */
 
-var StringList = new Class({
-	Extends: List,
-	
-	initialize: function(string){
+var StringList = new Class(List, {
+	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) List.prototype.initialize.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) List.prototype.constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},
-	
+
 	indexOf: function(token, index){
 		if( token === '' ) throw new Error('SYNTAX_ERR', 'An invalid or illegal string was specified');
 		if( RegExp.SPACE.test(token) ) throw new Error('INVALID_CHARACTER_ERR', 'String contains an invalid character');
-		
+
 		return Array.prototype.indexOf.call(this, token, index);
 	},
-	
+
 	contains: function(token, index){
 		return this.indexOf(token, index) !== -1;
 	},
-	
+
 	update: Function.NULL,
-	
+
 	add: function(token){
 		if( !this.contains(token) ){
 			this.push(token);
@@ -39,7 +39,7 @@ var StringList = new Class({
 		}
 		return this;
 	},
-	
+
 	remove: function(token){
 		var index = this.indexOf(token);
 		if( index !== -1 ){
@@ -48,12 +48,12 @@ var StringList = new Class({
 		}
 		return this;
 	},
-	
+
 	toggle: function(token){
 		return this.contains(token) ? this.remove(token) : this.add(token);
 	},
-	
+
 	toString: function(){
 		return this.join(' ');
-	}	
+	}
 });

@@ -1,21 +1,17 @@
 /* global Emitter, ListenerHandler */
 
-var View = function(item){
-	// called without new
-	if( !(this instanceof View) ){
-		if( item != null && typeof item.toView == 'function' ) return item.toView();
-		return null;
-	}
-	
-	return this.initialize ? this.initialize.apply(this, arguments) : this;
-};
-
-View.implement(Emitter, {
+var View = new Class({
 	tagName: 'div',
 	attributes: {},
 	modelEvents: {},
 
-	initialize: function(model){
+	constructor: function(model){
+		// called without new
+		if( !(this instanceof View) ){
+			if( model != null && typeof model.toView == 'function' ) return model.toView();
+			return null;
+		}
+
 		View.instances[this.id = View.lastID++] = this;
 
 		// ListenerHandler call this.handlers over this.model events with this as context
@@ -137,6 +133,8 @@ View.implement(Emitter, {
 		}
 	}
 });
+
+View.implement(Emitter);
 
 View.instances = {};
 View.IDAttribute = 'data-view';

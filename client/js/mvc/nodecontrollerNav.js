@@ -1,12 +1,11 @@
 /* global Controller, NodeController, NodeView */
 
-var NodeControllerNav = new Class({
-	Extends: NodeController,
+var NodeControllerNav = new Class(NodeController, {
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
 			var key = String(e.key), method = this.keys[key];
-						
+
 			if( !method && (key.length == 1 && RegExp.alphanum.test(key)) ){
 				method = '*';
 			}
@@ -90,7 +89,7 @@ var NodeControllerNav = new Class({
 		'*': function(e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
 			if( e.control ) return;
-			
+
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
@@ -108,7 +107,7 @@ var NodeControllerNav = new Class({
 		}
 		return false;
 	},
-	
+
 	getLine: function(element){
 		if( !element ) return 0;
 

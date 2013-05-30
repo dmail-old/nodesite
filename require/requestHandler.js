@@ -1,5 +1,5 @@
 var FileResponse = new Class({
-	initialize: function(response){
+	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
 		this.method = this.request.method || 'GET';
@@ -254,7 +254,7 @@ function PageResponse(response){
 }
 
 var AjaxResponse = new Class({
-	initialize: function(response){
+	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
 		this.method = this.request.method || 'GET';

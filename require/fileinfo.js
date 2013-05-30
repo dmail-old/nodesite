@@ -1,9 +1,9 @@
 var FileInfo = new Class({
-	initialize: function(path, stat){
+	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;
 	},
-		
+
 	toJSON: function(){
 		var data = {
 			name: require('path').basename(this.path),
@@ -13,10 +13,10 @@ var FileInfo = new Class({
 			mtime: this.stat.mtime,
 			ctime: this.stat.ctime
 		};
-		
+
 		if( this.children ) data.children = this.children;
 		if( this.listed ) data.listed = this.listed;
-		
+
 		return data;
 	}
 });

@@ -17,8 +17,7 @@ OK	click on selected -> unselect other
 
 */
 
-var NodeControllerMultiselection = new Class({
-	Extends: NodeControllerSelection,
+var NodeControllerMultiselection = new Class(NodeControllerSelection, {
 	events: {
 		'view:select': function(view, e){
 			this.unselectOther(view, e);
@@ -51,7 +50,7 @@ var NodeControllerMultiselection = new Class({
 				this.unselectAll(e);
 			}
 		},
-		
+
 		'keydown': function(view, e){
 			if( e.control && e.key == 'a' ){
 				this.view.visibles.forEach(function(view){
@@ -61,8 +60,8 @@ var NodeControllerMultiselection = new Class({
 		}
 	},
 
-	initialize: function(view){
-		NodeControllerSelection.prototype.initialize.apply(this, arguments);
+	constructor: function(view){
+		NodeControllerSelection.prototype.constructor.apply(this, arguments);
 		this.selecteds = [];
 	},
 

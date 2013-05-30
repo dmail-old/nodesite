@@ -1,8 +1,8 @@
-var SelectView = new Class({
-	Extends: View,
+var SelectView = new Class(View, {
 	tagName: 'div',
-	Implements: [ViewSelectionController, ViewNaviguationController, ViewVisibilityController],
 	events: {
-		
+
 	}
 });
+
+SelectView.implement(ViewSelectionController, ViewNaviguationController, ViewVisibilityController);

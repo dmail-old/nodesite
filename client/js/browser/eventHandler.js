@@ -1,8 +1,6 @@
 /* global ListenerHandler */
 
-var EventHandler = new Class({
-	Extends: ListenerHandler,
-
+var EventHandler = new Class(ListenerHandler, {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},

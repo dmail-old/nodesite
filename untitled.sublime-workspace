@@ -16,10 +16,42 @@
 	"buffers":
 	[
 		{
-			"contents": "var Character = {\n	name: '',\n	method: function(){\n\n	}\n};\n\nvar PNJ = Object.create(Character);\n\nPNJ.method2 = function(){}\n\nvar pnj = Object.create(PNJ);",
+			"file": "client/treeView.html",
 			"settings":
 			{
-				"buffer_size": 152,
+				"buffer_size": 3787,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "client/js/lib/core/object.js",
+			"settings":
+			{
+				"buffer_size": 6319,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "client/js/lib/core/class.js",
+			"settings":
+			{
+				"buffer_size": 5265,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "config.js",
+			"settings":
+			{
+				"buffer_size": 4047,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "app.html",
+			"settings":
+			{
+				"buffer_size": 7222,
 				"line_ending": "Unix"
 			}
 		}
@@ -27,9 +59,13 @@
 	"build_system": "",
 	"command_palette":
 	{
-		"height": 159.0,
+		"height": 75.0,
 		"selected_items":
 		[
+			[
+				"setsyntax:javascript",
+				"Set Syntax: JavaScript"
+			],
 			[
 				"setsyntax:ja",
 				"Set Syntax: JavaScript"
@@ -52,6 +88,47 @@
 	},
 	"file_history":
 	[
+		"/home/damien/nodesite/client/js/lib/treeStructure.js",
+		"/home/damien/nodesite/client/js/mvc/nodemodel.js",
+		"/home/damien/nodesite/client/js/mvc/nodeview.js",
+		"/home/damien/nodesite/db/db.js",
+		"/home/damien/nodesite/client/js/mvc/controller.js",
+		"/home/damien/nodesite/client/js/mvc/model.js",
+		"/home/damien/nodesite/client/js/mvc/view.js",
+		"/home/damien/nodesite/client/js/fx.js",
+		"/home/damien/nodesite/client/js/ui/selector.js",
+		"/home/damien/nodesite/client/js/mvc/treeview.js",
+		"/home/damien/nodesite/client/js/mvc/selectview.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerVisibles.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerTool.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerSelection.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerMultiselection.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerLighted.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerIndent.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerFocused.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontroller.js",
+		"/home/damien/nodesite/client/js/box/selectionRectangle.js",
+		"/home/damien/nodesite/client/js/box/popupSelector.js",
+		"/home/damien/nodesite/client/js/box/popup.js",
+		"/home/damien/.config/sublime-text-2/Packages/User/SublimeLinter.sublime-settings",
+		"/home/damien/nodesite/client/js/box/fx.scroll.js",
+		"/home/damien/nodesite/client/js/box/box.js",
+		"/home/damien/nodesite/client/js/box/DOMRectangle.js",
+		"/home/damien/nodesite/client/js/browser/element.keepIntoView.js",
+		"/home/damien/nodesite/client/js/browser/request.js",
+		"/home/damien/nodesite/client/js/browser/eventHandler.js",
+		"/home/damien/nodesite/client/js/browser/element.properties.js",
+		"/home/damien/nodesite/client/js/lib/memory.js",
+		"/home/damien/nodesite/client/js/lib/listenerHandler.js",
+		"/home/damien/nodesite/client/js/lib/list.js",
+		"/home/damien/nodesite/client/js/lib/stringList.js",
+		"/home/damien/nodesite/client/js/mvc/nodecontrollerNav.js",
+		"/home/damien/nodesite/client/css/tree.css",
+		"/home/damien/nodesite/server.js",
+		"/home/damien/nodesite/require/requestHandler.js",
+		"/home/damien/nodesite/require/fileinfo.js",
+		"/home/damien/nodesite/require/file.js",
+		"/home/damien/nodesite/.gitignore",
 		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/index.html",
 		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/assets/www/js/index.js",
 		"/home/damien/hellobutler/src/eu/butler/hellobutler/MainActivity.java",
@@ -70,57 +147,40 @@
 		"/home/damien/.cache/.fr-A3BYuk/ApplicationInfo.class",
 		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/cordova/appinfo.jar",
 		"/home/damien/nodesite/config.js",
-		"/home/damien/nodesite/client/js/mvc/treeview.js",
 		"/home/damien/nodesite/client/treeView.html",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerMultiselection.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontroller.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerVisibles.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerTool.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerSelection.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerNav.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerLighted.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerIndent.js",
-		"/home/damien/nodesite/client/js/mvc/nodecontrollerFocused.js",
 		"/home/damien/nodesite/client/js/mvc/controllerNav.js",
 		"/home/damien/nodesite/client/js/mvc/controllerMultiSelection.js",
-		"/home/damien/nodesite/client/js/mvc/controller.js",
 		"/home/damien/nodesite/client/js/mvc/nodeController.js",
 		"/home/damien/nodesite/client/js/mvc/controllerVisibles.js",
 		"/home/damien/nodesite/client/js/lib/core/array.js",
 		"/home/damien/nodesite/client/js/mvc/controllerFocused.js",
-		"/home/damien/nodesite/client/js/mvc/nodeview.js",
 		"/home/damien/nodesite/client/js/mvc/controllerTool.js",
-		"/home/damien/nodesite/client/css/tree.css",
 		"/home/damien/nodesite/client/js/mvc/controllerMultipleSelection.js",
 		"/home/damien/nodesite/client/js/mvc/controllerLighted.js",
 		"/home/damien/nodesite/client/js/mvc/controllerSelection.js",
 		"/home/damien/nodesite/client/js/mvc/controllerIndent.js",
 		"/home/damien/nodesite/client/js/mvc/controllerCSS.js",
-		"/home/damien/nodesite/client/js/mvc/view.js",
 		"/home/damien/nodesite/client/js/lib/emitter.js",
 		"/home/damien/nodesite/client/js/browser/eventEmitter.js",
 		"/home/damien/nodesite/client/js/browser/event.js",
-		"/home/damien/nodesite/client/js/lib/listenerHandler.js",
 		"/home/damien/nodesite/client/js/mvc/selectView.js",
 		"/home/damien/nodesite/client/js/mvc/viewDocument.js",
 		"/home/damien/hellobutler/AndroidManifest.xml",
 		"/usr/local/apache2/htdocs/butler/js/fastbutton.js",
 		"/home/damien/iot-butler/SmartMobile/SmartMobile-Android/src/eu/butler/smartmobile/SmartMobile.java",
-		"/home/damien/nodesite/.gitignore",
-		"/home/damien/nodesite/client/js/browser/eventHandler.js",
 		"/home/damien/nodesite/client/js/mvc/viewController.js",
-		"/home/damien/nodesite/client/js/canvas.js",
-		"/home/damien/.config/sublime-text-2/Packages/User/SublimeLinter.sublime-settings"
+		"/home/damien/nodesite/client/js/canvas.js"
 	],
 	"find":
 	{
-		"height": 35.0
+		"height": 36.0
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 93.0,
 		"where_history":
 		[
+			"/home/damien/nodesite/client/js/lib"
 		]
 	},
 	"find_state":
@@ -128,6 +188,36 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"getter",
+			"iterateClone",
+			"itearateClone",
+			"implement:",
+			"setpair",
+			"deletePair",
+			"iterate",
+			"mergePair",
+			"treestructure",
+			"mergePair",
+			"append:",
+			"new Class",
+			"new",
+			"cloneOf",
+			"clone",
+			"cloneof",
+			"currentView",
+			"getTarget",
+			"currentView",
+			");\n",
+			"isRoot",
+			"matchLetter",
+			"isEmpty",
+			"leaf",
+			"empty",
+			"getLine",
+			"getpagecount",
+			"gonextletter",
+			"checkShift",
+			"unselectOther",
 			"getFocusableElement",
 			"isFocusable",
 			"NodeView",
@@ -191,30 +281,554 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
+					"file": "client/treeView.html",
 					"settings":
 					{
-						"buffer_size": 152,
+						"buffer_size": 3787,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								152,
-								152
+								1313,
+								1313
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 51.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "client/js/lib/core/object.js",
+					"settings":
+					{
+						"buffer_size": 6319,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								198,
+								208
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"multistr": true,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1683.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "client/js/lib/core/class.js",
+					"settings":
+					{
+						"buffer_size": 5265,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2453,
+								2453
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"multistr": true,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "config.js",
+					"settings":
+					{
+						"buffer_size": 4047,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								709,
+								709
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"multistr": true,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 103.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "app.html",
+					"settings":
+					{
+						"buffer_size": 7222,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7222,
+								7222
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"floats": false,
+								"font-sizes": false,
+								"ids": false,
+								"important": false,
+								"outline-none": false
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"boss": true,
+								"browser": true,
+								"devel": true,
+								"eqeqeq": false,
+								"eqnull": true,
+								"es5": true,
+								"globals":
+								{
+									"Class": true,
+									"CustomEvent": true,
+									"Event": true,
+									"FS": true,
+									"File": true,
+									"config": true,
+									"lang": true,
+									"logger": true,
+									"root": true,
+									"toArray": true
+								},
+								"globalstrict": false,
+								"indent": 4,
+								"multistr": true,
+								"node": true,
+								"sub": true,
+								"undef": true,
+								"white": false
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": true,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1736.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -278,6 +892,6 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 224.0,
+	"side_bar_width": 223.0,
 	"status_bar_visible": true
 }

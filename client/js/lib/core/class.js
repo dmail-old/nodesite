@@ -86,62 +86,35 @@ Object.append(Object, {
 
 name: Class
 
-description: Function helping to create and manipulate Class
+description: Function helping to create constructor Function
 
-require: Implement, Object.Proto,
+require: Object.create, Object.append
 
 provides: Class
-
-help:
-
-// the object passed to Class will be merged to the prototype of an anonymous function who calls this.initialize
-new Class({
-	// the prototype is set to new parentClass
-	Extends: parentClass,
-	// the prototype is merged with the interface provided
-	Implements: [Interface1, Interface2],
-	// the constructor called by new Class()
-	initialize: function(){
-
-	},
-	// ... more methods and properties
-});
 
 ...
 */
 
-var Class = window.Class = function(proto){
-	var fn = function(){
-		return this.initialize ? this.initialize.apply(this, arguments) : this;
-	};
+var Class = window.Class = function(prototype, declaration){
+	if( declaration == null ){
+		declaration = prototype;
+		prototype = Class.prototype;
+	}
+	if( !declaration.constructor ) declaration.constructor = function(){};
+	if( prototype instanceof Function ) prototype = prototype.prototype;
 
-	if( proto ){
-		for(var key in Class.Mutators){
-			if( key in proto ){
-				Class.Mutators[key].call(fn, proto[key]);
-			}
+	declaration.constructor.prototype = Object.create(prototype, {
+		constructor: {
+			configurable: true,
+			enumerable: true,
+			value: declaration.constructor,
+			writable: true
 		}
+	});
+	// add everything from the declaration onto the new prototype
+	Object.append(declaration.constructor.prototype, declaration);
 
-		fn.implement(proto);
-	}
-
-	return fn;
-};
-
-Class.Mutators = {
-	Extends: function(parent){
-		Object.setPrototype(this, parent);
-		this.implement(Class.Interfaces.parent);
-	},
-
-	Implements: function(items){
-		if( !(items instanceof Array) ) items = [items];
-		items.forEach(function(item){
-			if( typeof item == 'string' ) item = Class.Interfaces[item];
-			if( typeof item == 'object' || typeof item == 'function' ) this.implement(item);
-			else throw new TypeError(item + ' must be an object or a constructor');
-		}, this);
-	}
+	return declaration.constructor;
 };
 
 Class.Interfaces = {};
@@ -192,7 +165,7 @@ Class.Interfaces.options = this.Options = {
 };
 
 Class.Interfaces.chain = this.Chain = new Class({
-	initialize: function(){
+	constructor: function(){
 		this.$chain = [];
 	},
 
@@ -222,7 +195,7 @@ Class.Interfaces.chain = this.Chain = new Class({
 });
 
 Class.Interfaces.bound = this.Bound = new Class({
-	initialize: function(){
+	constructor: function(){
 		this.bound = {};
 	},
 

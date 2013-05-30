@@ -1,3 +1,5 @@
+/* global SelectorElement, Popup */
+
 /*
 
 cette balise ouvre une popup qui permet de choisir parmi une liste
@@ -13,8 +15,7 @@ FIX
 
 */
 
-var PopupSelectorElement = new Class({
-	Extends: SelectorElement,
+var PopupSelectorElement = new Class(SelectorElement, {
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\
@@ -22,33 +23,33 @@ var PopupSelectorElement = new Class({
 		</div>\
 	',
 	width: 200,
-	
+
 	initialize: function(options){
 		this.popup = new Popup();
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
-				
+
 		SelectorElement.prototype.initialize.call(this, options);
-		
+
 		this.setListElement(this.popup.element);
 	},
-	
+
 	destroy: function(){
 		SelectorElement.prototype.destroy.call(this);
 		this.popup.destroy();
 	},
-	
+
 	appendListElement: function(){
 		document.body.appendChild(this.popup.element);
 	},
-	
+
 	adaptListElement: function(){
 		this.popup.updateContent();
 	},
-	
+
 	showListElement: function(e){
 		this.popup.open(e);
 	},
-	
+
 	hideListElement: function(e){
 		this.popup.close(e);
 	}

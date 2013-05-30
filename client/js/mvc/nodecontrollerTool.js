@@ -1,7 +1,6 @@
 /* global Controller, NodeController */
 
-var NodeControllerTool = new Class({
-	Extends: NodeController,
+var NodeControllerTool = new Class(NodeController, {
 	events: {
 		'mousedown': function(view, e){
 			if( e.target.hasClass('tool') ){

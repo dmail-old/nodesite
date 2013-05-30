@@ -30,6 +30,90 @@ treeView.root.children[0].expand();
 treeView.root.children[2].expand();
 treeView.root.children[3].expand();
 
+/*
+Object.append = function(object, source){
+	Object.keys(source).forEach(function(key){
+        Object.defineProperty(object, key, Object.getOwnPropertyDescriptor(source, key));
+    });
+    return object;
+};
+
+Object.merge = function(object, source){
+	Object.getOwnPropertyNames(source).forEach(function(key){
+		Object.defineProperty(object, key, Object.getOwnPropertyDescriptor(source, key));
+	});
+	return object;
+};
+*/
+
+/*
+var Class = function(prototype, declaration){
+	if( declaration == null ){
+		declaration = prototype;
+		prototype = Class.prototype;
+	}
+	if( !declaration.constructor ) declaration.constructor = function(){};
+	if( prototype instanceof Function ) prototype = prototype.prototype;
+
+    declaration.constructor.prototype = Object.create(prototype, {
+    	constructor: {
+            configurable: true,
+            enumerable: true,
+            value: declaration.constructor,
+            writable: true
+        }
+    });
+    // add everything from the declaration onto the new prototype
+    Object.append(declaration.constructor.prototype, declaration);
+
+	return declaration.constructor;
+};
+
+var A = new Class({
+	constructor: function(){
+		//alert('new a called');
+	},
+
+	foo: 'bar',
+	test: function(){ console.log('test called in a'); }
+});
+
+var B = new Class(A, {
+	constructor: function(){
+		//alert('new b called');
+		//return this;
+	},
+
+	bar: 'foo',
+	//test: function(){ console.log('test called in b'); }
+});
+
+var C = new Class(B, {
+	constructor: function(){
+
+	},
+
+	//test: function(){ console.log('test called in c'); }
+});
+
+var a = new A();
+var b = new B();
+var c = new C();
+
+console.log(
+	'a', a instanceof A, a instanceof Class,
+	'b', b instanceof A, b instanceof B,
+	'c', c instanceof A, c instanceof B, c instanceof C
+);
+
+var Structure = {};
+Object.defineProperty(Structure, 'test', {get: function(){ return 'ok'; }});
+
+Object.merge(B.prototype, Structure);
+Object.merge(A.prototype, Structure);
+
+console.log(a.test);
+*/
 
 /*
 var FileModel = new Class({

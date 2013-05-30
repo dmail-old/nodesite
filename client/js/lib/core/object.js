@@ -4,23 +4,84 @@ name: Object.cloning
 
 description: Cloning an object
 
-provides: Object.clone, Object.cloneOf
+provides: Object.clone
+
+maybe i could write a ObjectIterator class
+and an ObjectPropertiesIterator class that could handle the subtility
+of ignoreSpec that i need to pass to every function
 
 */
 
-Object.cloneOf = function(source){
-	if( typeof source == 'object' && source != null ){
-		if( typeof source.clone == 'function' ) source = source.clone();
-		else source = Object.clone(source);
-	}
-
-	return source;
+Object.get = function(object, key){
+	return object[key];
 };
 
-Object.clone = function(source){
-	var clone = {}, key;
+Object.getClone = function(object, key){
+	return Object.clone(Object.get(object, key), false, true);
+};
 
-	for(key in source) clone[key] = Object.cloneOf(source[key]);
+Object.getOwnPropertyDescriptorValueCloned = function(object, key){
+	var descriptor = Object.getOwnPropertyDescriptor(object, key);
+	if( 'value' in descriptor ) descriptor.value = Object.clone(descriptor.value);
+	return descriptor;
+};
+
+Object.setPair = function(key, value, object, ignoreSpec){
+	if( ignoreSpec ) this[key] = value;
+	else Object.defineProperty(this, key, value);
+};
+
+Object.iterate = function(object, fn, bind, ignoreSpec){
+	Object[ignoreSpec ? 'keys' : 'getOwnPropertyNames'](object).forEach(function(key){
+		fn.call(bind, key, object, ignoreSpec);
+	});
+};
+
+Object.iteratePair = function(object, fn, bind, ignoreSpec){
+	var get = ignoreSpec ? 'get' : 'getOwnPropertyDescriptor';
+
+	Object.iterate(object, function(key, object, ignoreSpec){
+		fn.call(bind, key, Object[get](object, key), object, ignoreSpec);
+	}, bind, ignoreSpec);
+};
+
+Object.iterateClonePair = function(object, fn, bind, recursive, ignoreSpec){
+	var get;
+
+	if( ignoreSpec ){
+		get = 'get';
+		if( recursive ) get = 'getClone';
+	}
+	else{
+		get = 'getOwnPropertyDescriptor';
+		if( recursive ) get = 'getOwnPropertyDescriptorValueCloned';
+	}
+
+	Object.iterate(object, function(key, object, ignoreSpec){
+		fn.call(bind, key, Object[get](object, key), object, ignoreSpec, recursive);
+	}, bind, ignoreSpec);
+};
+
+Object.clone = function(object, recursive, ignoreSpec){
+	var clone;
+
+	if( typeof object == 'object' && object != null ){
+		if( typeof object.clone == 'function' ){
+			clone = object.clone();
+		}
+		else{
+			clone = {};
+			Object.iterateClonePair(object, Object.setPair, clone, recursive, ignoreSpec);
+			if( !ignoreSpec ){
+				if( !Object.isExtensible(object) ) Object.preventExtensions(clone);
+				if( Object.isSealed(object) ) Object.seal(clone);
+				if( Object.isFrozen(object) ) Object.freeze(clone);
+			}
+		}
+	}
+	else{
+		clone = object;
+	}
 
 	return clone;
 };
@@ -30,9 +91,58 @@ Date.prototype.clone = Function.THIS;
 Array.prototype.clone = function(){
 	var i = this.length, clone = new Array(i);
 
-	while(i--) clone[i] = Object.cloneOf(this[i]);
+	while(i--) clone[i] = Object.clone(this[i]);
 
 	return clone;
+};
+
+Object.mergePair = function(key, value, object, ignoreSpec){
+	if( typeof this[key] == 'object' && this[key] !== null ){
+		Object.merge(this[key], object[key], ignoreSpec);
+	}
+	else{
+		Object.setPair.apply(this, arguments);
+	}
+};
+
+Object.merge = function(object, source, ignoreSpec){
+	Object.iterateClonePair(source, Object.mergePair, object, true, ignoreSpec);
+	return object;
+};
+
+Object.forEachArrayPair = function(object, array, fn, ignoreSpec){
+	var i = 0, j = array.length, item;
+
+	for(;i<j;i++){
+		item = array[i];
+		if( item instanceof Function ){
+			item = item.prototype;
+		}
+		if( typeof item == 'string' ){
+			var obj = {};
+			obj[item] = array[i++];
+			item = obj;
+		}
+
+		if( typeof item == 'object' ){
+			Object.iteratePair(item, fn, object, ignoreSpec);
+		}
+	}
+
+	return object;
+};
+
+Object.append = function(object){
+	return Object.forEachArrayPair(object, toArray(arguments, 1), Object.setPair);
+};
+
+// setPair in this if not already existing
+Object.completePair = function(key){
+	if( !(key in this) ) return Object.setPair.apply(this, arguments);
+};
+
+Object.complete = function(object){
+	return Object.forEachArrayPair(object, toArray(arguments, 1), Object.completePair);
 };
 
 /*
@@ -53,99 +163,9 @@ Object.getInstance = function(fn){
 	return new fn();
 };
 
-Object.eachPair = function(source, fn, bind){
-	for(var name in source) fn.call(bind, name, source[name], source);
-	return source;
-};
-
-// call fn on every pair of this array
-Array.prototype.eachPair = function(fn, bind, each){
-	var i = 0, j = this.length, item;
-
-	for(;i<j;i++){
-		item = this[i];
-		if( item instanceof Function ) item = Object.getInstance(item);
-
-		switch(typeof item){
-		case 'string':
-			fn.call(bind, item, this[i+1]);
-			i++;
-			break;
-		case 'object':			
-			(each || Object.eachPair)(item, fn, bind);
-			break;
-		}
-	}
-
-	return this;
-};
-
-// append key.value pair to this
-Object.appendPair = function(key, value, origin){	
-	this[key] = value;
-
-	return this;
-};
-
-// append key/valuepair to this if not present
-Object.completePair = function(key, value){
-	if( !(key in this) ) this[key] = value;
-
-	return this;
-};
-
-// append key/value pair but clone objets (array,regexp,date,...) and merge object when they already exists in source
-// origin is the item from wich key & value a coming from, can be null if the pair come from an arguments keypair call Object.merge({}, 'key', 10);
-Object.mergePair = function(key, value, origin){
-	var current;
-
-	if( typeof value == 'object' && value != null ){
-		current = this[key];
-		if( typeof current == 'object' ){
-			for(key in value){
-				Object.mergePair.call(current, key, value[key], value);
-			}
-		}
-		else{
-			this[key] = Object.cloneOf(value);
-		}
-	}
-	else{	
-		this[key] = value;
-	}
-
-	return this;
-};
-
-Object.deletePair = function(key){
-	delete this[key];
-};
-
-Object.appendThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.appendPair, this);
-	return this;
-};
-
-Object.completeThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.completePair, this);
-	return this;
-};
-
-Object.mergeThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.mergePair, this);
-	return this;
-};
-
-Object.append = function(source){
-	return Object.appendThis.apply(source, toArray(arguments, 1));
-};
-
-Object.complete = function(source){
-	return Object.completeThis.apply(source, toArray(arguments, 1));
-};
-
-Object.merge = function(source){
-	return Object.mergeThis.apply(source, toArray(arguments, 1));
+Object.eachPair = function(object, fn, bind){
+	for(var name in object) fn.call(bind, name, object[name], object);
+	return object;
 };
 
 /*
@@ -221,31 +241,13 @@ provides:
 	Function.prototype.implement, Function.prototype.complement
 */
 
-Object.appendDescriptor = function(source, key, value){
-	Object.defineProperty(source, key, value);
-	return object;
-};
-
-Object.eachDescriptor = function(source, fn, bind){
-	var own = Object.getOwnPropertyNames(source), keys = Object.keys(source);
-	
-	own.forEach(function(name){
-		if( keys.indexOf(name) === -1 ){			
-			fn.call(bind, name, Object.getOwnPropertyDescriptor(source, name), source);
-		}
-	});
-	
-	return source;	
-};
-
 Object.implementThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.mergePair, this.prototype, Object.eachProto);
-	//Array.prototype.eachPair.call(arguments, Object.appendDescriptor, this.prototype, Object.eachDescriptor);
+	Object.forEachArrayPair(this.prototype, arguments, Object.mergePair);
 	return this;
 };
 
 Object.complementThis = function(){
-	Array.prototype.eachPair.call(arguments, Object.completePair, this.prototype);
+	Object.forEachArrayPair(this.prototype, arguments, Object.completePair);
 	return this;
 };
 

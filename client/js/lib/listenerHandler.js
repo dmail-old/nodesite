@@ -1,7 +1,7 @@
 window.ListenerHandler = new Class({
 	handlers: {},
 
-	initialize: function(emitter, handlers, listener){
+	constructor: function(emitter, handlers, listener){
 		this.emitter = emitter;
 		if( handlers ) this.handlers = handlers;
 		this.listener = listener || this;
