@@ -58,8 +58,8 @@ var Popup = new Class(Box, {
 		buttons: []
 	},
 
-	initialize: function(){
-		Box.prototype.initialize.apply(this, arguments);
+	constructor: function(){
+		Box.prototype.constructor.apply(this, arguments);
 
 		if( this.options.submitclose ) this.on('submit', this.close);
 	},

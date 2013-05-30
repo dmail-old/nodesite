@@ -30,7 +30,7 @@ var Inspect = new Class({
 	// nombre de caractères pouvant tenir sur une ligne
 	maxChars: 80,
 	
-	initialize: function(){
+	constructor: function(){
 		this.reset();
 	},
 	

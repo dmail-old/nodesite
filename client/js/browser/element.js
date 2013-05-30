@@ -25,8 +25,8 @@ this.Element = Element;
 })();
 
 Object.append(Element, {
-	implement: Object.implementThis.bind(Element),
-	complement: Object.complementThis.bind(Element)
+	implement: Object.implement.bind(Element),
+	complement: Object.complement.bind(Element)
 });
 
 String.prototype.toElement = function(){

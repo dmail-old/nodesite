@@ -40,27 +40,7 @@ Object.append(Object, {
 
 	// set the prototype of a constructor
 	setPrototype: function(constructor, superConstructor){
-		if( typeof superConstructor == 'object' ){
-			constructor.prototype = superConstructor;
-		}
-		else if( superConstructor instanceof Function ){
-			var initialize = superConstructor.prototype.initialize, instance;
-
-			// don't call parent constructor
-			if( initialize ){
-				superConstructor.prototype.initialize = Function.EMPTY;
-			}
-			// copy superConstructor.prototype, that way modifying super impact constructor but not the opposite
-			instance = Object.copy(new superConstructor());
-			if( initialize ){
-				superConstructor.prototype.initialize = initialize;
-			}
-
-			constructor.prototype = instance;
-		}
-		constructor.prototype.constructor = constructor;
-
-		return constructor;
+		// is in the class function for now
 	},
 
 	// find first prototype defining key
@@ -97,10 +77,10 @@ provides: Class
 
 var Class = window.Class = function(prototype, declaration){
 	if( declaration == null ){
-		declaration = prototype;
+		declaration = prototype || {};
 		prototype = Class.prototype;
 	}
-	if( !declaration.constructor ) declaration.constructor = function(){};
+	if( !declaration.hasOwnProperty('constructor') ) declaration.constructor = function(){};
 	if( prototype instanceof Function ) prototype = prototype.prototype;
 
 	declaration.constructor.prototype = Object.create(prototype, {
@@ -112,7 +92,7 @@ var Class = window.Class = function(prototype, declaration){
 		}
 	});
 	// add everything from the declaration onto the new prototype
-	Object.append(declaration.constructor.prototype, declaration);
+	Object.merge(declaration.constructor.prototype, declaration);
 
 	return declaration.constructor;
 };

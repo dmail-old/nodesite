@@ -1,6 +1,6 @@
 /* global Fx, Browser */
 
-Fx.Scroll = new Class(Fx, {
+var TEST = {
 	options: {
 		step: 30,
 		wheelStops: true
@@ -64,4 +64,6 @@ Fx.Scroll = new Class(Fx, {
 
 		return value;
 	}
-});
+};
+
+Fx.Scroll = new Class(Fx, TEST);

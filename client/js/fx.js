@@ -26,7 +26,7 @@ var Fx = this.Fx = new Class({
 		link: 'ignore'
 	},
 
-	initialize: function(options){
+	constructor: function(options){
 		Chain.prototype.constructor.call(this);
 		this.subject = this;
 		this.setOptions(options);

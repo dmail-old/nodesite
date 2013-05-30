@@ -24,11 +24,11 @@ var PopupSelectorElement = new Class(SelectorElement, {
 	',
 	width: 200,
 
-	initialize: function(options){
+	constructor: function(options){
 		this.popup = new Popup();
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
 
-		SelectorElement.prototype.initialize.call(this, options);
+		SelectorElement.prototype.constructor.call(this, options);
 
 		this.setListElement(this.popup.element);
 	},

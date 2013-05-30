@@ -62,7 +62,7 @@ var Box = new Class(DOMRectangle, {
 
 		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
 		Box.instances[this.id = Box.UID++] = this;
-		DOMRectangle.prototype.initialize.call(this, this.createElement());
+		DOMRectangle.prototype.constructor.call(this, this.createElement());
 	},
 
 	createElement: function(){

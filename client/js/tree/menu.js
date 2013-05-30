@@ -179,8 +179,8 @@ var Menu = new Class({
 		}
 	},
 	
-	initialize: function(options){
-		ExplorerTreeView.prototype.initialize.call(this, options);
+	constructor: function(options){
+		ExplorerTreeView.prototype.constructor.call(this, options);
 		
 		this.keyboard = new Keyboard();
 		this.navloop = true;
