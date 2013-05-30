@@ -110,7 +110,7 @@ Object.merge = function(object, source, ignoreSpec){
 	return object;
 };
 
-Object.forEachArrayPair = function(object, array, fn, ignoreSpec){
+Object.forEachArrayPair = function(array, fn, bind, ignoreSpec){
 	var i = 0, j = array.length, item;
 
 	for(;i<j;i++){
@@ -125,15 +125,15 @@ Object.forEachArrayPair = function(object, array, fn, ignoreSpec){
 		}
 
 		if( typeof item == 'object' ){
-			Object.iteratePair(item, fn, object, ignoreSpec);
+			Object.iteratePair(item, fn, bind, ignoreSpec);
 		}
 	}
 
-	return object;
+	return bind;
 };
 
 Object.append = function(object){
-	return Object.forEachArrayPair(object, toArray(arguments, 1), Object.setPair);
+	return Object.forEachArrayPair(toArray(arguments, 1), Object.setPair, object);
 };
 
 // setPair in this if not already existing
@@ -142,7 +142,7 @@ Object.completePair = function(key){
 };
 
 Object.complete = function(object){
-	return Object.forEachArrayPair(object, toArray(arguments, 1), Object.completePair);
+	return Object.forEachArrayPair(toArray(arguments, 1), Object.completePair, object);
 };
 
 /*
@@ -242,12 +242,12 @@ provides:
 */
 
 Object.implementThis = function(){
-	Object.forEachArrayPair(this.prototype, arguments, Object.mergePair);
+	Object.forEachArrayPair(arguments, Object.mergePair, this.prototype);
 	return this;
 };
 
 Object.complementThis = function(){
-	Object.forEachArrayPair(this.prototype, arguments, Object.completePair);
+	Object.forEachArrayPair(arguments, Object.completePair, this.prototype);
 	return this;
 };
 
