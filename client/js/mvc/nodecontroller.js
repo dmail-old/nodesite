@@ -8,7 +8,9 @@ it's why we pass the view as first arguments for events
 
 */
 
-var NodeController = new Class(Controller, {
+var NodeController = new Class({
+	Extends: Controller,
+
 	constructor: function(){
 		Controller.prototype.constructor.apply(this, arguments);
 

@@ -1,13 +1,14 @@
 /* global View, NodeView */
 
-var TreeView = new Class(View, {
+var TreeView = new Class({
+	Extends: View,
 	tagName: 'div',
 	attributes: {
 		'tabindex': 0,
 		'class': 'tree line hideRoot'
 	},
 
-	constructor: function(){
+	constructor: function(root){
 		View.prototype.constructor.call(this);
 		this.root = new NodeView(root);
 	},

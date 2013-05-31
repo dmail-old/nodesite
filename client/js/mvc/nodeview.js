@@ -1,6 +1,8 @@
 /* global View, TreeStructure, TreeTraversal, TreeFinder, StringList */
 
-var NodeView = new Class(View, {
+var NodeView = new Class({
+	Extends: View,
+	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
 	modelEvents: {
 		//'change:name': NodeView.prototype.updateName
@@ -101,6 +103,7 @@ var NodeView = new Class(View, {
 	},
 
 	getHTML: function(){
+		if( !this.model ) console.trace();
 		return '<div><ins class="tool"></ins><name>' + this.model.name + '</name></div>';
 	},
 
@@ -194,10 +197,6 @@ var NodeView = new Class(View, {
 		return level;
 	}
 });
-
-NodeView.implement(TreeStructure);
-NodeView.implement(TreeTraversal);
-NodeView.implement(TreeFinder);
 
 NodeView.states = {
 	lighted: ['light', 'unlight'],

@@ -15,7 +15,8 @@ FIX
 
 */
 
-var PopupSelectorElement = new Class(SelectorElement, {
+var PopupSelectorElement = new Class({
+	Extends: SelectorElement,
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\

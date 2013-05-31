@@ -30,7 +30,7 @@ Object.completePair = function(key){
 Object.mergePair = function(key, value){
 	if( typeof value == 'object' && value !== null ){
 		if( typeof this[key] == 'object' ){
-			Object.eachPair(value, Object.mergePair, this[key]);
+			Object.customEachPair(value, Object.mergePair, this[key]);
 		}
 		else{
 			Object.setPairClone.apply(this, arguments);
@@ -41,6 +41,11 @@ Object.mergePair = function(key, value){
 	}
 
 	return this;
+};
+
+Object.customEachPair = function(object, fn, bind){
+	for(var key in object) fn.call(bind, key, object[key], object);
+	return object;
 };
 
 Object.eachPair = function(object, fn, bind){
@@ -60,7 +65,7 @@ Object.eachArrayPair = function(array, fn, bind){
 			fn.call(bind, item, array[++i]);
 			break;
 		case 'object':
-			Object.eachPair(item, fn, bind);
+			Object.customEachPair(item, fn, bind);
 			break;
 		}
 	}
@@ -83,7 +88,7 @@ Object.clone = function(object){
 		if( typeof object.clone == 'function' ) clone = object.clone();
 		else{
 			clone = {};
-			Object.eachPair(object, Object.setPairClone, clone);
+			Object.customEachPair(object, Object.setPairClone, clone);
 
 			// only if es5
 			if( !Object.isExtensible(object) ) Object.preventExtensions(clone);
@@ -131,7 +136,7 @@ if( 'getOwnPropertyNames' in Object ){
 		}
 	};
 
-	Object.eachPair = function(object, fn, bind){
+	Object.customEachPair = function(object, fn, bind){
 		Object.getOwnPropertyNames(object).forEach(function(key){
 			fn.call(bind, key, object[key], object);
 		});

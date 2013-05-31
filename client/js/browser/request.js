@@ -94,8 +94,7 @@ var Request = this.Request = new Class({
 		this.resetXhr();
 		this.setOptions(options);
 		this.headers = this.options.headers;
-
-		Chain.prototype.constructor.call(this);
+		this.resetChain();
 	},
 
 	resetXhr: function(){

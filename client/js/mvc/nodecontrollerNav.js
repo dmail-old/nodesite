@@ -1,6 +1,7 @@
 /* global Controller, NodeController, NodeView */
 
-var NodeControllerNav = new Class(NodeController, {
+var NodeControllerNav = new Class({
+	Extends: NodeController,
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers

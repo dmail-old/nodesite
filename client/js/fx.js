@@ -27,7 +27,7 @@ var Fx = this.Fx = new Class({
 	},
 
 	constructor: function(options){
-		Chain.prototype.constructor.call(this);
+		this.resetChain();
 		this.subject = this;
 		this.setOptions(options);
 	},

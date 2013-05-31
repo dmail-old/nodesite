@@ -1,6 +1,7 @@
 /* global Controller, NodeController, NodeView */
 
-var NodeControllerVisibles = new Class(NodeController, {
+var NodeControllerVisibles = new Class({
+	Extends: NodeController,
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);

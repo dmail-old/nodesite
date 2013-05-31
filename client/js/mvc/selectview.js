@@ -1,4 +1,5 @@
-var SelectView = new Class(View, {
+var SelectView = new Class({
+	Extends: View,
 	tagName: 'div',
 	events: {
 

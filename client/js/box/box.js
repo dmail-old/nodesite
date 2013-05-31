@@ -21,7 +21,8 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-var Box = new Class(DOMRectangle, {
+var Box = new Class({
+	Extends: DOMRectangle,
 	options: {
 		tagName: 'div',
 		properties: {

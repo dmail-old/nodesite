@@ -21,7 +21,8 @@ Element.Properties.onclick = {
 	}
 };
 
-var Popup = new Class(Box, {
+var Popup = new Class({
+	Extends: Box,
 	options: {
 		properties: {
 			'html': '\
@@ -173,7 +174,8 @@ var Popup = new Class(Box, {
 // autres classes qui se serviront de Popup
 
 /*
-var popFiles = new Class(Popup, {
+var popFiles = new Class({
+	Extends: Popup,
 	options:{
 		preview: false,
 		selector: false

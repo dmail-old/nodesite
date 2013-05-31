@@ -17,7 +17,8 @@ OK	click on selected -> unselect other
 
 */
 
-var NodeControllerMultiselection = new Class(NodeControllerSelection, {
+var NodeControllerMultiselection = new Class({
+	Extends: NodeControllerSelection,
 	events: {
 		'view:select': function(view, e){
 			this.unselectOther(view, e);

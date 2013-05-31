@@ -15,7 +15,8 @@ faire la largeur de son contenu
 
 */
 
-var NodeControllerFocused = new Class(NodeController, {
+var NodeControllerFocused = new Class({
+	Extends: NodeController,
 	events: {
 		'view:focus': function(view, e){
 			var current = this.view.focused;

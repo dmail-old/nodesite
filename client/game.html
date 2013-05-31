@@ -22,20 +22,20 @@ var Unit = new Class({
 		left: -Infinity,
 		top: -Infinity,
 		right: Infinity,
-		bottom: Infinity	
+		bottom: Infinity
 	},
-	
+
 	initialize: function(options){
 		if( options ) Object.append(this, options);
 		this.setLeft(this.left);
 		this.setTop(this.top);
 	},
-	
+
 	distance: function(a){
 		return a * this.game.pixelPerFrame;
 		//return Math.round(16 / (a * this.game.pixelPerFrame));
 	},
-	
+
 	setLeft: function(left){
 		if( left < this.limit.left ){
 			// left limit
@@ -48,22 +48,22 @@ var Unit = new Class({
 			this.right = left + this.width;
 		}
 	},
-	
+
 	setTop: function(top){
 		if( top < this.limit.top ){
-			
+
 		}
 		else if( top + this.height > this.limit.bottom ){
-			
+
 		}
 		else{
 			this.top = top;
 			this.bottom = top + this.height;
 		}
 	},
-	
+
 	tick: Function.EMPTY,
-	
+
 	handleMove: function(){
 		if( this.speedX ){
 			this.setLeft(this.left + this.distance(this.speedX));
@@ -72,10 +72,10 @@ var Unit = new Class({
 			this.setTop(this.top + this.distance(this.speedY));
 		}
 	},
-		
+
 	isColliding: function(unit, pixelPrecision){
 		pixelPrecision = pixelPrecision || 0;
-		
+
 		return !(
 			(this.left + pixelPrecision > unit.right - pixelPrecision) ||
 			(this.right - pixelPrecision < unit.left + pixelPrecision) ||
@@ -83,17 +83,17 @@ var Unit = new Class({
 			(this.bottom - pixelPrecision < unit.top + pixelPrecision)
 		);
 	},
-	
+
 	getCollisionEffect: function(unit){
 		return 'none';
 	},
-	
+
 	onContainerOverflow: function(side, value){},
 	onCollide: function(unit, size, value){},
-	
+
 	handleCollision: function(){
 		// si cette unité ne doit pas sortir d'un conteneur
-		
+
 		if( this.container ){
 			if( this.left < this.container.left ){
 				this.setLeft(this.container.left);
@@ -103,7 +103,7 @@ var Unit = new Class({
 				this.setLeft(this.container.right - this.width);
 				this.onContainerOverflow('right', this.right - this.container.right);
 			}
-			
+
 			if( this.top < this.container.top ){
 				this.setTop(this.container.top);
 				this.onContainerOverflow('top', this.top - this.container.top);
@@ -111,21 +111,21 @@ var Unit = new Class({
 			else if( this.bottom > this.container.bottom ){
 				this.setTop(this.container.bottom - this.height);
 				this.onContainerOverflow('top', this.bottom - this.container.bottom);
-			}			
+			}
 		}
-		
+
 		// si cette unité est solide elle ne peut pas entré en collision avec d'autre unité solide
-		
+
 		if( this.solid ){
 			this.game.units.forEach(function(unit){
-				if( unit == this ) return;	
-				
+				if( unit == this ) return;
+
 				var effect = this.getCollisionEffect(unit);
-				
+
 				if( effect == 'none' ) return;
 				if( !unit.solid ) return;
 				if( !this.isColliding(unit) ) return;
-				
+
 				if( this.left < unit.right ){
 					//this.setLeft(unit.right);
 					this.onCollide(unit, 'right');
@@ -134,7 +134,7 @@ var Unit = new Class({
 					//this.setLeft(unit.left - this.width);
 					this.onCollide(unit, 'left');
 				}
-				
+
 				if( this.top > unit.bottom ){
 					//this.setTop(unit.bottom);
 					this.onCollide(unit, 'top');
@@ -146,17 +146,17 @@ var Unit = new Class({
 			}, this);
 		}
 	},
-	
+
 	update: function(){
 		this.tick();
-		this.handleMove();	
+		this.handleMove();
 		this.handleCollision();
 	},
-	
+
 	getSpeed: function(axis){
 		return this['speed' + axis.toUpperCase()];
 	},
-	
+
 	setSpeed: function(axis, value){
 		this['speed' + axis.toUpperCase()] = value;
 	}
@@ -166,41 +166,41 @@ var Surface = new Class({
 	width: 32,
 	height: 32,
 	updated: false,
-	
-	initialize: function(options){
+
+	constructor: function(options){
 		Object.append(this, options);
 		this.createCanvas(this.width, this.height);
 	},
-	
+
 	createCanvas: function(width, height){
 		this.canvas = new Element('canvas');
 		this.canvas.width = width;
 		this.canvas.height = height;
 		this.ctx = this.canvas.getContext('2d');
 	},
-	
+
 	clear: function(){
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	},
-	
+
 	draw: function(){
 		this.ctx.fillText('undefined', 0, 10);
 	},
-	
+
 	redraw: function(){
 		this.ctx.save();
 		this.clear();
 		this.ctx.restore();
 		this.draw();
 	},
-	
+
 	update: function(force){
 		if( force || !this.updated ){
 			this.redraw();
 			this.updated = true;
 		}
 	},
-	
+
 	blit: function(canvas, x, y){
 		this.ctx.drawImage(canvas, x, y);
 	}
@@ -211,14 +211,14 @@ var SquareSurface = new Class({
 	color: 'dark',
 	borderSize: 0,
 	borderColor: 'dark',
-	
+
 	draw: function(){
 		if( this.borderSize ){
 			this.ctx.lineWidth = this.borderSize;
 			this.ctx.strokeStyle = this.borderColor;
 			this.ctx.strokeRect(0,0, this.width,this.height);
 		}
-		
+
 		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(0,0,this.width,this.height);
 	}
@@ -230,12 +230,12 @@ var Game = new Class({
 	width: 32*10,
 	height: 32*8,
 	pixelPerFrame: 1,
-	
-	initialize: function(options){
+
+	constructor: function(options){
 		Object.append(this, options);
-		
+
 		this.clock = new Clock();
-		
+
 		this.surface = new SquareSurface({
 			color: 'dark',
 			width: this.width,
@@ -250,74 +250,74 @@ var Game = new Class({
 			},
 			draw: function(){
 				SquareSurface.prototype.draw.call(this);
-				
+
 				this.game.units.forEach(function(unit){
 					if( unit.surface ){
 						unit.surface.update();
 						this.blit(unit.surface.canvas, unit.left, unit.top);
 					}
 				}, this);
-				
+
 				if( this.debug ) this.drawFPS();
 			}
 		});
-		
+
 		this.keyboard = new Keyboard();
 		this.keyboard.listenTo(this.surface.canvas);
 		this.surface.canvas.setAttribute('tabIndex', 0);
-		
+
 		this.units = [];
 	},
-	
+
 	addUnit: function(unit){
 		unit.game = this;
 		this.units.push(unit);
 	},
-	
+
 	destroy: function(){
 		this.keyboard.stopListening(this.surface.canvas);
 	},
-		
+
 	start: function(){
 		this.started = true;
 		this.ticker = this.tick.bind(this);
 		this.tick();
 	},
-	
+
 	stop: function(){
 		if( this.started ){
 			this.started = false;
 			window.cancelAnimationFrame(this.nextTick);
 		}
 	},
-	
+
 	handleEvent: function(){
 		// test les events comme l'appui de touche
 		this.keyboard.tick();
 	},
-	
+
 	handleGame: function(){
 		// met à jour position du héros des unités etc
-	},	
-	
+	},
+
 	tick: function(){
 		this.clock.tick();
 		this.update();
 		this.draw();
 		this.nextTick = window.requestAnimationFrame(this.ticker);
 	},
-	
+
 	update: function(){
 		this.handleEvent();
 		this.handleGame();
-		
+
 		this.units.forEach(function(unit){
 			unit.update();
 		});
-		
+
 		this.updated = true;
 	},
-	
+
 	draw: function(){
 		if( this.updated ){
 			this.surface.update(true);
@@ -327,26 +327,26 @@ var Game = new Class({
 });
 
 var Clock = new Class({
-	initialize: function(){
+	constructor: function(){
 		var now = Date.now();
-		
+
 		this.startTime = now;
 		this.prev = now;
 		this.now = now;
 		this.diff = 0;
 		this.count = 0;
-		
+
 		this.frameCount = 0;
 		this.fps = 0;
 		this.prevFPS = now;
 	},
-	
+
 	tick: function(){
         this.count++;
         this.now = Date.now();
         this.diff = this.now - this.prev;
         this.prev = this.now;
-		
+
         if( typeof this.frameCount === 'number' ){
             this.frameCount++;
             if( (this.now - this.prevFPS) > 1000 ){
@@ -359,41 +359,41 @@ var Clock = new Class({
 });
 
 var Keyboard = new Class({
-	initialize: function(){
+	constructor: function(){
 		this.reset();
 	},
-	
+
 	listen: function(e){
 		if( e.type == 'keydown' ) this.down(e.key);
 		else if( e.type == 'keyup' ) this.up(e.key);
 	},
-	
+
 	listenTo: function(element){
 		if( !this.listener ) this.listener = this.listen.bind(this);
 		element.on('keydown keyup', this.listener);
 	},
-	
+
 	stopListening: function(element){
 		element.off('keydown keyup', this.listener);
 	},
-	
+
 	toString: function(){
 		return 'Keyboard';
 	},
-	
+
 	reset: function(){
 		this.keys = {};
 	},
-	
+
 	down: function(key){
 		// keydown est appelé sans cesse si on reste la touche enfoncée, on gère juste le fait que la touche reste enfoncée ou pas
 		if( !this.keys[key] ) this.keys[key] = 1;
 	},
-	
+
 	up: function(key){
 		this.keys[key] = -1;
 	},
-	
+
 	// retourne true si la touche vient d'être appuyé
 	isHit: function(key){ return this.keys[key] === 2; },
 	// retourne true si la touche vient d'être relaché
@@ -404,16 +404,16 @@ var Keyboard = new Class({
 	isHold: function(key){ return this.keys[key] > 2 },
 	// retourne le nombre de boucle depuis lesquelles key est maintenu
 	getCount: function(key){ return this.isHold(key) ? this.keys[key] - 2 : 0; },
-	
+
 	getState: function(key){
 		if( this.isHit(key) ) return 'hit';
 		if( this.isHold(key) ) return 'hold';
 		if( this.isReleased(key) ) return 'released';
 		if( this.isDown(key) ) return 'down';
-		
+
 		return 'up';
 	},
-	
+
 	// dans la boucle de render du jeu, met à jour les états des touches
 	tick: function(){
 		var keys = this.keys, key;
@@ -443,7 +443,7 @@ var Character = new Class({
 	speedY: 0,
 	accX: 0,
 	accY: 0,
-	
+
 	Extends: Unit,
 });
 
@@ -472,10 +472,10 @@ $('toggle').onclick = function(){
 			window.requestAnimationFrame = window[vendors[i] + 'RequestAnimationFrame'];
 			window.cancelAnimationFrame = window[vendors[i] + 'CancelAnimationFrame'] || window[vendors[i] + 'CancelRequestAnimationFrame'];
 		}
-		
+
 		if( !window.requestAnimationFrame ){
 			var lastTime = 0;
-		
+
 			window.requestAnimationFrame = function(callback){
 				var currTime = new Date().getTime();
 				var timeToCall = Math.max(0, 16 - (currTime - lastTime));
@@ -483,7 +483,7 @@ $('toggle').onclick = function(){
 				lastTime = currTime + timeToCall;
 				return id;
 			};
-			
+
 			window.cancelAnimationFrame = function(id){ clearTimeout(id); };
 		}
 	}
@@ -501,12 +501,12 @@ var Racket = new Class({
 	height: 96,
 	speed: 2,
 	solid: true,
-	
+
 	initialize: function(){
 		Unit.prototype.initialize.apply(this, arguments);
 		this.surface = new SquareSurface({width: this.width, height: this.height});
 	},
-	
+
 	getCollisionEffect: function(unit){
 		return unit instanceof Ball ? 'limit' : 'none';
 	}
@@ -516,14 +516,14 @@ var CircleSurface = new Class({
 	Extends: Surface,
 	color: 'red',
 	size: 32,
-	
+
 	draw: function(){
 		this.ctx.beginPath();
 		this.ctx.arc(this.size / 2, this.size / 2, this.size / 2, 0, 2 * Math.PI, false);
 		this.ctx.closePath();
 		this.ctx.fillStyle = this.color;
 		this.ctx.fill();
-		
+
 		if( this.borderSize ){
 			this.ctx.lineWidth = this.borderSize;
 			this.ctx.strokeStyle = this.borderColor;
@@ -536,14 +536,14 @@ var Ball = new Class({
 	Extends: Unit,
 	name: 'ball',
 	solid: true,
-	
+
 	initialize: function(){
 		Unit.prototype.initialize.apply(this, arguments);
 		this.width = this.size;
 		this.height = this.size;
 		this.surface = new CircleSurface({width: this.size, height: this.size, size: this.size});
 	},
-	
+
 	getCollisionEffect: function(unit){
 		return unit instanceof Racket ? 'rebound' : 'none';
 	}
@@ -583,15 +583,15 @@ var ball = new Ball({
 	speedX: 1,
 	speedY: 1,
 	container: field,
-	
+
 	onContainerOverflow: function(side, value){
 		this.rebound(side == 'left' || side == 'right' ? 'x' : 'y');
 	},
-	
+
 	onCollide: function(unit, side, value){
 		this.rebound(side == 'left' || side == 'right' ? 'x' : 'y');
-	},	
-	
+	},
+
 	rebound: function(axis){
 		this.setSpeed(axis, -this.getSpeed(axis));
 	}
@@ -616,7 +616,7 @@ var square = new Unit({
 		this.setSpeed('x', this.game.keyboard.isDown('left') ? -this.speed : this.game.keyboard.isDown('right') ? this.speed : 0);
 		this.setSpeed('y', this.game.keyboard.isDown('up') ? -this.speed : this.game.keyboard.isDown('down') ? this.speed : 0);
 	}
-});		
+});
 square.surface = new SquareSurface({width: square.width, height: square.height, color: 'white'});
 game.units.push(square);
 */

@@ -1,6 +1,7 @@
 /* global Model, TreeStructure */
 
-var NodeModel = new Class(Model, {
+var NodeModel = new Class({
+	Extends: Model,
 	name: '',
 
 	constructor: function(){

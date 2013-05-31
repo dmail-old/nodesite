@@ -10,7 +10,9 @@ require: String, Array, Class
 
 */
 
-var StringList = new Class(List, {
+var StringList = new Class({
+	Extends: List,
+
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);

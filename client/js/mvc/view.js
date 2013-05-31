@@ -1,6 +1,7 @@
 /* global Emitter, ListenerHandler */
 
 var View = new Class({
+	Implements: Emitter,
 	tagName: 'div',
 	attributes: {},
 	modelEvents: {},
@@ -133,8 +134,6 @@ var View = new Class({
 		}
 	}
 });
-
-View.implement(Emitter);
 
 View.instances = {};
 View.IDAttribute = 'data-view';

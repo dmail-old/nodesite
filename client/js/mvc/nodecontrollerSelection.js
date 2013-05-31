@@ -1,6 +1,7 @@
 /* global Controller, NodeController */
 
-var NodeControllerSelection = new Class(NodeController, {
+var NodeControllerSelection = new Class({
+	Extends: NodeController,
 	events: {
 		'view:select': function(view, e){
 			if( this.selected ) this.selected.unselect(e);

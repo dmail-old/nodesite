@@ -39,8 +39,10 @@ Object.append(Object, {
 	getPrototype: getPrototype,
 
 	// set the prototype of a constructor
-	setPrototype: function(constructor, superConstructor){
-		// is in the class function for now
+	setPrototype: function(constructor, prototype){
+		if( prototype instanceof Function ) prototype = prototype.prototype;
+		constructor.prototype = Object.copy(prototype);
+		constructor.prototype.constructor = constructor;
 	},
 
 	// find first prototype defining key
@@ -48,7 +50,7 @@ Object.append(Object, {
 		var proto = Object.getPrototype(instance);
 
 		while( proto ){
-			if( key in proto ) return proto[key];
+			if( key in proto ) return proto;
 			proto = Object.getPrototype(proto);
 		}
 
@@ -57,7 +59,9 @@ Object.append(Object, {
 
 	// find first parent prototype defining a key
 	findParentPrototype: function(instance, key){
-		return Object.findPrototype(Object.getPrototype(instance), key);
+		var proto = Object.findPrototype(Object.getPrototype(instance), key);
+
+		return proto ? proto[key] : null;
 	}
 });
 
@@ -75,26 +79,41 @@ provides: Class
 ...
 */
 
-var Class = window.Class = function(prototype, declaration){
-	if( declaration == null ){
-		declaration = prototype || {};
-		prototype = Class.prototype;
+var Class = window.Class = function(proto){
+	if( !proto ){
+		proto = {};
 	}
-	if( !declaration.hasOwnProperty('constructor') ) declaration.constructor = function(){};
-	if( prototype instanceof Function ) prototype = prototype.prototype;
 
-	declaration.constructor.prototype = Object.create(prototype, {
-		constructor: {
-			configurable: true,
-			enumerable: true,
-			value: declaration.constructor,
-			writable: true
+	var parent = 'Extends' in proto ? proto.Extends : Class;
+
+	// when the class doesn't define a constructor
+	if( !proto.hasOwnProperty('constructor') ){
+		// if this is a top class his constructor does nothing
+		if( parent == Class ){
+			proto.constructor = function(){
+				return this;
+			};
 		}
-	});
-	// add everything from the declaration onto the new prototype
-	Object.merge(declaration.constructor.prototype, declaration);
+		// else his constructor call his parent constructor
+		else{
+			proto.constructor = function(){
+				return parent.prototype.constructor.apply(this, arguments);
+			};
+		}
+	}
 
-	return declaration.constructor;
+	var constructor = proto.constructor;
+
+	Object.setPrototype(constructor, parent);
+	constructor.implement(proto);
+
+	if( 'Implements' in proto ){
+		var items = proto.Implements;
+		if( !(items instanceof Array) ) constructor.implement(items);
+		else constructor.implement.apply(constructor, items);
+	}
+
+	return constructor;
 };
 
 Class.Interfaces = {};
@@ -144,8 +163,8 @@ Class.Interfaces.options = this.Options = {
 	}
 };
 
-Class.Interfaces.chain = this.Chain = new Class({
-	constructor: function(){
+Class.Interfaces.chain = this.Chain = {
+	resetChain: function(){
 		this.$chain = [];
 	},
 
@@ -172,10 +191,10 @@ Class.Interfaces.chain = this.Chain = new Class({
 		this.$chain = [];
 		return this;
 	}
-});
+};
 
-Class.Interfaces.bound = this.Bound = new Class({
-	constructor: function(){
+Class.Interfaces.bound = this.Bound = {
+	resetBound: function(){
 		this.bound = {};
 	},
 
@@ -190,4 +209,4 @@ Class.Interfaces.bound = this.Bound = new Class({
 
 		return bound[key];
 	}
-});
+};

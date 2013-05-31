@@ -1,6 +1,7 @@
 /* global Controller, NodeController */
 
-var NodeControllerLighted = new Class(NodeController, {
+var NodeControllerLighted = new Class({
+	Extends: NodeController,
 	events: {
 		'view:light': function(view, e){
 			if( this.lighted ) this.lighted.unlight(e);
