@@ -1,93 +1,95 @@
-// FIX: when adding this file 6000call onload, when adding objectold, wich has almost the same effect 2000call onload
-
 /*
 
-name: Object.cloning
+name: Object.overload
 
-description: Cloning an object
+description: Overloading properties of object
 
-provides: Object.clone
-
+provides:
+	Object.setPair, Object.setPairClone, Object.completePair, Object.mergePair,
+	Object.eachPair, Object.eachArraypair,
+	Object.append, Object.complete, Object.clone, Object.merge
 */
 
-Object.iterator = {	
-	merge: function(key, value, source){
-		if( typeof this[key] == 'object' && this[key] !== null ){
-			Object.merge(this[key], source[key]);
+// set key value pair in this
+Object.setPair = function(key, value, object){
+	this[key] = value;
+};
+
+// set key value pair but cloning the value
+Object.setPairClone = function(key, value){
+	this[key] = Object.clone(value);
+};
+
+// set key/valuepair to this if not existing
+Object.completePair = function(key){
+	if( !(key in this) ) Object.setPair.apply(this, arguments);
+};
+
+// set key/value pair but clone objets (array,regexp,date,...) and
+// merge object when they already existse
+Object.mergePair = function(key, value){
+	if( typeof value == 'object' && value !== null ){
+		if( typeof this[key] == 'object' ){
+			Object.eachPair(value, Object.mergePair, this[key]);
 		}
 		else{
-			Object.iterator.set.apply(this, arguments);
+			Object.setPairClone.apply(this, arguments);
 		}
-	},
-	
-	complete: function(key){
-		if( !(key in this) ) Object.iterator.set.apply(this, arguments);
-	},
-	
-	forEach: function(object, fn, bind){		
-		this.list(object).forEach(function(key){ fn.call(bind, key, object); });
-	},
-	
-	forEachWithValue: function(object, fn, bind, getter, getterBind){		
-		this.list(object).forEach(function(key){ fn.call(bind, key, getter.call(getterBind, object, key), object); }, this);
-	},
-	
-	forEachPair: function(object, fn, bind){
-		return this.forEachWithValue(object, fn, bind, this.get, this);
-	},
-	
-	forEachPairCloned: function(object, fn, bind){
-		return this.forEachWithValue(object, fn, bind, this.getClone, this);
-	},
-		
-	iterateArray: function(array, fn, bind, iterator, iteratorBind){
-		var i = 0, j = array.length, object, temp;
+	}
+	else{
+		Object.setPair.apply(this, arguments);
+	}
 
-		for(;i<j;i++){
-			object = array[i];
-			if( object instanceof Function ){
-				object = object.prototype;
-			}
-			if( typeof object == 'string' ){
-				temp = {};
-				temp[object] = array[++i];
-				object = temp;
-			}
+	return this;
+};
 
-			if( typeof object == 'object' ){
-				iterator.call(iteratorBind, object, fn, bind);
-			}
+Object.eachPair = function(object, fn, bind){
+	for(var key in object) fn.call(bind, key, object[key], object);
+	return object;
+};
+
+Object.eachArrayPair = function(array, fn, bind){
+	var i = 0, j = array.length, item, name;
+
+	for(;i<j;i++){
+		item = array[i];
+		if( item instanceof Function ) item = item.prototype;
+
+		switch(typeof item){
+		case 'string':
+			fn.call(bind, item, array[++i]);
+			break;
+		case 'object':
+			Object.eachPair(item, fn, bind);
+			break;
 		}
-	},
-	
-	iterateArrayPair: function(array, fn, bind){
-		this.iterateArray(array, fn, bind, this.forEachPair, this);
-	},
-	
-	iterateArrayPairCloned: function(array, fn, bind){
-		this.iterateArray(array, fn, bind, this.forEachPairCloned, this);
 	}
 };
 
-Object.clone = function(object, recursive){
-	var clone;
+Object.append = function(object){
+	Object.eachArrayPair(toArray(arguments, 1), Object.setPair, object);
+	return object;
+};
+
+Object.complete = function(object){
+	Object.eachArrayPair(toArray(arguments, 1), Object.completePair, object);
+	return object;
+};
+
+Object.clone = function(object){
+	var clone = object;
 
 	if( typeof object == 'object' && object != null ){
-		if( typeof object.clone == 'function' ){
-			clone = object.clone();
-		}
+		if( typeof object.clone == 'function' ) clone = object.clone();
 		else{
 			clone = {};
-			Object.iterator[recursive ? 'forEachPairCloned' : 'forEachPair'](object, Object.iterator.set, clone);		
-			
+			Object.eachPair(object, Object.setPairClone, clone);
+
 			// only if es5
 			if( !Object.isExtensible(object) ) Object.preventExtensions(clone);
 			if( Object.isSealed(object) ) Object.seal(clone);
 			if( Object.isFrozen(object) ) Object.freeze(clone);
 		}
-	}
-	else{
-		clone = object;
 	}
 
 	return clone;
@@ -97,72 +99,45 @@ RegExp.prototype.clone = Function.THIS;
 Date.prototype.clone = Function.THIS;
 Array.prototype.clone = function(){
 	var i = this.length, clone = new Array(i);
+
 	while(i--) clone[i] = Object.clone(this[i]);
+
 	return clone;
 };
 
 Object.merge = function(object){
-	Object.iterator.iterateArrayPairCloned(toArray(arguments, 1), Object.iterator.merge, object);
+	Object.eachArrayPair(toArray(arguments, 1), Object.mergePair, object);
 	return object;
 };
 
-Object.append = function(object){
-	Object.iterator.iterateArrayPair(toArray(arguments, 1), Object.iterator.set, object);
-	return object;
-};
-
-Object.complete = function(object){
-	Object.iterator.iterateArrayPair(toArray(arguments, 1), Object.iterator.complete, object);
-	return object;
-};
-
-if( false && 'getOwnPropertyNames' in Object ){
-	Object.iterator.list = function(object){
-		return Object.getOwnPropertyNames(object);
+if( 'getOwnPropertyNames' in Object ){
+	Object.setPair = function(key, value, object){
+		if( object ){
+			Object.defineProperty(this, key, Object.getOwnPropertyDescriptor(object, key));
+		}
+		else{
+			this[key] = value;
+		}
 	};
-	Object.iterator.get = function(object, key){
-		return Object.getOwnPropertyDescriptor(object, key);
+
+	Object.setPairClone = function(key, value, object){
+		if( object ){
+			var descriptor = Object.getOwnPropertyDescriptor(object, key);
+			if( 'value' in descriptor ) descriptor.value = Object.clone(descriptor.value);
+			Object.defineProperty(this, key, descriptor);
+		}
+		else{
+			this[key] = Object.clone(value);
+		}
 	};
-	Object.iterator.getClone = function(object, key){
-		var descriptor = this.get(object, key);
-		if( 'value' in descriptor ) descriptor.value = Object.clone(descriptor.value);
-		return descriptor;
-	};	
-	Object.iterator.set = function(key, value){
-		Object.defineProperty(this, key, value);
+
+	Object.eachPair = function(object, fn, bind){
+		Object.getOwnPropertyNames(object).forEach(function(key){
+			fn.call(bind, key, object[key], object);
+		});
+		return object;
 	};
 }
-else{
-	Object.iterator.list = function(object){
-		return Object.keys(object);
-	};
-	Object.iterator.get = function(object, key){
-		return object[key];
-	};	
-	Object.iterator.getClone = function(object, key){
-		return Object.clone(this.get(object, key));
-	};	
-	Object.iterator.set = function(key, value){
-		this[key] = value;
-	};
-}
-
-/*
-
-name: Object.overload
-
-description: Overloading properties of object
-
-provides:
-	Object.eachPair
-
-*/
-
-
-Object.eachPair = function(object, fn, bind){
-	for(var name in object) fn.call(bind, name, object[name], object);
-	return object;
-};
 
 /*
 
@@ -170,7 +145,7 @@ name: Object.util
 
 description: Utilities over object
 
-provides: Object.forEach, Object.map, Object.isEmpty, Object.keys, Object.values, Object.pairs
+provides: Object.forEach, Object.each, Object.isEmpty, Object.keys, Object.values, Object.pairs
 
 */
 
@@ -179,14 +154,6 @@ Object.complete(Object, {
 		for(var key in object){
 			if( Object.prototype.hasOwnProperty.call(object, key) ) fn.call(bind, object[key], key, object);
 		}
-	},
-
-	map: function(object, fn, bind){
-		var results = {}, key;
-		for(key in object){
-			if( Object.prototype.hasOwnProperty.call(object, key) ) results[key] = fn.call(bind, object[key], key, object);
-		}
-		return results;
 	},
 
 	isEmpty: function(object){
@@ -224,12 +191,13 @@ Object.complete(Object, {
 	}
 });
 
+
 /*
 
 name: Implement
 
 provides:
-	Object.implement, Object.complement,
+	Object.implementThis, Object.complementThis,
 	String.implement, String.complement,
 	Number.implement, Number.complement,
 	Function.implement, Function.complement,
@@ -238,12 +206,12 @@ provides:
 */
 
 Object.implement = function(){
-	Object.iterator.iterateArrayPairCloned(arguments, Object.iterator.merge, this.prototype);
+	Object.eachArrayPair(arguments, Object.mergePair, this.prototype);
 	return this;
 };
 
 Object.complement = function(){
-	Object.iterator.iterateArrayPairCloned(arguments, Object.iterator.complete, this.prototype);
+	Object.eachArrayPair(arguments, Object.completePair, this.prototype);
 	return this;
 };
 
