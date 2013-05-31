@@ -85,6 +85,7 @@ var Class = window.Class = function(proto){
 	}
 
 	var parent = 'Extends' in proto ? proto.Extends : Class;
+	var constructor;
 
 	// when the class doesn't define a constructor
 	if( !proto.hasOwnProperty('constructor') ){
@@ -102,7 +103,7 @@ var Class = window.Class = function(proto){
 		}
 	}
 
-	var constructor = proto.constructor;
+	constructor = proto.constructor;
 
 	Object.setPrototype(constructor, parent);
 	constructor.implement(proto);
