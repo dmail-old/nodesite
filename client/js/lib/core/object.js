@@ -42,10 +42,14 @@ Object.mergePair = function(key, value){
 	return this;
 };
 
+Object.ownKeys = Object.keys;
+
 Object.eachOwnPair = function(object, fn, bind){
-	Object.keys(object).forEach(function(key){
+	var keys = Object.ownKeys(object), i = 0, j = keys.length, key;
+	for(;i<j;i++){
+		key = keys[i];
 		fn.call(bind, key, object[key], object);
-	});
+	}
 	return object;
 };
 
@@ -154,13 +158,8 @@ if( 'getOwnPropertyNames' in Object ){
 			this[key] = Object.clone(value);
 		}
 	};
-
-	Object.eachOwnPair = function(object, fn, bind){
-		Object.getOwnPropertyNames(object).forEach(function(key){
-			fn.call(bind, key, object[key], object);
-		});
-		return object;
-	};
+	
+	Object.ownKeys = Object.getOwnPropertyNames;
 }
 
 /*
