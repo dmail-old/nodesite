@@ -1,71 +1,4 @@
 /*
-
-name: Object.Proto
-
-description: Prototype manipulation as merging, setting, getting prototype
-
-provides: Object.create, Object.copy, Object.getPrototype, Object.setPrototype, Object.findPrototype, Object.findParentPrototype
-
-*/
-
-// create a new object still linked to source trough prototype. Consequently modifying source impacts the new object
-Object.create = Object.create || function(source){
-	var F = function(){};
-	F.prototype = source;
-	return new F();
-};
-
-var getPrototype;
-
-if( typeof Object.getPrototypeOf == 'function' ) getPrototype = Object.getPrototypeOf;
-else if( typeof 'test'.__proto__ === 'object' ) getPrototype = function(instance){ return instance.__proto__; };
-// May break if the constructor has been tampered with
-else getPrototype = function(instance){ return instance.constructor.prototype; };
-
-Object.append(Object, {
-	// create a deep copy of source through Object.create
-	copy: function(source){
-		var copy = Object.create(source), key, value;
-
-		for(key in copy){
-			value = copy[key];
-			if( typeof value == 'object' && value != null ) copy[key] = Object.copy(value);
-		}
-
-		return copy;
-	},
-
-	// get constructor prototype from instance
-	getPrototype: getPrototype,
-
-	// set the prototype of a constructor
-	setPrototype: function(constructor, prototype){
-		if( prototype instanceof Function ) prototype = prototype.prototype;
-		constructor.prototype = Object.copy(prototype);
-		constructor.prototype.constructor = constructor;
-	},
-
-	// find first prototype defining key
-	findPrototype: function(instance, key){
-		var proto = Object.getPrototype(instance);
-
-		while( proto ){
-			if( key in proto ) return proto;
-			proto = Object.getPrototype(proto);
-		}
-
-		return null;
-	},
-
-	// find first parent prototype defining a key
-	findParentPrototype: function(instance, key){
-		var proto = Object.findPrototype(Object.getPrototype(instance), key);
-
-		return proto ? proto[key] : null;
-	}
-});
-
-/*
 ---
 
 name: Class
@@ -104,9 +37,10 @@ var Class = window.Class = function(proto){
 	}
 
 	constructor = proto.constructor;
-
-	Object.setPrototype(constructor, parent);
-	constructor.implement(proto);
+	
+	constructor.prototype = Object.copy(parent instanceof Function ? parent.prototype : parent);
+	constructor.prototype.constructor = constructor;
+	Object.merge(constructor.prototype, proto);
 
 	if( 'Implements' in proto ){
 		var items = proto.Implements;
