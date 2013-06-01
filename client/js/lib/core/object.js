@@ -6,31 +6,30 @@ description: Overloading properties of object
 
 provides:
 	Object.setPair, Object.setPairClone, Object.completePair, Object.mergePair,
-	Object.eachPair, Object.eachArraypair,
-	Object.append, Object.complete, Object.clone, Object.merge
+	Object.eachOwnPair, Object.eachArrayOwnpair,
+	Object.append, Object.complete, Object.clone, Object.merge, Object.copy
 */
 
-// set key value pair in this
+// set key/value pair in this
 Object.setPair = function(key, value, object){
 	this[key] = value;
 };
 
-// set key value pair but cloning the value
+// set key/value pair in this cloning the value
 Object.setPairClone = function(key, value){
 	this[key] = Object.clone(value);
 };
 
-// set key/valuepair to this if not existing
+// set key/value pair in this if not existing
 Object.completePair = function(key){
 	if( !(key in this) ) Object.setPair.apply(this, arguments);
 };
 
-// set key/value pair but clone objets (array,regexp,date,...) and
-// merge object when they already existse
+// set key/value pair in this cloning value and merging objects
 Object.mergePair = function(key, value){
 	if( typeof value == 'object' && value !== null ){
 		if( typeof this[key] == 'object' ){
-			Object.customEachPair(value, Object.mergePair, this[key]);
+			Object.eachOwnPair(value, Object.mergePair, this[key]);
 		}
 		else{
 			Object.setPairClone.apply(this, arguments);
@@ -43,17 +42,14 @@ Object.mergePair = function(key, value){
 	return this;
 };
 
-Object.customEachPair = function(object, fn, bind){
-	for(var key in object) fn.call(bind, key, object[key], object);
+Object.eachOwnPair = function(object, fn, bind){
+	Object.keys(object).forEach(function(key){
+		fn.call(bind, key, object[key], object);
+	});
 	return object;
 };
 
-Object.eachPair = function(object, fn, bind){
-	for(var key in object) fn.call(bind, key, object[key], object);
-	return object;
-};
-
-Object.eachArrayPair = function(array, fn, bind){
+Object.eachArrayOwnpair = function(array, fn, bind){
 	var i = 0, j = array.length, item, name;
 
 	for(;i<j;i++){
@@ -65,19 +61,19 @@ Object.eachArrayPair = function(array, fn, bind){
 			fn.call(bind, item, array[++i]);
 			break;
 		case 'object':
-			Object.customEachPair(item, fn, bind);
+			Object.eachOwnPair(item, fn, bind);
 			break;
 		}
 	}
 };
 
 Object.append = function(object){
-	Object.eachArrayPair(toArray(arguments, 1), Object.setPair, object);
+	Object.eachArrayOwnpair(toArray(arguments, 1), Object.setPair, object);
 	return object;
 };
 
 Object.complete = function(object){
-	Object.eachArrayPair(toArray(arguments, 1), Object.completePair, object);
+	Object.eachArrayOwnpair(toArray(arguments, 1), Object.completePair, object);
 	return object;
 };
 
@@ -88,7 +84,7 @@ Object.clone = function(object){
 		if( typeof object.clone == 'function' ) clone = object.clone();
 		else{
 			clone = {};
-			Object.customEachPair(object, Object.setPairClone, clone);
+			Object.eachOwnPair(object, Object.setPairClone, clone);
 
 			// only if es5
 			if( !Object.isExtensible(object) ) Object.preventExtensions(clone);
@@ -111,9 +107,32 @@ Array.prototype.clone = function(){
 };
 
 Object.merge = function(object){
-	Object.eachArrayPair(toArray(arguments, 1), Object.mergePair, object);
+	Object.eachArrayOwnpair(toArray(arguments, 1), Object.mergePair, object);
 	return object;
 };
+
+// create a deep copy of object still linked to every object or subobject by prototype
+Object.copy = function(object){
+	// Object.create return a copy of the object passed still linked to object by prototype
+	// Consequently modifying object impacts the copy
+	
+	var copy = Object.create(object), key, value;
+
+	for(key in copy){
+		value = copy[key];
+		if( typeof value == 'object' && value !== null ) copy[key] = Object.copy(value);
+	}
+
+	return copy;
+};
+
+if( !Object.create ){
+	Object.create = function(object){
+		var F = function(){};
+		F.prototype = object;
+		return new F();
+	};
+}
 
 if( 'getOwnPropertyNames' in Object ){
 	Object.setPair = function(key, value, object){
@@ -136,7 +155,7 @@ if( 'getOwnPropertyNames' in Object ){
 		}
 	};
 
-	Object.customEachPair = function(object, fn, bind){
+	Object.eachOwnPair = function(object, fn, bind){
 		Object.getOwnPropertyNames(object).forEach(function(key){
 			fn.call(bind, key, object[key], object);
 		});
@@ -150,9 +169,14 @@ name: Object.util
 
 description: Utilities over object
 
-provides: Object.forEach, Object.each, Object.isEmpty, Object.keys, Object.values, Object.pairs
+provides: Object.eachPair, Object.forEach, Object.isEmpty, Object.keys, Object.values, Object.pairs
 
 */
+
+Object.eachPair = function(object, fn, bind){
+	for(var key in object) fn.call(bind, key, object[key], object);
+	return object;
+};
 
 Object.complete(Object, {
 	forEach: function(object, fn, bind){
@@ -196,13 +220,12 @@ Object.complete(Object, {
 	}
 });
 
-
 /*
 
 name: Implement
 
 provides:
-	Object.implementThis, Object.complementThis,
+	Object.implement, Object.complement,
 	String.implement, String.complement,
 	Number.implement, Number.complement,
 	Function.implement, Function.complement,
@@ -211,12 +234,12 @@ provides:
 */
 
 Object.implement = function(){
-	Object.eachArrayPair(arguments, Object.mergePair, this.prototype);
+	Object.eachArrayOwnpair(arguments, Object.mergePair, this.prototype);
 	return this;
 };
 
 Object.complement = function(){
-	Object.eachArrayPair(arguments, Object.completePair, this.prototype);
+	Object.eachArrayOwnpair(arguments, Object.completePair, this.prototype);
 	return this;
 };
 
@@ -229,3 +252,50 @@ Function.implement({
 	implement: Object.implement,
 	complement: Object.complement
 });
+
+
+/*
+
+name: Object.Proto
+
+description: Prototype manipulation as merging, setting, getting prototype
+
+provides: Object.create, Object.copy, Object.getPrototype, Object.setPrototype, Object.findPrototype, Object.findParentPrototype
+
+
+*/
+
+/*
+
+useless for now
+
+var getPrototype;
+
+if( typeof Object.getPrototypeOf == 'function' ) getPrototype = Object.getPrototypeOf;
+else if( typeof 'test'.__proto__ === 'object' ) getPrototype = function(instance){ return instance.__proto__; };
+// May break if the constructor has been tampered with
+else getPrototype = function(instance){ return instance.constructor.prototype; };
+
+// get constructor prototype from instance
+Object.getPrototype = getPrototype;
+
+// find first prototype defining key
+Object.findPrototype = function(instance, key){
+	var proto = Object.getPrototype(instance);
+
+	while( proto ){
+		if( key in proto ) return proto;
+		proto = Object.getPrototype(proto);
+	}
+
+	return null;
+};
+
+// find first parent prototype defining a key
+Object.findParentPrototype = function(instance, key){
+	var proto = Object.findPrototype(Object.getPrototype(instance), key);
+
+	return proto ? proto[key] : null;
+};
+
+*/
