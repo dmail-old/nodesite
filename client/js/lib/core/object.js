@@ -6,7 +6,7 @@ description: Overloading properties of object
 
 provides:
 	Object.setPair, Object.setPairClone, Object.completePair, Object.mergePair,
-	Object.eachOwnPair, Object.eachArrayOwnpair,
+	Object.eachOwnPair, Array.eachOwnpair,
 	Object.append, Object.complete, Object.clone, Object.merge, Object.copy
 */
 
@@ -53,7 +53,7 @@ Object.eachOwnPair = function(object, fn, bind){
 	return object;
 };
 
-Object.eachArrayOwnpair = function(array, fn, bind){
+Array.eachOwnpair = function(array, fn, bind){
 	var i = 0, j = array.length, item, name;
 
 	for(;i<j;i++){
@@ -72,12 +72,12 @@ Object.eachArrayOwnpair = function(array, fn, bind){
 };
 
 Object.append = function(object){
-	Object.eachArrayOwnpair(toArray(arguments, 1), Object.setPair, object);
+	Array.eachOwnpair(toArray(arguments, 1), Object.setPair, object);
 	return object;
 };
 
 Object.complete = function(object){
-	Object.eachArrayOwnpair(toArray(arguments, 1), Object.completePair, object);
+	Array.eachOwnpair(toArray(arguments, 1), Object.completePair, object);
 	return object;
 };
 
@@ -111,7 +111,7 @@ Array.prototype.clone = function(){
 };
 
 Object.merge = function(object){
-	Object.eachArrayOwnpair(toArray(arguments, 1), Object.mergePair, object);
+	Array.eachOwnpair(toArray(arguments, 1), Object.mergePair, object);
 	return object;
 };
 
@@ -233,12 +233,12 @@ provides:
 */
 
 Object.implement = function(){
-	Object.eachArrayOwnpair(arguments, Object.mergePair, this.prototype);
+	Array.eachOwnpair(arguments, Object.mergePair, this.prototype);
 	return this;
 };
 
 Object.complement = function(){
-	Object.eachArrayOwnpair(arguments, Object.completePair, this.prototype);
+	Array.eachOwnpair(arguments, Object.completePair, this.prototype);
 	return this;
 };
 

@@ -138,7 +138,7 @@ var server = new App(root + '/server.js');
 function restart(path){
 	console.log('\033[35m'+ path +'\033[39m modified server restart');
 	server.restart();
-};
+}
 
 server.on('start', function(){
 	Watcher.watchAll(config.serverFiles, restart);

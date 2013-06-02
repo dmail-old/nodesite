@@ -8,7 +8,7 @@ var NodeControllerNav = new Class({
 			var key = String(e.key), method = this.keys[key];
 
 			if( !method && (key.length == 1 && RegExp.alphanum.test(key)) ){
-				method = '*';
+				method = this.keys['*'];
 			}
 			if( method ){
 				this.currentView = this.getActiveView();
