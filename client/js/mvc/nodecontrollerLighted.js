@@ -28,4 +28,9 @@ var NodeControllerLighted = new Class({
 	}
 });
 
+NodeController.prototype.getLighted = function(){
+	var controller = this.getController('lighted');
+	return controller ? controller.lighted : null;
+};
+
 Controller.register('lighted', NodeControllerLighted);

@@ -20,18 +20,14 @@ var NodeControllerVisibles = new Class({
 		},
 
 		'view:expand': function(view){
-			if( this.view.visibles.contains(view) ) this.updateVisibles();
+			if( this.visibles.contains(view) ) this.updateVisibles();
 		},
 
 		'view:contract': function(view){
-			if( this.view.visibles.contains(view) ) this.updateVisibles();
+			if( this.visibles.contains(view) ) this.updateVisibles();
 		}
 	},
-
-	setView: function(view){
-		if( view ) view.visibles = [];
-		return NodeController.prototype.setView.call(this, view);
-	},
+	visibles: [],
 
 	changeVisibility: function(view, hidden){
 		var prev, next, parent = view.parentNode;
@@ -57,7 +53,7 @@ var NodeControllerVisibles = new Class({
 	},
 
 	updateVisibles: function(){
-		this.view.visibles = [];
+		this.visibles = [];
 
 		/* list the visibles view elements, an element is visible if:
 		- it has not the 'hidden' class
@@ -67,7 +63,7 @@ var NodeControllerVisibles = new Class({
 		this.view.root.crossNode(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
-			this.view.visibles.push(view);
+			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
 			if( !view.hasState('expanded') ) return 'continue';
 		}, this, !this.view.hasClass('hideRoot'));
@@ -75,6 +71,11 @@ var NodeControllerVisibles = new Class({
 		return this;
 	}
 });
+
+NodeController.prototype.getVisibles = function(){
+	var controller = this.getController('visibles');
+	return controller ? controller.visibles : [];
+};
 
 NodeView.isVisible = function(view){
 	return !view.hasState('hidden');

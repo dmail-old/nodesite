@@ -19,15 +19,15 @@ var NodeControllerFocused = new Class({
 	Extends: NodeController,
 	events: {
 		'view:focus': function(view, e){
-			var current = this.view.focused;
-			this.view.focused = view;
+			var current = this.focused;
+			this.focused = view;
 			if( current && current != view ) current.blur(e);
 		},
 
 		'view:blur': function(view, e){
-			if( !this.view.focused ){
+			if( !this.focused ){
 				// blur d'un noeud sans qu'aucun autre ne prenne se place
-				this.view.focused = view.getSibling() || view.parentNode || this.view.root;
+				this.focused = view.getSibling() || view.parentNode || this.view.root;
 			}
 		},
 
@@ -45,7 +45,13 @@ var NodeControllerFocused = new Class({
 				view.focus(e);
 			}
 		}
-	}
+	},
+	focused: null
 });
+
+NodeController.prototype.getFocused = function(){
+	var controller = this.getController('focused');
+	return controller ? controller.focused : null;
+};
 
 Controller.register('focused', NodeControllerFocused);

@@ -1,4 +1,4 @@
-/* global Controller, NodeControllerSelection */
+/* global Controller, NodeController, NodeControllerSelection */
 
 /*
 
@@ -54,7 +54,7 @@ var NodeControllerMultiselection = new Class({
 
 		'keydown': function(view, e){
 			if( e.control && e.key == 'a' ){
-				this.view.visibles.forEach(function(view){
+				this.getVisibles().forEach(function(view){
 					view.select(e);
 				});
 			}
@@ -97,7 +97,7 @@ var NodeControllerMultiselection = new Class({
 	createRange: function(viewA, viewB){
 		if( !viewA || !viewB ) throw new Error('no view to create range');
 
-		var range = [], list = this.view.visibles, from = list.indexOf(viewA), to = list.indexOf(viewB);
+		var range = [], list = this.getVisibles(), from = list.indexOf(viewA), to = list.indexOf(viewB);
 
 		if( from === -1 || to === -1 ) throw new Error('cant create range from invisible view');
 		// respect order
@@ -123,5 +123,10 @@ var NodeControllerMultiselection = new Class({
 		range.forEach(function(view){ view.select(e); });
 	}
 });
+
+NodeController.prototype.getSelecteds = function(){
+	var controller = this.getController('multiselection');
+	return controller ? controller.selecteds : null;
+};
 
 Controller.register('multiselection', NodeControllerMultiselection);

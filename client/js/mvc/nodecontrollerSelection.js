@@ -20,7 +20,13 @@ var NodeControllerSelection = new Class({
 				this.selected.unselect(e);
 			}
 		}
-	}
+	},
+	selected: null
 });
+
+NodeController.prototype.getSelected = function(){
+	var controller = this.getController('selection');
+	return controller ? controller.selected : null;
+};
 
 Controller.register('selection', NodeControllerSelection);

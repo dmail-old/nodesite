@@ -3,7 +3,7 @@
 var View = new Class({
 	Implements: Emitter,
 	tagName: 'div',
-	attributes: {},
+	attributes: null,
 	modelEvents: null,
 
 	constructor: function(model){
@@ -50,7 +50,7 @@ var View = new Class({
 	},
 
 	getAttributes: function(){
-		var attr = Object.clone(this.attributes);
+		var attr = this.attributes ? Object.clone(this.attributes) : {};
 
 		attr[View.IDAttribute] = this.id;
 

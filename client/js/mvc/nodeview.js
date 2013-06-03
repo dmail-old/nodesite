@@ -79,9 +79,18 @@ var NodeView = new Class({
 		this.insertBefore(child, index ? this.children[index] : null);
 	},
 
-	// NOTE: should be override by FileNodeView -> should not be considered empty until loaded
+	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
 	isEmpty: function(){
 		return this.children.length === 0;
+	},
+
+	getLevel: function(){
+		var level = 0, parent = this.parentNode;
+		while(parent){
+			level++;
+			parent = parent.parentNode;
+		}
+		return level;
 	},
 
 	getAttributes: function(){
@@ -186,15 +195,6 @@ var NodeView = new Class({
 
 	show: function(e){
 		return this.setState('hidden', false, e);
-	},
-
-	getLevel: function(){
-		var level = 0, parent = this.parentNode;
-		while(parent){
-			level++;
-			parent = parent.parentNode;
-		}
-		return level;
 	}
 });
 

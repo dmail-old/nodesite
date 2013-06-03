@@ -15,10 +15,10 @@ var NodeControllerNav = new Class({
 			}
 
 			if( method ){
-				this.currentView = this.getActiveView();
-				this.list = this.getList();
+				this.currentView = this.getFocused();
+				this.list = this.getVisibles();
 				this.target = null;
-
+				
 				// no currentView -> naviguate to home view
 				if( !this.currentView && method != '*' ){
 					method = 'home';
@@ -137,14 +137,6 @@ var NodeControllerNav = new Class({
 		var count = parseInt(total / this.getLine(element), 10) - 1;
 
 		return count;
-	},
-
-	getActiveView: function(){
-		return this.view.focused;
-	},
-
-	getList: function(){
-		return this.view.visibles;
 	}
 });
 
