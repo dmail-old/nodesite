@@ -153,44 +153,10 @@ Element.implement({
 	}
 })();
 
-var Storage = new Class({
-	constructor: function(){
-		this.clear();
-	},
-
-	clear: function(){
-		this.store = {};
-		this.length = 0;
-		return this;
-	},
-
-	contains: function(name){
-		return name in this.store;
-	},
-
-	get: function(name){
-		return this.store[name];
-	},
-
-	set: function(name, value){
-		this.store[name] = value;
-		this.length++;
-		return this;
-	},
-
-	remove: function(name){
-		delete this.store[name];
-		this.length--;
-	}
-});
-
-Storage.prototype.has = Storage.prototype.contains;
-Storage.prototype.reset = Storage.prototype.clear;
-
 [Element.prototype, window, document].forEach(function(item){
 	Object.defineProperty(item, 'storage', {
 		get: function(){
-			if( !this.store ) this.store = new Storage();
+			if( !this.store ) this.store = {};
 			return this.store;
 		},
 		enumerable: true,
