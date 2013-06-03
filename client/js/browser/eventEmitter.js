@@ -2,8 +2,11 @@
 
 var EventEmitter = Object.append(Object.clone(Emitter), {
 	getEvents: function(){
-		if( !this.storage.has('listeners') ) this.storage.set('listeners', {});
-		return this.storage.get('listeners');
+		var listeners = this.storage.listeners;
+
+		if( !listeners ) listeners = this.storage.listeners = {};
+		
+		return listeners;
 	},
 
 	deleteEvents: function(){

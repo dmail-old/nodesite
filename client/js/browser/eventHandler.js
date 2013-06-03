@@ -8,18 +8,21 @@ var EventHandler = new Class({
 	},
 
 	handleEvent: function(e){
-		var listener = this.listener, handler = this.handlers[e.type];
+		var listener = this.listener, handlers = this.handlers, handler;
 
-		if( typeof handler == 'string' ){
-			handler = listener[handler];
-		}
-		if( typeof handler == 'object' ){
-			listener = handler;
-			handler = handler.handleEvent;
-		}
-		if( typeof handler == 'function' ){
-			return this.callHandler(handler, listener, e);
-		}
+		if( handlers ){
+			handler = this.handlers[e.type];
+			if( typeof handler == 'string' ){
+				handler = listener[handler];
+			}
+			if( typeof handler == 'object' ){
+				listener = handler;
+				handler = handler.handleEvent;
+			}
+			if( typeof handler == 'function' ){
+				return this.callHandler(handler, listener, e);
+			}
+		}		
 	}
 });
 delete EventHandler.prototype.handleListener;

@@ -28,8 +28,10 @@ Object.completePair = function(key){
 // set key/value pair in this cloning value and merging objects
 Object.mergePair = function(key, value){
 	if( typeof value == 'object' && value !== null ){
-		if( typeof this[key] == 'object' ){
-			Object.eachOwnPair(value, Object.mergePair, this[key]);
+		var current = this[key];
+
+		if( typeof current == 'object' && current !== null ){
+			Object.eachOwnPair(value, Object.mergePair, current);
 		}
 		else{
 			Object.setPairClone.apply(this, arguments);

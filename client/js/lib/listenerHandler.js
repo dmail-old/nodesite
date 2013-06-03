@@ -1,5 +1,5 @@
 window.ListenerHandler = new Class({
-	handlers: {},
+	handlers: null,
 
 	constructor: function(emitter, handlers, listener){
 		this.emitter = emitter;
@@ -12,17 +12,20 @@ window.ListenerHandler = new Class({
 	},
 
 	handleListener: function(name, args){
-		var listener = this.listener, handler = this.handlers[name];
+		var listener = this.listener, handlers = this.handlers, handler;
 
-		if( typeof handler == 'string' ){
-			handler = listener[handler];
-		}
-		if( typeof handler == 'object' ){
-			listener = handler;
-			handler = handler.handleListener;
-		}
-		if( typeof handler == 'function' ){
-			return this.applyHandler(handler, listener, args);
+		if( handlers ){
+			handler = this.handlers[name];
+			if( typeof handler == 'string' ){
+				handler = listener[handler];
+			}
+			if( typeof handler == 'object' ){
+				listener = handler;
+				handler = handler.handleListener;
+			}
+			if( typeof handler == 'function' ){
+				return this.applyHandler(handler, listener, args);
+			}
 		}
 	},
 
@@ -53,12 +56,12 @@ window.ListenerHandler = new Class({
 	},
 
 	listen: function(){
-		Object.eachPair(this.handlers, this.enable, this);
+		if( this.handlers ) Object.eachPair(this.handlers, this.enable, this);
 		return this;
 	},
 
 	stopListening: function(){
-		Object.eachPair(this.handlers, this.disable, this);
+		if( this.handlers ) Object.eachPair(this.handlers, this.disable, this);
 		return this;
 	}
 });
