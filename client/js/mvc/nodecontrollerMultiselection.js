@@ -35,7 +35,7 @@ var NodeControllerMultiselection = new Class({
 					view.toggleState('selected', e);
 				}
 				else{
-					this.checkShift(view, e);
+					this.add(view, e);
 				}
 			}
 			else{
@@ -66,7 +66,7 @@ var NodeControllerMultiselection = new Class({
 		this.selecteds = [];
 	},
 
-	checkShift: function(view, e){
+	add: function(view, e){
 		if( e && e.shift ){
 			e.preventDefault();
 			this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;

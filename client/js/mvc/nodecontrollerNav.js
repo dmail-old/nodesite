@@ -5,11 +5,15 @@ var NodeControllerNav = new Class({
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
-			var key = String(e.key), method = this.keys[key];
+			var key = String(e.key), method;
 
-			if( !method && (key.length == 1 && RegExp.alphanum.test(key)) ){
-				method = this.keys['*'];
+			if( key in this.keys ){
+				method = key;
 			}
+			else if( key.length == 1 && RegExp.alphanum.test(key) ){
+				method = '*';
+			}
+
 			if( method ){
 				this.currentView = this.getActiveView();
 				this.list = this.getList();
@@ -17,10 +21,10 @@ var NodeControllerNav = new Class({
 
 				// no currentView -> naviguate to home view
 				if( !this.currentView && method != '*' ){
-					method = this.keys['home'];
+					method = 'home';
 				}
 
-				method.call(this, e);
+				this.keys[method].call(this, e);
 				if( this.target ){
 					this.go(this.target, e);
 					e.preventDefault();
@@ -101,9 +105,19 @@ var NodeControllerNav = new Class({
 
 	go: function(view, e){
 		if( view ){
+			if( e )  e.preventDefault();
+			if( e && !e.control ){
+				var multiselection = this.getController('multiselection');
+				if( multiselection ){
+					if( e.shift && !multiselection.shiftView ){
+						multiselection.shiftView = this.focused;
+					}
+					multiselection.add(view, e);
+				}
+			}
+			
 			view.focus(e);
-			//if( !e || !e.control ) view.select(e);
-			if( e && e.type == 'keydown' ) e.preventDefault();
+
 			return true;
 		}
 		return false;

@@ -4,7 +4,7 @@ var View = new Class({
 	Implements: Emitter,
 	tagName: 'div',
 	attributes: {},
-	modelEvents: {},
+	modelEvents: null,
 
 	constructor: function(model){
 		// called without new

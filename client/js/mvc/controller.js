@@ -14,7 +14,7 @@ var Controller = new Class({
 			this.destroy();
 		}
 	},
-	events: {},
+	events: null,
 
 	constructor: function(view){
 		this.eventsHandler = new EventHandler(null, this.events, this);
@@ -25,17 +25,25 @@ var Controller = new Class({
 	setView: function(view){
 		if( view ){
 			this.view = view;
+
+			this.view.controllers[this.name] = this;
+
 			this.viewEventsHandler.emitter = view;
 			this.viewEventsHandler.listen();
+
 			if( this.view.element ) this.setElement(this.view.element);
 		}
 	},
 
 	unsetView: function(){
 		if( this.view ){
+			if( this.view.element && this.element == this.view.element ) this.unsetElement();
+
 			this.viewEventsHandler.stopListening();
 			delete this.viewEventsHandler.emitter;
-			if( this.view.element && this.element == this.view.element ) this.unsetElement();
+
+			delete this.view.controllers[this.name];
+
 			delete this.view;
 		}
 	},
@@ -54,6 +62,10 @@ var Controller = new Class({
 		}
 	},
 
+	getController: function(name){
+		return this.view.controllers[name];
+	},
+
 	destroy: function(){
 		this.unsetView();
 		this.unsetElement();
@@ -62,8 +74,22 @@ var Controller = new Class({
 
 Controller.controllers = {};
 Controller.register = function(name, controller){
+	controller.prototype.name = name;
 	this.controllers[name] = controller;
 };
 Controller.add = function(view, name){
 	new this.controllers[name](view);
 };
+
+View.prototype.on('create', function(){
+	this.controllers = {};
+});
+
+View.prototype.on('destroy', function(){
+	for(var name in this.controllers){
+		this.controllers[name].unsetView();
+	}
+
+	delete this.controllers;
+});
+
