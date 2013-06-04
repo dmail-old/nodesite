@@ -5,17 +5,13 @@ var Model = new Class({
 	validationError: null,
 	cid: 0,
 
-	constructor: function(properties){
+	constructor: function Model(properties){
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.constructor.prototype.cid++;
 	},
 
 	create: function(data){
 		return data instanceof this.constructor ? data : new this.constructor(data);
-	},
-
-	toString: function(){
-		return 'Model';
 	},
 
 	parse: function(properties){

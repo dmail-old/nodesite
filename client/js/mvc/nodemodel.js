@@ -1,35 +1,38 @@
-/* global Model, TreeStructure */
+/* global Model, TreeStructure, TreeTraversal, TreeFinder */
 
 var NodeModel = new Class({
 	Extends: Model,
+	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	name: '',
 
-	constructor: function(){
+	constructor: function NodeModel(){
 		Model.prototype.constructor.apply(this, arguments);
 
 		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');
 	},
 
-	toString: function(){
-		return 'NodeModel';
+	oninsertchild: function(child){
+		this.emit('adopt', child, this.children.indexOf(child));
+		//child.crossAll(function(node){ node.emit('enter'); }, null, true);
+	},
+
+	onremovechild: function(child){
+		//child.crossAll(function(node){ node.emit('leave'); }, null, true);
+		child.emit('emancipate');
 	},
 
 	adopt: function(child, index){
-		index = typeof index != 'number' ? this.children.length : index.limit(0, this.children.length);
+		if( typeof index == 'number' ) index = index.limit(0, this.children.length);
+		else index = this.children.length;
 
-		this.insertBefore(child, this.children[index]);
-		//child.crossAll(function(node){ node.emit('enter'); }, null, true);
-		this.emit('adopt', child, index);
+		child = this.insertBefore(child, this.children[index]);
 
 		return this;
 	},
 
 	emancipate: function(){
-		this.parentNode.removeChild(this);
-		//this.crossAll(function(node){ node.emit('leave'); }, null, true);
-		this.emit('emancipate');
-
+		if( this.parentNode ) this.parentNode.removeChild(this);
 		return this;
 	},
 
@@ -37,6 +40,3 @@ var NodeModel = new Class({
 
 	}
 });
-
-NodeModel.implement(TreeStructure);
-

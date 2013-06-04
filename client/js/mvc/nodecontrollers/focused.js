@@ -1,4 +1,4 @@
-/* global Controller, NodeController */
+/* global NodeController */
 
 /*
 
@@ -15,8 +15,7 @@ faire la largeur de son contenu
 
 */
 
-var NodeControllerFocused = new Class({
-	Extends: NodeController,
+NodeController.create('focused', {
 	events: {
 		'view:focus': function(view, e){
 			var current = this.focused;
@@ -27,7 +26,7 @@ var NodeControllerFocused = new Class({
 		'view:blur': function(view, e){
 			if( !this.focused ){
 				// blur d'un noeud sans qu'aucun autre ne prenne se place
-				this.focused = view.getSibling() || view.parentNode || this.view.root;
+				this.focused = view.getSibling() || view.parentNode;
 			}
 		},
 
@@ -40,7 +39,6 @@ var NodeControllerFocused = new Class({
 		},
 
 		'mousedown': function(view, e){
-			// FIX: mousedown peut se produire sur tree qui ne dispose pas de fonction focus
 			if( view ){
 				view.focus(e);
 			}
@@ -53,5 +51,3 @@ NodeController.prototype.getFocused = function(){
 	var controller = this.getController('focused');
 	return controller ? controller.focused : null;
 };
-
-Controller.register('focused', NodeControllerFocused);

@@ -1,7 +1,6 @@
-/* global Controller, NodeController, NodeView */
+/* global NodeController, NodeView */
 
-var NodeControllerVisibles = new Class({
-	Extends: NodeController,
+NodeController.create('visibles', {
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);
@@ -33,8 +32,8 @@ var NodeControllerVisibles = new Class({
 		var prev, next, parent = view.parentNode;
 
 		if( parent ){
-			prev = view.getPrev(NodeView.isVisible);
-			next = view.getNext(NodeView.isVisible);
+			prev = view.getPrevSibling(NodeView.isVisible);
+			next = view.getNextSibling(NodeView.isVisible);
 
 			if( prev && !next ) prev.toggleClass('last', hidden);
 			else if( next && !prev ) next.toggleClass('first', hidden);
@@ -47,9 +46,25 @@ var NodeControllerVisibles = new Class({
 			else if( !prev && !next ) parent.addClass('empty');
 		}
 
-		if( !parent || (parent.hasState('expanded') && this.visibles.contains(parent)) ){
+		if( this.shouldBeVisible(view) ){
 			this.updateVisibles();
 		}
+	},
+
+	/*
+	return if the specified view should be visible
+	*/
+	shouldBeVisible: function(view){
+		var parent = view.parentNode;
+
+		// view is the root
+		if( !parent ) return true;
+		// view is a root direct child
+		if( !parent.parentNode ) return true;
+		// view has an expanded and visible parent
+		if( parent.hasState('expanded') && this.visibles.contains(parent) ) return true;
+
+		return false;
 	},
 
 	updateVisibles: function(){
@@ -60,13 +75,13 @@ var NodeControllerVisibles = new Class({
 		- his parent is expanded
 		*/
 
-		this.view.root.crossNode(function(view){
+		this.view.crossNode(function(view){
 			// view is hidden, ignore all descendant
 			if( view.hasState('hidden') ) return 'continue';
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
 			if( !view.hasState('expanded') ) return 'continue';
-		}, this, !this.view.hasClass('hideRoot'));
+		}, this);
 
 		return this;
 	}
@@ -80,5 +95,3 @@ NodeController.prototype.getVisibles = function(){
 NodeView.isVisible = function(view){
 	return !view.hasState('hidden');
 };
-
-Controller.register('visibles', NodeControllerVisibles);

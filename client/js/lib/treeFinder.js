@@ -1,4 +1,4 @@
-/* global Finder, TreeIterator */
+/* global Finder, TreeTraversal */
 
 var TreeFinder = window.TreeFinder = {
 	matchIterator: function(iterator, match, first){
@@ -44,7 +44,7 @@ var TreeFinder = window.TreeFinder = {
 
 		return false;
 	},
-	
+
 	createFindMethod: function(iterator){
 		return this.matchFirst.curry(iterator);
 	},
@@ -59,8 +59,8 @@ Object.forEach({
 	parent: 'crossParent',
 	child: 'crossChild',
 	last: 'crossReverse',
-	next: 'crossNext',
-	prev: 'crossPrev',
+	nextSibling: 'crossNextSibling',
+	prevSibling: 'crossPrevSibling',
 	sibling: 'crossSibling'
 }, function(iteratorName, axis){
 	var maj = axis.capitalize();

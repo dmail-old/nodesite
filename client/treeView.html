@@ -1,6 +1,6 @@
 <script>
-var treeData = {
-	name: 'rootnode',
+var collectionData = {
+	name: 'collection',
 	children: [
 		{name: 'node0', children: [{name: 'node0.1'}]},
 		{name: 'node1'},
@@ -9,26 +9,26 @@ var treeData = {
 	]
 };
 
-// plus tard on aura surement des méthodes raccourcies pour créer un MVC complet tel que treeView
+var collectionModel = new NodeModel(collectionData);
+var collectionView = new NodeView(collectionModel);
+var rootView = new RootNodeView();
 
-var root = new NodeModel(treeData);
-var treeView = new TreeView(root);
+rootView.insertElement(document.body);
 
-Controller.add(treeView, 'indent');
-Controller.add(treeView, 'tool');
-Controller.add(treeView, 'lighted');
-Controller.add(treeView, 'focused');
-Controller.add(treeView, 'visibles');
-Controller.add(treeView, 'multiselection'); // 'selection');
-Controller.add(treeView, 'nav');
+NodeController.add(rootView, 'indent');
+NodeController.add(rootView, 'tool');
+NodeController.add(rootView, 'lighted');
+NodeController.add(rootView, 'focused');
+NodeController.add(rootView, 'visibles');
+NodeController.add(rootView, 'multiselection'); // 'selection');
+NodeController.add(rootView, 'nav');
 
-treeView.insertElement(document.body);
-//treeView.root.select();
+rootView.appendChild(collectionView);
 
-treeView.root.expand();
-treeView.root.children[0].expand();
-treeView.root.children[2].expand();
-treeView.root.children[3].expand();
+collectionView.expand();
+collectionView.children[0].expand();
+collectionView.children[2].expand();
+collectionView.children[3].expand();
 
 /*
 var FileModel = new Class({

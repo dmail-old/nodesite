@@ -1,12 +1,15 @@
-/* global Emitter, ListenerHandler */
+/* global Emitter, ListenerHandler, StringList */
 
 var View = new Class({
 	Implements: Emitter,
+	modelEvents: {
+		'destroy': 'destroy'
+	},
 	tagName: 'div',
+	className: '',
 	attributes: null,
-	modelEvents: null,
 
-	constructor: function(model){
+	constructor: function View(model){
 		// called without new
 		if( !(this instanceof View) ){
 			if( model != null && typeof model.toView == 'function' ) return model.toView();
@@ -30,10 +33,6 @@ var View = new Class({
 		delete View.instances[this.id];
 	},
 
-	toString: function(){
-		return 'View';
-	},
-
 	setModel: function(model){
 		if( model ){
 			this.model = model;
@@ -49,9 +48,14 @@ var View = new Class({
 		}
 	},
 
-	getAttributes: function(){
-		var attr = this.attributes ? Object.clone(this.attributes) : {};
+	getClassName: function(){
+		return new StringList(this.className);
+	},
 
+	getAttributes: function(){
+		var attr = this.attributes ? Object.copy(this.attributes) : {};
+
+		attr['class'] = this.getClassName();
 		attr[View.IDAttribute] = this.id;
 
 		return attr;
@@ -92,7 +96,7 @@ var View = new Class({
 		return this;
 	},
 
-	insertElement: function(into, before){
+	insertElement: function(into, before, test){
 		if( !this.element ) this.render();
 		into.insertBefore(this.element, before);
 		this.emit('insertElement');

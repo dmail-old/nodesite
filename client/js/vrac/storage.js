@@ -5,27 +5,24 @@ var Item = new Class({
 
 	clear: function(){
 		this.pairs = {};
-		this.length = 0;
 		return this;
 	},
 
-	contains: function(name){
-		return name in this.pairs;
+	contains: function(key){
+		return key in this.pairs;
 	},
 
-	get: function(name){
-		return this.pairs[name];
+	get: function(key){
+		return this.pairs[key];
 	},
 
-	set: function(name, value){
-		this.pairs[name] = value;
-		this.length++;
-		return this;
+	set: function(key, value){
+		this.pairs[key] = value;
+		return value;
 	},
 
-	remove: function(name){
-		delete this.pairs[name];
-		this.length--;
+	remove: function(key){
+		delete this.pairs[key];
 	}
 });
 
@@ -42,6 +39,32 @@ var Storage = new Class({
 
 	onclear: function(){
 		this.length = 0;
+	},
+
+	forEach: function(fn, bind){
+		Object.eachPair(this.pairs, fn, bind);
+		return this;
+	},
+
+	clear: function(){
+		this.forEach(this.remove, this);
+		this.onclear();
+		return Item.prototype.clear.call(this);
+	},
+
+	set: function(key, value){
+		this.remove(key);
+		this.onset(key, value);
+		return Item.prototype.set.call(this, key, value);
+	},
+
+	remove: function(key){
+		if( this.contains(key) ){
+			this.onremove(key, this.get(key));
+			Item.prototype.remove.call(this, key);
+			return true;
+		}
+		return false;
 	}
 });
 

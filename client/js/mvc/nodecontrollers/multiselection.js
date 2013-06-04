@@ -1,4 +1,4 @@
-/* global Controller, NodeController, NodeControllerSelection */
+/* global NodeController */
 
 /*
 
@@ -17,8 +17,7 @@ OK	click on selected -> unselect other
 
 */
 
-var NodeControllerMultiselection = new Class({
-	Extends: NodeControllerSelection,
+NodeController.create('multiselection', {
 	events: {
 		'view:select': function(view, e){
 			this.unselectOther(view, e);
@@ -62,14 +61,17 @@ var NodeControllerMultiselection = new Class({
 	},
 
 	constructor: function(view){
-		NodeControllerSelection.prototype.constructor.apply(this, arguments);
+		NodeController.prototype.constructor.apply(this, arguments);
 		this.selecteds = [];
 	},
 
 	add: function(view, e){
 		if( e && e.shift ){
 			e.preventDefault();
-			this.shiftView = this.shiftView || this.selecteds.getLast() || this.view.root;
+			if( !this.shiftView ){
+				this.shiftView = this.selecteds.getLast() || this.getVisibles()[0];
+			}
+
 			this.selectRange(this.createRange(this.shiftView, view), e);
 		}
 		else{
@@ -99,7 +101,13 @@ var NodeControllerMultiselection = new Class({
 
 		var range = [], list = this.getVisibles(), from = list.indexOf(viewA), to = list.indexOf(viewB);
 
-		if( from === -1 || to === -1 ) throw new Error('cant create range from invisible view');
+		if( from === -1 ){
+			throw new Error('cant create range from invisible view' + viewA.model.get('name'));
+		}
+		if( to === -1 ){
+			throw new Error('cant create range from invisible view' + viewB.model.get('name'));
+		}
+
 		// respect order
 		if( from > to ){
 			var temp = to;
@@ -128,5 +136,3 @@ NodeController.prototype.getSelecteds = function(){
 	var controller = this.getController('multiselection');
 	return controller ? controller.selecteds : null;
 };
-
-Controller.register('multiselection', NodeControllerMultiselection);

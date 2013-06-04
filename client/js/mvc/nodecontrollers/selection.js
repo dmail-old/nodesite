@@ -1,7 +1,6 @@
-/* global Controller, NodeController */
+/* global NodeController */
 
-var NodeControllerSelection = new Class({
-	Extends: NodeController,
+NodeController.create('selection', {
 	events: {
 		'view:select': function(view, e){
 			if( this.selected ) this.selected.unselect(e);
@@ -28,5 +27,3 @@ NodeController.prototype.getSelected = function(){
 	var controller = this.getController('selection');
 	return controller ? controller.selected : null;
 };
-
-Controller.register('selection', NodeControllerSelection);

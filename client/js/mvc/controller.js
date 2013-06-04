@@ -73,10 +73,12 @@ var Controller = new Class({
 });
 
 Controller.controllers = {};
-Controller.register = function(name, controller){
-	controller.prototype.name = name;
-	this.controllers[name] = controller;
+Controller.create = function(name, proto){
+	proto.name = name;
+	proto.Extends = this;
+	this.controllers[name] = new Class(proto);
 };
+
 Controller.add = function(view, name){
 	new this.controllers[name](view);
 };
@@ -89,7 +91,6 @@ View.prototype.on('destroy', function(){
 	for(var name in this.controllers){
 		this.controllers[name].unsetView();
 	}
-
 	delete this.controllers;
 });
 

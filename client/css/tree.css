@@ -115,6 +115,7 @@ description: Affichage en arborescence
 .tree ul{ margin: 0; padding: 0; list-style: none; }
 .tree .node>ul{ display: none; }
 .tree .node.expanded>ul{ display: list-item; }
+.tree .node.hidden{ display: none; }
 
 .tree .node>div>.tool{ padding-left: 16px; height: 22px; padding-top: 4px; padding-bottom: 4px; }
 .tree.compact .node>div>name, .tree.line .node>div{ border: 1px solid transparent; }

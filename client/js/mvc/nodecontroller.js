@@ -17,6 +17,9 @@ var NodeController = new Class({
 		this.eventsHandler.callHandler = function(handler, bind, e){
 			var view = View(e);
 
+			// the view in charge to handle subview isn't considered
+			//if( view == bind.view ) view = null;
+
 			if( e instanceof CustomEvent ){
 				return handler.apply(bind, [view].concat(e.detail.args));
 			}
@@ -24,3 +27,7 @@ var NodeController = new Class({
 		};
 	}
 });
+
+NodeController.controllers = {};
+NodeController.create = Controller.create;
+NodeController.add = Controller.add;

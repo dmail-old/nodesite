@@ -1,7 +1,6 @@
-/* global Controller, NodeController, NodeView */
+/* global NodeController, NodeView */
 
-var NodeControllerNav = new Class({
-	Extends: NodeController,
+NodeController.create('nav', {
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
@@ -18,7 +17,7 @@ var NodeControllerNav = new Class({
 				this.currentView = this.getFocused();
 				this.list = this.getVisibles();
 				this.target = null;
-				
+
 				// no currentView -> naviguate to home view
 				if( !this.currentView && method != '*' ){
 					method = 'home';
@@ -105,17 +104,19 @@ var NodeControllerNav = new Class({
 
 	go: function(view, e){
 		if( view ){
-			if( e )  e.preventDefault();
+			// fix: si j'ai un groupe selected puis que je navigue avec les flèche dans ce groupe
+			// les autres noeuds du groupe sont pas désélectionné
+
 			if( e && !e.control ){
 				var multiselection = this.getController('multiselection');
 				if( multiselection ){
 					if( e.shift && !multiselection.shiftView ){
-						multiselection.shiftView = this.focused;
+						multiselection.shiftView = this.currentView || view;
 					}
 					multiselection.add(view, e);
 				}
 			}
-			
+
 			view.focus(e);
 
 			return true;
@@ -150,5 +151,3 @@ NodeView.matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };
-
-Controller.register('nav', NodeControllerNav);

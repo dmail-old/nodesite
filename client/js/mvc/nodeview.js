@@ -4,15 +4,22 @@ var NodeView = new Class({
 	Extends: View,
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
+	className: 'node',
 	modelEvents: {
-		//'change:name': NodeView.prototype.updateName
-	},
-	attributes: {
-		//'data-lightable': true
-		'class': 'node'
+		'adopt': function(child, index){
+			this.insertBefore(child, this.children[index]);
+		},
+
+		'emancipate': function(){
+			this.parentNode.removeChild(this);
+		},
+
+		'change:name': function(name){
+			this.updateName(name);
+		}
 	},
 
-	constructor: function(model){
+	constructor: function NodeView(model){
 		this.initChildren();
 		View.prototype.constructor.call(this, model);
 	},
@@ -24,32 +31,16 @@ var NodeView = new Class({
 		}
 	},
 
-	insertBefore: function(child, sibling){
-		child = TreeStructure.insertBefore.call(this, child, sibling);
-
+	oninsertchild: function(child){
 		var childrenElement = this.getChildrenElement();
-		// si cette vue possède un élément, on insère visuellement l'enfant
+		// si cette vue possède l'élément qui contient les enfants on insère l'enfant
 		if( childrenElement ){
-			child.insertElement(childrenElement, sibling ? sibling.element : null);
+			child.insertElement(childrenElement, child.getNextSibling(), true);
 		}
-
-		return child;
 	},
 
-	appendChild: function(child){
-		child = TreeStructure.appendChild.call(this, child);
-
-		var childrenElement = this.getChildrenElement();
-		// si cette vue possède un élément, on insère visuellement l'enfant
-		if( childrenElement ){
-			child.insertElement(childrenElement);
-		}
-
-		return child;
-	},
-
-	toString: function(){
-		return this.model.get('name');
+	onremovechild: function(child){
+		child.removeElement();
 	},
 
 	getChildrenElement: function(){
@@ -75,33 +66,19 @@ var NodeView = new Class({
 		this.insertChildren(childrenElement);
 	},
 
-	adopt: function(child, index){
-		this.insertBefore(child, index ? this.children[index] : null);
-	},
-
 	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
 	isEmpty: function(){
 		return this.children.length === 0;
 	},
 
-	getLevel: function(){
-		var level = 0, parent = this.parentNode;
-		while(parent){
-			level++;
-			parent = parent.parentNode;
-		}
-		return level;
-	},
-
-	getAttributes: function(){
-		var attr = View.prototype.getAttributes.call(this), className = new StringList(attr['class']);
+	getClassName: function(){
+		var className = View.prototype.getClassName.call(this);
 
 		if( this.isEmpty() ) className.add('empty');
+
 		//if( this.has('class') ) className+= ' ' + this.get('class');
 
-		attr['class'] = className;
-
-		return attr;
+		return className;
 	},
 
 	scrollTo: function(dom){
@@ -112,7 +89,6 @@ var NodeView = new Class({
 	},
 
 	getHTML: function(){
-		if( !this.model ) console.trace();
 		return '<div><ins class="tool"></ins><name>' + this.model.name + '</name></div>';
 	},
 
@@ -138,6 +114,12 @@ var NodeView = new Class({
 
 	setState: function(state, value, e){
 		if( this.hasState(state) == value ) return false;
+
+		if( state == 'expanded' ){
+			if( this.isEmpty() ) return false;
+			if( !this.getChildrenElement() ) this.renderChildren();
+		}
+
 		this.toggleClass(state, value);
 		this.emit(NodeView.states[state][value ? 0 : 1], e);
 		return true;
@@ -171,8 +153,6 @@ var NodeView = new Class({
 	},
 
 	expand: function(e){
-		if( this.isEmpty() ) return false;
-		if( !this.childrenElement ) this.renderChildren();
 		return this.setState('expanded', true, e);
 	},
 

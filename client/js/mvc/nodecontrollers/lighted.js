@@ -1,7 +1,6 @@
-/* global Controller, NodeController */
+/* global NodeController */
 
-var NodeControllerLighted = new Class({
-	Extends: NodeController,
+NodeController.create('lighted', {
 	events: {
 		'view:light': function(view, e){
 			if( this.lighted ) this.lighted.unlight(e);
@@ -13,12 +12,8 @@ var NodeControllerLighted = new Class({
 		},
 
 		'mouseover': function(view, e){
-			if( view ){
-				// when light only occur on the name element
-				if( this.view.hasClass('compact') && e.target != view.getDom('name') ) view = null;
-			}
-
-			if( view && view.light ){
+			// when light only occur on the name element
+			if( view && (!this.view.hasClass('compact') || e.target == view.getDom('name')) ){
 				view.light(e);
 			}
 			else if( this.lighted ) {
@@ -32,5 +27,3 @@ NodeController.prototype.getLighted = function(){
 	var controller = this.getController('lighted');
 	return controller ? controller.lighted : null;
 };
-
-Controller.register('lighted', NodeControllerLighted);

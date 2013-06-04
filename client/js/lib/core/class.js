@@ -37,16 +37,17 @@ var Class = window.Class = function(proto){
 	}
 
 	constructor = proto.constructor;
-	
+
 	constructor.prototype = Object.copy(parent instanceof Function ? parent.prototype : parent);
 	constructor.prototype.constructor = constructor;
-	Object.merge(constructor.prototype, proto);
 
 	if( 'Implements' in proto ){
 		var items = proto.Implements;
 		if( !(items instanceof Array) ) constructor.implement(items);
 		else constructor.implement.apply(constructor, items);
 	}
+
+	constructor.implement(proto);
 
 	return constructor;
 };
