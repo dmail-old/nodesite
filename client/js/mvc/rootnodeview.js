@@ -1,30 +1,34 @@
-/* global View, NodeView */
+/* global View, NodeView, TreeStructure, TreeTraversal, TreeFinder */
 
 /*
 
 la class 'tree' deviendras surement la classe 'root'
 la classe 'tree' serviras à mettre des styles spéciaux
 
-il est encore possible de recevoir RootNodeView comme premier argument pour les events
-ce qui est logique et normal
-mais faut éviter d'appeller des fonctions comme light et select sur root
-
 */
 
 var RootNodeView = new Class({
-	Extends: NodeView,
+	Extends: View,
+	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'ul',
-
-	className: 'tree line',
+	className: 'root',
 	attributes: {
 		'tabindex': 0,
 	},
 
-	getClassName: View.prototype.getClassName,
-	getHTML: View.prototype.getHTML,
+	constructor: function NodeView(){
+		this.initChildren();
+		View.prototype.constructor.call(this);
+	},
 
-	getChildrenElement: function(){
-		return this.element;
+	oninsertchild: function(child){
+		if( this.element ){
+			child.insertElement(this.element, child.getNextSibling(), true);
+		}
+	},
+
+	onremovechild: function(child){
+		child.removeElement();
 	},
 
 	getChildConstructor: function(){

@@ -3,7 +3,7 @@
 NodeController.create('tool', {
 	events: {
 		'mousedown': function(view, e){
-			if( e.target.hasClass('tool') ){
+			if( view && view != this.view && e.target.hasClass('tool') ){
 				view.toggleState('expanded', e);
 			}
 		},
@@ -11,7 +11,7 @@ NodeController.create('tool', {
 		'dblclick': function(view, e){
 			// tention ici y'a conflit avec le futur menu contextuel
 			// qui prendras le pas sur ce dblclick
-			if( view && !e.target.hasClass('tool') ){
+			if( view && view != this.view && !e.target.hasClass('tool') ){
 				view.toggleState('expanded', e);
 			}
 		}

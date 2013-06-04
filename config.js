@@ -23,6 +23,11 @@ var config = {
 	"lang": "fr"
 };
 
+// fichier css qu'on donne au client
+config.css = [
+	"site", "resize", "box", "popup", "selectionRectangle", "root", "menu", "tree", "selector", "editor"
+];
+
 // fichier js qu'on donne au client
 config.js = [].concat(
 	[
@@ -75,11 +80,6 @@ config.js = [].concat(
 	].prefix('ui/')
 	*/
 );
-
-// fichier css qu'on donne au client
-config.css = [
-	"site", "resize", "box", "popup", "selectionRectangle", "tree", "selector", "editor"
-];
 
 // ces fonctions sont appelées lorsqu'un client demande à éxécuté un script situé dans le dossier "action"
 // les fonctions peuvent retourne true ou false pour authoriser le client à éxécuter l'action

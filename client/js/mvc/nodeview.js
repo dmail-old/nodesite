@@ -89,7 +89,7 @@ var NodeView = new Class({
 	},
 
 	getHTML: function(){
-		return '<div><ins class="tool"></ins><name>' + this.model.name + '</name></div>';
+		return '<div><ins class="tool"></ins><span class="name">' + this.model.name + '</span></div>';
 	},
 
 	getDom: function(what){
@@ -99,6 +99,8 @@ var NodeView = new Class({
 		case 'ul':
 		case 'div':
 			return this.getDom('li').getChild(what);
+		case 'name':
+			return this.getDom('div').getChild('span');
 		default:
 			return this.getDom('div').getChild(what);
 		}

@@ -39,7 +39,7 @@ NodeController.create('focused', {
 		},
 
 		'mousedown': function(view, e){
-			if( view ){
+			if( view && view != this.view ){
 				view.focus(e);
 			}
 		}

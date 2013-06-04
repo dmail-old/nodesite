@@ -12,7 +12,7 @@ NodeController.create('selection', {
 		},
 
 		mousedown: function(view, e){
-			if( view ){
+			if( view && view != this.view ){
 				view.select(e);
 			}
 			else if( this.selected ){

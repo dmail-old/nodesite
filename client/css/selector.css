@@ -34,7 +34,7 @@ description:
 .selector[disabled]>.tool:hover, .selector[disabled]>.tool.active, .selector.opened[disabled]>.tool{ background: none; }
 /* Evite le box shadow lorsqu'il a le focus, le background bleu suffit à comprendre que la balise à le focus */
 .selector>.input:focus{ box-shadow: none; }
-.selector>.input:focus, .tree.line.vx .selected>.node{
+.selector>.input:focus, .root.line.vx .node.selected>div{
 	color: white;
 	border-color: #0064c8;
 	background: #00a0f8;
@@ -49,8 +49,6 @@ description:
 	border-color: transparent;
 	background: none;
 }
-
-
 
 .selector{
 	display: inline-block;

@@ -1,0 +1,75 @@
+/** Colors & Images **/
+
+.root.menu .node>div>.tool, .root.menu .node>div>.tool:hover{ background-position: -72px 50%; }
+
+.root.menu .node, .root.menu .node.last{ background-color: #F1F1F1; }
+.root.menu ul{
+	border-color: #979797;
+	background-color: #F5F5F5;
+	-webkit-box-shadow: 4px 4px 3px -2px #888;
+	-moz-box-shadow:	4px 4px 3px -2px #888;
+	box-shadow: 		4px 4px 3px -2px #888;
+}
+
+.root.menu .node>div{ color: #555555; border: 1px solid transparent; }
+.root.menu .node.actived>div{ background: none; border-color: transparent; }
+.root.menu .node.focused>div{ border-color: transparent; color: red; }
+.root.menu .node.lighted>div{ border-color: #A8D8EB; color: #555555; }
+.root.menu .node.disabled>div{ color: #D3D3D3; }
+.root.menu .node.radio>div>img, .menu .node.checkbox>div>img{ visibility: hidden; }
+.root.menu .node.actived.radio>div>img, .menu .node.actived.checkbox>div>img{ border-color: #A8D8EB; visibility: visible; }
+
+.root.menu .node:before{ border-left-color: #E3E3E3; border-right-color: white; }
+.root.menu .node.sep:after{
+	background-color: #FFFFFF;
+	border-bottom-color: #F1F1F1;
+	border-top-color: #E3E3E3
+}
+
+/** Structure **/
+
+.root.menu{
+	font-family: verdana;
+	min-width: 250px; width: auto; height: auto;
+	overflow: visible;
+	display: none;
+	position: absolute; z-index: 1000;
+}
+.root.menu .node{ position: relative; }
+.root.menu .node:before{
+	position: absolute; content: ""; display: block; z-index: 0; top: 0; left: 26px; bottom: 0;
+	border-style: solid;
+	border-width: 1px;
+	border-top: none;
+	border-bottom: none;
+}
+
+.root.menu .node.sep:after{
+	content: ""; display: block;
+	height: 1px;
+	margin: 4px 0 2px 28px;
+	border-style: solid;
+	border-width: 1px;
+	border-left: none;
+	border-right: none;
+	border-bottom-width: 2px;
+}
+/* cache la séparation si aucun noeud après celui-ci */
+.root.menu .node.sep.last:after{ display: none; }
+
+.root.menu ul{ padding: 2px; border-width: 1px; border-style: solid; }
+.root.menu ul ul{ position: absolute; z-index: 10; left: 100%; top: 0; min-width: 200px; }
+.root.menu ul ul.left{ right: 100%; left: auto; }
+/* show first option in bold */
+.root.menu>ul>.node.first>div{ font-weight: bold; }
+.root.menu .node.disabled>div{ font-weight: normal; }
+.root.menu .node>div, .root.menu .node.actived>div>img{ border-radius: 3px; }
+.root.menu .node>div>img{
+	border: 1px solid transparent; padding: 3px;
+	position: absolute; top: -1px; left: -1px; /* Permet la fusion des bords de l'image et du noeud */
+}
+.root.menu .node>div>.name{ padding-left: 30px; padding-right: 100px; }
+.root.menu .node>div>.name:first-letter{ text-transform: uppercase; }
+.root.menu .node>div>kbd{ position: absolute; right: 16px; padding: 0; text-align: right; }
+.root.menu .node>div>kbd:first-letter{ text-transform: uppercase; }
+.root.menu .node>div>.tool{ position: absolute; right: 0; height: 100%; }

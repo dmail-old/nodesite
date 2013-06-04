@@ -29,7 +29,7 @@ NodeController.create('multiselection', {
 		},
 
 		'mousedown': function(view, e){
-			if( view ){
+			if( view && view != this.view ){
 				if( e.control ){
 					view.toggleState('selected', e);
 				}
@@ -43,7 +43,7 @@ NodeController.create('multiselection', {
 		},
 
 		'click': function(view, e){
-			if( view ){
+			if( view && view != this.view ){
 				this.unselectOther(view, e);
 			}
 			else{
