@@ -1,6 +1,7 @@
-/* global NodeController, NodeView */
+/* global Controller, View */
 
-NodeController.create('nav', {
+Controller.define('nav', {
+	Implements: Controller.Node,
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
@@ -52,26 +53,26 @@ NodeController.create('nav', {
 				this.currentView.expand(e);
 			}
 			else{
-				this.target = this.currentView.getChild(NodeView.isTargetable);
+				this.target = this.currentView.getChild(View.isTargetable);
 			}
 		},
 
 		'home': function(){
-			this.target = this.list.find(NodeView.isTargetable, 'right');
+			this.target = this.list.find(View.isTargetable, 'right');
 		},
 
 		'end': function(){
-			this.target = this.list.find(NodeView.isTargetable, 'left');
+			this.target = this.list.find(View.isTargetable, 'left');
 		},
 
 		'up': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(NodeView.isTargetable, 'left', index, this.loop);
+			this.target = this.list.find(View.isTargetable, 'left', index, this.loop);
 		},
 
 		'down': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(NodeView.isTargetable, 'right', index, this.loop);
+			this.target = this.list.find(View.isTargetable, 'right', index, this.loop);
 		},
 
 		'pageup': function(){
@@ -79,7 +80,7 @@ NodeController.create('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.max(index - this.getPageCount(view), 0) - 1;
 
-			this.target = this.list.find(NodeView.isTargetable, 'right', from, index);
+			this.target = this.list.find(View.isTargetable, 'right', from, index);
 		},
 
 		'pagedown': function(){
@@ -87,7 +88,7 @@ NodeController.create('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.min(index + this.getPageCount(view), this.list.length - 1 ) + 1;
 
-			this.target = this.list.find(NodeView.isTargetable, 'left', from, index);
+			this.target = this.list.find(View.isTargetable, 'left', from, index);
 		},
 
 		'*': function(e){
@@ -97,7 +98,7 @@ NodeController.create('nav', {
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return NodeView.isTargetable(view) && NodeView.matchLetter(view, e.key);
+				return View.isTargetable(view) && View.matchLetter(view, e.key);
 			}, 'right', index, true);
 		}
 	},
@@ -143,11 +144,11 @@ NodeController.create('nav', {
 
 RegExp.alphanum = /[a-zA-Z0-9]/;
 
-NodeView.isTargetable = function(view){
+View.isTargetable = function(view){
 	return !view.hasState('disabled');
 };
 
-NodeView.matchLetter = function(view, letter){
+View.matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };

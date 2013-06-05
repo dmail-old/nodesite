@@ -18,9 +18,12 @@ var Controller = new Class({
 
 	constructor: function(view){
 		this.eventsHandler = new EventHandler(null, this.events, this);
+		this.eventsHandler.callHandler = this.callHandler;
 		this.viewEventsHandler = new ListenerHandler(null, this.viewEvents, this);
 		this.setView(view);
 	},
+
+	callHandler: EventHandler.prototype.callHandler,
 
 	setView: function(view){
 		if( view ){
@@ -73,14 +76,33 @@ var Controller = new Class({
 });
 
 Controller.controllers = {};
-Controller.create = function(name, proto){
+Controller.define = function(name, proto){
 	proto.name = name;
 	proto.Extends = this;
 	this.controllers[name] = new Class(proto);
 };
+Controller.create = function(name, view){
+	return new this.controllers[name](view);
+};
 
-Controller.add = function(view, name){
-	new this.controllers[name](view);
+/*
+
+By default a controller control one view, so events necessarily occur on that view
+Some controller can control a view that contains subview
+in that case we pass the view as first arguments for events
+Such controller have to implement Controller.Node
+
+*/
+
+Controller.Node = {
+	callHandler: function(handler, bind, e){
+		var view = View(e);
+
+		if( e instanceof CustomEvent ){
+			return handler.apply(bind, [view].concat(e.detail.args));
+		}
+		return handler.call(bind, view, e);
+	}
 };
 
 View.prototype.on('create', function(){

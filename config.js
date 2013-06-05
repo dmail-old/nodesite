@@ -45,14 +45,19 @@ config.js = [].concat(
 		"event", "eventEmitter", "eventHandler", "request"
 	].prefix('browser/'),
 	[
-		"model", "view", "controller",
-		"nodemodel", "nodeview", "nodecontroller",
-		"rootnodeview",
+		"model", "view", "controller"
 	].prefix('mvc/'),
 	[
+		"node"
+	].prefix('mvc/model/'),
+	[
+		"node", "rootnode", "selector"
+	].prefix('mvc/view/'),
+	[
 		"tool", "indent", "visibles",
-		"lighted", "focused", "selection", "multiselection", "nav"
-	].prefix('mvc/nodecontrollers/'),
+		"lighted", "focused", "selection", "multiselection", "nav",
+		"selector"
+	].prefix('mvc/controller/'),
 	[
 		"fx"
 	],

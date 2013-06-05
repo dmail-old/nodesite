@@ -1,6 +1,7 @@
-/* global NodeController */
+/* global Controller */
 
-NodeController.create('lighted', {
+Controller.define('lighted', {
+	Implements: Controller.Node,
 	events: {
 		'view:light': function(view, e){
 			if( this.lighted ) this.lighted.unlight(e);
@@ -23,7 +24,7 @@ NodeController.create('lighted', {
 	}
 });
 
-NodeController.prototype.getLighted = function(){
+Controller.prototype.getLighted = function(){
 	var controller = this.getController('lighted');
 	return controller ? controller.lighted : null;
 };

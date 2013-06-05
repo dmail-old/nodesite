@@ -1,6 +1,7 @@
-/* global NodeController */
+/* global Controller */
 
-NodeController.create('indent', {
+Controller.define('indent', {
+	Implements: Controller.Node,
 	events: {
 		'view:insertElement': function(view){
 			view.getDom('div').style.paddingLeft = this.padding * this.getLevel(view) + 'px';

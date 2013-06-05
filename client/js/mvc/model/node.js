@@ -1,7 +1,6 @@
 /* global Model, TreeStructure, TreeTraversal, TreeFinder */
 
-var NodeModel = new Class({
-	Extends: Model,
+Model.define('node', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	name: '',
 

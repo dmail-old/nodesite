@@ -1,4 +1,4 @@
-/* global NodeController */
+/* global Controller */
 
 /*
 
@@ -15,7 +15,8 @@ faire la largeur de son contenu
 
 */
 
-NodeController.create('focused', {
+Controller.define('focused', {
+	Implements: Controller.Node,
 	events: {
 		'view:focus': function(view, e){
 			var current = this.focused;
@@ -47,7 +48,7 @@ NodeController.create('focused', {
 	focused: null
 });
 
-NodeController.prototype.getFocused = function(){
+Controller.prototype.getFocused = function(){
 	var controller = this.getController('focused');
 	return controller ? controller.focused : null;
 };

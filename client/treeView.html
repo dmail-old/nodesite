@@ -1,5 +1,5 @@
 <script>
-var collectionData = {
+var treeData = {
 	name: 'collection',
 	children: [
 		{name: 'node0', children: [{name: 'node0.1'}]},
@@ -8,27 +8,25 @@ var collectionData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
+var model = Model.create('node', treeData);
+var view = View.create('node', model);
+var rootView = View.create('rootnode');
 
-var collectionModel = new NodeModel(collectionData);
-var collectionView = new NodeView(collectionModel);
-var rootView = new RootNodeView();
+Controller.create('indent', rootView);
+Controller.create('tool', rootView);
+Controller.create('lighted', rootView);
+Controller.create('focused', rootView);
+Controller.create('visibles', rootView);
+Controller.create('multiselection', rootView); // 'selection');
+Controller.create('nav', rootView);
 
 rootView.insertElement(document.body);
+rootView.appendChild(view);
 
-NodeController.add(rootView, 'indent');
-NodeController.add(rootView, 'tool');
-NodeController.add(rootView, 'lighted');
-NodeController.add(rootView, 'focused');
-NodeController.add(rootView, 'visibles');
-NodeController.add(rootView, 'multiselection'); // 'selection');
-NodeController.add(rootView, 'nav');
-
-rootView.appendChild(collectionView);
-
-collectionView.expand();
-collectionView.children[0].expand();
-collectionView.children[2].expand();
-collectionView.children[3].expand();
+view.expand();
+view.children[0].expand();
+view.children[2].expand();
+view.children[3].expand();
 
 /*
 var FileModel = new Class({

@@ -1,4 +1,4 @@
-/* global NodeController */
+/* global Controller */
 
 /*
 
@@ -17,7 +17,8 @@ OK	click on selected -> unselect other
 
 */
 
-NodeController.create('multiselection', {
+Controller.define('multiselection', {
+	Implements: Controller.Node,
 	events: {
 		'view:select': function(view, e){
 			this.unselectOther(view, e);
@@ -61,7 +62,7 @@ NodeController.create('multiselection', {
 	},
 
 	constructor: function(view){
-		NodeController.prototype.constructor.apply(this, arguments);
+		Controller.prototype.constructor.apply(this, arguments);
 		this.selecteds = [];
 	},
 
@@ -132,7 +133,7 @@ NodeController.create('multiselection', {
 	}
 });
 
-NodeController.prototype.getSelecteds = function(){
+Controller.prototype.getSelecteds = function(){
 	var controller = this.getController('multiselection');
 	return controller ? controller.selecteds : null;
 };

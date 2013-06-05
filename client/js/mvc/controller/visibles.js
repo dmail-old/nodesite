@@ -1,6 +1,7 @@
-/* global NodeController, NodeView */
+/* global Controller, View */
 
-NodeController.create('visibles', {
+Controller.define('visibles', {
+	Implements: Controller.Node,
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);
@@ -32,8 +33,8 @@ NodeController.create('visibles', {
 		var prev, next, parent = view.parentNode;
 
 		if( parent ){
-			prev = view.getPrevSibling(NodeView.isVisible);
-			next = view.getNextSibling(NodeView.isVisible);
+			prev = view.getPrevSibling(View.isVisible);
+			next = view.getNextSibling(View.isVisible);
 
 			if( prev && !next ) prev.toggleClass('last', hidden);
 			else if( next && !prev ) next.toggleClass('first', hidden);
@@ -87,11 +88,11 @@ NodeController.create('visibles', {
 	}
 });
 
-NodeController.prototype.getVisibles = function(){
+Controller.prototype.getVisibles = function(){
 	var controller = this.getController('visibles');
 	return controller ? controller.visibles : [];
 };
 
-NodeView.isVisible = function(view){
+View.isVisible = function(view){
 	return !view.hasState('hidden');
 };

@@ -1,7 +1,6 @@
 /* global View, TreeStructure, TreeTraversal, TreeFinder, StringList */
 
-var NodeView = new Class({
-	Extends: View,
+View.define('node', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
 	className: 'node',
@@ -19,7 +18,7 @@ var NodeView = new Class({
 		}
 	},
 
-	constructor: function NodeView(model){
+	constructor: function(model){
 		this.initChildren();
 		View.prototype.constructor.call(this, model);
 	},
@@ -123,7 +122,7 @@ var NodeView = new Class({
 		}
 
 		this.toggleClass(state, value);
-		this.emit(NodeView.states[state][value ? 0 : 1], e);
+		this.emit(View.states[state][value ? 0 : 1], e);
 		return true;
 	},
 
@@ -132,7 +131,7 @@ var NodeView = new Class({
 	},
 
 	eachState: function(fn, bind){
-		Object.eachPair(NodeView.states, function(state){
+		Object.eachPair(View.states, function(state){
 			if( this.hasState(state) ) fn.call(bind, state);
 		}, this);
 		return this;
@@ -180,7 +179,7 @@ var NodeView = new Class({
 	}
 });
 
-NodeView.states = {
+View.states = {
 	lighted: ['light', 'unlight'],
 	selected: ['select', 'unselect'],
 	expanded: ['expand', 'contract'],

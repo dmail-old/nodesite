@@ -29,12 +29,12 @@ description:
 	background-image:    -moz-linear-gradient(#81b8df, #A1D3DE);
 	background-image:     -ms-linear-gradient(#81b8df, #A1D3DE);
 	background-image:      -o-linear-gradient(#81b8df, #A1D3DE);
-	background-image:         linear-gradient(#81b8df, #A1D3DE);	
+	background-image:         linear-gradient(#81b8df, #A1D3DE);
 }
 .selector[disabled]>.tool:hover, .selector[disabled]>.tool.active, .selector.opened[disabled]>.tool{ background: none; }
 /* Evite le box shadow lorsqu'il a le focus, le background bleu suffit à comprendre que la balise à le focus */
 .selector>.input:focus{ box-shadow: none; }
-.selector>.input:focus, .root.line.vx .node.selected>div{
+.selector>.input:focus, .root.vx .node.selected>div{
 	color: white;
 	border-color: #0064c8;
 	background: #00a0f8;
@@ -67,7 +67,7 @@ description:
 }
 .selector>.tool{
 	position: absolute; right: 0; top: 0; bottom: 0;
-	line-height: 100%; vertical-align: middle; 
+	line-height: 100%; vertical-align: middle;
 	/* 17px: largeur de la scrollbar si elle apparait */
 	width: 17px;
 	text-align: center;
@@ -79,17 +79,7 @@ description:
 	margin-left: -7px; margin-top: -8px;
 }
 
-/*
----
-
-name: select
-
-description: Lorsque l'arbre est la lise d'option d'une balise select
-
-...
-*/
-
-.selector>.tree{
+.selector>.root{
 	position: absolute;
 	z-index: 10; /* Doit passer par dessus le reste */
 	left: -1px; /* Taille du border */
@@ -99,9 +89,8 @@ description: Lorsque l'arbre est la lise d'option d'une balise select
 	overflow-y: auto;
 }
 
-.selector>.tree .branch{ padding: 0px; }
-.selector>.tree .trunk:nth-child(2n+2)>.node{ background-color: #e4ecf2; }
-.selector>.tree.vx .expanded>.node>.name{ font-weight: bold; }
+.selector>.root .node:nth-child(2n+2)>div{ background-color: #e4ecf2; }
+.selector>.root.vx .expanded>.node>.name{ font-weight: bold; }
 
 /*
 ---

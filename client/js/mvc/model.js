@@ -1,7 +1,8 @@
-/* global Emitter */
+/* global MVC, Emitter */
 
 // model
 var Model = new Class({
+	Implements: Emitter,
 	validationError: null,
 	cid: 0,
 
@@ -78,7 +79,15 @@ var Model = new Class({
 	}
 });
 
-Model.implement(Emitter);
+Model.models = {};
+Model.define = function(name, proto){
+	proto.name = name;
+	proto.Extends = this;
+	this.models[name] = new Class(proto);
+};
+Model.create = function(name, data){
+	return new this.models[name](data);
+};
 
 Model.serverMethods = {
 	definitions: {

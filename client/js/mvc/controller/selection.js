@@ -1,6 +1,7 @@
-/* global NodeController */
+/* global Controller */
 
-NodeController.create('selection', {
+Controller.define('selection', {
+	Implements: Controller.Node,
 	events: {
 		'view:select': function(view, e){
 			if( this.selected ) this.selected.unselect(e);
@@ -23,7 +24,7 @@ NodeController.create('selection', {
 	selected: null
 });
 
-NodeController.prototype.getSelected = function(){
+Controller.prototype.getSelected = function(){
 	var controller = this.getController('selection');
 	return controller ? controller.selected : null;
 };

@@ -7,8 +7,7 @@ la classe 'tree' serviras à mettre des styles spéciaux
 
 */
 
-var RootNodeView = new Class({
-	Extends: View,
+View.define('rootnode', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'ul',
 	className: 'root',
@@ -32,6 +31,6 @@ var RootNodeView = new Class({
 	},
 
 	getChildConstructor: function(){
-		return NodeView;
+		return View.views.node;
 	}
 });

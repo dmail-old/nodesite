@@ -1,6 +1,7 @@
-/* global NodeController */
+/* global Controller */
 
-NodeController.create('tool', {
+Controller.define('tool', {
+	Implements: Controller.Node,
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view && e.target.hasClass('tool') ){
