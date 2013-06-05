@@ -1,9 +1,5 @@
 /* global View, Controller, NodeController, TreeStructure, TreeTraversal, TreeFinder */
 
-/*
-root doit avoir la class vx
-*/
-
 View.define('selector', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'div',
@@ -15,19 +11,25 @@ View.define('selector', {
 	minheight: 24,
 	size: 4,
 
-	constructor: function NodeView(){
+	constructor: function(){
 		this.initChildren();
 		View.prototype.constructor.call(this);
 	},
 
 	oninsertchild: function(child){
-		if( this.element ){
-			child.insertElement(this.element, child.getNextSibling(), true);
+		var childElement = this.getChildElement();
+
+		if( childElement ){
+			child.insertElement(childElement, child.getNextSibling(), true);
 		}
 	},
 
 	onremovechild: function(child){
 		child.removeElement();
+	},
+
+	getChildElement: function(){
+		return this.getDom('root');
 	},
 
 	getChildConstructor: function(){
@@ -36,9 +38,9 @@ View.define('selector', {
 
 	getHTML: function(){
 		var html = '\
-			<div class="input" tabindex="0"></div>\
+			<div class="input" tabindex="0">'+ this.value +'</div>\
 			<div class="tool"><span class="arrow"></span></div>\
-			<ul class="root"></ul>\
+			<ul class="root vx"></ul>\
 		';
 
 		return html;
@@ -51,33 +53,24 @@ View.define('selector', {
 	},
 
 	enable: function(){
-		if( this.disabled ){
-			delete this.disabled;
+		if( this.hasClass('disabled') ){
 			this.getDom('input').setAttribute('tabIndex', 0);
-			this.element.removeAttribute('disabled');
+			this.element.removeClass('disabled');
 			this.emit('enable');
 		}
 	},
 
 	disable: function(){
-		if( !this.disabled ){
-			this.disabled = true;
+		if( !this.hasClass('disabled') ){
 			this.getDom('input').removeAttribute('tabIndex');
-			this.element.setAttribute('disabled', 'disabled');
+			this.element.addClass('disabled');
 			this.emit('disable');
 		}
 	},
 
 	open: function(e){
-		if( !this.opened && !this.disabled ){
-			this.opened = true;
-
-			this.adapt();
-
-			// à l'ouverture sélectionne l'option par défaut si elle ne l'est pas
-			if( this.selected ) this.selected.select(e);
-
-			this.element.addClass('opened');
+		if( !this.hasClass('opened') && !this.hasClass('disabled') ){
+			this.addClass('opened');
 			this.emit('open', e);
 		}
 
@@ -85,53 +78,36 @@ View.define('selector', {
 	},
 
 	close: function(e){
-		if( this.opened ){
-			delete this.opened;
-
-			this.checkChange(e);
-
-			this.element.removeClass('opened');
+		if( this.hasClass('opened') ){
+			this.removeClass('opened');
 			this.emit('close', e);
 		}
 
 		return this;
 	},
 
+	toggle: function(e){
+		if( this.hasClass('opened') ){
+			this.close(e);
+		}
+		else{
+			this.open(e);
+		}
+	},
+
 	getValue: function(){
-		return this.value;
+		return this.getDom('input').innerHTML;
 	},
 
 	setValue: function(value){
-		if( value != this.value ){
-			this.value = value;
-
-			var input = this.getDom('input');
-			if( input ) input.innerHTML = value;
-
+		if( value != this.getValue() ){
+			this.getDom('input').innerHTML = value;
 			this.emit('update', value);
 		}
 	},
 
 	setOptionValue: function(option){
 		this.setValue(option ? option.getHTMLName() : '');
-	},
-
-	setSelected: function(option){
-		if( this.selected != option ){
-			this.selected = option;
-			this.setOptionValue(option);
-		}
-	},
-
-	findDefaultSelected: function(){
-		return this.tree.visibles.find(function(node){ return !node.hasState('disabled') && !node.children.length; });
-	},
-
-	checkChange: function(e){
-		if( this.defaultSelected != this.selected ){
-			this.emit('change', this.selected, e);
-			this.defaultSelected = this.selected;
-		}
 	},
 
 	adapt: function(){
@@ -143,7 +119,7 @@ View.define('selector', {
 			minHeight: this.minheight
 		};
 
-		if( this.size ) styles['maxHeight'] = this.tree.getLine() * this.size + 1;
+		//if( this.size ) styles['maxHeight'] = this.tree.getLine() * this.size + 1;
 
 		root.setStyles(styles);
 		this.element.setStyles({

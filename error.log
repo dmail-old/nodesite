@@ -1,12 +1,8 @@
 
-TypeError: Cannot call method 'prefix' of undefined
-    at Object.<anonymous> (C:\Node\nodesite\config.js:51:4)
-    at Module._compile (module.js:449:26)
-    at Object.Module._extensions..js (module.js:467:10)
-    at Module.load (module.js:356:32)
-    at Function.Module._load (module.js:312:12)
-    at Module.require (module.js:362:17)
-    at require (module.js:378:17)
-    at Object.<anonymous> (C:\Node\nodesite\admin.js:20:17)
-    at Module._compile (module.js:449:26)
-    at Object.Module._extensions..js (module.js:467:10)
+Error: listen EADDRINUSE
+    at errnoException (net.js:884:11)
+    at Server._listen2 (net.js:1022:14)
+    at listen (net.js:1044:10)
+    at net.js:1118:9
+    at dns.js:72:18
+    at process._tickCallback (node.js:415:13)

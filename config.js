@@ -37,7 +37,7 @@ config.js = [].concat(
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "list", "stringList", "memory", "path",
 		"emitter", "listenerHandler",
-		"treeTraversal", "treeFinder", "treeStructure"
+		"treeTraversal", "treeFinder", "treeStructure",
 	].prefix('lib/'),
 	[
 		"browser", "element", "element.properties",
@@ -45,22 +45,19 @@ config.js = [].concat(
 		"event", "eventEmitter", "eventHandler", "request"
 	].prefix('browser/'),
 	[
-		"model", "view", "controller"
-	].prefix('mvc/'),
+		"model", "view", "controller", "fx"
+	],
 	[
 		"node"
-	].prefix('mvc/model/'),
+	].prefix('model/'),
 	[
 		"node", "rootnode", "selector"
-	].prefix('mvc/view/'),
+	].prefix('view/'),
 	[
-		"tool", "indent", "visibles",
-		"lighted", "focused", "selection", "multiselection", "nav",
-		"selector"
-	].prefix('mvc/controller/'),
-	[
-		"fx"
-	],
+		"tool", "indent", "lighted", "focused",
+		"visibles", "selection", "multiselection", "nav",
+		"selected", "adapt", "openstate"
+	].prefix('controller/'),
 	/*[
 		"tree", "tree.list", "tree.sort", "tree.swap",
 		"tree.demon", "tree.memory", "tree.ajax", "tree.problems", "tree.unique",

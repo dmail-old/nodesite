@@ -14,7 +14,7 @@ description:
 	border-color: grey;
 	background-color: white;
 }
-.selector[disabled]{ opacity: 0.5; }
+.selector.disabled{ opacity: 0.5; }
 .selector>.tool:hover{
 	background: #c4e2fe;
 	background-image: -webkit-linear-gradient(#fbfbff, #c4e2fe);
@@ -23,7 +23,7 @@ description:
 	background-image:      -o-linear-gradient(#fbfbff, #c4e2fe);
 	background-image:         linear-gradient(#fbfbff, #c4e2fe);
 }
-.selector>.tool.active, .selector.opened>.tool{
+.selector.active>.tool, .selector.opened>.tool{
 	background: #A1D3DE;
 	background-image: -webkit-linear-gradient(#81b8df, #A1D3DE);
 	background-image:    -moz-linear-gradient(#81b8df, #A1D3DE);
@@ -31,7 +31,8 @@ description:
 	background-image:      -o-linear-gradient(#81b8df, #A1D3DE);
 	background-image:         linear-gradient(#81b8df, #A1D3DE);
 }
-.selector[disabled]>.tool:hover, .selector[disabled]>.tool.active, .selector.opened[disabled]>.tool{ background: none; }
+
+.selector.disabled>.tool:hover, .selector.disabled>.tool{ background: none; }
 /* Evite le box shadow lorsqu'il a le focus, le background bleu suffit à comprendre que la balise à le focus */
 .selector>.input:focus{ box-shadow: none; }
 .selector>.input:focus, .root.vx .node.selected>div{
@@ -87,7 +88,10 @@ description:
 	border: 1px solid grey;
 	overflow-x: hidden;
 	overflow-y: auto;
+	visibility: hidden;
 }
+
+.selector.opened>.root{ visibility: visible; }
 
 .selector>.root .node:nth-child(2n+2)>div{ background-color: #e4ecf2; }
 .selector>.root.vx .expanded>.node>.name{ font-weight: bold; }
@@ -102,9 +106,9 @@ description: L'arbre est la liste d'option d'une balise multiselect
 ...
 */
 
-.tree.multi:focus{ box-shadow: none; }
+/*.multiselector:focus{ box-shadow: none; }*/
 
-.tree.multi{
+.multiselector>.root{
 	position: relative; /* pour que selectionRectangle sache que tree est son offsetParent et scroll */
 	z-index: 0;
 	overflow-y: scroll;
