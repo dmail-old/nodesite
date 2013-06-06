@@ -1,10 +1,10 @@
 /* global View, Controller, NodeController, TreeStructure, TreeTraversal, TreeFinder */
 
-View.define('selector', {
+View.extends('selector', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'div',
 	className: 'selector unselectable',
-	value: '',
+	value: 'Option1',
 	width: 'auto',
 	height: 'auto',
 	minwidth: 200,
@@ -38,8 +38,12 @@ View.define('selector', {
 
 	getHTML: function(){
 		var html = '\
-			<div class="input" tabindex="0">'+ this.value +'</div>\
-			<div class="tool"><span class="arrow"></span></div>\
+			<div class="input" tabindex="0">\
+				<span class="value">'+ this.value +'</span>\
+				<div class="tool">\
+					<span class="arrow"></span>\
+				</div>\
+			</div>\
 			<ul class="root vx"></ul>\
 		';
 
@@ -78,7 +82,7 @@ View.define('selector', {
 	},
 
 	close: function(e){
-		if( this.hasClass('opened') ){
+		if( this.hasClass('opened') && !this.hasClass('disabled') ){
 			this.removeClass('opened');
 			this.emit('close', e);
 		}
@@ -96,12 +100,12 @@ View.define('selector', {
 	},
 
 	getValue: function(){
-		return this.getDom('input').innerHTML;
+		return this.getDom('value').innerHTML;
 	},
 
 	setValue: function(value){
 		if( value != this.getValue() ){
-			this.getDom('input').innerHTML = value;
+			this.getDom('value').innerHTML = value;
 			this.emit('update', value);
 		}
 	},

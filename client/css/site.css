@@ -21,7 +21,7 @@ a{
 	outline: none;
 }
 
-.unselectable, .selector{
+.unselectable{
 	-moz-user-select:		none;
     -webkit-user-select:	none;
     -ms-user-select:		none;
@@ -49,7 +49,7 @@ button.vx{
 	border-width: 1px;
 	border-style: solid;
 	position: relative;
-	
+
 	border-color: #647896;
 	color: black;
 	background-color: #b1b9bf;
@@ -116,7 +116,7 @@ button.vx:active:after{ border-color: #a8d8de; }
 
 button.vx[disabled]{
 	border-color: #8CA0B4;
-	color: #a28cc9; 
+	color: #a28cc9;
 	background: transparent;
 }
 

@@ -8,14 +8,15 @@ description:
 ...
 */
 
-.selector>.tool>.arrow{ background: url(../img/arrow.png) 0px -30px; }
+.selector>.input>.tool>.arrow{ background: url(../img/arrow.png) 0px -30px; }
 
 .selector{
 	border-color: grey;
 	background-color: white;
 }
 .selector.disabled{ opacity: 0.5; }
-.selector>.tool:hover{
+
+.selector>.input>.tool:hover{
 	background: #c4e2fe;
 	background-image: -webkit-linear-gradient(#fbfbff, #c4e2fe);
 	background-image:    -moz-linear-gradient(#fbfbff, #c4e2fe);
@@ -23,7 +24,7 @@ description:
 	background-image:      -o-linear-gradient(#fbfbff, #c4e2fe);
 	background-image:         linear-gradient(#fbfbff, #c4e2fe);
 }
-.selector.active>.tool, .selector.opened>.tool{
+.selector.opened>.input>.tool{
 	background: #A1D3DE;
 	background-image: -webkit-linear-gradient(#81b8df, #A1D3DE);
 	background-image:    -moz-linear-gradient(#81b8df, #A1D3DE);
@@ -32,10 +33,11 @@ description:
 	background-image:         linear-gradient(#81b8df, #A1D3DE);
 }
 
-.selector.disabled>.tool:hover, .selector.disabled>.tool{ background: none; }
+.selector.disabled .tool:hover, .selector.disabled .tool{ background: none; }
 /* Evite le box shadow lorsqu'il a le focus, le background bleu suffit à comprendre que la balise à le focus */
 .selector>.input:focus{ box-shadow: none; }
-.selector>.input:focus, .root.vx .node.selected>div{
+
+.selector>.input:focus>.value, .root.vx .node.selected>div{
 	color: white;
 	border-color: #0064c8;
 	background: #00a0f8;
@@ -45,7 +47,7 @@ description:
 	background-image:      -o-linear-gradient(#0068cb, #00a0f8);
 	background-image:         linear-gradient(#0068cb, #00a0f8);
 }
-.selector.opened>.input:focus{
+.selector.opened>.input:focus>.value{
 	color: inherit;
 	border-color: transparent;
 	background: none;
@@ -59,14 +61,20 @@ description:
 	border-style: solid;
 	cursor: default;
 }
+
 .selector>.input{
-	height: 14px; line-height: 14px; padding: 2px; margin: 2px; overflow: hidden;
-	margin-right: 19px;
+	padding: 2px;
+	padding-right: 19px;
+	position: relative;
+}
+.selector>.input>.value{
+	height: 14px; line-height: 14px; padding: 2px; overflow: hidden;
 	font-size: 12px;
 	font-family: helvetica;
 	border: 1px solid transparent;
+	display: block;
 }
-.selector>.tool{
+.selector>.input>.tool{
 	position: absolute; right: 0; top: 0; bottom: 0;
 	line-height: 100%; vertical-align: middle;
 	/* 17px: largeur de la scrollbar si elle apparait */
@@ -74,7 +82,7 @@ description:
 	text-align: center;
 	font-weight: bold;
 }
-.selector>.tool>.arrow{
+.selector>.input>.tool>.arrow{
 	position: absolute; top: 50%; left: 50%;
 	width: 15px; height: 15px;
 	margin-left: -7px; margin-top: -8px;
