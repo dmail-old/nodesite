@@ -22,7 +22,9 @@ var EventHandler = new Class({
 			if( typeof handler == 'function' ){
 				return this.callHandler(handler, listener, e);
 			}
-		}		
+		}
 	}
 });
+
 delete EventHandler.prototype.handleListener;
+delete EventHandler.prototype.applyHandler;

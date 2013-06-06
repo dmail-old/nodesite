@@ -15,28 +15,22 @@ faire la largeur de son contenu
 
 */
 
-Controller.define('focused', {
+Controller.extends('focused', {
 	Implements: Controller.Node,
 	events: {
 		'view:focus': function(view, e){
-			var current = this.focused;
-			this.focused = view;
-			if( current && current != view ) current.blur(e);
+			var previous = this.focused;
+
+			this.setFocused(view);
+			if( previous ) previous.blur(e);
 		},
 
 		'view:blur': function(view, e){
-			if( !this.focused ){
-				// blur d'un noeud sans qu'aucun autre ne prenne se place
-				this.focused = view.getSibling() || view.parentNode;
-			}
+			if( view == this.focused ) this.unsetFocused();
 		},
 
-		'view:expand': function(view, e){
-			//if( this.view.element.hasFocus() ) view.scrollTo('ul');
-		},
-
-		'view:contract': function(view, e){
-			//if( this.view.element.hasFocus() ) view.scrollTo('ul');
+		'view:leave': function(view){
+			if( view == this.focused ) this.unsetFocused();
 		},
 
 		'mousedown': function(view, e){
@@ -45,7 +39,15 @@ Controller.define('focused', {
 			}
 		}
 	},
-	focused: null
+	focused: null,
+
+	setFocused: function(view){
+		this.focused = view;
+	},
+
+	unsetFocused: function(view){
+		this.focused = null;
+	}
 });
 
 Controller.prototype.getFocused = function(){

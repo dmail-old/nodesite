@@ -121,7 +121,7 @@ Object.merge = function(object){
 Object.copy = function(object){
 	// Object.create return a copy of the object passed still linked to object by prototype
 	// Consequently modifying object impacts the copy
-	
+
 	var copy = Object.create(object), key, value;
 
 	for(key in copy){
@@ -160,7 +160,7 @@ if( 'getOwnPropertyNames' in Object ){
 			this[key] = Object.clone(value);
 		}
 	};
-	
+
 	Object.ownKeys = Object.getOwnPropertyNames;
 }
 

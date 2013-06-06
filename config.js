@@ -54,6 +54,7 @@ config.js = [].concat(
 		"node", "rootnode", "selector"
 	].prefix('view/'),
 	[
+		"states",
 		"tool", "indent", "lighted", "focused",
 		"visibles", "selection", "multiselection", "nav",
 		"selected", "adapt", "openstate"

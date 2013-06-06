@@ -1,15 +1,21 @@
 /* global Controller */
 
-Controller.define('selection', {
+Controller.extends('selection', {
 	Implements: Controller.Node,
 	events: {
 		'view:select': function(view, e){
-			if( this.selected ) this.selected.unselect(e);
-			this.selected = view;
+			var previous = this.selected;
+
+			this.setSelected(view);
+			if( previous ) previous.unselect(e);
 		},
 
-		'view:unselect': function(){
-			delete this.selected;
+		'view:unselect': function(view){
+			if( view == this.selected ) this.unsetSelected();
+		},
+
+		'view:leave': function(view){
+			if( view == this.selected ) this.unsetSelected();
 		},
 
 		mousedown: function(view, e){
@@ -21,7 +27,15 @@ Controller.define('selection', {
 			}
 		}
 	},
-	selected: null
+	selected: null,
+
+	setSelected: function(view){
+		this.selected = view;
+	},
+
+	unsetSelected: function(){
+		this.selected = null;
+	}
 });
 
 Controller.prototype.getSelected = function(){

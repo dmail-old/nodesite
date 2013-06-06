@@ -1,6 +1,6 @@
 /* global Controller */
 
-Controller.define('selected', {
+Controller.extends('selected', {
 	Implements: Controller.Node,
 	events:{
 		'view:removeElement': function(view, e){
@@ -10,17 +10,21 @@ Controller.define('selected', {
 			}, this, true);
 
 			if( selected ){
-				this.set(null);
+				this.unsetSelected();
 			}
 		},
 
 		'view:select': function(view, e){
-			if( !e || e.type != 'mousemove' ) this.set(view);
+			if( !e || e.type != 'mousemove' ) this.setSelected(view);
+		},
+
+		'view:unselect': function(view){
+			if( this.selected == view ) this.unsetSelected();
 		},
 
 		'view:active': function(view, e){
 			view.unactive(e);
-			this.set(view);
+			this.setSelected(view);
 			this.view.close(e);
 		},
 
@@ -33,10 +37,17 @@ Controller.define('selected', {
 	},
 	prevSelected: null,
 
-	set: function(view){
+	setSelected: function(view){
 		if( this.selected != view ){
 			this.selected = view;
-			this.view.setValue(view ? view.model.get('name') : '');
+			this.view.setValue(view.model.get('name'));
+		}
+	},
+
+	unsetSelected: function(view){
+		if( this.selected ){
+			delete this.selected;
+			this.view.setValue('');
 		}
 	}
 });

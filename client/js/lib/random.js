@@ -4,8 +4,10 @@ name: random
 
 description: Add methods to create random Number/String and to get random value from Array/String
 
-provides: Number.random, String.random, Array.range, String.LOWER, String.UPPER, String.NUMBER, String.ALL,
-		  Array.prototype.getRandom, String.prototype.getRandom
+provides:
+	Number.random, String.random, Array.range,
+	String.LOWER, String.UPPER, String.NUMBER, String.ALL,
+	Array.prototype.getRandom, String.prototype.getRandom
 
 */
 
@@ -17,7 +19,7 @@ String.random = function(length, matrix){
 	if( typeof length == 'undefined' ) length = 16;
 	if( typeof matrix == 'undefined' ) matrix = String.ALL;
 	if( typeof matrix.getRandom != 'function' ) throw new TypeError('matrix sould have a getRandom method');
-	
+
 	var str = '', i = 0;
 	for(;i<length;i++) str+= matrix.getRandom();
 	return str;
@@ -27,10 +29,10 @@ String.random = function(length, matrix){
 // discuss at: http://phpjs.org/functions/range
 Array.range = function(low, high, step){
 	var matrix = [], inival, endval, walker = step || 1, chars = false;
- 
+
 	if( !isNaN(low) && !isNaN(high) ){
-		inival = parseInt(low);
-		endval = parseInt(high);
+		inival = parseInt(low, 10);
+		endval = parseInt(high, 10);
 	}
 	else if( isNaN(low) && isNaN(high) ){
 		chars = true;
@@ -41,7 +43,7 @@ Array.range = function(low, high, step){
 		inival = isNaN(low) ? 0 : low;
 		endval = isNaN(high) ? 0 : high;
 	}
-	
+
 	if( inival <= endval ){
 		while(inival <= endval){
 			matrix.push(chars ? String.fromCharCode(inival) : inival);
@@ -54,7 +56,7 @@ Array.range = function(low, high, step){
 			inival-= walker;
 		}
 	}
- 
+
 	return matrix;
 };
 
@@ -68,6 +70,6 @@ Array.prototype.getRandom = function(){
 };
 
 String.prototype.getRandom = function(){
-	return this.length ? this.charAt(Number.random(0, this.length-1)) : '';
+	return this.length ? this.charAt(Number.random(0, this.length - 1)) : '';
 };
 
