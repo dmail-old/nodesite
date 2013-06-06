@@ -12,7 +12,8 @@ var model = Model.new('node', treeData);
 var view = View.new('node', model);
 var rootView = View.new('rootnode');
 
-Controller.new('states', rootView, ['lighted']);
+Controller.new('state', rootView, 'lighted');
+Controller.new('state', rootView, 'focused');
 
 Controller.new('indent', rootView);
 Controller.new('tool', rootView);

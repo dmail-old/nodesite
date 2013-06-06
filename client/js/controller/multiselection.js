@@ -132,8 +132,3 @@ Controller.extends('multiselection', {
 		range.forEach(function(view){ view.select(e); });
 	}
 });
-
-Controller.prototype.getSelecteds = function(){
-	var controller = this.getController('multiselection');
-	return controller ? controller.selecteds : null;
-};

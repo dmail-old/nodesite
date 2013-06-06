@@ -18,39 +18,10 @@ faire la largeur de son contenu
 Controller.extends('focused', {
 	Implements: Controller.Node,
 	events: {
-		'view:focus': function(view, e){
-			var previous = this.focused;
-
-			this.setFocused(view);
-			if( previous ) previous.blur(e);
-		},
-
-		'view:blur': function(view, e){
-			if( view == this.focused ) this.unsetFocused();
-		},
-
-		'view:leave': function(view){
-			if( view == this.focused ) this.unsetFocused();
-		},
-
 		'mousedown': function(view, e){
 			if( view && view != this.view ){
 				view.focus(e);
 			}
 		}
-	},
-	focused: null,
-
-	setFocused: function(view){
-		this.focused = view;
-	},
-
-	unsetFocused: function(view){
-		this.focused = null;
 	}
 });
-
-Controller.prototype.getFocused = function(){
-	var controller = this.getController('focused');
-	return controller ? controller.focused : null;
-};

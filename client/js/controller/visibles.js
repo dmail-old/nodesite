@@ -84,14 +84,11 @@ Controller.extends('visibles', {
 			if( !view.hasState('expanded') ) return 'continue';
 		}, this);
 
+		this.view.visibles = this.visibles;
+
 		return this;
 	}
 });
-
-Controller.prototype.getVisibles = function(){
-	var controller = this.getController('visibles');
-	return controller ? controller.visibles : [];
-};
 
 View.isVisible = function(view){
 	return !view.hasState('hidden');

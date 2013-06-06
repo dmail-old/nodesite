@@ -8,14 +8,9 @@ Controller.extends('lighted', {
 			if( view && view != this.view && (!this.view.hasClass('compact') || e.target == view.getDom('name')) ){
 				view.light(e);
 			}
-			else if( this.lighted ) {
-				this.lighted.unlight(e);
+			else if( this.view.lighted ) {
+				this.view.lighted.unlight(e);
 			}
 		}
 	}
 });
-
-Controller.prototype.getLighted = function(){
-	var controller = this.getController('lighted');
-	return controller ? controller.lighted : null;
-};

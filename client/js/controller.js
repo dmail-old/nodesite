@@ -29,7 +29,7 @@ var Controller = new Class({
 		if( view ){
 			this.view = view;
 
-			this.view.controllers[this.name] = this;
+			this.view.controllers.push(this);
 
 			this.viewEventsHandler.emitter = view;
 			this.viewEventsHandler.listen();
@@ -45,7 +45,7 @@ var Controller = new Class({
 			this.viewEventsHandler.stopListening();
 			delete this.viewEventsHandler.emitter;
 
-			delete this.view.controllers[this.name];
+			this.view.controllers.remove(this);
 
 			delete this.view;
 		}
@@ -98,13 +98,13 @@ Controller.Node = {
 };
 
 View.prototype.on('create', function(){
-	this.controllers = {};
+	this.controllers = [];
 });
 
 View.prototype.on('destroy', function(){
-	for(var name in this.controllers){
-		this.controllers[name].unsetView();
-	}
+	this.controllers.forEach(function(controller){
+		controller.unsetView();
+	});
 	delete this.controllers;
 });
 
