@@ -1,6 +1,6 @@
 /* global Controller, View */
 
-Controller.define('visibles', {
+Controller.extends('visibles', {
 	Implements: Controller.Node,
 	events: {
 		'view:insertElement': function(view){

@@ -139,15 +139,7 @@ var View = new Class({
 	}
 });
 
-View.views = {};
-View.define = function(name, proto){
-	proto.name = name;
-	proto.Extends = this;
-	this.views[name] = new Class(proto);
-};
-View.create = function(name, model){
-	return new this.views[name](model);
-};
+Object.merge(View, Class.manager);
 
 View.instances = {};
 View.IDAttribute = 'data-view';

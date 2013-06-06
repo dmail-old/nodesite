@@ -8,17 +8,19 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = Model.create('node', treeData);
-var view = View.create('node', model);
-var rootView = View.create('rootnode');
+var model = Model.new('node', treeData);
+var view = View.new('node', model);
+var rootView = View.new('rootnode');
 
-Controller.create('indent', rootView);
-Controller.create('tool', rootView);
-Controller.create('lighted', rootView);
-Controller.create('focused', rootView);
-Controller.create('visibles', rootView);
-Controller.create('multiselection', rootView); // 'selection');
-Controller.create('nav', rootView);
+Controller.new('states', rootView, ['lighted']);
+
+Controller.new('indent', rootView);
+Controller.new('tool', rootView);
+Controller.new('lighted', rootView);
+Controller.new('focused', rootView);
+Controller.new('visibles', rootView);
+Controller.new('multiselection', rootView); // 'selection');
+Controller.new('nav', rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);

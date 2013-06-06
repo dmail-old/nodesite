@@ -1,6 +1,6 @@
 /* global Controller */
 
-Controller.define('tool', {
+Controller.extends('tool', {
 	Implements: Controller.Node,
 	events: {
 		'mousedown': function(view, e){

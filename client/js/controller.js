@@ -75,15 +75,7 @@ var Controller = new Class({
 	}
 });
 
-Controller.controllers = {};
-Controller.define = function(name, proto){
-	proto.name = name;
-	proto.Extends = this;
-	this.controllers[name] = new Class(proto);
-};
-Controller.create = function(name, view){
-	return new this.controllers[name](view);
-};
+Object.merge(Controller, Class.manager);
 
 /*
 

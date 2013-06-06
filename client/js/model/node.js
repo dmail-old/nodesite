@@ -1,6 +1,6 @@
 /* global Model, TreeStructure, TreeTraversal, TreeFinder */
 
-Model.define('node', {
+Model.extends('node', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	name: '',
 
@@ -13,11 +13,11 @@ Model.define('node', {
 
 	oninsertchild: function(child){
 		this.emit('adopt', child, this.children.indexOf(child));
-		//child.crossAll(function(node){ node.emit('enter'); }, null, true);
+		child.crossAll(function(node){ node.emit('enter'); }, null, true);
 	},
 
 	onremovechild: function(child){
-		//child.crossAll(function(node){ node.emit('leave'); }, null, true);
+		child.crossAll(function(node){ node.emit('leave'); }, null, true);
 		child.emit('emancipate');
 	},
 

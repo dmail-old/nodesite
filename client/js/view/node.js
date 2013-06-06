@@ -1,6 +1,6 @@
 /* global View, TreeStructure, TreeTraversal, TreeFinder, StringList */
 
-View.define('node', {
+View.extends('node', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'li',
 	className: 'node',

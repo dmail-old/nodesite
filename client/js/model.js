@@ -79,15 +79,7 @@ var Model = new Class({
 	}
 });
 
-Model.models = {};
-Model.define = function(name, proto){
-	proto.name = name;
-	proto.Extends = this;
-	this.models[name] = new Class(proto);
-};
-Model.create = function(name, data){
-	return new this.models[name](data);
-};
+Object.merge(Model, Class.manager);
 
 Model.serverMethods = {
 	definitions: {

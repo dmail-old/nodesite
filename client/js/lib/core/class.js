@@ -52,6 +52,27 @@ var Class = window.Class = function(proto){
 	return constructor;
 };
 
+Class.construct = function(constructor, args){
+	return constructor.apply(this, args);
+};
+
+Class.applyConstructor = function(constructor, args){
+	this.construct.prototype = constructor.prototype;
+	return new this.construct(constructor, args);
+};
+
+Class.manager = {
+	subclasses: {},
+	extends: function(name, proto){
+		proto.name = name;
+		proto.Extends = this;
+		this.subclasses[name] = new Class(proto);
+	},
+	new: function(name){
+		return Class.applyConstructor(this.subclasses[name], toArray(arguments, 1));
+	}
+};
+
 Class.Interfaces = {};
 
 Class.Interfaces.proto = {

@@ -1,6 +1,6 @@
 /* global Controller, View */
 
-Controller.define('nav', {
+Controller.extends('nav', {
 	Implements: Controller.Node,
 	events: {
 		'keydown': function(view, e){

@@ -17,7 +17,7 @@ OK	click on selected -> unselect other
 
 */
 
-Controller.define('multiselection', {
+Controller.extends('multiselection', {
 	Implements: Controller.Node,
 	events: {
 		'view:select': function(view, e){
