@@ -1,6 +1,6 @@
 /* global Model, TreeStructure, TreeTraversal, TreeFinder */
 
-Model.extends('node', {
+Model.extend('node', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	name: '',
 

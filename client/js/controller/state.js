@@ -1,73 +1,106 @@
 /* global Controller, View */
 
-Controller.extends('state', {
+Controller.extend('state', {
 	Implements: Controller.Node,
 
 	constructor: function(view, state, multiple){
+		this.name = state;
 		this.events = {};
 		this.state = state;
 		this.multiple = multiple;
 
 		if( this.multiple ){
-			this.view[this.state + 's'] = [];
+			this.list = [];
+			this.name += 's';
 		}
 
-		var on = View.states[state][0], off = View.states[state][1];
-
-		this.events['view:' + on] = this.onaddstate;
-		this.events['view:' + off] = this.onremovestate;
-		this.events['view:leave'] = this.events['view:' + off];
+		this.events['view:addclass:' + state] = this.onaddstate;
+		this.events['view:removeclass:' + state] = this.onremovestate;
+		this.events['view:leave'] = this.events['view:removeclass:' + state];
 
 		Controller.prototype.constructor.call(this, view);
 	},
 
 	onaddstate: function(view, e){
-		var off = View.states[this.state][1], previous;
+		//if( view.hasClass(this.state) ) return;
 
 		if( this.multiple ){
-			previous = [].concat(this.get());
-
+			this.removeCurrent(e);
 			this.set(view);
-			previous.forEach(function(current){ if( current != view ) current[off](e); }, this);
 		}
 		else{
-			previous = this.get();
-
+			var prev = this.get();
+			this.current = view;
+			this.remove(prev, e);
 			this.set(view);
-			if( previous ) previous[off](e);
 		}
 	},
 
 	onremovestate: function(view, e){
-		if( this.multiple || view == this.get() ){
+		// if( !view.hasClass(this.state) ) return;
+
+		if( this.multiple ){
 			this.unset(view);
+		}
+		else{
+			if( view == this.get() ){
+				this.unset(view);
+			}
+		}
+	},
+
+	add: function(view, e){
+		if( view ) view.addClass(this.state, e);
+	},
+
+	remove: function(view, e){
+		if( view ) view.removeClass(this.state, e);
+	},
+
+	removeCurrent: function(e){
+		if( this.multiple ){
+			// NOTE: need to loop that way because the selecteds array is spliced during the loop
+			var list = this.get(), i = list.length;
+			while(i--) this.remove(list[0], e);
+		}
+		else{
+			this.remove(this.get(), e);
 		}
 	},
 
 	get: function(){
 		if( this.multiple ){
-			return this.view[this.state + 's'];
+			return this.list;
 		}
 		else{
-			return this.view[this.state];
+			return this.current;
 		}
 	},
 
 	set: function(view){
 		if( this.multiple ){
-			this.view[this.state + 's'].push(view);
+			this.list.push(view);
 		}
 		else{
-			this.view[this.state] = view;
+			this.current = view;
 		}
 	},
 
 	unset: function(view){
 		if( this.multiple ){
-			this.view[this.state + 's'].remove(view);
+			this.list.remove(view);
 		}
 		else{
-			delete this.view[this.state];
-		}		
+			delete this.current;
+		}
 	}
+});
+
+Object.eachPair(View.states, function(name){
+	Controller.providers[name] = function(view){
+		return Controller.new('state', view, name);
+	};
+	Controller.providers[name + 's'] = function(view){
+		return Controller.new('state', view, name, true);
+	};
 });

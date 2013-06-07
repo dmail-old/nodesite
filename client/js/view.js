@@ -1,7 +1,9 @@
-/* global MVC, Emitter, ListenerHandler, StringList */
+/* global
+	MVC, Emitter, ListenerHandler, StringList,
+	TreeStructure, TreeTraversal, TreeFinder
+*/
 
 var View = new Class({
-	Implements: Emitter,
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -120,25 +122,33 @@ var View = new Class({
 		return this.element && this.element.hasClass(name);
 	},
 
-	addClass: function(name){
-		if( this.element ){
+	addClass: function(name, e){
+		if( this.element && !this.hasClass(name) ){
 			this.element.addClass(name);
+			this.emit('addclass:' + name, e);
 		}
 	},
 
-	removeClass: function(name){
-		if( this.element ){
+	removeClass: function(name, e){
+		if( this.element && this.hasClass(name) ){
 			this.element.removeClass(name);
+			this.emit('removeclass:' + name, e);
 		}
 	},
 
-	toggleClass: function(name, value){
+	toggleClass: function(name, e){
 		if( this.element ){
-			this.element.toggleClass(name, value);
+			if( this.hasClass(name) ){
+				this.removeClass(name, e);
+			}
+			else{
+				this.addClass(name, e);
+			}
 		}
 	}
 });
 
+View.implement(Emitter);
 Object.merge(View, Class.manager);
 
 View.instances = {};
@@ -192,3 +202,107 @@ View.prototype.on('*', function(name, args){
 		this.element.dispatchEvent(event);
 	}
 });
+
+View.states = {
+	lighted: ['light', 'unlight'],
+	selected: ['select', 'unselect'],
+	expanded: ['expand', 'contract'],
+	focused: ['focus', 'blur'],
+	hidden: ['hide', 'show'],
+	actived: ['active', 'unactive']
+};
+
+View.State = {};
+Object.eachPair(View.states, function(state, methods){
+	var on = methods[0], off = methods[1];
+
+	View.State[on] = function(e){
+		return this.addClass(state, e);
+	};
+	View.State[off] = function(e){
+		return this.removeClass(state, e);
+	};
+});
+
+var TreeEmitter = new Class({
+	Implements: Emitter,
+
+	constructor: function(bind){
+		this.bind = bind || this;
+	},
+
+	applyListener: function(listener, name, args){
+		if( typeof listener == 'object' ) return this.applyHandler(listener, name, args);
+		else return listener.apply(this.bind, args);
+	},
+
+	applyListeners: function(name, args){
+		if( name == 'test' ) console.log(this.bind, this.bind.parentNode);
+
+		if( this.bind.parentNode ){
+			this.bind.parentNode.treeEmitter.applyListeners(name, args);
+		}
+
+		return Emitter.applyListeners.call(this, name, args);
+	}
+});
+
+View.Node = {};
+
+Object.merge(View.Node, TreeStructure, TreeTraversal, TreeFinder);
+
+Object.append(View.Node, {
+	modelEvents: {
+		'adopt': function(child, index){
+			this.insertBefore(child, this.children[index]);
+		},
+
+		'emancipate': function(){
+			this.parentNode.removeChild(this);
+		},
+	},
+
+	setModel: function(model){
+		View.prototype.setModel.call(this, model);
+		if( model && model.children ){
+			this.setChildren(model.children);
+		}
+	},
+
+	oninsertchild: function(child){
+		var childrenElement = this.getChildrenElement();
+		// si cette vue possède l'élément qui contient les enfants on insère l'enfant
+		if( childrenElement ){
+			child.insertElement(childrenElement, child.getNextSibling(), true);
+		}
+	},
+
+	onremovechild: function(child){
+		child.removeElement();
+	},
+
+	getChildrenElement: function(){
+		return this.childrenElement;
+	},
+
+	setChildrenElement: function(element){
+		this.childrenElement = element;
+	},
+
+	createChildrenElement: function(element){
+		return new Element('ul');
+	},
+
+	insertChildren: function(element){
+		this.setChildrenElement(element);
+		this.children.forEach(function(child){ child.insertElement(element); });
+	},
+
+	renderChildren: function(){
+		var childrenElement = this.createChildrenElement();
+		this.element.appendChild(childrenElement);
+		this.insertChildren(childrenElement);
+	}
+});
+
+

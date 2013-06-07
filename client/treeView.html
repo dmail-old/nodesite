@@ -12,15 +12,11 @@ var model = Model.new('node', treeData);
 var view = View.new('node', model);
 var rootView = View.new('rootnode');
 
-Controller.new('state', rootView, 'lighted');
-Controller.new('state', rootView, 'focused');
-
 Controller.new('indent', rootView);
 Controller.new('tool', rootView);
-Controller.new('lighted', rootView);
-Controller.new('focused', rootView);
-Controller.new('visibles', rootView);
-Controller.new('multiselection', rootView); // 'selection');
+Controller.new('mouseoverlight', rootView);
+Controller.new('mousedownmultiselect', rootView); // 'mousedownselect');
+Controller.new('mousedownfocus', rootView);
 Controller.new('nav', rootView);
 
 rootView.insertElement(document.body);

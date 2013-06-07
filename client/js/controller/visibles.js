@@ -1,6 +1,6 @@
 /* global Controller, View */
 
-Controller.extends('visibles', {
+Controller.extend('visibles', {
 	Implements: Controller.Node,
 	events: {
 		'view:insertElement': function(view){
@@ -63,7 +63,7 @@ Controller.extends('visibles', {
 		// view is a root direct child
 		if( !parent.parentNode ) return true;
 		// view has an expanded and visible parent
-		if( parent.hasState('expanded') && this.visibles.contains(parent) ) return true;
+		if( parent.hasClass('expanded') && this.visibles.contains(parent) ) return true;
 
 		return false;
 	},
@@ -78,18 +78,22 @@ Controller.extends('visibles', {
 
 		this.view.crossNode(function(view){
 			// view is hidden, ignore all descendant
-			if( view.hasState('hidden') ) return 'continue';
+			if( view.hasClass('hidden') ) return 'continue';
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
-			if( !view.hasState('expanded') ) return 'continue';
+			if( !view.hasClass('expanded') ) return 'continue';
 		}, this);
 
-		this.view.visibles = this.visibles;
+		// this.view.visibles = this.visibles;
 
 		return this;
+	},
+
+	get: function(){
+		return this.visibles;
 	}
 });
 
 View.isVisible = function(view){
-	return !view.hasState('hidden');
+	return !view.hasClass('hidden');
 };

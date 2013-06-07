@@ -1,7 +1,8 @@
 /* global Controller, View */
 
-Controller.extends('nav', {
+Controller.extend('nav', {
 	Implements: Controller.Node,
+	requires: ['focused', 'visibles'],
 	events: {
 		'keydown': function(view, e){
 			// need String(e.key) because the 0-9 key return numbers
@@ -15,8 +16,8 @@ Controller.extends('nav', {
 			}
 
 			if( method ){
-				this.currentView = this.getFocused();
-				this.list = this.getVisibles();
+				this.currentView = this.focused.get();
+				this.list = this.visibles.get();
 				this.target = null;
 
 				// no currentView -> naviguate to home view
@@ -40,8 +41,8 @@ Controller.extends('nav', {
 		},
 
 		'left': function(e){
-			if( this.currentView.hasState('expanded') ){
-				this.currentView.contract(e);
+			if( this.currentView.hasClass('expanded') ){
+				this.currentView.removeClass('expanded', e);
 			}
 			else{
 				this.target = this.currentView.parentNode;
@@ -49,8 +50,8 @@ Controller.extends('nav', {
 		},
 
 		'right': function(e){
-			if( !this.currentView.hasState('expanded') ){
-				this.currentView.expand(e);
+			if( !this.currentView.hasClass('expanded') ){
+				this.currentView.removeClass('expanded', e);
 			}
 			else{
 				this.target = this.currentView.getChild(View.isTargetable);
@@ -105,20 +106,16 @@ Controller.extends('nav', {
 
 	go: function(view, e){
 		if( view ){
-			// fix: si j'ai un groupe selected puis que je navigue avec les flèche dans ce groupe
-			// les autres noeuds du groupe sont pas désélectionné
-
 			if( e && !e.control ){
-				var multiselection = this.getController('multiselection');
-				if( multiselection ){
-					if( e.shift && !multiselection.shiftView ){
-						multiselection.shiftView = this.currentView || view;
-					}
-					multiselection.add(view, e);
+				if( this.view.controllers.selection ){
+					this.view.controllers.selection.add(view, e);
+				}
+				else if( this.view.controllers.multiselection ){
+					this.view.controllers.multiselection.add(view, e);
 				}
 			}
 
-			view.focus(e);
+			this.focused.add(view, e);
 
 			return true;
 		}
@@ -145,7 +142,7 @@ Controller.extends('nav', {
 RegExp.alphanum = /[a-zA-Z0-9]/;
 
 View.isTargetable = function(view){
-	return !view.hasState('disabled');
+	return !view.hasClass('disabled');
 };
 
 View.matchLetter = function(view, letter){

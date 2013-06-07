@@ -1,14 +1,15 @@
 /* global Controller */
 
-Controller.extends('selection', {
+Controller.extend('mousedownselect', {
 	Implements: Controller.Node,
+	requires: 'selected',
 	events: {
 		mousedown: function(view, e){
 			if( view && view != this.view ){
-				view.select(e);
+				this.selected.add(view, e);
 			}
-			else if( this.view.selected ){
-				this.view.selected.unselect(e);
+			else{
+				this.selected.remove(this.selected.current, e);
 			}
 		}
 	}

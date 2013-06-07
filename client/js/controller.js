@@ -15,12 +15,43 @@ var Controller = new Class({
 		}
 	},
 	events: null,
+	requires: null,
 
 	constructor: function(view){
 		this.eventsHandler = new EventHandler(null, this.events, this);
 		this.eventsHandler.callHandler = this.callHandler;
 		this.viewEventsHandler = new ListenerHandler(null, this.viewEvents, this);
+
 		this.setView(view);
+		this.resolveDependency();
+	},
+
+	resolveDependency: function(){
+		var requires = this.requires;
+		if( requires ){
+			if( typeof requires == 'string' ) requires = [requires];
+			requires.forEach(this.provide, this);
+		}
+	},
+
+	provide: function(name){
+		var provider, instance;
+
+		if( name in this.view.controllers ){
+			instance = this.view.controllers[name];
+		}
+		else{
+			provider = Controller.providers[name];
+
+			if( provider ){
+				instance = provider.call(this, this.view);
+			}
+			else{
+				instance = Controller.new(name, this.view);
+			}
+		}
+
+		this[name] = instance;
 	},
 
 	callHandler: EventHandler.prototype.callHandler,
@@ -29,7 +60,7 @@ var Controller = new Class({
 		if( view ){
 			this.view = view;
 
-			this.view.controllers.push(this);
+			this.view.controllers[this.name] = this;
 
 			this.viewEventsHandler.emitter = view;
 			this.viewEventsHandler.listen();
@@ -45,7 +76,7 @@ var Controller = new Class({
 			this.viewEventsHandler.stopListening();
 			delete this.viewEventsHandler.emitter;
 
-			this.view.controllers.remove(this);
+			delete this.view.controllers[this.name];
 
 			delete this.view;
 		}
@@ -77,6 +108,15 @@ var Controller = new Class({
 
 Object.merge(Controller, Class.manager);
 
+Controller.providers = {};
+
+View.prototype.on('create', function(){
+	this.controllers = {};
+});
+View.prototype.on('destory', function(){
+	delete this.controllers;
+});
+
 /*
 
 By default a controller control one view, so events necessarily occur on that view
@@ -96,15 +136,4 @@ Controller.Node = {
 		return handler.call(bind, view, e);
 	}
 };
-
-View.prototype.on('create', function(){
-	this.controllers = [];
-});
-
-View.prototype.on('destroy', function(){
-	this.controllers.forEach(function(controller){
-		controller.unsetView();
-	});
-	delete this.controllers;
-});
 

@@ -9,6 +9,31 @@ require: Object.create, Object.append
 
 provides: Class
 
+a faire: Class serviras à stocker toutes les sous classes
+pour récup une classe on feras
+
+Class(nom de la class)
+Class.new(nom de la class);
+Class.extend(nom de la class, nom de la nouvelle classe)
+
+nom de la class pourras s'écrire 'class.subclass.subclass'
+
+chaque Class auras aussi le méthod new et extend comme méthode du constructeur pour pourvoir
+être appelé
+
+Class('view').extend('node', {
+
+});
+
+Class('view').new('node');
+Class.new('view');
+
+
+Class('controller').extend('multiselection', {
+
+});
+Class.new('controller.multiselection', args);
+
 ...
 */
 
@@ -63,7 +88,7 @@ Class.applyConstructor = function(constructor, args){
 
 Class.manager = {
 	subclasses: {},
-	extends: function(name, proto){
+	extend: function(name, proto){
 		proto.name = name;
 		proto.Extends = this;
 		this.subclasses[name] = new Class(proto);

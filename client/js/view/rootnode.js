@@ -1,14 +1,7 @@
-/* global View, NodeView, TreeStructure, TreeTraversal, TreeFinder */
+/* global View */
 
-/*
-
-la class 'tree' deviendras surement la classe 'root'
-la classe 'tree' serviras à mettre des styles spéciaux
-
-*/
-
-View.extends('rootnode', {
-	Implements: [TreeStructure, TreeTraversal, TreeFinder],
+View.extend('rootnode', {
+	Implements: View.Node,
 	tagName: 'ul',
 	className: 'root',
 	attributes: {
@@ -16,21 +9,21 @@ View.extends('rootnode', {
 	},
 
 	constructor: function NodeView(){
+		// this.treeEmitter = new TreeEmitter(this);
+		// this.on('*', function(name, args){
+		//	args = [this].concat(args);
+		//	this.treeEmitter.applyListeners(name, args);
+		// });
+
 		this.initChildren();
 		View.prototype.constructor.call(this);
 	},
 
-	oninsertchild: function(child){
-		if( this.element ){
-			child.insertElement(this.element, child.getNextSibling(), true);
-		}
-	},
-
-	onremovechild: function(child){
-		child.removeElement();
-	},
-
 	getChildConstructor: function(){
 		return View.subclasses.node;
-	}
+	},
+
+	getChildrenElement: function(){
+		return this.element;
+	},
 });

@@ -55,8 +55,9 @@ config.js = [].concat(
 	].prefix('view/'),
 	[
 		"state",
-		"tool", "indent", "lighted", "focused",
-		"visibles", "selection", "multiselection", "nav",
+		"tool", "indent", "visibles", "multiselection",
+		"mouseoverlight", "mousedownfocus", "mousedownselect", "mousedownmultiselect",
+		"nav",
 		"selected", "adapt", "openstate"
 	].prefix('controller/'),
 	/*[

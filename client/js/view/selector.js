@@ -1,6 +1,6 @@
 /* global View, Controller, NodeController, TreeStructure, TreeTraversal, TreeFinder */
 
-View.extends('selector', {
+View.extend('selector', {
 	Implements: [TreeStructure, TreeTraversal, TreeFinder],
 	tagName: 'div',
 	className: 'selector unselectable',

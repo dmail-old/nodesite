@@ -1,29 +1,18 @@
 /* global Controller */
 
-Controller.extends('selected', {
+Controller.extend('selected', {
 	Implements: Controller.Node,
 	events:{
-		'view:removeElement': function(view, e){
-			// lorsqu'on supprime l'option sélectionnée
-			var selected = view.getNode(function(descendant){
-				return descendant == this.selected;
-			}, this, true);
-
-			if( selected ){
-				this.unsetSelected();
-			}
-		},
-
-		'view:select': function(view, e){
+		'view:addclass:selected': function(view, e){
 			if( !e || e.type != 'mousemove' ) this.setSelected(view);
 		},
 
-		'view:unselect': function(view){
+		'view:removeclass:selected': function(view){
 			if( this.selected == view ) this.unsetSelected();
 		},
 
-		'view:active': function(view, e){
-			view.unactive(e);
+		'view:addclass:actived': function(view, e){
+			view.removeClass('actived', e);
 			this.setSelected(view);
 			this.view.close(e);
 		},

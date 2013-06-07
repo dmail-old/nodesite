@@ -1,6 +1,6 @@
 /* global Controller */
 
-Controller.extends('indent', {
+Controller.extend('indent', {
 	Implements: Controller.Node,
 	events: {
 		'view:insertElement': function(view){

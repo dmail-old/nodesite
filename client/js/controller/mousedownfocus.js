@@ -15,12 +15,13 @@ faire la largeur de son contenu
 
 */
 
-Controller.extends('focused', {
+Controller.extend('mousedownfocus', {
 	Implements: Controller.Node,
+	requires: 'focused',
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view ){
-				view.focus(e);
+				this.focused.add(view, e);
 			}
 		}
 	}

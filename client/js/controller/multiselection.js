@@ -2,103 +2,84 @@
 
 /*
 
-selection scenario:
-
-OK	mousedown on nothing -> unselectAll
-OK	mousedown on selected -> nothing
-OK	mousedown on unselected -> select
-OK	mousedown + ctrl on selected -> unselect only (thanks to if( e.control || e.shift ) return; )
-OK	mousedown + ctrl on unselected -> select only (thanks to if( e.control || e.shift ) return; )
-OK  mousedown + shift on selected -> check the shift range
-OK  mousedown + shift on unselected -> check the shift range
-
-OK	click on nothing -> unselectAll
-OK	click on selected -> unselect other
+dependant de focused, si on ajoute mousedown focused avant ce controlleur
+mousedown focused se produit avant mousedownmultiselect et shiftView est faussé
 
 */
 
-Controller.extends('multiselection', {
-	Implements: Controller.Node,
-	events: {
-		'view:select': function(view, e){
-			this.unselectOther(view, e);
-			this.selecteds.push(view);
-		},
+Controller.extend('multiselection', {
+	requires: ['selecteds', 'visibles', 'focused'],
 
-		'view:unselect': function(view){
-			this.selecteds.remove(view);
-		},
+	constructor: function(){
+		Controller.prototype.constructor.apply(this, arguments);
 
-		'mousedown': function(view, e){
-			if( view && view != this.view ){
-				if( e.control ){
-					view.toggleState('selected', e);
-				}
-				else{
-					this.add(view, e);
-				}
-			}
-			else{
-				this.unselectAll(e);
-			}
-		},
-
-		'click': function(view, e){
-			if( view && view != this.view ){
-				this.unselectOther(view, e);
-			}
-			else{
-				this.unselectAll(e);
-			}
-		},
-
-		'keydown': function(view, e){
-			if( e.control && e.key == 'a' ){
-				this.getVisibles().forEach(function(view){
-					view.select(e);
-				});
-			}
-		}
+		this.selecteds.removeCurrent = this.removeCurrent.bind(this);
 	},
 
-	constructor: function(view){
-		Controller.prototype.constructor.apply(this, arguments);
-		this.selecteds = [];
+	getSelecteds: function(){
+		return this.selecteds.get();
+	},
+
+	getVisibles: function(){
+		return this.visibles.get();
+	},
+
+	getFocused: function(){
+		return this.focused.get();
+	},
+
+	unselectAll: function(e){
+		Controller.subclasses.state.prototype.removeCurrent.call(this.selecteds, e);
 	},
 
 	add: function(view, e){
-		if( e && e.shift ){
-			e.preventDefault();
-			if( !this.shiftView ){
-				this.shiftView = this.selecteds.getLast() || this.getVisibles()[0];
-			}
+		e = e || {};
 
+		if( e.control ){
+			view.toggleClass('selected', e);
+		}
+		else if( e.shift ){
+			if( !this.shiftView ){
+				this.shiftView = this.getFocused() || this.getVisibles()[0];
+			}
 			this.selectRange(this.createRange(this.shiftView, view), e);
 		}
 		else{
 			delete this.shiftView;
-			view.select(e);
+
+			this.removeCurrent(e);
+			view.addClass('selected', e);
 		}
 	},
 
-	unselectOther: function(view, e){
-		if( !e ) return;
-		// n'unselect pas si control ou shift appuyé, ou mousemove (compat avec selectionRectangle)
-		if( e.control || e.shift ) return;
-
-		[].concat(this.selecteds).forEach(function(selected){
-			if( selected != view ) selected.unselect(e);
-		}, this);
+	removeCurrent: function(e){
+		// n'unselect pas si control ou shift appuyé
+		// ou mousemove (compat avec selectionRectangle)
+		if( e && (e.control || e.shift) ) return;
+		this.unselectAll(e);
 	},
 
-	unselectAll: function(e){
-		// NOTE: need to loop that way because the selecteds array is spliced during the loop
-		var i = this.selecteds.length;
-		while(i--) this.selecteds[0].unselect(e);
+	unselectOther: function(view, e){
+		if( view.hasClass('selected') ){
+			this.selecteds.list.remove(view);
+			this.removeCurrent(e);
+			this.selecteds.list.push(view);
+		}
+		else{
+			this.removeCurrent(e);
+		}
+	},
+
+	selectAll: function(e){
+		this.getVisibles().forEach(function(view){
+			view.addClass('selected', e);
+		});
 	},
 
 	createRange: function(viewA, viewB){
-		if( !viewA || !viewB ) throw new Error('no view to create range');
+		if( !viewA || !viewB ){
+			throw new Error('no view to create range');
+		}
 
 		var range = [], list = this.getVisibles(), from = list.indexOf(viewA), to = list.indexOf(viewB);
 
@@ -116,19 +97,18 @@ Controller.extends('multiselection', {
 			from = temp;
 		}
 
-		list.iterate(function(view){
-			range.push(view);
-		}, 'right', from - 1, to);
+		list.iterate(function(item){ range.push(item); }, 'right', from - 1, to);
 
 		return range;
 	},
 
 	selectRange: function(range, e){
-		// unselect view not in the range of the selection
-		[].concat(this.selecteds).forEach(function(selected){
-			if( !range.contains(selected) ) selected.unselect(e);
-		});
+		// get selecteds view not in range
+		var unselectList = this.getSelecteds().diff(range);
+
+		// unselect view not in the range
+		unselectList.forEach(function(view){ view.removeClass('selected', e); });
 		// select view in the range
-		range.forEach(function(view){ view.select(e); });
+		range.forEach(function(view){ view.addClass('selected', e); });
 	}
 });
