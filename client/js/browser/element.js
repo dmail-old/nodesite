@@ -1,9 +1,11 @@
+/* global Browser */
 
-(function(){
+Browser.Element = window.Element;
 
-function Element(tag, props){
+window.Element = function(tag, props){
 	return tag in Element.constructors ? Element.constructors[tag](props) : document.newElement(tag, props);
 };
+Element.prototype = Browser.Element.prototype;
 
 Element.constructors = {};
 document.newElement = function(tag, props){
@@ -16,13 +18,6 @@ document.newElement = function(tag, props){
 	
 	return element;
 };
-
-Browser.Element = this.Element;
-Element.prototype = this.Element.prototype;
-
-this.Element = Element;
-
-})();
 
 Object.append(Element, {
 	implement: Object.implement.bind(Element),
@@ -42,7 +37,7 @@ document.html = document.documentElement;
 if( !('classList' in Element.prototype) ){
 	Object.defineProperty(Element.prototype, 'classList', function(){
 		var element = this;
-		var list = new StringList(this.className);
+		var list = Class.new('list.string', this.className);
 		list.update = function(){ element.className = this.toString(); };
 		
 		return list;
@@ -78,14 +73,12 @@ Element.implement({
 	},	
 
 	getSelected: function(){
-		this.selectedIndex; // Safari 3.2.1
+		//this.selectedIndex; // Safari 3.2.1
 		return Array.prototype.filter.call(this.options, function(option){ return option.selected; });
 	}
 });
 
-(function(){
-
-var inserters = {
+Element.inserters = {
 	before: function(context, element){
 		var parent = element.parentNode;
 		if (parent) parent.insertBefore(context, element);
@@ -104,7 +97,7 @@ var inserters = {
 		element.insertBefore(context, element.firstChild);
 	}
 };
-inserters.inside = inserters.bottom;
+Element.inserters.inside = Element.inserters.bottom;
 
 Element.implement({
 	adopt: function(){
@@ -126,12 +119,12 @@ Element.implement({
 	},
 
 	grab: function(el, where){
-		inserters[where || 'bottom'](el, this);
+		Element.inserters[where || 'bottom'](el, this);
 		return this;
 	},
 
 	inject: function(el, where){
-		inserters[where || 'bottom'](this, el);
+		Element.inserters[where || 'bottom'](this, el);
 		return this;
 	},
 
@@ -159,5 +152,3 @@ Element.implement({
 		return this;
 	}
 });
-
-})();

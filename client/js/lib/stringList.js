@@ -1,4 +1,4 @@
-/* global List */
+/* global */
 
 /*
 
@@ -10,13 +10,11 @@ require: String, Array, Class
 
 */
 
-var StringList = new Class({
-	Extends: List,
-
+Class.extend('list', 'string', {
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) List.prototype.constructor.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) Class('list').prototype.constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},

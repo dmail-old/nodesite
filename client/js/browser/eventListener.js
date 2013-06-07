@@ -1,8 +1,4 @@
-/* global ListenerHandler */
-
-var EventHandler = new Class({
-	Extends: ListenerHandler,
-
+Class.extend('listener', 'event', {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -26,5 +22,5 @@ var EventHandler = new Class({
 	}
 });
 
-delete EventHandler.prototype.handleListener;
-delete EventHandler.prototype.applyHandler;
+delete Class('listener.event').prototype.handleListener;
+delete Class('listener.event').prototype.applyHandler;

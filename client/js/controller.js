@@ -1,6 +1,6 @@
-/* global View, ListenerHandler, EventHandler */
+/* global */
 
-var Controller = new Class({
+Class.extend('controller', {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -17,10 +17,10 @@ var Controller = new Class({
 	events: null,
 	requires: null,
 
-	constructor: function(view){
-		this.eventsHandler = new EventHandler(null, this.events, this);
+	constructor: function(view){		
+		this.viewEventsHandler = Class.new('listener', null, this.viewEvents, this);
+		this.eventsHandler = Class.new('listener.event', null, this.events, this);
 		this.eventsHandler.callHandler = this.callHandler;
-		this.viewEventsHandler = new ListenerHandler(null, this.viewEvents, this);
 
 		this.setView(view);
 		this.resolveDependency();
@@ -41,20 +41,20 @@ var Controller = new Class({
 			instance = this.view.controllers[name];
 		}
 		else{
-			provider = Controller.providers[name];
+			provider = Class('controller').providers[name];
 
 			if( provider ){
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = Controller.new(name, this.view);
+				instance = Class.new('controller.' + name, this.view);
 			}
 		}
 
 		this[name] = instance;
 	},
 
-	callHandler: EventHandler.prototype.callHandler,
+	callHandler: Class('listener.event').prototype.callHandler,
 
 	setView: function(view){
 		if( view ){
@@ -106,14 +106,12 @@ var Controller = new Class({
 	}
 });
 
-Object.merge(Controller, Class.manager);
+Class('controller').providers = {};
 
-Controller.providers = {};
-
-View.prototype.on('create', function(){
+Class('view').prototype.on('create', function(){
 	this.controllers = {};
 });
-View.prototype.on('destory', function(){
+Class('view').prototype.on('destory', function(){
 	delete this.controllers;
 });
 
@@ -126,9 +124,9 @@ Such controller have to implement Controller.Node
 
 */
 
-Controller.Node = {
+Class('controller').Node = {
 	callHandler: function(handler, bind, e){
-		var view = View(e);
+		var view = Class('view')(e);
 
 		if( e instanceof CustomEvent ){
 			return handler.apply(bind, [view].concat(e.detail.args));

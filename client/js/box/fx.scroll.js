@@ -1,7 +1,6 @@
 /* global Fx, Browser */
 
-Fx.Scroll = new Class({
-	Extends: Fx,
+Class.extend('fx', 'scroll', {
 	options: {
 		step: 30,
 		wheelStops: true

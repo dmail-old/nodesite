@@ -1,7 +1,6 @@
-/* global View */
+/* global */
 
-View.extend('rootnode', {
-	Implements: View.Node,
+Class.extend('view', 'rootnode', Class('view').Node, {
 	tagName: 'ul',
 	className: 'root',
 	attributes: {
@@ -16,11 +15,11 @@ View.extend('rootnode', {
 		// });
 
 		this.initChildren();
-		View.prototype.constructor.call(this);
+		Class('view').prototype.constructor.call(this);
 	},
 
 	getChildConstructor: function(){
-		return View.subclasses.node;
+		return Class('view').subclasses.node;
 	},
 
 	getChildrenElement: function(){

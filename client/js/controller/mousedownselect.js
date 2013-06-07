@@ -1,7 +1,6 @@
-/* global Controller */
+/* global */
 
-Controller.extend('mousedownselect', {
-	Implements: Controller.Node,
+Class.extend('controller', 'mousedownselect', Class('controller').Node, {
 	requires: 'selected',
 	events: {
 		mousedown: function(view, e){

@@ -14,19 +14,19 @@ function suggest(title, message, choices, callback){
 			'class': 'vx',
 			html: choice.value,
 			onclick: function(e){
-				var popup = Box.getInstanceFromElement(this);
+				var popup = Class('domrectangle.box').getInstanceFromElement(this);
 				popup.done(e);
 				callback.call(popup, choice);
 			}
 		};
 		
 		// focus sur le premier choix
-		if( i == 0 ) button['data-autofocus'] = true;
+		if( i === 0 ) button['data-autofocus'] = true;
 		
 		return button;
 	});
 	
-	var popup = new Popup({
+	var popup = Class.new('domrectangle.box.popup', {
 		title: title,
 		properties: {
 			'class': 'box popup big valid'

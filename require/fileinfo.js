@@ -1,4 +1,4 @@
-var FileInfo = new Class({
+var FileInfo = Class.extend('fileinfo', {
 	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;

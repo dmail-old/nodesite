@@ -6,3 +6,12 @@ Error: listen EADDRINUSE
     at net.js:1118:9
     at dns.js:72:18
     at process._tickCallback (node.js:415:13)
+Error: Not running
+    at Server.close (net.js:1047:11)
+    at Object.append.start (C:\Node\nodesite\admin.js:52:17)
+    at Object.append.restart (C:\Node\nodesite\admin.js:87:9)
+    at Array.restart [as 0] (C:\Node\nodesite\admin.js:140:9)
+    at Object.Watcher.change (C:\Node\nodesite\require\watcher.js:56:16)
+    at FSWatcher.Watcher.createWatcher (C:\Node\nodesite\require\watcher.js:42:5)
+    at FSWatcher.EventEmitter.emit (events.js:99:17)
+    at FSEvent._handle.onchange (fs.js:826:12)

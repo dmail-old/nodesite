@@ -1,8 +1,6 @@
-/* global Controller, View */
+/* global */
 
-Controller.extend('state', {
-	Implements: Controller.Node,
-
+Class.extend('controller', 'state', Class('controller').Node, {
 	constructor: function(view, state, multiple){
 		this.name = state;
 		this.events = {};
@@ -18,7 +16,7 @@ Controller.extend('state', {
 		this.events['view:removeclass:' + state] = this.onremovestate;
 		this.events['view:leave'] = this.events['view:removeclass:' + state];
 
-		Controller.prototype.constructor.call(this, view);
+		Class('controller').prototype.constructor.call(this, view);
 	},
 
 	onaddstate: function(view, e){
@@ -96,11 +94,11 @@ Controller.extend('state', {
 	}
 });
 
-Object.eachPair(View.states, function(name){
-	Controller.providers[name] = function(view){
-		return Controller.new('state', view, name);
+Object.eachPair(Class('view').states, function(name){
+	Class('controller').providers[name] = function(view){
+		return Class('controller').new('state', view, name);
 	};
-	Controller.providers[name + 's'] = function(view){
-		return Controller.new('state', view, name, true);
+	Class('controller').providers[name + 's'] = function(view){
+		return Class('controller').new('state', view, name, true);
 	};
 });

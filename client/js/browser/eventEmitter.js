@@ -1,6 +1,6 @@
-/* global Emitter */
+/* global */
 
-var EventEmitter = Object.append(Object.clone(Emitter), {
+Class.extend('emitter', 'event', {
 	getEvents: function(){
 		var listeners = this.storage.listeners;
 
@@ -29,8 +29,14 @@ var EventEmitter = Object.append(Object.clone(Emitter), {
 	}
 });
 
-delete EventEmitter.$events;
+delete Class('emitter.event').prototype.$events;
 
-Object.merge(Element.prototype, EventEmitter);
-Object.merge(window, EventEmitter);
-Object.merge(document, EventEmitter);
+var eventEmitterProto = Class('emitter.event').prototype;
+
+for(var key in eventEmitterProto){
+	if( key != 'constructor' ){
+		window[key] = eventEmitterProto[key];
+		document[key] = eventEmitterProto[key];
+		Element.prototype[key] = eventEmitterProto[key];
+	}	
+}

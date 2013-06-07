@@ -1,7 +1,6 @@
-/* global Controller, View */
+/* global */
 
-Controller.extend('tool', {
-	Implements: Controller.Node,
+Class.extend('controller', 'tool', Class('controller').Node, {
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view && e.target.hasClass('tool') ){

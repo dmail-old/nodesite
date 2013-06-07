@@ -1,7 +1,7 @@
-window.ListenerHandler = new Class({
+Class.extend('listener', {
 	handlers: null,
 
-	constructor: function ListenerHandler(emitter, handlers, listener){
+	constructor: function(emitter, handlers, listener){
 		this.emitter = emitter;
 		if( handlers ) this.handlers = handlers;
 		this.listener = listener || this;
@@ -33,14 +33,7 @@ window.ListenerHandler = new Class({
 		var emitter = this.emitter;
 
 		if( emitter ){
-			try{
-
 			emitter[value ? 'on' : 'off'].apply(emitter, args);
-
-			}
-			catch(e){
-				console.log(emitter, args);
-			}
 		}
 
 		return this;

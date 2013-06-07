@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-var Fx = this.Fx = new Class({
+Class.extend('fx', Chain, Class('emitter'), Options, {
 	options: {
 		fps: 60,
 		unit: false,
@@ -62,7 +62,7 @@ var Fx = this.Fx = new Class({
 	},
 
 	compute: function(from, to, delta){
-		return Fx.compute(from, to, delta);
+		return Class('fx').compute(from, to, delta);
 	},
 
 	check: function(){
@@ -88,7 +88,7 @@ var Fx = this.Fx = new Class({
 		this.time = null;
 		this.transition = this.getTransition();
 		var frames = this.options.frames, fps = this.options.fps, duration = this.options.duration;
-		this.duration = Fx.Durations[duration] || duration.toInt();
+		this.duration = Class('fx').Durations[duration] || duration.toInt();
 		this.frameInterval = 1000 / fps;
 		this.frames = frames || Math.round(this.duration / this.frameInterval);
 		this.emit('start', this.subject);
@@ -139,9 +139,7 @@ var Fx = this.Fx = new Class({
 	}
 });
 
-Fx.implement(Chain, Emitter, Options);
-
-Object.append(Fx, {
+Object.append(Class('fx'), {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},

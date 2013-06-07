@@ -1,3 +1,5 @@
+/* global Path */
+
 Array.prototype.prefix = function(prefix){
 	return this.map(function(value){ return prefix + value; });
 };
@@ -36,13 +38,13 @@ config.js = [].concat(
 	[
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "list", "stringList", "memory", "path",
-		"emitter", "listenerHandler",
+		"emitter", "listener",
 		"treeTraversal", "treeFinder", "treeStructure",
 	].prefix('lib/'),
 	[
 		"browser", "element", "element.properties",
 		"element.styles", "element.measure", "element.keepIntoView", "element.find",
-		"event", "eventEmitter", "eventHandler", "request"
+		"event", "eventEmitter", "eventListener", "request"
 	].prefix('browser/'),
 	[
 		"model", "view", "controller", "fx"

@@ -1,4 +1,4 @@
-/* global Controller */
+/* global */
 
 /*
 
@@ -7,11 +7,11 @@ mousedown focused se produit avant mousedownmultiselect et shiftView est faussé
 
 */
 
-Controller.extend('multiselection', {
+Class.extend('controller', 'multiselection', {
 	requires: ['selecteds', 'visibles', 'focused'],
 
 	constructor: function(){
-		Controller.prototype.constructor.apply(this, arguments);
+		Class('controller').prototype.constructor.apply(this, arguments);
 
 		this.selecteds.removeCurrent = this.removeCurrent.bind(this);
 	},
@@ -29,7 +29,7 @@ Controller.extend('multiselection', {
 	},
 
 	unselectAll: function(e){
-		Controller.subclasses.state.prototype.removeCurrent.call(this.selecteds, e);
+		Class('controller.state').prototype.removeCurrent.call(this.selecteds, e);
 	},
 
 	add: function(view, e){

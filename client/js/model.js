@@ -1,8 +1,7 @@
-/* global MVC, Emitter */
+/* global */
 
 // model
-var Model = new Class({
-	Implements: Emitter,
+Class.extend('model', Class('emitter'), {
 	validationError: null,
 	cid: 0,
 
@@ -79,9 +78,7 @@ var Model = new Class({
 	}
 });
 
-Object.merge(Model, Class.manager);
-
-Model.serverMethods = {
+Class('model').serverMethods = {
 	definitions: {
 		parsers: {},
 		cancels: {},
@@ -93,7 +90,7 @@ Model.serverMethods = {
 	},
 
 	createAction: function(name, args){
-		var action = new Model.Action(this, name, args);
+		var action = Class.new('action', this, name, args);
 		return action;
 	},
 
@@ -138,7 +135,7 @@ Model.serverMethods = {
 	}
 };
 
-Model.Action = new Class({
+Class.extend('action', {
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

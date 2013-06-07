@@ -19,7 +19,7 @@ Object.defineProperty(global, '__stack', {
 	get: function(){
 		var orig = Error.prepareStackTrace;
 		Error.prepareStackTrace = function(_, stack){ return stack; };
-		var err = new Error;
+		var err = new Error();
 		Error.captureStackTrace(err, arguments.callee);
 		var stack = err.stack;
 		Error.prepareStackTrace = orig;
@@ -60,20 +60,23 @@ var Logger = {
 	},
 	
 	// https://github.com/visionmedia/better-assert/blob/master/lib/better-assert.js
-	debug: function(data){
+	debug: function(data, options){
 		if( !this.canLog('debug') ) return;
+
+		options = options || {};
 		
 		var 
 			call = __stack[1],
 			file = call.getFileName(),
 			lineno = call.getLineNumber(),
 			src = FS.readFileSync(file, 'utf8'),
-			line = src.split('\n')[lineno-1],
-			src = line.replace(/\n|\r/,'')
+			line = src.split('\n')[lineno-1]
 		;
+
+		src = line.replace(/\n|\r/,'');
 		
 		var prefix = this.getPrefix('debug');
-		var result = inspect(data, false, this.depth, this.colorize);
+		var result = inspect(data, false, options.depth || this.depth, this.colorize);
 		
 		result = result.replace(/\n|\r/g, function(match){ return match + prefix; });
 		

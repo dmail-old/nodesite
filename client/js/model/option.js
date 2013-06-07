@@ -1,11 +1,10 @@
-/* global Model, TreeStructure, TreeTraversal, TreeFinder */
+/* global TreeStructure, TreeTraversal, TreeFinder */
 
-Model.extend('option', {
-	Implements: [TreeStructure, TreeTraversal, TreeFinder],
+Class.extend('model', 'option', TreeStructure, TreeTraversal, TreeFinder, {
 	name: '',
 
-	constructor: function NodeModel(){
-		Model.prototype.constructor.apply(this, arguments);
+	constructor: function(){
+		Class('model').prototype.constructor.apply(this, arguments);
 
 		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');

@@ -1,7 +1,6 @@
-/* global Controller, View */
+/* global */
 
-Controller.extend('visibles', {
-	Implements: Controller.Node,
+Class.extend('controller', 'visibles', Class('controller').Node, {
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);
@@ -33,8 +32,8 @@ Controller.extend('visibles', {
 		var prev, next, parent = view.parentNode;
 
 		if( parent ){
-			prev = view.getPrevSibling(View.isVisible);
-			next = view.getNextSibling(View.isVisible);
+			prev = view.getPrevSibling(Class('view').isVisible);
+			next = view.getNextSibling(Class('view').isVisible);
 
 			if( prev && !next ) prev.toggleClass('last', hidden);
 			else if( next && !prev ) next.toggleClass('first', hidden);
@@ -94,6 +93,6 @@ Controller.extend('visibles', {
 	}
 });
 
-View.isVisible = function(view){
+Class('view').isVisible = function(view){
 	return !view.hasClass('hidden');
 };

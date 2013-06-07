@@ -1,10 +1,10 @@
-(function(){
+/* global Browser */
 
 Element.Styles = {};
 
 Element.Styles.opacity = {	
 	get: function(){
-		return this.style.opacity == '' ? 1 : this.style.opacity.toFloat();
+		return this.style.opacity === '' ? 1 : this.style.opacity.toFloat();
 	},
 	
 	set: function(value){
@@ -157,6 +157,4 @@ if( Browser.safari || Browser.chrome ){
 		};
 	});
 }
-
-})();
 

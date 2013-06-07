@@ -1,9 +1,6 @@
-/* global
-	MVC, Emitter, ListenerHandler, StringList,
-	TreeStructure, TreeTraversal, TreeFinder
-*/
+/* global TreeStructure, TreeTraversal, TreeFinder */
 
-var View = new Class({
+Class.extend('view', Class('emitter'), {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -13,15 +10,15 @@ var View = new Class({
 
 	constructor: function View(model){
 		// called without new
-		if( !(this instanceof View) ){
+		if( !(this instanceof Class('view')) ){
 			if( model != null && typeof model.toView == 'function' ) return model.toView();
 			return null;
 		}
 
-		View.instances[this.id = View.lastID++] = this;
+		Class('view').instances[this.id = Class('view').lastID++] = this;
 
 		// ListenerHandler call this.handlers over this.model events with this as context
-		this.modelEventsHandler = new ListenerHandler(null, this.modelEvents, this);
+		this.modelEventsHandler = Class.new('listenerhandler', null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -32,7 +29,7 @@ var View = new Class({
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
-		delete View.instances[this.id];
+		delete Class('view').instances[this.id];
 	},
 
 	setModel: function(model){
@@ -51,14 +48,14 @@ var View = new Class({
 	},
 
 	getClassName: function(){
-		return new StringList(this.className);
+		return Class.new('list', 'string', this.className);
 	},
 
 	getAttributes: function(){
 		var attr = this.attributes ? Object.copy(this.attributes) : {};
 
 		attr['class'] = this.getClassName();
-		attr[View.IDAttribute] = this.id;
+		attr[Class('view').IDAttribute] = this.id;
 
 		return attr;
 	},
@@ -148,18 +145,15 @@ var View = new Class({
 	}
 });
 
-View.implement(Emitter);
-Object.merge(View, Class.manager);
+Class('view').instances = {};
+Class('view').IDAttribute = 'data-view';
+Class('view').lastID = 0;
 
-View.instances = {};
-View.IDAttribute = 'data-view';
-View.lastID = 0;
-
-View.isElementView = function(element){
+Class('view').isElementView = function(element){
 	return element.hasAttribute && element.hasAttribute(this.IDAttribute);
 };
 
-View.getElementView = function(element){
+Class('view').getElementView = function(element){
 	var view = null;
 
 	if( this.isElementView(element) ){
@@ -169,7 +163,7 @@ View.getElementView = function(element){
 	return view;
 };
 
-View.findElementView = function(element){
+Class('view').findElementView = function(element){
 	var view = null;
 
 	while( element ){
@@ -182,13 +176,13 @@ View.findElementView = function(element){
 };
 
 // retourne le noeud qui détient element ou null
-Element.prototype.toView = function(){ return View.findElementView(this); };
+Element.prototype.toView = function(){ return Class('view').findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
-View.prototype.toView = Function.THIS;
+Class('view').prototype.toView = Function.THIS;
 
 // View émet des évènements via le DOM de son élément
-View.prototype.on('*', function(name, args){
+Class('view').prototype.on('*', function(name, args){
 	if( this.element ){
 		var event = new CustomEvent('view:' + name, {
 			bubbles: true,
@@ -203,7 +197,7 @@ View.prototype.on('*', function(name, args){
 	}
 });
 
-View.states = {
+Class('view').states = {
 	lighted: ['light', 'unlight'],
 	selected: ['select', 'unselect'],
 	expanded: ['expand', 'contract'],
@@ -212,21 +206,19 @@ View.states = {
 	actived: ['active', 'unactive']
 };
 
-View.State = {};
-Object.eachPair(View.states, function(state, methods){
+Class('view').State = {};
+Object.eachPair(Class('view').states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
-	View.State[on] = function(e){
+	Class('view').State[on] = function(e){
 		return this.addClass(state, e);
 	};
-	View.State[off] = function(e){
+	Class('view').State[off] = function(e){
 		return this.removeClass(state, e);
 	};
 });
 
-var TreeEmitter = new Class({
-	Implements: Emitter,
-
+Class.extend('emitter', 'tree', Class('emitter'), {
 	constructor: function(bind){
 		this.bind = bind || this;
 	},
@@ -243,15 +235,15 @@ var TreeEmitter = new Class({
 			this.bind.parentNode.treeEmitter.applyListeners(name, args);
 		}
 
-		return Emitter.applyListeners.call(this, name, args);
+		return Class('emitter').applyListeners.call(this, name, args);
 	}
 });
 
-View.Node = {};
+Class('view').Node = {};
 
-Object.merge(View.Node, TreeStructure, TreeTraversal, TreeFinder);
+Object.merge(Class('view').Node, TreeStructure, TreeTraversal, TreeFinder);
 
-Object.append(View.Node, {
+Object.append(Class('view').Node, {
 	modelEvents: {
 		'adopt': function(child, index){
 			this.insertBefore(child, this.children[index]);
@@ -263,7 +255,7 @@ Object.append(View.Node, {
 	},
 
 	setModel: function(model){
-		View.prototype.setModel.call(this, model);
+		Class('view').prototype.setModel.call(this, model);
 		if( model && model.children ){
 			this.setChildren(model.children);
 		}

@@ -1,7 +1,6 @@
-/* global Controller, View */
+/* global */
 
-Controller.extend('nav', {
-	Implements: Controller.Node,
+Class.extend('controller', 'nav', Class('controller').Node, {
 	requires: ['focused', 'visibles'],
 	events: {
 		'keydown': function(view, e){
@@ -54,26 +53,26 @@ Controller.extend('nav', {
 				this.currentView.removeClass('expanded', e);
 			}
 			else{
-				this.target = this.currentView.getChild(View.isTargetable);
+				this.target = this.currentView.getChild(Class('view').isTargetable);
 			}
 		},
 
 		'home': function(){
-			this.target = this.list.find(View.isTargetable, 'right');
+			this.target = this.list.find(Class('view').isTargetable, 'right');
 		},
 
 		'end': function(){
-			this.target = this.list.find(View.isTargetable, 'left');
+			this.target = this.list.find(Class('view').isTargetable, 'left');
 		},
 
 		'up': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(View.isTargetable, 'left', index, this.loop);
+			this.target = this.list.find(Class('view').isTargetable, 'left', index, this.loop);
 		},
 
 		'down': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(View.isTargetable, 'right', index, this.loop);
+			this.target = this.list.find(Class('view').isTargetable, 'right', index, this.loop);
 		},
 
 		'pageup': function(){
@@ -81,7 +80,7 @@ Controller.extend('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.max(index - this.getPageCount(view), 0) - 1;
 
-			this.target = this.list.find(View.isTargetable, 'right', from, index);
+			this.target = this.list.find(Class('view').isTargetable, 'right', from, index);
 		},
 
 		'pagedown': function(){
@@ -89,7 +88,7 @@ Controller.extend('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.min(index + this.getPageCount(view), this.list.length - 1 ) + 1;
 
-			this.target = this.list.find(View.isTargetable, 'left', from, index);
+			this.target = this.list.find(Class('view').isTargetable, 'left', from, index);
 		},
 
 		'*': function(e){
@@ -99,7 +98,7 @@ Controller.extend('nav', {
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return View.isTargetable(view) && View.matchLetter(view, e.key);
+				return Class('view').isTargetable(view) && Class('view').matchLetter(view, e.key);
 			}, 'right', index, true);
 		}
 	},
@@ -141,11 +140,11 @@ Controller.extend('nav', {
 
 RegExp.alphanum = /[a-zA-Z0-9]/;
 
-View.isTargetable = function(view){
+Class('view').isTargetable = function(view){
 	return !view.hasClass('disabled');
 };
 
-View.matchLetter = function(view, letter){
+Class('view').matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };

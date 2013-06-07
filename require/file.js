@@ -2,7 +2,7 @@
 
 var Watcher = require('./watcher.js');
 
-var File = new Class({
+var File = Class.extend('file', {
 	constructor: function(path){
 		this.setPath(path);
 		return this;
@@ -21,7 +21,7 @@ var File = new Class({
 			this.setPath(this.getDirname() + '/' + value);
 			break;
 		case 'extension':
-			if( !value || value == '' ) value = '';
+			if( !value || value === '' ) value = '';
 			else if( value.charAt(0) != '.' ) value = '.'+value;
 
 			this.setPath(this.getDirname() + '/' + this.getFilename() + value);

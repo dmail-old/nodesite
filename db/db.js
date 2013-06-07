@@ -1,4 +1,4 @@
-/* global Emitter, Finder */
+/* global Finder */
 
 /*
 
@@ -58,7 +58,7 @@ var DB = {
 	getTable: function(name){
 		var table = this.tables[name];
 		if( !table ){
-			table = this.tables[name] = new Table(name);
+			table = this.tables[name] = Class.new('table', name);
 		}
 		return table;
 	},
@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = new Class({
+var Table = Class.extend('table', Class('emitter'), {
 	methods: {},
 	state: 'closed',
 	lockers: 0,
@@ -293,7 +293,7 @@ var Table = new Class({
 	},
 });
 
-Table.implement(Emitter);
+console.log(Class.new('table', 'test'));
 
 Table.defineAction = function(name, method){
 	Table.prototype.methods[name] = method;
@@ -398,7 +398,7 @@ Table.defineActions({
 		var currentData = this.datas[index], i, j, diff = this.byteLength(currentData);
 
 		// je supprime la première ligne
-		if( index == 0 ){
+		if( index === 0 ){
 			// il n'y a qu'une ligne: le fichier devient vide et c'est tout
 			if( this.length == 1 ){
 				this.datas[0] = '';
@@ -428,7 +428,7 @@ Table.defineActions({
 		var index = this.length, lastData = this.datas[index-1], byte = 0;
 
 		// le fichier est actuellement vide
-		if( index == 1 && lastData == '' ){
+		if( index === 1 && lastData === '' ){
 			index = 0;
 		}
 		else{
@@ -551,7 +551,7 @@ Table.implement({
 		}
 
 		function write(data){
-			if( data == '' ){
+			if( data === '' ){
 				onwrite.call(this, null, 0, '');
 			}
 			else{

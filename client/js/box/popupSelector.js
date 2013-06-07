@@ -15,8 +15,7 @@ FIX
 
 */
 
-var PopupSelectorElement = new Class({
-	Extends: SelectorElement,
+Class.extend('selectorelement', 'popup', {
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\
@@ -29,13 +28,13 @@ var PopupSelectorElement = new Class({
 		this.popup = new Popup();
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
 
-		SelectorElement.prototype.constructor.call(this, options);
+		Class('selectorelement').prototype.constructor.call(this, options);
 
 		this.setListElement(this.popup.element);
 	},
 
 	destroy: function(){
-		SelectorElement.prototype.destroy.call(this);
+		Class('selectorelement').prototype.destroy.call(this);
 		this.popup.destroy();
 	},
 

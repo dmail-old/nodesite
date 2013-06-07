@@ -1,4 +1,4 @@
-/* global Box, IFrame, Files, loader */
+/* global IFrame, Files, loader */
 
 /*
 ---
@@ -21,8 +21,7 @@ Element.Properties.onclick = {
 	}
 };
 
-var Popup = new Class({
-	Extends: Box,
+Class.extend('domrectangle.box', 'popup', {
 	options: {
 		properties: {
 			'html': '\
@@ -44,8 +43,8 @@ var Popup = new Class({
 		title: 'Titre',
 		content: 'Hello world',
 		zIndex: 90,
-		left: Box.prototype.calcPositionSpacePercent.curry('x', 0.5),
-		top: Box.prototype.calcPositionSpacePercent.curry('y', 0.5),
+		left: Class('domrectangle.box').prototype.calcPositionSpacePercent.curry('x', 0.5),
+		top: Class('domrectangle.box').prototype.calcPositionSpacePercent.curry('y', 0.5),
 		overflow: 'auto',
 		autoOpen: true,
 		master: true,
@@ -60,7 +59,7 @@ var Popup = new Class({
 	},
 
 	constructor: function(){
-		Box.prototype.constructor.apply(this, arguments);
+		Class('domrectangle.box').prototype.constructor.apply(this, arguments);
 
 		if( this.options.submitclose ) this.on('submit', this.close);
 	},
@@ -71,7 +70,7 @@ var Popup = new Class({
 		this.options.properties.html = this.options.properties.html.parse({title: this.options.title, content: this.options.content});
 
 		var
-			element = Box.prototype.createElement.call(this),
+			element = Class('domrectangle.box').prototype.createElement.call(this),
 			header = element.getElement('className:*header*'),
 			form = element.getElement('tagName:form'),
 			title = header.getElement('tagName:h1'),

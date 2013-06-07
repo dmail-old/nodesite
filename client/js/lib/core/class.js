@@ -9,41 +9,32 @@ require: Object.create, Object.append
 
 provides: Class
 
-a faire: Class serviras à stocker toutes les sous classes
-pour récup une classe on feras
-
-Class(nom de la class)
-Class.new(nom de la class);
-Class.extend(nom de la class, nom de la nouvelle classe)
-
-nom de la class pourras s'écrire 'class.subclass.subclass'
-
-chaque Class auras aussi le méthod new et extend comme méthode du constructeur pour pourvoir
-être appelé
-
-Class('view').extend('node', {
-
-});
-
-Class('view').new('node');
-Class.new('view');
-
-
-Class('controller').extend('multiselection', {
-
-});
-Class.new('controller.multiselection', args);
-
 ...
 */
 
-var Class = window.Class = function(proto){
-	if( !proto ){
-		proto = {};
+var Class = window.Class = function(parent){	
+	if( typeof parent == 'string' ){
+		if( parent in Class.constructors ){
+			parent = Class.constructors[parent];
+		}
+		else{
+			console.trace();
+			throw new Error('class ' + parent + ' not found');
+		}			
 	}
+	return parent;
+};
 
-	var parent = 'Extends' in proto ? proto.Extends : Class;
-	var constructor;
+Class.constructors = {};
+
+Class.create = function(parent){
+	var i = 1, j = arguments.length, proto, constructor;
+
+	proto = Object.copy(parent instanceof Function ? parent.prototype : parent);
+
+	for(;i<j;i++){
+		Object.merge(proto, arguments[i]);
+	}
 
 	// when the class doesn't define a constructor
 	if( !proto.hasOwnProperty('constructor') ){
@@ -62,17 +53,46 @@ var Class = window.Class = function(proto){
 	}
 
 	constructor = proto.constructor;
-
-	constructor.prototype = Object.copy(parent instanceof Function ? parent.prototype : parent);
+	constructor.prototype = proto;
 	constructor.prototype.constructor = constructor;
 
-	if( 'Implements' in proto ){
-		var items = proto.Implements;
-		if( !(items instanceof Array) ) constructor.implement(items);
-		else constructor.implement.apply(constructor, items);
+	return constructor;
+};
+
+Class.extend = function(){
+	var parent, name, constructor, i;
+
+	if( typeof arguments[1] != 'string' ){
+		parent = Class;
+		name = arguments[0];
+		i = 1;
+	}
+	else{
+		parent = arguments[0];
+		name = arguments[1];
+		i = 2;
 	}
 
-	constructor.implement(proto);
+	if( typeof parent == 'string' ){
+		parent = Class(parent);
+	}
+	if( typeof parent == 'undefined'){
+		throw new Error('must provide a parent class');
+	}
+	if( typeof parent != 'function' ){
+		throw new Error('parent class must be a constructor');
+	}
+
+	constructor = Class.create.apply(this, [parent].concat(toArray(arguments, i)));
+
+	if( parent.$path ){
+		constructor.$path = parent.$path + '.' + name;
+	}
+	else{
+		constructor.$path = name;
+	}
+	
+	this.constructors[constructor.$path] = constructor;
 
 	return constructor;
 };
@@ -86,16 +106,8 @@ Class.applyConstructor = function(constructor, args){
 	return new this.construct(constructor, args);
 };
 
-Class.manager = {
-	subclasses: {},
-	extend: function(name, proto){
-		proto.name = name;
-		proto.Extends = this;
-		this.subclasses[name] = new Class(proto);
-	},
-	new: function(name){
-		return Class.applyConstructor(this.subclasses[name], toArray(arguments, 1));
-	}
+Class.new = function(path){
+	return Class.applyConstructor(Class(path), toArray(arguments, 1));
 };
 
 Class.Interfaces = {};

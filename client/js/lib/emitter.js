@@ -8,7 +8,7 @@ require: Class, Object
 
 */
 
-window.Emitter = {
+Class.extend('emitter', {
 	$events: {},
 
 	getEvents: function(){
@@ -176,4 +176,4 @@ window.Emitter = {
 	emit: function(){
 		return this.eachEvent(this.callListeners, arguments);
 	}
-};
+});

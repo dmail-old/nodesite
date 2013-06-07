@@ -75,7 +75,7 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = new Class({
+var DOMRectangle = Class.extend('domrectangle', Class('emitter'), Bound, {
 	name: 'domrectangle',
 	options: {
 		axis: 'xy',
@@ -217,8 +217,6 @@ var DOMRectangle = new Class({
 		// }
 	}
 });
-
-DOMRectangle.implement(Emitter, Bound);
 
 DOMRectangle.implement({
 	get: function(name){
@@ -585,18 +583,18 @@ DOMRectangle.retrieveInstance = function(e){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target;
 
-			if( element ) instance = new DOMRectangle(element, true);
+			if( element ) instance = Class.new('domrectangle', element, true);
 		}
 		else if( e.target.hasClass('vector') ){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target.parentNode;
 
-			if( element ) instance = new DOMRectangle(element, true);
+			if( element ) instance = Class.new('domrectangle', element, true);
 		}
 		else if( e.type == 'keydown' && e.target.hasClass('selectionRectangle') ){
 			element = e.target;
 
-			if( element ) instance = new DOMRectangle(element, true);
+			if( element ) instance = Class.new('domrectangle', element, true);
 		}
 	}
 

@@ -1,4 +1,4 @@
-/* global DOMRectangle, Fx, Options */
+/* global Options */
 
 /*
 ---
@@ -21,8 +21,7 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-var Box = new Class({
-	Extends: DOMRectangle,
+Class.extend('domrectangle', 'box', {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -62,8 +61,8 @@ var Box = new Class({
 		if( this.options.closedestroy ) this.on('close', this.destroy);
 
 		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
-		Box.instances[this.id = Box.UID++] = this;
-		DOMRectangle.prototype.constructor.call(this, this.createElement());
+		this.constructor.instances[this.id = this.constructor.UID++] = this;
+		Class('domrectangle').prototype.constructor.call(this, this.createElement());
 	},
 
 	createElement: function(){
@@ -106,8 +105,8 @@ var Box = new Class({
 
 	destroy: function(){
 		this.element.destroy();
-		delete Box.instances[this.id];
-		DOMRectangle.prototype.destroy.call(this);
+		delete this.constructor.instances[this.id];
+		Class('domrectangle').prototype.destroy.call(this);
 	},
 
 	removeAll: function(){
@@ -162,7 +161,7 @@ var Box = new Class({
 		else{
 			fx.options.onComplete = callback.bind(this);
 			if( this.fx ){ this.fx.cancel(); }
-			this.fx = new Fx.Morph(this.frame, fx.options).start(fx.styles);
+			this.fx = Class.new('fx.morph', this.frame, fx.options).start(fx.styles);
 		}
 		return this;
 	},
@@ -268,7 +267,7 @@ var Box = new Class({
 			this.focused = true;
 			this.element.addClass('focus');
 			this.element.setStyle('zIndex', 100);
-			Box.active = this;
+			this.constructor.active = this;
 			this.emit('focus', e);
 		}
 
@@ -284,7 +283,7 @@ var Box = new Class({
 				if( !this.focused ){
 					this.element.removeClass('focus');
 					this.element.setStyle('zIndex', 99);
-					delete Box.active;
+					delete this.constructor.active;
 
 					this.emit('blur', e);
 				}
@@ -298,6 +297,8 @@ var Box = new Class({
 		this.emit('keydown', e);
 	}
 });
+
+var Box = Class('domrectangle.box');
 
 Box.implement(Options);
 

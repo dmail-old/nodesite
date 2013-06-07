@@ -1,4 +1,4 @@
-/* global Controller */
+/* global */
 
 /*
 
@@ -15,8 +15,7 @@ faire la largeur de son contenu
 
 */
 
-Controller.extend('mousedownfocus', {
-	Implements: Controller.Node,
+Class.extend('controller', 'mousedownfocus', Class('controller').Node, {
 	requires: 'focused',
 	events: {
 		'mousedown': function(view, e){

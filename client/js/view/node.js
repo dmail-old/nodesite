@@ -1,7 +1,6 @@
-/* global View, Emitter */
+/* global */
 
-View.extend('node', {
-	Implements: [View.Node, View.State],
+Class.extend('view', 'node', Class('view').Node, Class('view').State, {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {
@@ -18,7 +17,7 @@ View.extend('node', {
 		// });
 
 		this.initChildren();
-		View.prototype.constructor.apply(this, arguments);
+		Class('view').prototype.constructor.apply(this, arguments);
 	},
 
 	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
@@ -27,7 +26,7 @@ View.extend('node', {
 	},
 
 	getClassName: function(){
-		var className = View.prototype.getClassName.call(this);
+		var className = Class('view').prototype.getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');

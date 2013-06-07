@@ -1,7 +1,6 @@
-/* global View, Controller, NodeController, TreeStructure, TreeTraversal, TreeFinder */
+/* global TreeStructure, TreeTraversal, TreeFinder */
 
-View.extend('selector', {
-	Implements: [TreeStructure, TreeTraversal, TreeFinder],
+Class.extend('view', 'selector', TreeStructure, TreeTraversal, TreeFinder, {
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
@@ -13,7 +12,7 @@ View.extend('selector', {
 
 	constructor: function(){
 		this.initChildren();
-		View.prototype.constructor.call(this);
+		Class('view').prototype.constructor.call(this);
 	},
 
 	oninsertchild: function(child){
@@ -33,7 +32,7 @@ View.extend('selector', {
 	},
 
 	getChildConstructor: function(){
-		return View.views.option;
+		return Class('view.option');
 	},
 
 	getHTML: function(){

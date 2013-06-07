@@ -1,4 +1,4 @@
-var FileResponse = new Class({
+var FileResponse = Class.extend('fileresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -44,7 +44,7 @@ var FileResponse = new Class({
 
 	start: function(path){
 		var
-			file = new File(root + '/client/' + path),
+			file = Class.new('file', root + '/client/' + path),
 			extension = file.getExtension(),
 			acceptEncoding
 		;
@@ -208,7 +208,7 @@ function PageResponse(response){
 		response.end();
 	}
 
-	var htmlFile = new File(root + '/app.html'), html;
+	var htmlFile = Class.new('file', root + '/app.html'), html;
 
 	try{
 		html = String(htmlFile.readSync());
@@ -253,7 +253,7 @@ function PageResponse(response){
 	response.end();
 }
 
-var AjaxResponse = new Class({
+var AjaxResponse = Class.extend('ajaxresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -389,7 +389,7 @@ var AjaxResponse = new Class({
 	sendFile: function(filepath){
 		console.log('senfile', filepath);
 		this.response.request.parsedUrl.pathname = filepath;
-		return new FileResponse(this.response);
+		return Class.new('fileresponse', this.response);
 	},
 
 	error: function(e){
@@ -434,9 +434,9 @@ var Handlers = {
 		response.writeHead(500, 'Internal server error');
 		response.end();
 	},
-	'file': FileResponse,
+	'file': Class('fileresponse'),
 	'page': PageResponse,
-	'ajax': AjaxResponse
+	'ajax': Class('ajaxresponse')
 };
 
 var Url = require('url');
@@ -482,7 +482,7 @@ function findHandler(request, callback){
 
 	// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 	dirname = pathname.substr(0, slash);
-	file = new File(root + '/client/' + dirname);
+	file = Class.new('file', root + '/client/' + dirname);
 	file.isDir(function(isdir){ return callback(isdir ? 'file' : 'page'); });
 }
 

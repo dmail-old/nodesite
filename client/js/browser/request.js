@@ -57,7 +57,7 @@ Element.prototype.toQueryString = function(){
 
 var progressSupport = 'onprogress' in new XMLHttpRequest();
 
-var Request = this.Request = new Class({
+Class.extend('request', Class('emitter'), Options, Chain, {
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
@@ -274,5 +274,3 @@ var Request = this.Request = new Class({
 		return this;
 	}
 });
-
-Request.implement(Emitter, Options, Chain);

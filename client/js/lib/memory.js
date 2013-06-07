@@ -12,7 +12,7 @@ memory.restore(action, mode): function you have to define to tell how to cancel 
 
 */
 
-var Memory = new Class({
+Class.extend('memory', {
 	constructor: function(limit){
 		this.limit = limit || 10;
 		this.reset();

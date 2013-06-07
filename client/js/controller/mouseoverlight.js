@@ -1,7 +1,6 @@
-/* global Controller, View */
+/* global */
 
-Controller.extend('mouseoverlight', {
-	Implements: Controller.Node,
+Class.extend('controller', 'mouseoverlight', Class('controller').Node, {
 	requires: 'lighted',
 	events: {
 		'mouseover': function(view, e){
@@ -17,7 +16,7 @@ Controller.extend('mouseoverlight', {
 		'mouseout': function(view, e){
 			// when the mouse go very fast out of the view
 			// mouseover event is'nt fired on other view but we can check mouseout relatedTarget
-			view = View(e.relatedTarget);
+			view = Class('view')(e.relatedTarget);
 			if( !view ){
 				this.lighted.remove(this.lighted.current, e);
 			}
