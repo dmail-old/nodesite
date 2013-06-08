@@ -29,14 +29,8 @@ Class.extend('emitter', 'event', {
 	}
 });
 
-delete Class('emitter.event').prototype.$events;
-
-var eventEmitterProto = Class('emitter.event').prototype;
-
-for(var key in eventEmitterProto){
-	if( key != 'constructor' ){
-		window[key] = eventEmitterProto[key];
-		document[key] = eventEmitterProto[key];
-		Element.prototype[key] = eventEmitterProto[key];
-	}	
-}
+Object.eachPair(Class('emitter.event').prototype, function(key, value, object){
+	Object.setPair.call(window, key, value, object);
+	Object.setPair.call(document, key, value, object);
+	Object.setPair.call(Element.prototype, key, value, object);
+});
