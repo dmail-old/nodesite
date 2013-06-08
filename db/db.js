@@ -293,8 +293,6 @@ var Table = Class.extend('table', Class('emitter'), {
 	},
 });
 
-console.log(Class.new('table', 'test'));
-
 Table.defineAction = function(name, method){
 	Table.prototype.methods[name] = method;
 	Table.prototype[name] = function(){

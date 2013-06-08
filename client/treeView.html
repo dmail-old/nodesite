@@ -8,16 +8,16 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = Model.new('node', treeData);
-var view = View.new('node', model);
-var rootView = View.new('rootnode');
+var model = Class.new('model.node', treeData);
+var view = Class.new('view.node', model);
+var rootView = Class.new('view.rootnode');
 
-Controller.new('indent', rootView);
-Controller.new('tool', rootView);
-Controller.new('mouseoverlight', rootView);
-Controller.new('mousedownmultiselect', rootView); // 'mousedownselect');
-Controller.new('mousedownfocus', rootView);
-Controller.new('nav', rootView);
+Class.new('controller.indent', rootView);
+Class.new('controller.tool', rootView);
+Class.new('controller.mouseoverlight', rootView);
+Class.new('controller.mousedownmultiselect', rootView); // 'mousedownselect');
+Class.new('controller.mousedownfocus', rootView);
+Class.new('controller.nav', rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);

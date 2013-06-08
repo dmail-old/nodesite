@@ -96,9 +96,9 @@ Class.extend('controller', 'state', Class('controller').Node, {
 
 Object.eachPair(Class('view').states, function(name){
 	Class('controller').providers[name] = function(view){
-		return Class('controller').new('state', view, name);
+		return Class.new('controller.state', view, name);
 	};
 	Class('controller').providers[name + 's'] = function(view){
-		return Class('controller').new('state', view, name, true);
+		return Class.new('controller.state', view, name, true);
 	};
 });

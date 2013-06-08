@@ -18,7 +18,7 @@ Class.extend('view', Class('emitter'), {
 		Class('view').instances[this.id = Class('view').lastID++] = this;
 
 		// ListenerHandler call this.handlers over this.model events with this as context
-		this.modelEventsHandler = Class.new('listenerhandler', null, this.modelEvents, this);
+		this.modelEventsHandler = Class.new('listener', null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -48,7 +48,7 @@ Class.extend('view', Class('emitter'), {
 	},
 
 	getClassName: function(){
-		return Class.new('list', 'string', this.className);
+		return Class.new('list.string', this.className);
 	},
 
 	getAttributes: function(){

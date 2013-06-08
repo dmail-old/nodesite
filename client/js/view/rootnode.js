@@ -19,7 +19,7 @@ Class.extend('view', 'rootnode', Class('view').Node, {
 	},
 
 	getChildConstructor: function(){
-		return Class('view').subclasses.node;
+		return Class('view.node');
 	},
 
 	getChildrenElement: function(){
