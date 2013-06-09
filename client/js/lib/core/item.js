@@ -84,19 +84,19 @@ Item.define = function(name, object){
 	return object;
 };
 
-// Item.extend create an object starting from a copy of parent
+// Item.extend create an object starting from an instance of parent
 Item.extend = function(parent, name){
 	if( typeof parent == 'string' ){
 		parent = Item(parent);
 	}
 	if( '__name__' in parent ){
 		name = parent.__name__ + '.' + name;
-	} 
-
-	return this.define.apply(this, [name, Object.copy(parent)].concat(toArray(arguments, 2)));
+	}
+	
+	return this.define.apply(this, [name, Object.create(parent)].concat(toArray(arguments, 2)));
 };
 
-// return a copy of object calling it's constructor
+// return an instance of object calling it's constructor
 Item.create = function(object){
 	if( typeof object == 'string' ){
 		object = Item(object);
