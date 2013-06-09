@@ -44,7 +44,7 @@ Item.define('fileresponse', {
 
 	start: function(path){
 		var
-			file = Item.new('file', root + '/client/' + path),
+			file = Item.create('file', root + '/client/' + path),
 			extension = file.getExtension(),
 			acceptEncoding
 		;
@@ -216,7 +216,7 @@ Item.define('pageresponse', {
 			response.end();
 		}
 
-		var htmlFile = Item.new('file', root + '/app.html'), html;
+		var htmlFile = Item.create('file', root + '/app.html'), html;
 
 		try{
 			html = String(htmlFile.readSync());
@@ -398,7 +398,7 @@ Item.define('ajaxresponse', {
 	sendFile: function(filepath){
 		console.log('senfile', filepath);
 		this.response.request.parsedUrl.pathname = filepath;
-		return Item.new('fileresponse', this.response);
+		return Item.create('fileresponse', this.response);
 	},
 
 	error: function(e){
@@ -481,7 +481,7 @@ function findHandler(request, callback){
 
 	// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 	dirname = pathname.substr(0, slash);
-	file = Item.new('file', root + '/client/' + dirname);
+	file = Item.create('file', root + '/client/' + dirname);
 	file.isDir(function(isdir){ return callback(isdir ? 'file' : 'page'); });
 }
 
@@ -493,7 +493,7 @@ function handle(request, response){
 
 		if( Item.exists(name) ){
 			try{
-				Item.new(name, response);
+				Item.create(name, response);
 			}
 			catch(e){
 				response.writeHead(500, 'Internal server error');	

@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-Item.create('fx', 'chain', 'emitter', 'options', {
+Item.define('fx', {}, 'chain', 'emitter', 'options', {
 	options: {
 		fps: 60,
 		unit: false,

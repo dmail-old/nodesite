@@ -161,7 +161,7 @@ Item.extend('domrectangle', 'box', 'options', {
 		else{
 			fx.options.onComplete = callback.bind(this);
 			if( this.fx ){ this.fx.cancel(); }
-			this.fx = Item.new('fx.morph', this.frame, fx.options).start(fx.styles);
+			this.fx = Item.create('fx.morph', this.frame, fx.options).start(fx.styles);
 		}
 		return this;
 	},

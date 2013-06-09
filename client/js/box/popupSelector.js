@@ -25,7 +25,7 @@ Item.extend('selectorelement', 'popup', {
 	width: 200,
 
 	constructor: function(options){
-		this.popup = Item.new('popup');
+		this.popup = Item.create('popup');
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
 
 		Item('selectorelement').constructor.call(this, options);

@@ -37,7 +37,7 @@ document.html = document.documentElement;
 if( !('classList' in Element.prototype) ){
 	Object.defineProperty(Element.prototype, 'classList', function(){
 		var element = this;
-		var list = Item.new('list.string', this.className);
+		var list = Item.create('list.string', this.className);
 		list.update = function(){ element.className = this.toString(); };
 		
 		return list;

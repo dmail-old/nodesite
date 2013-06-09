@@ -57,7 +57,7 @@ Element.prototype.toQueryString = function(){
 
 var progressSupport = 'onprogress' in new XMLHttpRequest();
 
-Item.create('request', 'emitter', 'options', 'chain', {
+Item.define('request', {}, 'emitter', 'options', 'chain', {
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},

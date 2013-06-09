@@ -27,8 +27,8 @@ provides:
 
 var Item = window.Item = function(name){	
 	if( typeof name == 'string' ){
-		if( name in Item.constructors ){
-			name = Item.constructors[name];
+		if( name in Item.items ){
+			name = Item.items[name];
 		}
 		else{
 			console.trace();
@@ -39,7 +39,7 @@ var Item = window.Item = function(name){
 };
 
 Item.exists = function(name){
-	return name in Item.constructors;
+	return name in Item.items;
 };
 
 Item.is = function(name, object){
@@ -59,32 +59,32 @@ Item.complement = function(){
 	item.complement = Item.complement.bind(item.prototype);
 });
 
-Item.constructors = {};
+Item.items = {};
 
-// return constructor merged with arguments and giving him the name name
-Item.define = function(name, constructor){
-	constructor.implement = Item.implement;
+// return object giving him name & implement properties, merged with arguments
+Item.define = function(name, object){
+	object.implement = Item.implement;
 
 	var i = 2, j = arguments.length, arg;
 	for(;i<j;i++){
 		arg = arguments[i];
 		if( typeof arg == 'string' ) arg = Item(arg);
-		constructor.implement(arg);
+		object.implement(arg);
 	}
 
-	//constructor.__name__ = name;
-	Object.defineProperty(constructor, '__name__', {
+	//object.__name__ = name;
+	Object.defineProperty(object, '__name__', {
 		writable: true,
 		ennumerable: false,
 		value: name
 	});
 
-	this.constructors[name] = constructor;
+	this.items[name] = object;
 
-	return constructor;
+	return object;
 };
 
-// Item.extend suggest the Item inerits from an instance of the first argument 
+// Item.extend create an object starting from a copy of parent
 Item.extend = function(parent, name){
 	if( typeof parent == 'string' ){
 		parent = Item(parent);
@@ -93,19 +93,19 @@ Item.extend = function(parent, name){
 		name = parent.__name__ + '.' + name;
 	} 
 
-	var object = this.define.apply(this, [name, Object.copy(parent)].concat(toArray(arguments, 2)));
-	return object;
+	return this.define.apply(this, [name, Object.copy(parent)].concat(toArray(arguments, 2)));
 };
 
-// Item.create suggest the Item inerits from Object.prototype
-Item.create = function(name){
-	return this.extend.apply(this, [Object.prototype].concat(toArray(arguments)));
-};
+// return a copy of object calling it's constructor
+Item.create = function(object){
+	if( typeof object == 'string' ){
+		object = Item(object);
+	}
 
-Item.new = function(path){
-	var object = Item(path);
 	var instance = Object.create(object);
+
 	if( 'constructor' in instance ) instance.constructor.apply(instance, toArray(arguments, 1));
+
 	return instance;
 };
 

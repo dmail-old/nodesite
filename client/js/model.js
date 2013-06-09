@@ -1,7 +1,7 @@
 /* global */
 
 // model
-Item.create('model', 'emitter', {
+Item.define('model', {}, 'emitter', {
 	validationError: null,
 	cid: 0,
 
@@ -20,7 +20,7 @@ Item.create('model', 'emitter', {
 		var name = this.getModelItemName();
 
 		if( Item.is(name, data) ) return data;
-		return Item.new(name, data);		
+		return Item.create(name, data);		
 	},
 
 	parse: function(properties){
@@ -99,7 +99,7 @@ Item.define('servermodel', {
 	},
 
 	createAction: function(name, args){
-		var action = Item.new('action', this, name, args);
+		var action = Item.create('action', this, name, args);
 		return action;
 	},
 

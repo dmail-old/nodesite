@@ -96,9 +96,9 @@ Item.extend('controller.tree', 'state', {
 
 Object.eachPair(Item('viewstate').states, function(name){
 	Item('controller').providers[name] = function(view){
-		return Item.new('controller.tree.state', view, name);
+		return Item.create('controller.tree.state', view, name);
 	};
 	Item('controller').providers[name + 's'] = function(view){
-		return Item.new('controller.tree.state', view, name, true);
+		return Item.create('controller.tree.state', view, name, true);
 	};
 });

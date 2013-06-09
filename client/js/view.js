@@ -1,6 +1,6 @@
 /* global */
 
-Item.create('view', 'emitter', {
+Item.define('view', {}, 'emitter', {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -16,7 +16,7 @@ Item.create('view', 'emitter', {
 		this.constructor.instances[this.id = this.constructor.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = Item.new('listener', null, this.modelEvents, this);
+		this.modelListener = Item.create('listener', null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -53,7 +53,7 @@ Item.create('view', 'emitter', {
 	},
 
 	getClassName: function(){
-		return Item.new('list.string', this.className);
+		return Item.create('list.string', this.className);
 	},
 
 	getAttributes: function(){
