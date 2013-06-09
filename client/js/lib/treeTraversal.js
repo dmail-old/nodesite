@@ -1,4 +1,4 @@
-window.TreeTraversal = {
+Item.define('treetraversal', {
 	// call fn on every child of the element, returns true to break the loop
 	crossChild: function(fn, bind){
 		var children = this.children, i = 0, j = children.length;
@@ -69,7 +69,7 @@ window.TreeTraversal = {
 	crossSibling: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
 	}
-};
+});
 
 /*
 
@@ -142,9 +142,9 @@ Object.defineProperty(Element.prototype, 'lastNode', {
 in case we want to add it to any Item implementing TreeStructure we have to add 'firstChild', 'lastChild', 'previousSibling', 'nextSibling'
 to be able to use those methods
 
-NOTE: calling Class.implement(TreeStructure) currently call Object.mergePair on object
+NOTE: calling Item.implement(TreeStructure) currently call Object.mergePair on object
 it doesn't copy properties defined by Object.defineProperty
-Object.create should be used for that or TreeStructure have to be a Class with prototype and not and object
+Object.create should be used for that or TreeStructure have to be a Item with prototype and not and object
 if we want to copy those hidden properties we have to do it manually
 
 Object.defineProperties(TreeStructure, {

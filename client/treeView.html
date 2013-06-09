@@ -8,16 +8,16 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = Class.new('model.node', treeData);
-var view = Class.new('view.node', model);
-var rootView = Class.new('view.rootnode');
+var model = Item.new('model.tree.node', treeData);
+var view = Item.new('view.tree.node', model);
+var rootView = Item.new('view.tree.root');
 
-Class.new('controller.indent', rootView);
-Class.new('controller.tool', rootView);
-Class.new('controller.mouseoverlight', rootView);
-Class.new('controller.mousedownmultiselect', rootView); // 'mousedownselect');
-Class.new('controller.mousedownfocus', rootView);
-Class.new('controller.nav', rootView);
+Item.new('controller.tree.indent', rootView);
+Item.new('controller.tree.tool', rootView);
+Item.new('controller.tree.mouseoverlight', rootView);
+Item.new('controller.tree.mousedownmultiselect', rootView); // 'mousedownselect');
+Item.new('controller.tree.mousedownfocus', rootView);
+Item.new('controller.nav', rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);
@@ -28,7 +28,7 @@ view.children[2].expand();
 view.children[3].expand();
 
 /*
-var FileModel = new Class({
+var FileModel = new Item({
 	Extends: NodeModel,
 	Implements: Model.serverMethods,
 
@@ -49,7 +49,7 @@ NodeView.prototype.modelEvents.send = function(){
 	// on n'affiche pas le loader tout de suite, uniquement si l'action dure
 	this.timeout = setTimeout(function(){
 		delete this.timeout;
-		this.getDom('li').addClass('loading');
+		this.getDom('li').addItem('loading');
 	}.bind(this), 300);
 };
 
@@ -58,7 +58,7 @@ NodeView.prototype.modelEvents.complete = function(){
 		clearTimeout(this.timeout);
 		delete this.timeout;
 	}
-	this.getDom('li').removeClass('loading');
+	this.getDom('li').removeItem('loading');
 };
 
 var imgA = new FileModel('/img/aa');

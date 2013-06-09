@@ -1,6 +1,6 @@
 /* global */
 
-Class.extend('controller', 'mousedownselect', Class('controller').Node, {
+Item.extend('controller.tree', 'mousedownselect', {
 	requires: 'selected',
 	events: {
 		mousedown: function(view, e){
@@ -11,5 +11,15 @@ Class.extend('controller', 'mousedownselect', Class('controller').Node, {
 				this.selected.remove(this.selected.current, e);
 			}
 		}
+	},
+
+	setElement: function(element){
+		if( element ) element.addClass('unselectable');
+		return Item('controller.tree').setElement.call(this, element);
+	},
+
+	unsetElement: function(){
+		if( this.element ) this.element.removeClass('unselectable');
+		return Item('controller.tree').unsetElement.call(this);
 	}
 });

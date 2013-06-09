@@ -14,8 +14,6 @@ function handleError(error){
 process.on('uncaughtException', handleError);
 setTimeout(function(){}, 1000 * 30);
 
-
-
 global.root = process.cwd();
 global.config = require('./config.js');
 

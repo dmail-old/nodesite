@@ -108,17 +108,17 @@ Array.prototype.clone = function(){
 };
 
 Object.append = function(object){
-	Array.eachObject(toArray(arguments, 1), 'eachPair', Object.setPair, object);
+	Array.eachObject(toArray(arguments, 1), 'eachOwnPair', Object.setPair, object);
 	return object;
 };
 
 Object.complete = function(object){
-	Array.eachObject(toArray(arguments, 1), 'eachPair', Object.completePair, object);
+	Array.eachObject(toArray(arguments, 1), 'eachOwnPair', Object.completePair, object);
 	return object;
 };
 
 Object.merge = function(object){
-	Array.eachObject(toArray(arguments, 1), 'eachPair', Object.mergePair, object);
+	Array.eachObject(toArray(arguments, 1), 'eachOwnPair', Object.mergePair, object);
 	return object;
 };
 
@@ -147,6 +147,28 @@ if( !Object.create ){
 
 if( 'getOwnPropertyNames' in Object ){
 
+	Object.setPair = function(key, value, object){
+		if( object ){
+			Object.defineProperty(this, key, Object.getOwnPropertyDescriptor(object, key));
+		}
+		else{
+			this[key] = value;
+		}
+	};
+
+	Object.setPairClone = function(key, value, object){
+		if( object ){
+			var descriptor = Object.getOwnPropertyDescriptor(object, key);
+			if( 'value' in descriptor ) descriptor.value = Object.clone(descriptor.value);
+			Object.defineProperty(this, key, descriptor);
+		}
+		else{
+			this[key] = Object.clone(value);
+		}
+	};
+
+	Object.ownKeys = Object.getOwnPropertyNames;
+
 	Object.eachPair = function(object, fn, bind){
 		var names = Object.getOwnPropertyNames(object), name, i, j, parentNames;
 
@@ -172,6 +194,7 @@ if( 'getOwnPropertyNames' in Object ){
 		}
 	};
 
+	/*
 	Object.getPropertyOwner = function(object, key){
 		while( object ){
 			if( Object.prototype.hasOwnProperty.call(object, key) ) return object;
@@ -184,62 +207,8 @@ if( 'getOwnPropertyNames' in Object ){
 		object = Object.getPropertyOwner(object, key);
 		return object ? Object.getOwnPropertyDescriptor(object, key) : null;
 	};
-
-	Object.setPair = function(key, value, object){
-		if( object ){
-			Object.defineProperty(this, key, Object.getOwnPropertyDescriptor(object, key));
-		}
-		else{
-			this[key] = value;
-		}
-	};
-
-	Object.setPairClone = function(key, value, object){
-		if( object ){
-			var descriptor = Object.getOwnPropertyDescriptor(object, key);
-			if( 'value' in descriptor ) descriptor.value = Object.clone(descriptor.value);
-			Object.defineProperty(this, key, descriptor);
-		}
-		else{
-			this[key] = Object.clone(value);
-		}
-	};
-
-	Object.ownKeys = Object.getOwnPropertyNames;
+	*/
 }
-
-/*
-
-name: Implement
-
-provides:
-	Object.implement, Object.complement,
-	String.implement, String.complement,
-	Number.implement, Number.complement,
-	Function.implement, Function.complement,
-	Array.implement, Array.complement
-	Function.prototype.implement, Function.prototype.complement
-*/
-
-Object.implement = function(){
-	Array.eachObject(arguments, 'eachPair', Object.mergePair, this.prototype);
-	return this;
-};
-
-Object.complement = function(){
-	Array.eachObject(arguments, 'eachPair', Object.completePair, this.prototype);
-	return this;
-};
-
-[String, Number, Function, Array].forEach(function(item){
-	item.implement = Object.implement.bind(item);
-	item.complement = Object.complement.bind(item);
-});
-
-Function.implement({
-	implement: Object.implement,
-	complement: Object.complement
-});
 
 /*
 

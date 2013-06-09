@@ -1,6 +1,6 @@
-/* global TreeStructure, TreeTraversal, TreeFinder */
+/* global */
 
-Class.extend('view', 'selector', TreeStructure, TreeTraversal, TreeFinder, {
+Item.extend('view.tree', 'selector', {
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
@@ -10,29 +10,12 @@ Class.extend('view', 'selector', TreeStructure, TreeTraversal, TreeFinder, {
 	minheight: 24,
 	size: 4,
 
-	constructor: function(){
-		this.initChildren();
-		Class('view').prototype.constructor.call(this);
-	},
-
-	oninsertchild: function(child){
-		var childElement = this.getChildElement();
-
-		if( childElement ){
-			child.insertElement(childElement, child.getNextSibling(), true);
-		}
-	},
-
-	onremovechild: function(child){
-		child.removeElement();
-	},
-
 	getChildElement: function(){
 		return this.getDom('root');
 	},
 
-	getChildConstructor: function(){
-		return Class('view.option');
+	getChildItemName: function(){
+		return 'view.tree.option';
 	},
 
 	getHTML: function(){

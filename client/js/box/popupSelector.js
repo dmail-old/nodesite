@@ -15,7 +15,7 @@ FIX
 
 */
 
-Class.extend('selectorelement', 'popup', {
+Item.extend('selectorelement', 'popup', {
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\
@@ -25,16 +25,16 @@ Class.extend('selectorelement', 'popup', {
 	width: 200,
 
 	constructor: function(options){
-		this.popup = new Popup();
+		this.popup = Item.new('popup');
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
 
-		Class('selectorelement').prototype.constructor.call(this, options);
+		Item('selectorelement').constructor.call(this, options);
 
 		this.setListElement(this.popup.element);
 	},
 
 	destroy: function(){
-		Class('selectorelement').prototype.destroy.call(this);
+		Item('selectorelement').destroy.call(this);
 		this.popup.destroy();
 	},
 

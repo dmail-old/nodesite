@@ -6,15 +6,15 @@ name: StringList
 
 description: StringList is used to manipulate a list of string separated by a space (similar to native classList)
 
-require: String, Array, Class
+require: String, Array, Item
 
 */
 
-Class.extend('list', 'string', {
+Item.extend('list', 'string', {
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) Class('list').prototype.constructor.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) Item('list').constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},

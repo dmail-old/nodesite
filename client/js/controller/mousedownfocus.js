@@ -15,7 +15,7 @@ faire la largeur de son contenu
 
 */
 
-Class.extend('controller', 'mousedownfocus', Class('controller').Node, {
+Item.extend('controller.tree', 'mousedownfocus', {
 	requires: 'focused',
 	events: {
 		'mousedown': function(view, e){

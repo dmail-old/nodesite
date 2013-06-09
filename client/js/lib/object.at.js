@@ -8,66 +8,76 @@ provides: Object.examine, Object.follow, Object.setAt, Object.getAt, Object.appl
 
 */
 
-(function(){
+Object.cache = {};
 
-var cache = {}, hasOwnProperty = Object.prototype.hasOwnProperty;
+RegExp.alphanumdot = /^[\w\.]*$/;
 
 Object.append(Object, {
 	examine: function(path){
 		if( !path.match ) console.trace(path);
-		
-		var cached = cache[path];
-		if( cached ) return cached;
-		// if path contains nothing else than '_' or alphanumeric chars
-		if( !path.match(/\W/) ) return cache[path] = path;
-		// if path contains anyting else than '_', '.' or alphanumeric chars we assume the path contains function call
-		if( path.match(/[^\w\.]/) ) return cache[path] = new Function('object', 'return object'+(path.charAt(0) != '[' ? '.'+path : path)+';');
-		// else the path has the form 'name1.name2.name3'
-		return cache[path] = path.split('.');
+
+		var cache = Object.cache, cached = cache[path];
+
+		if( cached ){
+			return cached;
+		}
+		// if path contains only alphanumeric chars (0-9,a-z,_)
+		if( RegExp.alphanum.test(path) ){
+			return cache[path] = path;
+		}
+		// the path has the form 'name1.name2.name3'
+		if( RegExp.alphanumdot.test(path) ){
+			return cache[path] = path.split('.');
+		}
+		// the path contains somethign else than alphanum or '.' we assume the path contains function call
+		return cache[path] = new Function('object', 'return object'+(path.charAt(0) != '[' ? '.' + path : path) + ';');
 	},
 	
-	follow: function(object, path){
-		if( object == null ) return undefined;
-		
+	follow: function(object, path){		
 		switch(typeof path){
-			case 'string':
-				return object.get ? object.get(path) : object[path];
-			case 'object':
-				var i = 0, j = path.length;
-				for(;i<j;i++){
-					if( !hasOwnProperty.call(object, path[i]) ) return undefined;
-					object = Object.follow(object, path[i]);
-				}
-				return object;
-			case 'function': return path(object);
-			default: return undefined;
+		case 'string':
+			return object.get ? object.get(path) : object[path];
+		case 'object':
+			if( object == null ) return undefined;
+
+			var i = 0, j = path.length, part;
+			for(;i<j;i++){
+				part = path[i];
+				if( part in object ) object = Object.follow(object, part);
+				else return undefined;					
+			}
+			return object;
+		case 'function':
+			return path(object);
+		default:
+			return undefined;
 		}
 	},
 	
-	setAt: function(object, path, value){		
+	setAt: function(object, path, value){
 		path = Object.examine(path);
 		
 		switch(typeof path){
-			case 'string':
-				object[path] = value;
+		case 'string':
+			object[path] = value;
 			break;
-			case 'object':
-				var source = object;
-				var i = 0, j = path.length, key;
+		case 'object':
+			var source = object;
+			var i = 0, j = path.length, key;
+			
+			for(;i<j;i++){
+				key = path[i];
 				
-				for(;i<j;i++){
-					key = path[i];
-					
-					if( i == j-1 ){
-						object[key] = value;
-					}
-					else{
-						if( !hasOwnProperty.call(object, key) ) object[key] = {};
-						object = object[key];
-					}
+				if( i == j-1 ){
+					object[key] = value;
 				}
-				
-				object = source;
+				else{
+					if( !Object.prototype.hasOwnProperty.call(object, key) ) object[key] = {};
+					object = object[key];
+				}
+			}
+			
+			object = source;
 			break;			
 		}
 		
@@ -87,8 +97,6 @@ Object.append(Object, {
 		return Object.applyAt(object, path, bind, toArray(arguments, 3));
 	}
 });
-
-})();
 
 /**
 
@@ -115,14 +123,21 @@ orderBy('name', 'index', -1, function(a){ return a.name.toLowerCase(); }, 'getCo
 */
 
 Array.prototype.orderBy = function(){
-	var i = n = 0, j = arguments.length, fns = [], orders = [], arg;
+	var i, n, j = arguments.length, fns = [], orders = [], arg;
+
+	i = n = 0;
 	
 	for(;i<j;i++){
 		arg = arguments[i];
 		switch(typeof arg){
-			case 'string': arg = function(path, item){ return Object.follow(item, path); }.curry(Object.examine(arg));
-			case 'function': fns[n++] = arg; break;
-			case 'number': if( n ) orders[n-1] = arg; break;
+		case 'string':
+			arg = function(path, item){ return Object.follow(item, path); }.curry(Object.examine(arg));
+		case 'function':
+			fns[n++] = arg;
+			break;
+		case 'number':
+			if( n ) orders[n-1] = arg;
+			break;
 		}
 	}
 		
@@ -137,7 +152,7 @@ Array.prototype.orderBy = function(){
 			if( va < vb ) return -(orders[i] || 1);
 		}
 		return 0;
-	};
+	}
 	
 	return this.sort(compare);
 };

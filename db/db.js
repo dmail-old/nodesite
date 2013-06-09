@@ -58,7 +58,7 @@ var DB = {
 	getTable: function(name){
 		var table = this.tables[name];
 		if( !table ){
-			table = this.tables[name] = Class.new('table', name);
+			table = this.tables[name] = Item.new('table', name);
 		}
 		return table;
 	},
@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = Class.extend('table', Class('emitter'), {
+var Table = Item.create('table', 'emitter', {
 	methods: {},
 	state: 'closed',
 	lockers: 0,
@@ -294,8 +294,8 @@ var Table = Class.extend('table', Class('emitter'), {
 });
 
 Table.defineAction = function(name, method){
-	Table.prototype.methods[name] = method;
-	Table.prototype[name] = function(){
+	Table.methods[name] = method;
+	Table[name] = function(){
 		this.demand(name, arguments);
 	};
 };
@@ -788,7 +788,7 @@ Table.addValidator('match', function(key, value, match){ return match.call(this,
 Table.addValidator('pattern', function(key, value, pattern){ console.colorAll('pattern', pattern); return pattern.test(value); });
 Table.addValidator('min', function(key, value, min){ return value >= min; });
 Table.addValidator('max', function(key, value, max){ return value <= max; });
-Table.addValidator('unique', Table.prototype.isFree);
+Table.addValidator('unique', Table.isFree);
 Table.addValidator('ref', {
 	async: true,
 	// je vérifie que la référenc existe

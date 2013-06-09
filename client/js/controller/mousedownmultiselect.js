@@ -1,6 +1,6 @@
 /* global */
 
-Class.extend('controller', 'mousedownmultiselect', Class('controller').Node, {
+Item.extend('controller.tree', 'mousedownmultiselect', {
 	requires: 'multiselection',
 	events: {
 		'mousedown': function(view, e){
@@ -26,5 +26,15 @@ Class.extend('controller', 'mousedownmultiselect', Class('controller').Node, {
 				this.multiselection.selectAll(e);
 			}
 		}
+	},
+
+	setElement: function(element){
+		if( element ) element.addClass('unselectable');
+		return Item('controller.tree').setElement.call(this, element);
+	},
+
+	unsetElement: function(){
+		if( this.element ) this.element.removeClass('unselectable');
+		return Item('controller.tree').unsetElement.call(this);
 	}
 });

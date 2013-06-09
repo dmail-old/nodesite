@@ -4,35 +4,28 @@ name: Emitter
 
 description: Emitter provide methods to emit and listen for events
 
-require: Class, Object
+require: Item, Object
 
 */
 
-Class.extend('emitter', {
+Item.define('emitter', {
 	$events: {},
 
+	constructor: function(bind){
+		this.bind = bind;
+	},
+
 	getEvents: function(){
-		if( !this.hasOwnProperty('$events') ) this.$events = Object.clone(this.$events);
-		return this.$events;
+		if( this.hasOwnProperty('$events') ){
+			return this.$events;
+		}
+		else{
+			return this.$events = Object.clone(this.$events);
+		}		
 	},
 
 	deleteEvents: function(){
 		delete this.$events;
-	},
-
-	onaddlistener: function(){
-		this.applyListeners('addListener', arguments);
-	},
-
-	onremovelistener: function(){
-		this.applyListeners('removeListener', arguments);
-	},
-
-	onapplylisteners: function(name){
-		this.applyListeners('applyListener', arguments);
-		if( name != 'addListener' && name != 'removeListener' && name != '*' ){
-			this.applyListeners('*', arguments);
-		}
 	},
 
 	listeners: function(name, create){
@@ -48,7 +41,7 @@ Class.extend('emitter', {
 		if( typeof name != 'string' ) throw new TypeError('string expected for event name');
 		if( typeof listener != 'function' && typeof listener != 'object' ){ console.trace(); throw new TypeError('listener should be a function or object'); }
 
-		this.onaddlistener.apply(this, arguments);
+		if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
 		this.listeners(name, true).push(listener);
 
 		return this;
@@ -78,7 +71,7 @@ Class.extend('emitter', {
 				item = list[i];
 
 				if( item === listener || item.__listener === listener ){
-					this.onremovelistener.apply(this, arguments);
+					if( this.onremovelistener ) this.onremovelistener.apply(this, arguments);
 				}
 				else{
 					retain.push(item);
@@ -106,17 +99,23 @@ Class.extend('emitter', {
 
 	applyListener: function(listener, name, args){
 		if( typeof listener == 'object' ) return this.applyHandler(listener, name, args);
-		else return listener.apply(this, args);
+		else return listener.apply(this.bind || this, args);
 	},
 
 	applyHandler: function(handler, name, args){
 		return handler.handleListener(name, args);
 	},
 
+	onapplylisteners: function(name, args){
+		if( name != '*' && name != 'addListener' && name != 'removeListener' ){
+			this.applyListeners('*', arguments);
+		}
+	},
+
 	applyListeners: function(name, args){
 		var listeners = this.listeners(name), i, j;
 
-		if( name != 'applyListener' ) this.onapplylisteners.apply(this, arguments);
+		if( this.onapplylisteners && name != 'applyListeners' ) this.onapplylisteners.apply(this, arguments);
 
 		if( listeners ){
 			i = -1;

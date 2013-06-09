@@ -14,7 +14,7 @@ function suggest(title, message, choices, callback){
 			'class': 'vx',
 			html: choice.value,
 			onclick: function(e){
-				var popup = Class('domrectangle.box').getInstanceFromElement(this);
+				var popup = Item('domrectangle.box').getInstanceFromElement(this);
 				popup.done(e);
 				callback.call(popup, choice);
 			}
@@ -26,7 +26,7 @@ function suggest(title, message, choices, callback){
 		return button;
 	});
 	
-	var popup = Class.new('domrectangle.box.popup', {
+	var popup = Item.new('domrectangle.box.popup', {
 		title: title,
 		properties: {
 			'class': 'box popup big valid'

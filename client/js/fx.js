@@ -5,7 +5,7 @@
 
 name: Fx
 
-description: Contains the basic animation logic to be extended by all other Fx Classes.
+description: Contains the basic animation logic to be extended by all other Fx Itemes.
 
 license: MIT-style license.
 
@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-Class.extend('fx', Chain, Class('emitter'), Options, {
+Item.create('fx', 'chain', 'emitter', 'options', {
 	options: {
 		fps: 60,
 		unit: false,
@@ -62,7 +62,7 @@ Class.extend('fx', Chain, Class('emitter'), Options, {
 	},
 
 	compute: function(from, to, delta){
-		return Class('fx').compute(from, to, delta);
+		return Item('fx').compute(from, to, delta);
 	},
 
 	check: function(){
@@ -88,7 +88,7 @@ Class.extend('fx', Chain, Class('emitter'), Options, {
 		this.time = null;
 		this.transition = this.getTransition();
 		var frames = this.options.frames, fps = this.options.fps, duration = this.options.duration;
-		this.duration = Class('fx').Durations[duration] || duration.toInt();
+		this.duration = Item('fx').Durations[duration] || duration.toInt();
 		this.frameInterval = 1000 / fps;
 		this.frames = frames || Math.round(this.duration / this.frameInterval);
 		this.emit('start', this.subject);
@@ -139,7 +139,7 @@ Class.extend('fx', Chain, Class('emitter'), Options, {
 	}
 });
 
-Object.append(Class('fx'), {
+Object.append(Item('fx'), {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},

@@ -75,7 +75,7 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = Class.extend('domrectangle', Class('emitter'), Bound, {
+var DOMRectangle = Item.create('domrectangle', 'emitter', 'bound', {
 	name: 'domrectangle',
 	options: {
 		axis: 'xy',
@@ -86,7 +86,7 @@ var DOMRectangle = Class.extend('domrectangle', Class('emitter'), Bound, {
 	},
 
 	constructor: function(element, autodestroy){
-		Bound.prototype.constructor.call(this);
+		Item('bound').constructor.call(this);
 
 		var instance = element.storage.get(this.name);
 		if( instance ){
@@ -100,7 +100,7 @@ var DOMRectangle = Class.extend('domrectangle', Class('emitter'), Bound, {
 
 		this.element.storage.set(this.name, this);
 
-		this.scroller = new Fx.Scroll({
+		this.scroller = Item.new('fx.scroll', {
 			link: 'ignore',
 			transition: 'linear',
 			wheelStops: true,
@@ -583,18 +583,18 @@ DOMRectangle.retrieveInstance = function(e){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target;
 
-			if( element ) instance = Class.new('domrectangle', element, true);
+			if( element ) instance = Item.new('domrectangle', element, true);
 		}
 		else if( e.target.hasClass('vector') ){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target.parentNode;
 
-			if( element ) instance = Class.new('domrectangle', element, true);
+			if( element ) instance = Item.new('domrectangle', element, true);
 		}
 		else if( e.type == 'keydown' && e.target.hasClass('selectionRectangle') ){
 			element = e.target;
 
-			if( element ) instance = Class.new('domrectangle', element, true);
+			if( element ) instance = Item.new('domrectangle', element, true);
 		}
 	}
 
@@ -609,10 +609,10 @@ DOMRectangle.startInstanceFromEvent = function(e){
 document.on('mousedown focus keydown', DOMRectangle.startInstanceFromEvent, true);
 
 ['left', 'top', 'width', 'height'].forEach(function(name){
-	DOMRectangle.prototype['getMin' + name.capitalize()] = DOMRectangle.prototype.getLimit.curry(name, 'min');
-	DOMRectangle.prototype['getMax' + name.capitalize()] = DOMRectangle.prototype.getLimit.curry(name, 'max');
-	DOMRectangle.prototype['get' + name.capitalize()] = DOMRectangle.prototype.get.curry(name);
-	DOMRectangle.prototype['set' + name.capitalize()] = DOMRectangle.prototype.set.curry(name);
+	DOMRectangle['getMin' + name.capitalize()] = DOMRectangle.getLimit.curry(name, 'min');
+	DOMRectangle['getMax' + name.capitalize()] = DOMRectangle.getLimit.curry(name, 'max');
+	DOMRectangle['get' + name.capitalize()] = DOMRectangle.get.curry(name);
+	DOMRectangle['set' + name.capitalize()] = DOMRectangle.set.curry(name);
 });
 
 // scroll handling

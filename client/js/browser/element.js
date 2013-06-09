@@ -20,8 +20,8 @@ document.newElement = function(tag, props){
 };
 
 Object.append(Element, {
-	implement: Object.implement.bind(Element),
-	complement: Object.complement.bind(Element)
+	implement: Item.implement.bind(Element.prototype),
+	complement: Item.complement.bind(Element.prototype)
 });
 
 String.prototype.toElement = function(){
@@ -37,7 +37,7 @@ document.html = document.documentElement;
 if( !('classList' in Element.prototype) ){
 	Object.defineProperty(Element.prototype, 'classList', function(){
 		var element = this;
-		var list = Class.new('list.string', this.className);
+		var list = Item.new('list.string', this.className);
 		list.update = function(){ element.className = this.toString(); };
 		
 		return list;

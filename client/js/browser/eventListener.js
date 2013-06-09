@@ -1,4 +1,4 @@
-Class.extend('listener', 'event', {
+Item.extend('listener', 'event', {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -22,5 +22,5 @@ Class.extend('listener', 'event', {
 	}
 });
 
-delete Class('listener.event').prototype.handleListener;
-delete Class('listener.event').prototype.applyHandler;
+delete Item('listener.event').handleListener;
+delete Item('listener.event').applyHandler;

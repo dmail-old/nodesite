@@ -1,6 +1,4 @@
-/* global */
-
-Class.extend('view', 'node', Class('view').Node, Class('view').State, {
+Item.extend('view.tree', 'node', 'viewstate', {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {
@@ -9,15 +7,8 @@ Class.extend('view', 'node', Class('view').Node, Class('view').State, {
 		}
 	},
 
-	constructor: function(model){
-		// this.treeEmitter = new TreeEmitter(this);
-		// this.on('*', function(name, args){
-		// 	args = [this].concat(args);
-		// 	this.treeEmitter.applyListeners(name, args);
-		// });
-
-		this.initChildren();
-		Class('view').prototype.constructor.apply(this, arguments);
+	getChildrenElement: function(){
+		return this.getDom('ul');
 	},
 
 	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
@@ -26,7 +17,7 @@ Class.extend('view', 'node', Class('view').Node, Class('view').State, {
 	},
 
 	getClassName: function(){
-		var className = Class('view').prototype.getClassName.call(this);
+		var className = Item('view.tree').getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');
@@ -50,16 +41,21 @@ Class.extend('view', 'node', Class('view').Node, Class('view').State, {
 	},
 
 	getDom: function(what){
+		var dom;
+
 		switch(what){
 		case 'li':
 			return this.element;
 		case 'ul':
 		case 'div':
-			return this.getDom('li').getChild(what);
+			dom = this.getDom('li');
+			return dom ? dom.getChild(what) : null;
 		case 'name':
-			return this.getDom('div').getChild('span');
+			dom = this.getDom('div');
+			return dom ? dom.getChild('span') : null;
 		default:
-			return this.getDom('div').getChild(what);
+			dom = this.getDom('div');
+			return dom ? dom.getChild(what) : null;
 		}
 	},
 

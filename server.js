@@ -28,7 +28,7 @@ global.Path = require('path');
 global.config = require('./config.js');
 global.lang = {};
 
-['util', 'object', 'string', 'function', 'array', 'class'].forEach(function(name){
+['util', 'object', 'item', 'string', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/lib/core/' + name);
 });
 
@@ -53,7 +53,7 @@ require(root + '/require/fs.extra.js');
 global.File = require(root + '/require/file.js');
 global.FileInfo = require(root + '/require/fileinfo.js');
 global.logger = require(root + '/require/logger.js');
-global.DB = require(root + '/db/db.js');
+//global.DB = require(root + '/db/db.js');
 
 var http = require('http');
 var Crypto = require('crypto');
@@ -111,11 +111,11 @@ Error.stackTraceLimit = 20;
 String.defineType('name', {color: 'magenta', font: 'bold'});
 String.defineType('path', {color: 'magenta', font: 'bold'});
 
-DB.start();
+/*DB.start();
 var User = DB.getTable('user');
 var Players = DB.getTable('players');
 var Items = DB.getTable('items');
-var PlayerItems = DB.getTable('players.items');
+var PlayerItems = DB.getTable('players.items');*/
 
 // User.read(function(){ console.log(arguments); });
 
@@ -173,7 +173,7 @@ var Server = {
 	}
 };
 
-var Client = new Class({
+var Client = Item.define('client', {
 	constructor: function(socket){
 		// console.log(socket.handshake.headers.cookie);
 		// grace au cookie de session, s'il existe on restaureras le compte de l'user

@@ -1,9 +1,9 @@
 /* global */
 
-Class.extend('controller', 'nav', Class('controller').Node, {
-	requires: ['focused', 'visibles'],
+Item.extend('controller', 'nav', {
+	requires: ['focused', 'tree.visibles'],
 	events: {
-		'keydown': function(view, e){
+		'keydown': function(e){
 			// need String(e.key) because the 0-9 key return numbers
 			var key = String(e.key), method;
 
@@ -16,7 +16,7 @@ Class.extend('controller', 'nav', Class('controller').Node, {
 
 			if( method ){
 				this.currentView = this.focused.get();
-				this.list = this.visibles.get();
+				this.list = this['tree.visibles'].get();
 				this.target = null;
 
 				// no currentView -> naviguate to home view
@@ -50,29 +50,29 @@ Class.extend('controller', 'nav', Class('controller').Node, {
 
 		'right': function(e){
 			if( !this.currentView.hasClass('expanded') ){
-				this.currentView.removeClass('expanded', e);
+				this.currentView.addClass('expanded', e);
 			}
 			else{
-				this.target = this.currentView.getChild(Class('view').isTargetable);
+				this.target = this.currentView.getChild(this.isEnabled);
 			}
 		},
 
 		'home': function(){
-			this.target = this.list.find(Class('view').isTargetable, 'right');
+			this.target = this.list.find(this.isEnabled, 'right');
 		},
 
 		'end': function(){
-			this.target = this.list.find(Class('view').isTargetable, 'left');
+			this.target = this.list.find(this.isEnabled, 'left');
 		},
 
 		'up': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(Class('view').isTargetable, 'left', index, this.loop);
+			this.target = this.list.find(this.isEnabled, 'left', index, this.loop);
 		},
 
 		'down': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(Class('view').isTargetable, 'right', index, this.loop);
+			this.target = this.list.find(this.isEnabled, 'right', index, this.loop);
 		},
 
 		'pageup': function(){
@@ -80,7 +80,7 @@ Class.extend('controller', 'nav', Class('controller').Node, {
 			var index = this.list.indexOf(view);
 			var from = Math.max(index - this.getPageCount(view), 0) - 1;
 
-			this.target = this.list.find(Class('view').isTargetable, 'right', from, index);
+			this.target = this.list.find(this.isEnabled, 'right', from, index);
 		},
 
 		'pagedown': function(){
@@ -88,29 +88,34 @@ Class.extend('controller', 'nav', Class('controller').Node, {
 			var index = this.list.indexOf(view);
 			var from = Math.min(index + this.getPageCount(view), this.list.length - 1 ) + 1;
 
-			this.target = this.list.find(Class('view').isTargetable, 'left', from, index);
+			this.target = this.list.find(this.isEnabled, 'left', from, index);
 		},
 
 		'*': function(e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
 			if( e.control ) return;
 
+			var self = this;
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return Class('view').isTargetable(view) && Class('view').matchLetter(view, e.key);
+				return self.isEnabled(view) && Item('view').matchLetter(view, e.key);
 			}, 'right', index, true);
 		}
+	},
+
+	isEnabled: function(view){
+		return !view.hasClass('disabled');
 	},
 
 	go: function(view, e){
 		if( view ){
 			if( e && !e.control ){
-				if( this.view.controllers.selection ){
-					this.view.controllers.selection.add(view, e);
+				if( this.view.controllers['controller.multiselection'] ){
+					this.view.controllers['controller.multiselection'].add(view, e);
 				}
-				else if( this.view.controllers.multiselection ){
-					this.view.controllers.multiselection.add(view, e);
+				else if( this.view.controllers['controller.multiselection'] ){
+					this.view.controllers['controller.multiselection'].add(view, e);
 				}
 			}
 
@@ -138,13 +143,7 @@ Class.extend('controller', 'nav', Class('controller').Node, {
 	}
 });
 
-RegExp.alphanum = /[a-zA-Z0-9]/;
-
-Class('view').isTargetable = function(view){
-	return !view.hasClass('disabled');
-};
-
-Class('view').matchLetter = function(view, letter){
+Item('view').matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };

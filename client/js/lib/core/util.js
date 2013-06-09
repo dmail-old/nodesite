@@ -24,3 +24,4 @@ Function.replacer = function(key, value){
 };
 
 RegExp.SPACE = /\s+/;
+RegExp.alphanum = /^[a-zA-Z0-9_]*$/;

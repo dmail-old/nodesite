@@ -1,6 +1,6 @@
 /* global */
 
-Class.extend('controller', 'adapt', {
+Item.extend('controller', 'adapt', {
 	events: {
 		'view:change:name': 'adapt',
 		'view:insertElement': 'adapt',

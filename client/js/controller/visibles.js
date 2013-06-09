@@ -1,6 +1,6 @@
 /* global */
 
-Class.extend('controller', 'visibles', Class('controller').Node, {
+Item.extend('controller.tree', 'visibles', {
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);
@@ -28,27 +28,8 @@ Class.extend('controller', 'visibles', Class('controller').Node, {
 	},
 	visibles: [],
 
-	changeVisibility: function(view, hidden){
-		var prev, next, parent = view.parentNode;
-
-		if( parent ){
-			prev = view.getPrevSibling(Class('view').isVisible);
-			next = view.getNextSibling(Class('view').isVisible);
-
-			if( prev && !next ) prev.toggleClass('last', hidden);
-			else if( next && !prev ) next.toggleClass('first', hidden);
-			view.toggleClass('first', Boolean(prev) == Boolean(hidden));
-			view.toggleClass('last', Boolean(next) == Boolean(hidden));
-
-			// ajout d'un enfant visible
-			if( !hidden ) parent.removeClass('empty');
-			// suppression du dernier enfant visible
-			else if( !prev && !next ) parent.addClass('empty');
-		}
-
-		if( this.shouldBeVisible(view) ){
-			this.updateVisibles();
-		}
+	isVisible: function(view){
+		return !view.hasClass('hidden');
 	},
 
 	/*
@@ -65,6 +46,29 @@ Class.extend('controller', 'visibles', Class('controller').Node, {
 		if( parent.hasClass('expanded') && this.visibles.contains(parent) ) return true;
 
 		return false;
+	},
+
+	changeVisibility: function(view, hidden){
+		var prev, next, parent = view.parentNode;
+
+		if( parent ){
+			prev = view.getPrevSibling(this.isVisible);
+			next = view.getNextSibling(this.isVisible);
+
+			if( prev && !next ) prev.toggleClass('last', hidden);
+			else if( next && !prev ) next.toggleClass('first', hidden);
+			view.toggleClass('first', Boolean(prev) == Boolean(hidden));
+			view.toggleClass('last', Boolean(next) == Boolean(hidden));
+
+			// ajout d'un enfant visible
+			if( !hidden ) parent.removeClass('empty');
+			// suppression du dernier enfant visible
+			else if( !prev && !next ) parent.addClass('empty');
+		}
+
+		if( this.shouldBeVisible(view) ){
+			this.updateVisibles();
+		}
 	},
 
 	updateVisibles: function(){
@@ -92,7 +96,3 @@ Class.extend('controller', 'visibles', Class('controller').Node, {
 		return this.visibles;
 	}
 });
-
-Class('view').isVisible = function(view){
-	return !view.hasClass('hidden');
-};

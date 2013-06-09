@@ -1,7 +1,5 @@
-/* global View, TreeStructure, TreeTraversal, TreeFinder  */
+/* global */
 
-View.extend('option', {
-	Implements: [TreeStructure, TreeTraversal, TreeFinder],
-	tagName: 'li',
-	className: 'node'
+Item.extend('view.tree', 'option', {
+
 });

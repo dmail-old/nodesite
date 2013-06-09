@@ -1,4 +1,4 @@
-Class.extend('listener', {
+Item.define('listener', {
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

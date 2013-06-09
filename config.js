@@ -33,7 +33,7 @@ config.css = [
 // fichier js qu'on donne au client
 config.js = [].concat(
 	[
-		"util", "object", "string", "number", "function", "array", "class"
+		"util", "object", "item", "string", "number", "function", "array"
 	].prefix('/lib/core/'),
 	[
 		"object.at", "finder", "array.iterate", "array.find",
@@ -50,17 +50,17 @@ config.js = [].concat(
 		"model", "view", "controller", "fx"
 	],
 	[
-		"node"
+		"tree", "node"
 	].prefix('model/'),
 	[
-		"node", "rootnode", "selector"
+		"tree", "node", "root", "selector"
 	].prefix('view/'),
 	[
-		"state",
-		"tool", "indent", "visibles", "multiselection",
+		"adapt", "openstate",
+
+		"tree", "state", "tool", "indent", "visibles", "multiselection",
 		"mouseoverlight", "mousedownfocus", "mousedownselect", "mousedownmultiselect",
-		"nav",
-		"selected", "adapt", "openstate"
+		"nav", "selected"
 	].prefix('controller/'),
 	/*[
 		"tree", "tree.list", "tree.sort", "tree.swap",

@@ -1,6 +1,6 @@
-/* global TreeStructure, TreeTraversal, TreeFinder */
+/* global */
 
-Class.extend('view', Class('emitter'), {
+Item.create('view', 'emitter', {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -8,17 +8,15 @@ Class.extend('view', Class('emitter'), {
 	className: '',
 	attributes: null,
 
-	constructor: function View(model){
-		// called without new
-		if( !(this instanceof Class('view')) ){
-			if( model != null && typeof model.toView == 'function' ) return model.toView();
-			return null;
-		}
+	constructor: function(model){
+		// we have to set it manually because this can be called with an other context
+		// that's why Item doesn't provide help as this.class or this.super
+		this.constructor = Item('view').constructor;
+ 
+		this.constructor.instances[this.id = this.constructor.lastID++] = this;
 
-		Class('view').instances[this.id = Class('view').lastID++] = this;
-
-		// ListenerHandler call this.handlers over this.model events with this as context
-		this.modelEventsHandler = Class.new('listener', null, this.modelEvents, this);
+		// Listener call this.handlers over this.model events with this as context
+		this.modelListener = Item.new('listener', null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -29,33 +27,40 @@ Class.extend('view', Class('emitter'), {
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
-		delete Class('view').instances[this.id];
+		delete this.constructor.instances[this.id];
 	},
+
+	cast: function(item){
+		if( item != null && typeof item.toView == 'function' ) return item.toView();
+		return null;
+	},
+
+	toView: Function.THIS,
 
 	setModel: function(model){
 		if( model ){
 			this.model = model;
-			this.modelEventsHandler.emitter = model;
-			this.modelEventsHandler.listen();
+			this.modelListener.emitter = model;
+			this.modelListener.listen();
 		}
 	},
 
 	unsetModel: function(){
 		if( this.model ){
-			this.modelEventsHandler.stopListening();
-			delete this.modelEventsHandler.emitter;
+			this.modelListener.stopListening();
+			delete this.modelListener.emitter;
 		}
 	},
 
 	getClassName: function(){
-		return Class.new('list.string', this.className);
+		return Item.new('list.string', this.className);
 	},
 
 	getAttributes: function(){
 		var attr = this.attributes ? Object.copy(this.attributes) : {};
 
 		attr['class'] = this.getClassName();
-		attr[Class('view').IDAttribute] = this.id;
+		attr[this.constructor.IDAttribute] = this.id;
 
 		return attr;
 	},
@@ -145,44 +150,45 @@ Class.extend('view', Class('emitter'), {
 	}
 });
 
-Class('view').instances = {};
-Class('view').IDAttribute = 'data-view';
-Class('view').lastID = 0;
+Object.append(Item('view').constructor, {
+	instances: {},
+	IDAttribute: 'data-view',
+	lastID: 0,
 
-Class('view').isElementView = function(element){
-	return element.hasAttribute && element.hasAttribute(this.IDAttribute);
-};
+	isElementView: function(element){
+		return element.hasAttribute && element.hasAttribute(this.IDAttribute);
+	},
 
-Class('view').getElementView = function(element){
-	var view = null;
+	getElementView: function(element){
+		var view = null;
 
-	if( this.isElementView(element) ){
-		view = this.instances[element.getAttribute(this.IDAttribute)];
+		if( this.isElementView(element) ){
+			view = this.instances[element.getAttribute(this.IDAttribute)];
+		}
+
+		return view;
+	},
+
+	// retourne le noeud qui détient element ou null
+	findElementView: function(element){
+		var view = null;
+
+		while( element ){
+			view = this.getElementView(element);
+			if( view ) break;
+			element = element.parentNode;
+		}
+
+		return view;
 	}
+});
 
-	return view;
-};
-
-Class('view').findElementView = function(element){
-	var view = null;
-
-	while( element ){
-		view = this.getElementView(element);
-		if( view ) break;
-		element = element.parentNode;
-	}
-
-	return view;
-};
-
-// retourne le noeud qui détient element ou null
-Element.prototype.toView = function(){ return Class('view').findElementView(this); };
+Element.prototype.toView = function(){ return Item('view').constructor.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
-Class('view').prototype.toView = Function.THIS;
 
 // View émet des évènements via le DOM de son élément
-Class('view').prototype.on('*', function(name, args){
+Item('view').on('*', function(name, args){
 	if( this.element ){
 		var event = new CustomEvent('view:' + name, {
 			bubbles: true,
@@ -197,104 +203,26 @@ Class('view').prototype.on('*', function(name, args){
 	}
 });
 
-Class('view').states = {
-	lighted: ['light', 'unlight'],
-	selected: ['select', 'unselect'],
-	expanded: ['expand', 'contract'],
-	focused: ['focus', 'blur'],
-	hidden: ['hide', 'show'],
-	actived: ['active', 'unactive']
-};
+Item.define('viewstate', {
+	states: {
+		lighted: ['light', 'unlight'],
+		selected: ['select', 'unselect'],
+		expanded: ['expand', 'contract'],
+		focused: ['focus', 'blur'],
+		hidden: ['hide', 'show'],
+		actived: ['active', 'unactive']
+	}
+});
 
-Class('view').State = {};
-Object.eachPair(Class('view').states, function(state, methods){
+Object.eachPair(Item('viewstate').states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
-	Class('view').State[on] = function(e){
+	Item('viewstate')[on] = function(e){
 		return this.addClass(state, e);
 	};
-	Class('view').State[off] = function(e){
+	Item('viewstate')[off] = function(e){
 		return this.removeClass(state, e);
 	};
-});
-
-Class.extend('emitter', 'tree', Class('emitter'), {
-	constructor: function(bind){
-		this.bind = bind || this;
-	},
-
-	applyListener: function(listener, name, args){
-		if( typeof listener == 'object' ) return this.applyHandler(listener, name, args);
-		else return listener.apply(this.bind, args);
-	},
-
-	applyListeners: function(name, args){
-		if( name == 'test' ) console.log(this.bind, this.bind.parentNode);
-
-		if( this.bind.parentNode ){
-			this.bind.parentNode.treeEmitter.applyListeners(name, args);
-		}
-
-		return Class('emitter').applyListeners.call(this, name, args);
-	}
-});
-
-Class('view').Node = {};
-
-Object.merge(Class('view').Node, TreeStructure, TreeTraversal, TreeFinder);
-
-Object.append(Class('view').Node, {
-	modelEvents: {
-		'adopt': function(child, index){
-			this.insertBefore(child, this.children[index]);
-		},
-
-		'emancipate': function(){
-			this.parentNode.removeChild(this);
-		},
-	},
-
-	setModel: function(model){
-		Class('view').prototype.setModel.call(this, model);
-		if( model && model.children ){
-			this.setChildren(model.children);
-		}
-	},
-
-	oninsertchild: function(child){
-		var childrenElement = this.getChildrenElement();
-		// si cette vue possède l'élément qui contient les enfants on insère l'enfant
-		if( childrenElement ){
-			child.insertElement(childrenElement, child.getNextSibling(), true);
-		}
-	},
-
-	onremovechild: function(child){
-		child.removeElement();
-	},
-
-	getChildrenElement: function(){
-		return this.childrenElement;
-	},
-
-	setChildrenElement: function(element){
-		this.childrenElement = element;
-	},
-
-	createChildrenElement: function(element){
-		return new Element('ul');
-	},
-
-	insertChildren: function(element){
-		this.setChildrenElement(element);
-		this.children.forEach(function(child){ child.insertElement(element); });
-	},
-
-	renderChildren: function(){
-		var childrenElement = this.createChildrenElement();
-		this.element.appendChild(childrenElement);
-		this.insertChildren(childrenElement);
-	}
 });
 
 

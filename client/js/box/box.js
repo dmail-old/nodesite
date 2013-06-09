@@ -5,7 +5,7 @@
 
 name: Box
 
-description: Classe qui crée une boîte manipulable
+description: Iteme qui crée une boîte manipulable
 
 NOTE:
 
@@ -21,7 +21,7 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-Class.extend('domrectangle', 'box', {
+Item.extend('domrectangle', 'box', 'options', {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -62,7 +62,7 @@ Class.extend('domrectangle', 'box', {
 
 		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
 		this.constructor.instances[this.id = this.constructor.UID++] = this;
-		Class('domrectangle').prototype.constructor.call(this, this.createElement());
+		Item('domrectangle').constructor.call(this, this.createElement());
 	},
 
 	createElement: function(){
@@ -106,7 +106,7 @@ Class.extend('domrectangle', 'box', {
 	destroy: function(){
 		this.element.destroy();
 		delete this.constructor.instances[this.id];
-		Class('domrectangle').prototype.destroy.call(this);
+		Item('domrectangle').destroy.call(this);
 	},
 
 	removeAll: function(){
@@ -161,7 +161,7 @@ Class.extend('domrectangle', 'box', {
 		else{
 			fx.options.onComplete = callback.bind(this);
 			if( this.fx ){ this.fx.cancel(); }
-			this.fx = Class.new('fx.morph', this.frame, fx.options).start(fx.styles);
+			this.fx = Item.new('fx.morph', this.frame, fx.options).start(fx.styles);
 		}
 		return this;
 	},
@@ -298,9 +298,7 @@ Class.extend('domrectangle', 'box', {
 	}
 });
 
-var Box = Class('domrectangle.box');
-
-Box.implement(Options);
+var Box = Item('domrectangle.box');
 
 Box.UID = 0;
 Box.instances = [];

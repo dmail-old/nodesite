@@ -1,6 +1,6 @@
 /* global */
 
-Class.extend('controller', {
+Item.define('controller', {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -18,9 +18,9 @@ Class.extend('controller', {
 	requires: null,
 
 	constructor: function(view){		
-		this.viewEventsHandler = Class.new('listener', null, this.viewEvents, this);
-		this.eventsHandler = Class.new('listener.event', null, this.events, this);
-		this.eventsHandler.callHandler = this.callHandler;
+		this.viewListener = Item.new('listener', null, this.viewEvents, this);
+		this.elementListener = Item.new('listener.event', null, this.events, this);
+		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
 		this.resolveDependency();
@@ -41,29 +41,29 @@ Class.extend('controller', {
 			instance = this.view.controllers[name];
 		}
 		else{
-			provider = Class('controller').providers[name];
+			provider = Item('controller').providers[name];
 
 			if( provider ){
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = Class.new('controller.' + name, this.view);
+				instance = Item.new('controller.' + name, this.view);
 			}
 		}
 
 		this[name] = instance;
 	},
 
-	callHandler: Class('listener.event').prototype.callHandler,
+	callHandler: Item('listener.event').callHandler,
 
 	setView: function(view){
 		if( view ){
 			this.view = view;
 
-			this.view.controllers[this.name] = this;
+			this.view.controllers[this.__name__] = this;
 
-			this.viewEventsHandler.emitter = view;
-			this.viewEventsHandler.listen();
+			this.viewListener.emitter = view;
+			this.viewListener.listen();
 
 			if( this.view.element ) this.setElement(this.view.element);
 		}
@@ -73,10 +73,10 @@ Class.extend('controller', {
 		if( this.view ){
 			if( this.view.element && this.element == this.view.element ) this.unsetElement();
 
-			this.viewEventsHandler.stopListening();
-			delete this.viewEventsHandler.emitter;
+			this.viewListener.stopListening();
+			delete this.viewListener.emitter;
 
-			delete this.view.controllers[this.name];
+			delete this.view.controllers[this.__name__];
 
 			delete this.view;
 		}
@@ -84,20 +84,16 @@ Class.extend('controller', {
 
 	setElement: function(element){
 		if( element ){
-			this.eventsHandler.emitter = element;
-			this.eventsHandler.listen();
+			this.elementListener.emitter = element;
+			this.elementListener.listen();
 		}
 	},
 
 	unsetElement: function(){
 		if( this.element ){
-			this.eventsHandler.stopListening();
-			delete this.eventsHandler.emitter;
+			this.elementListener.stopListening();
+			delete this.elementListener.emitter;
 		}
-	},
-
-	getController: function(name){
-		return this.view.controllers[name];
 	},
 
 	destroy: function(){
@@ -106,32 +102,12 @@ Class.extend('controller', {
 	}
 });
 
-Class('controller').providers = {};
+Item('controller').providers = {};
 
-Class('view').prototype.on('create', function(){
+Item('view').on('create', function(){
 	this.controllers = {};
 });
-Class('view').prototype.on('destory', function(){
+Item('view').on('destroy', function(){
 	delete this.controllers;
 });
-
-/*
-
-By default a controller control one view, so events necessarily occur on that view
-Some controller can control a view that contains subview
-in that case we pass the view as first arguments for events
-Such controller have to implement Controller.Node
-
-*/
-
-Class('controller').Node = {
-	callHandler: function(handler, bind, e){
-		var view = Class('view')(e);
-
-		if( e instanceof CustomEvent ){
-			return handler.apply(bind, [view].concat(e.detail.args));
-		}
-		return handler.call(bind, view, e);
-	}
-};
 

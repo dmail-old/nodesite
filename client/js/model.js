@@ -1,17 +1,26 @@
 /* global */
 
 // model
-Class.extend('model', Class('emitter'), {
+Item.create('model', 'emitter', {
 	validationError: null,
 	cid: 0,
 
-	constructor: function Model(properties){
+	constructor: function(properties){
+		if( !this.parse ) console.trace(this);
+
 		this.properties = properties ? this.parse(properties) : {};
-		this.cid = this.constructor.prototype.cid++;
+		this.cid = this.cid++;
+	},
+
+	getModelItemName: function(){
+		return this.__name__;
 	},
 
 	create: function(data){
-		return data instanceof this.constructor ? data : new this.constructor(data);
+		var name = this.getModelItemName();
+
+		if( Item.is(name, data) ) return data;
+		return Item.new(name, data);		
 	},
 
 	parse: function(properties){
@@ -78,7 +87,7 @@ Class.extend('model', Class('emitter'), {
 	}
 });
 
-Class('model').serverMethods = {
+Item.define('servermodel', {
 	definitions: {
 		parsers: {},
 		cancels: {},
@@ -90,7 +99,7 @@ Class('model').serverMethods = {
 	},
 
 	createAction: function(name, args){
-		var action = Class.new('action', this, name, args);
+		var action = Item.new('action', this, name, args);
 		return action;
 	},
 
@@ -133,9 +142,9 @@ Class('model').serverMethods = {
 	sync: function(action, callback){
 		window.server.applyAction(action.name, action.args, callback);
 	}
-};
+});
 
-Class.extend('action', {
+Item.define('action', {
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;
