@@ -63,14 +63,20 @@ Item.items = {};
 
 // return object giving him name & implement properties, merged with arguments
 Item.define = function(name, object){
-	object.implement = Item.implement;
-
 	var i = 2, j = arguments.length, arg;
-	for(;i<j;i++){
-		arg = arguments[i];
-		if( typeof arg == 'string' ) arg = Item(arg);
-		object.implement(arg);
+
+	if( j == 1 ){
+		object = {};
 	}
+	else{
+		for(;i<j;i++){
+			arg = arguments[i];
+			if( typeof arg == 'string' ) arg = Item(arg);
+			Item.implement.call(object, arg);
+		}
+	}	
+
+	object.implement = Item.implement;
 
 	//object.__name__ = name;
 	Object.defineProperty(object, '__name__', {
@@ -92,7 +98,7 @@ Item.extend = function(parent, name){
 	if( '__name__' in parent ){
 		name = parent.__name__ + '.' + name;
 	}
-	
+
 	return this.define.apply(this, [name, Object.create(parent)].concat(toArray(arguments, 2)));
 };
 
