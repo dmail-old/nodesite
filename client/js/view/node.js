@@ -1,4 +1,4 @@
-NS('view.tree').extend('node', 'viewstate', {
+NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {
@@ -17,7 +17,7 @@ NS('view.tree').extend('node', 'viewstate', {
 	},
 
 	getClassName: function(){
-		var className = NS('view.tree').getClassName.call(this);
+		var className = NS.TreeView.getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');

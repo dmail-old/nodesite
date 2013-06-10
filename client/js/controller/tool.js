@@ -1,6 +1,7 @@
 /* global */
 
-NS('controller.tree').extend('tool', {
+NS.ToolTreeController = NS.TreeController.extend({
+	name: 'ToolTreeController',
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view && e.target.hasClass('tool') ){

@@ -1,6 +1,6 @@
 /* global */
 
-NS('view.tree').extend('selector', {
+NS.Selector = NS.TreeView.extend({
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
@@ -15,7 +15,7 @@ NS('view.tree').extend('selector', {
 	},
 
 	getChildItem: function(){
-		return NS('view.tree.option');
+		return NS.OptionTreeView;
 	},
 
 	getHTML: function(){

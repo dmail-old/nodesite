@@ -1,6 +1,7 @@
 /* global */
 
-NS('controller.tree').extend('mousedownselect', {
+NS.MousedownselectTreeController = NS.TreeController.extend({
+	name: 'MousedownselectTreeController',
 	requires: 'selected',
 	events: {
 		mousedown: function(view, e){
@@ -15,11 +16,11 @@ NS('controller.tree').extend('mousedownselect', {
 
 	setElement: function(element){
 		if( element ) element.addClass('unselectable');
-		return NS('controller.tree').setElement.call(this, element);
+		return NS.TreeController.setElement.call(this, element);
 	},
 
 	unsetElement: function(){
 		if( this.element ) this.element.removeClass('unselectable');
-		return NS('controller.tree').unsetElement.call(this);
+		return NS.TreeController.unsetElement.call(this);
 	}
 });

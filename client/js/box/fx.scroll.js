@@ -1,6 +1,6 @@
-/* global Fx, Browser */
+/* global Browser */
 
-NS('fx').extend('scroll', {
+NS.Fx.Scroll = NS.Fx.extend({
 	options: {
 		step: 30,
 		wheelStops: true
@@ -32,7 +32,7 @@ NS('fx').extend('scroll', {
 
 	compute: function(from, to, delta){
 		return [0, 1].map(function(i){
-			return Fx.compute(from[i], to[i], delta);
+			return NS.Fx.compute(from[i], to[i], delta);
 		});
 	},
 
@@ -44,7 +44,7 @@ NS('fx').extend('scroll', {
 	},
 
 	startScroll: function(currentX, currentY, x, y){
-		return Fx.prototype.start.call(this, [currentX, currentY], [x, y]);
+		return NS.Fx.start.call(this, [currentX, currentY], [x, y]);
 	},
 
 	startAdd: function(x, y){

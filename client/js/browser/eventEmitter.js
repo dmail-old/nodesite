@@ -1,6 +1,6 @@
 /* global */
 
-NS('emitter').extend('event', {
+NS.EventEmitter = NS.Emitter.extend({
 	getEvents: function(){
 		var listeners = this.storage.listeners;
 
@@ -27,7 +27,7 @@ NS('emitter').extend('event', {
 	}
 });
 
-Object.eachPair(NS('emitter.event'), function(key, value, object){
+Object.eachPair(NS.EventEmitter, function(key, value, object){
 	if( key != 'constructor' && key != '$events' ){
 		Object.setPair.call(window, key, value, object);
 		Object.setPair.call(document, key, value, object);

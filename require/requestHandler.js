@@ -1,4 +1,4 @@
-NS('item').extend('fileresponse', {
+NS.Fileresponse = NS.Item.extend({
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -44,7 +44,7 @@ NS('item').extend('fileresponse', {
 
 	start: function(path){
 		var
-			file = NS('file').new(root + '/client/' + path),
+			file = NS.File.new(root + '/client/' + path),
 			extension = file.getExtension(),
 			acceptEncoding
 		;
@@ -199,14 +199,14 @@ var Page = {
 	}
 };
 
-NS('item').extend('errorresponse', {
+NS.Errorresponse = NS.Item.extend({
 	constructor: function(response){
 		response.writeHead(500, 'Internal server error');
 		response.end();
 	}
 });
 
-NS('item').extend('pageresponse', {
+NS.Pageresponse = NS.Item.extend({
 	constructor: function(response){
 		function serveError(e){
 			logger.error(e);
@@ -216,7 +216,7 @@ NS('item').extend('pageresponse', {
 			response.end();
 		}
 
-		var htmlFile = NS('file').new(root + '/app.html'), html;
+		var htmlFile = NS.File.new(root + '/app.html'), html;
 
 		try{
 			html = String(htmlFile.readSync());
@@ -262,7 +262,7 @@ NS('item').extend('pageresponse', {
 	}
 });
 
-NS('item').extend('ajaxresponse', {
+NS.Ajaxresponse = NS.Item.extend({
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -398,7 +398,7 @@ NS('item').extend('ajaxresponse', {
 	sendFile: function(filepath){
 		console.log('senfile', filepath);
 		this.response.request.parsedUrl.pathname = filepath;
-		return NS('fileresponse').new(this.response);
+		return NS.Fileresponse.new(this.response);
 	},
 
 	error: function(e){
@@ -481,7 +481,7 @@ function findHandler(request, callback){
 
 	// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 	dirname = pathname.substr(0, slash);
-	file = NS('file').new(root + '/client/' + dirname);
+	file = NS.File.new(root + '/client/' + dirname);
 	file.isDir(function(isdir){ return callback(isdir ? 'file' : 'page'); });
 }
 
@@ -489,7 +489,7 @@ function handle(request, response){
 	function onfind(handlerName){
 		response.request = request;
 
-		var name = handlerName + 'response', item = NS(name);
+		var name = handlerName + 'response', item = NS(name.capitalize());
 
 		if( item ){
 			try{

@@ -1,40 +1,41 @@
 /* global */
 
-NS('controller.tree').extend('mousedownmultiselect', {
-	requires: 'multiselection',
+NS.MousedownmultiselectTreeController = NS.TreeController.extend({
+	name: 'MousedownmultiselectTreeController',
+	requires: 'MultiSelectionController',
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view ){
-				this.multiselection.add(view, e);
+				this.MultiSelectionController.add(view, e);
 			}
 			else{
-				this.multiselection.unselectAll(e);
+				this.MultiSelectionController.unselectAll(e);
 			}
 		},
 
 		'click': function(view, e){
 			if( view && view != this.view ){
-				this.multiselection.unselectOther(view, e);
+				this.MultiSelectionController.unselectOther(view, e);
 			}
 			else{
-				this.multiselection.unselectAll(e);
+				this.MultiSelectionController.unselectAll(e);
 			}
 		},
 
 		'keydown': function(view, e){
 			if( e.control && e.key == 'a' ){
-				this.multiselection.selectAll(e);
+				this.MultiSelectionController.selectAll(e);
 			}
 		}
 	},
 
 	setElement: function(element){
 		if( element ) element.addClass('unselectable');
-		return NS('controller.tree').setElement.call(this, element);
+		return NS.TreeController.setElement.call(this, element);
 	},
 
 	unsetElement: function(){
 		if( this.element ) this.element.removeClass('unselectable');
-		return NS('controller.tree').unsetElement.call(this);
+		return NS.TreeController.unsetElement.call(this);
 	}
 });

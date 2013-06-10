@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-NS('item').extend('fx', 'chain', 'emitter', 'options', {
+NS.Fx = NS.Item.extend(NS.chain, NS.Emitter, NS.options, {
 	options: {
 		fps: 60,
 		unit: false,
@@ -88,7 +88,7 @@ NS('item').extend('fx', 'chain', 'emitter', 'options', {
 		this.time = null;
 		this.transition = this.getTransition();
 		var frames = this.options.frames, fps = this.options.fps, duration = this.options.duration;
-		this.duration = NS('fx').Durations[duration] || duration.toInt();
+		this.duration = NS.Fx.Durations[duration] || duration.toInt();
 		this.frameInterval = 1000 / fps;
 		this.frames = frames || Math.round(this.duration / this.frameInterval);
 		this.emit('start', this.subject);
@@ -139,7 +139,7 @@ NS('item').extend('fx', 'chain', 'emitter', 'options', {
 	}
 });
 
-Object.append(NS('fx'), {
+Object.append(NS.Fx, {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},

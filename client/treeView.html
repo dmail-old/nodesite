@@ -8,16 +8,16 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = NS('model.tree.node').new(treeData);
-var view = NS('view.tree.node').new(model);
-var rootView = NS('view.tree.root').new();
+var model = NS.NodeTreeModel.new(treeData);
+var view = NS.NodeTreeView.new(model);
+var rootView = NS.RootTreeView.new();
 
-NS('controller.tree.indent').new(rootView);
-NS('controller.tree.tool').new(rootView);
-NS('controller.tree.mouseoverlight').new(rootView);
-NS('controller.tree.mousedownmultiselect').new(rootView); // 'mousedownselect');
-NS('controller.tree.mousedownfocus').new(rootView);
-NS('controller.nav').new(rootView);
+NS.IndentTreeController.new(rootView);
+NS.ToolTreeController.new(rootView);
+NS.MouseoverlightTreeController.new(rootView);
+NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
+NS.MousedownfocusTreeController.new(rootView);
+NS.NavController.new(rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);

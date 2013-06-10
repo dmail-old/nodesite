@@ -1,6 +1,6 @@
 /* global Finder, TreeTraversal */
 
-NS('treefinder', {
+NS.treefinder = {
 	matchIterator: function(iterator, match, first){
 		return Finder.matchIterator.call(this, iterator, match, first);
 	},
@@ -52,7 +52,7 @@ NS('treefinder', {
 	createFindAllMethod: function(iterator){
 		return this.matchAll.curry(iterator);
 	}
-});
+};
 
 Object.eachPair({
 	node: 'crossNode',
@@ -63,8 +63,8 @@ Object.eachPair({
 	prevSibling: 'crossPrevSibling',
 	sibling: 'crossSibling'
 }, function(axis, iteratorName){
-	var TreeFinder = NS('treefinder');
-	var TreeTraversal = NS('treetraversal');
+	var TreeFinder = NS.treefinder;
+	var TreeTraversal = NS.treetraversal;
 	var maj = axis.capitalize();
 
 	TreeFinder['get' + maj] = TreeFinder.createFindMethod(TreeTraversal[iteratorName]);

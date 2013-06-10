@@ -1,15 +1,15 @@
 /* global */
 
-NS('emitter').extend('tree', {
+NS.TreeEmitter = NS.Emitter.extend({
 	applyListeners: function(name, args){
 		if( this.bind.parentNode ){
 			this.bind.parentNode.treeEmitter.applyListeners(name, args);
 		}
-		return NS('emitter').applyListeners.call(this, name, args);
+		return NS.Emitter.applyListeners.call(this, name, args);
 	}
 });
 
-NS('view').extend('tree', 'treestructure', 'treetraversal', 'treefinder', {
+NS.TreeView = NS.View.extend(NS.treestructure, NS.treetraversal, NS.treefinder, {
 	//className: 'node',
 	modelEvents: {
 		'adopt': function(child, index){
@@ -29,11 +29,11 @@ NS('view').extend('tree', 'treestructure', 'treetraversal', 'treefinder', {
 		// });
 
 		this.initChildren();
-		NS('view').constructor.apply(this, arguments);
+		NS.View.constructor.apply(this, arguments);
 	},
 
 	setModel: function(model){
-		NS('view').setModel.call(this, model);
+		NS.View.setModel.call(this, model);
 		if( model && model.children ){
 			this.setChildren(model.children);
 		}

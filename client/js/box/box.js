@@ -21,7 +21,7 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-NS('domrectangle').extend('box', 'options', {
+NS.Box = NS.Surface.extend(NS.options, {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -62,7 +62,7 @@ NS('domrectangle').extend('box', 'options', {
 
 		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
 		this.constructor.instances[this.id = this.constructor.UID++] = this;
-		NS('domrectangle').constructor.call(this, this.createElement());
+		NS.Surface.constructor.call(this, this.createElement());
 	},
 
 	createElement: function(){
@@ -106,7 +106,7 @@ NS('domrectangle').extend('box', 'options', {
 	destroy: function(){
 		this.element.destroy();
 		delete this.constructor.instances[this.id];
-		NS('domrectangle').destroy.call(this);
+		NS.Surface.destroy.call(this);
 	},
 
 	removeAll: function(){
@@ -161,7 +161,7 @@ NS('domrectangle').extend('box', 'options', {
 		else{
 			fx.options.onComplete = callback.bind(this);
 			if( this.fx ){ this.fx.cancel(); }
-			this.fx = NS('fx.morph').new(this.frame, fx.options).start(fx.styles);
+			this.fx = NS.FxMorph.new(this.frame, fx.options).start(fx.styles);
 		}
 		return this;
 	},
@@ -298,7 +298,7 @@ NS('domrectangle').extend('box', 'options', {
 	}
 });
 
-var Box = NS('domrectangle.box');
+var Box = NS.Box;
 
 Box.UID = 0;
 Box.instances = [];

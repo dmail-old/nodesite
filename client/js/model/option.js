@@ -1,5 +1,5 @@
 /* global */
 
-NS('model.tree').extend('option', {
+NS.OptionTreeModel = NS.TreeModel.extend({
 
 });

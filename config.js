@@ -74,7 +74,7 @@ config.js = [].concat(
 	*/
 	[
 		"fx.scroll",
-		"DOMRectangle",
+		"surface",
 		"element.wrapVectors",
 		"box",
 		"popup",

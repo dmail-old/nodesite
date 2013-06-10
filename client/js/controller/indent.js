@@ -1,6 +1,7 @@
 /* global */
 
-NS('controller.tree').extend('indent', {
+NS.IndentTreeController = NS.TreeController.extend({
+	name: 'IndentTreeController',
 	events: {
 		'view:insertElement': function(view){
 			view.getDom('div').style.paddingLeft = this.padding * this.getLevel(view) + 'px';

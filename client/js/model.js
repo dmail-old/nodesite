@@ -1,7 +1,7 @@
 /* global */
 
 // model
-NS('item').extend('model', 'emitter', {
+NS.Model = NS.Item.extend(NS.Emitter, {
 	validationError: null,
 	cid: 0,
 
@@ -87,7 +87,7 @@ NS('item').extend('model', 'emitter', {
 	}
 });
 
-NS('servermodel', {
+NS.servermodel = {
 	definitions: {
 		parsers: {},
 		cancels: {},
@@ -142,9 +142,9 @@ NS('servermodel', {
 	sync: function(action, callback){
 		window.server.applyAction(action.name, action.args, callback);
 	}
-});
+};
 
-NS('item').extend('action', {
+NS.Action = NS.Item.extend({
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

@@ -10,11 +10,11 @@ require: String, Array, NS
 
 */
 
-NS('list').extend('string', {
+NS.StringList = NS.List.extend({
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) NS('list').constructor.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) NS.List.constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},

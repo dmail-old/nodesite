@@ -1,4 +1,4 @@
-NS('listener').extend('event', {
+NS.EventListener = NS.Listener.extend({
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -21,6 +21,3 @@ NS('listener').extend('event', {
 		}
 	}
 });
-
-delete NS('listener.event').handleListener;
-delete NS('listener.event').applyHandler;

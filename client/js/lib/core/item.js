@@ -1,4 +1,4 @@
-NS('item', {
+NS.Item = {
 	// set key/value pair in this creating conflictual object and merging them
 	implementPair: function(key, value){
 
@@ -6,7 +6,7 @@ NS('item', {
 			var current = this[key];
 			if( typeof current == 'object' && current !== null ){
 				current = this[key] = Object.create(current);
-				Object.eachOwnPair(value, NS('item').implementPair, current);
+				Object.eachOwnPair(value, NS.Item.implementPair, current);
 			}
 			else{
 				Object.setPair.apply(this, arguments);
@@ -24,28 +24,10 @@ NS('item', {
 		return this;
 	},
 
-	// return object giving him name & implement other arguments
-	extend: function(name){
-		if( '__name__' in this ){
-			name = this.__name__ + '.' + name;
-		}
+	extend: function(){
+		var object = Object.create(this);
 
-		var object = Object.create(this), i = 1, j = arguments.length, arg;
-
-		for(;i<j;i++){
-			arg = arguments[i];
-			if( typeof arg == 'string' ) arg = NS(arg);
-			object.implement(arg);
-		}
-
-		//object.__name__ = name;
-		Object.defineProperty(object, '__name__', {
-			writable: true,
-			ennumerable: false,
-			value: name
-		});
-
-		NS(name, object);
+		object.implement.apply(object, arguments);
 
 		return object;
 	},
@@ -66,9 +48,9 @@ NS('item', {
 	getParentPrototype: function(){
 		return this.getPrototype().getPrototype();
 	}
-});
+};
 
-NS('options', {
+NS.options = {
 	setOptions: function(options){
 
 		// only if this has not yet an options object
@@ -88,9 +70,9 @@ NS('options', {
 
 		return this;
 	}
-});
+};
 
-NS('chain', {
+NS.chain = {
 	resetChain: function(){
 		this.$chain = [];
 	},
@@ -118,9 +100,9 @@ NS('chain', {
 		this.$chain = [];
 		return this;
 	}
-});
+};
 
-NS('bound', {
+NS.bound = {
 	resetBound: function(){
 		this.bound = {};
 	},
@@ -136,4 +118,4 @@ NS('bound', {
 
 		return bound[key];
 	}
-});
+};

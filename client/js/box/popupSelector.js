@@ -15,7 +15,7 @@ FIX
 
 */
 
-NS('selectorelement').extend('popup', {
+NS.PopupSelector = NS.Selector.extend({
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\
@@ -25,16 +25,16 @@ NS('selectorelement').extend('popup', {
 	width: 200,
 
 	constructor: function(options){
-		this.popup = NS('popup').new();
+		this.popup = NS.Popup.new();
 		this.popup.on('close', function(e){ this.close(e); this.input.focus(e); }.bind(this));
 
-		NS('selectorelement').constructor.call(this, options);
+		NS.Selector.constructor.call(this, options);
 
 		this.setListElement(this.popup.element);
 	},
 
 	destroy: function(){
-		NS('selectorelement').destroy.call(this);
+		NS.Selector.destroy.call(this);
 		this.popup.destroy();
 	},
 

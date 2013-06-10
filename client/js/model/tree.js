@@ -1,10 +1,10 @@
 /* global */
 
-NS('model').extend('tree', 'treestructure', 'treetraversal', 'treefinder', {
+NS.TreeModel = NS.Model.extend(NS.treestructure, NS.treetraversal, NS.treefinder, {
 	name: '',
 
 	constructor: function(){
-		NS('model').constructor.apply(this, arguments);
+		NS.Model.constructor.apply(this, arguments);
 
 		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');

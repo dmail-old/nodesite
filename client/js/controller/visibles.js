@@ -1,6 +1,7 @@
 /* global */
 
-NS('controller.tree').extend('visibles', {
+NS.VisiblesTreeController = NS.TreeController.extend({
+	name: 'VisiblesTreeController',
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);

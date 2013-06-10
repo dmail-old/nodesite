@@ -58,7 +58,7 @@ var DB = {
 	getTable: function(name){
 		var table = this.tables[name];
 		if( !table ){
-			table = this.tables[name] = NS.new('table', name);
+			table = this.tables[name] = NS.Table.new(name);
 		}
 		return table;
 	},
@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = NS('item').extend('table', 'emitter', {
+var Table = NS.Table = NS.Item.extend(NS.Emitter, {
 	methods: {},
 	state: 'closed',
 	lockers: 0,

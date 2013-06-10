@@ -1,4 +1,4 @@
-NS('treetraversal', {
+NS.treetraversal = {
 	// call fn on every child of the element, returns true to break the loop
 	crossChild: function(fn, bind){
 		var children = this.children, i = 0, j = children.length;
@@ -69,7 +69,7 @@ NS('treetraversal', {
 	crossSibling: function(fn, bind){
 		return this.crossDirection('both', fn, bind);
 	}
-});
+};
 
 /*
 

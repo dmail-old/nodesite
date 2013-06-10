@@ -1,3 +1,3 @@
-NS('model.tree').extend('node', {
+NS.NodeTreeModel = NS.TreeModel.extend({
 
 });

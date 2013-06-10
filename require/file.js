@@ -2,7 +2,7 @@
 
 var Watcher = require('./watcher.js');
 
-var File = NS('item').extend('file', {
+var File = NS.File = NS.Item.extend({
 	constructor: function(path){
 		this.setPath(path);
 		return this;

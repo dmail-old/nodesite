@@ -1,7 +1,8 @@
 /* global */
 
-NS('controller').extend('nav', {
-	requires: ['focused', 'tree.visibles'],
+NS.NavController = NS.Controller.extend({
+	name: 'NavController',
+	requires: ['focused', 'VisiblesTreeController'],
 	events: {
 		'keydown': function(e){
 			// need String(e.key) because the 0-9 key return numbers
@@ -16,7 +17,7 @@ NS('controller').extend('nav', {
 
 			if( method ){
 				this.currentView = this.focused.get();
-				this.list = this['tree.visibles'].get();
+				this.list = this.VisiblesTreeController.get();
 				this.target = null;
 
 				// no currentView -> naviguate to home view
@@ -111,11 +112,11 @@ NS('controller').extend('nav', {
 	go: function(view, e){
 		if( view ){
 			if( e && !e.control ){
-				if( this.view.controllers['controller.multiselection'] ){
-					this.view.controllers['controller.multiselection'].add(view, e);
+				if( this.view.controllers['SelectionTreeController'] ){
+					this.view.controllers['SelectionTreeController'].add(view, e);
 				}
-				else if( this.view.controllers['controller.multiselection'] ){
-					this.view.controllers['controller.multiselection'].add(view, e);
+				else if( this.view.controllers['MultiSelectionController'] ){
+					this.view.controllers['MultiSelectionController'].add(view, e);
 				}
 			}
 
@@ -143,7 +144,7 @@ NS('controller').extend('nav', {
 	}
 });
 
-NS('view').matchLetter = function(view, letter){
+NS.View.matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };

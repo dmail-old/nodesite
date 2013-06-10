@@ -1,7 +1,8 @@
 /* global */
 
-NS('controller.tree').extend('selected', {
-	events:{
+NS.SelectedTreeController = NS.TreeController.extend({
+	name: 'SelectedTreeController',
+	events: {
 		'view:addclass:selected': function(view, e){
 			if( !e || e.type != 'mousemove' ) this.setSelected(view);
 		},

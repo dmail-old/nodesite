@@ -1,5 +1,5 @@
 /* global */
 
-NS('view.tree').extend('option', {
+NS.OptionTreeView = NS.TreeView.extend({
 
 });

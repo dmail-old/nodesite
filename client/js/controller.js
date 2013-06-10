@@ -1,6 +1,6 @@
 /* global */
 
-NS('item').extend('controller', {
+NS.Controller = NS.Item.extend({
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -18,8 +18,8 @@ NS('item').extend('controller', {
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = NS('listener').new(null, this.viewEvents, this);
-		this.elementListener = NS('listener.event').new(null, this.events, this);
+		this.viewListener = NS.Listener.new(null, this.viewEvents, this);
+		this.elementListener = NS.EventListener.new(null, this.events, this);
 		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
@@ -41,26 +41,27 @@ NS('item').extend('controller', {
 			instance = this.view.controllers[name];
 		}
 		else{
-			provider = NS('controller').providers[name];
+			provider = NS.Controller.providers[name];
 
 			if( provider ){
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = NS('controller.' + name).new(this.view);
+				if( !(name in NS) ) console.error(name);
+				instance = NS[name].new(this.view);
 			}
 		}
 
 		this[name] = instance;
 	},
 
-	callHandler: NS('listener.event').callHandler,
+	callHandler: NS.EventListener.callHandler,
 
 	setView: function(view){
 		if( view ){
 			this.view = view;
 
-			this.view.controllers[this.__name__] = this;
+			this.view.controllers[this.name] = this;
 
 			this.viewListener.emitter = view;
 			this.viewListener.listen();
@@ -76,7 +77,7 @@ NS('item').extend('controller', {
 			this.viewListener.stopListening();
 			delete this.viewListener.emitter;
 
-			delete this.view.controllers[this.__name__];
+			delete this.view.controllers[this.name];
 
 			delete this.view;
 		}
@@ -102,12 +103,11 @@ NS('item').extend('controller', {
 	}
 });
 
-NS('controller').providers = {};
+NS.Controller.providers = {};
 
-NS('view').on('create', function(){
+NS.View.on('create', function(){
 	this.controllers = {};
 });
-NS('view').on('destroy', function(){
+NS.View.on('destroy', function(){
 	delete this.controllers;
 });
-

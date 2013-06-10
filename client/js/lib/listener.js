@@ -1,4 +1,4 @@
-NS('item').extend('listener', {
+NS.Listener = NS.Item.extend({
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

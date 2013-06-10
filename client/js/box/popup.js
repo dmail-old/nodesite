@@ -21,7 +21,7 @@ Element.Properties.onclick = {
 	}
 };
 
-NS('domrectangle.box').extend('popup', {
+NS.Popup = NS.Box.extend({
 	options: {
 		properties: {
 			'html': '\
@@ -43,8 +43,8 @@ NS('domrectangle.box').extend('popup', {
 		title: 'Titre',
 		content: 'Hello world',
 		zIndex: 90,
-		left: NS('domrectangle.box').calcPositionSpacePercent.curry('x', 0.5),
-		top: NS('domrectangle.box').calcPositionSpacePercent.curry('y', 0.5),
+		left: NS.Box.calcPositionSpacePercent.curry('x', 0.5),
+		top: NS.Box.calcPositionSpacePercent.curry('y', 0.5),
 		overflow: 'auto',
 		autoOpen: true,
 		master: true,
@@ -59,7 +59,7 @@ NS('domrectangle.box').extend('popup', {
 	},
 
 	constructor: function(){
-		NS('domrectangle.box').constructor.apply(this, arguments);
+		NS.Box.constructor.apply(this, arguments);
 
 		if( this.options.submitclose ) this.on('submit', this.close);
 	},
@@ -70,7 +70,7 @@ NS('domrectangle.box').extend('popup', {
 		this.options.properties.html = this.options.properties.html.parse({title: this.options.title, content: this.options.content});
 
 		var
-			element = NS('domrectangle.box').createElement.call(this),
+			element = NS.Box.createElement.call(this),
 			header = element.getElement('className:*header*'),
 			form = element.getElement('tagName:form'),
 			title = header.getElement('tagName:h1'),

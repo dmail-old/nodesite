@@ -1,6 +1,7 @@
 /* global */
 
-NS('controller').extend('openstate', {
+NS.OpenstateController = NS.Controller.extend({
+	name: 'OpenstateController',
 	events: {
 		'mousedown': function(e){
 			this.view.toggle(e);

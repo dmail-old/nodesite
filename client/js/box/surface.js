@@ -3,7 +3,7 @@
 /*
 ---
 
-name: DOMRectangle
+name: Surface
 
 description: Donne la possibilité d'attraper un élément avec la souris
 
@@ -75,8 +75,8 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = NS('item').extend('domrectangle', 'emitter', 'bound', {
-	name: 'domrectangle',
+var Surface = NS.Surface = NS.Item.extend(NS.Emitter, NS.bound, {
+	name: 'surface',
 	options: {
 		axis: 'xy',
 		'step-x': 0,
@@ -100,7 +100,7 @@ var DOMRectangle = NS('item').extend('domrectangle', 'emitter', 'bound', {
 
 		this.element.storage.set(this.name, this);
 
-		this.scroller = NS('fx.scroll').new({
+		this.scroller = NS['Fx.Scroll'].new({
 			link: 'ignore',
 			transition: 'linear',
 			wheelStops: true,
@@ -218,7 +218,7 @@ var DOMRectangle = NS('item').extend('domrectangle', 'emitter', 'bound', {
 	}
 });
 
-DOMRectangle.implement({
+Surface.implement({
 	get: function(name){
 		return this.element.getStyle(name).toInt() || 0;
 	},
@@ -336,7 +336,7 @@ DOMRectangle.implement({
 	}
 });
 
-DOMRectangle.implement({
+Surface.implement({
 	calcSpace: function(axis){
 		return this.element.measure('scrollSpace', axis);
 	},
@@ -447,7 +447,7 @@ DOMRectangle.implement({
 });
 
 // mousedown, mouseup, mousemove, focus, blur, scroll, keydown
-DOMRectangle.implement({
+Surface.implement({
 	getMode: function(axis){
 		if( this.handle && this.handle.hasClass('vector') ){
 			this.resizer = this.handle.getStyle('cursor').substr(0, 2);
@@ -575,7 +575,7 @@ DOMRectangle.implement({
 });
 
 // crée ou retourne une instance existante pour cet élément
-DOMRectangle.retrieveInstance = function(e){
+Surface.retrieveInstance = function(e){
 	var instance, forId, element;
 
 	if( e.target instanceof Element ){
@@ -583,40 +583,40 @@ DOMRectangle.retrieveInstance = function(e){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target;
 
-			if( element ) instance = NS('domrectangle').new(element, true);
+			if( element ) instance = NS.Surface.new(element, true);
 		}
 		else if( e.target.hasClass('vector') ){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target.parentNode;
 
-			if( element ) instance = NS('domrectangle').new(element, true);
+			if( element ) instance = NS.Surface.new(element, true);
 		}
 		else if( e.type == 'keydown' && e.target.hasClass('selectionRectangle') ){
 			element = e.target;
 
-			if( element ) instance = NS('domrectangle').new(element, true);
+			if( element ) instance = NS.Surface.new(element, true);
 		}
 	}
 
 	return instance;
 };
 
-DOMRectangle.startInstanceFromEvent = function(e){
-	var instance = DOMRectangle.retrieveInstance(e);
+Surface.startInstanceFromEvent = function(e){
+	var instance = Surface.retrieveInstance(e);
 	if( instance ) instance[e.type](e);
 };
 
-document.on('mousedown focus keydown', DOMRectangle.startInstanceFromEvent, true);
+document.on('mousedown focus keydown', Surface.startInstanceFromEvent, true);
 
 ['left', 'top', 'width', 'height'].forEach(function(name){
-	DOMRectangle['getMin' + name.capitalize()] = DOMRectangle.getLimit.curry(name, 'min');
-	DOMRectangle['getMax' + name.capitalize()] = DOMRectangle.getLimit.curry(name, 'max');
-	DOMRectangle['get' + name.capitalize()] = DOMRectangle.get.curry(name);
-	DOMRectangle['set' + name.capitalize()] = DOMRectangle.set.curry(name);
+	Surface['getMin' + name.capitalize()] = Surface.getLimit.curry(name, 'min');
+	Surface['getMax' + name.capitalize()] = Surface.getLimit.curry(name, 'max');
+	Surface['get' + name.capitalize()] = Surface.get.curry(name);
+	Surface['set' + name.capitalize()] = Surface.set.curry(name);
 });
 
 // scroll handling
-DOMRectangle.implement({
+Surface.implement({
 	options: {
 		scrollAuto: true,
 		scrollDelay: 100,
@@ -713,9 +713,9 @@ DOMRectangle.implement({
 });
 
 // TODO: distance handling
-// var drag = DOMRectangle.prototype.drag;
+// var drag = Surface.prototype.drag;
 
-// DOMRectangle.implement({
+// Surface.implement({
 //	options: {
 //		distance: 6
 //	},

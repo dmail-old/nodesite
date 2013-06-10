@@ -1,4 +1,4 @@
-module.exports = NS('item').extend('fileinfo', {
+module.exports = NS.Item.extend({
 	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;
