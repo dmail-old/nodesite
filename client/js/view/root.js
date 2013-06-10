@@ -7,8 +7,8 @@ Item.extend('view.tree', 'root', {
 		'tabindex': 0,
 	},
 
-	getChildItemName: function(){
-		return 'view.tree.node';
+	getChildItem: function(){
+		return Item('view.tree.node');
 	},
 
 	getChildrenElement: function(){

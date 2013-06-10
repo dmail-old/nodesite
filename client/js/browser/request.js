@@ -1,59 +1,4 @@
-/* global Chain, Emitter, Options */
-
-Object.toQueryString = function(object, base){
-	var queryString = [];
-
-	Object.forEach(object, function(value, key){
-		if( base ) key = base + '[' + key + ']';
-		var result;
-
-		if( typeof value == 'object' ){
-			if( typeof value.toQueryString == 'function' ) value = value.toQueryString();
-			result = Object.toQueryString(value, key);
-		}
-		else{
-			result = key + '=' + encodeURIComponent(value);
-		}
-
-		if( value != null ) queryString.push(result);
-	});
-
-	return queryString.join('&');
-};
-
-Array.prototype.toQueryString = function(){
-	var queryString = {};
-
-	this.forEach(function(value, i){ queryString[i] = value; });
-
-	return queryString;
-};
-
-Element.prototype.toQueryString = function(){
-	var queryString = [];
-
-	this.getElements(function(el){ return el.tagName.match(/input|select|textarea/i); }).each(function(el){
-		var type = el.type, value;
-
-		if( !el.name || el.disabled || type == 'submit' || type == 'reset' || type == 'file' || type == 'image' ) return;
-		if( el.get('tag') == 'select' ){
-			value = el.getSelected().map(function(opt){ return opt.get('value'); });
-		}
-		else if( (type == 'radio' || type == 'checkbox') && !el.checked ){
-			value = null;
-		}
-		else{
-			value = el.get('value');
-		}
-
-		if( !(value instanceof Array) ) value = [value];
-		value.forEach(function(val){
-			if( typeof val != 'undefined' ) queryString.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(val));
-		});
-	});
-
-	return queryString.join('&');
-};
+/* global */
 
 var progressSupport = 'onprogress' in new XMLHttpRequest();
 
@@ -274,3 +219,58 @@ Item.define('request', {}, 'emitter', 'options', 'chain', {
 		return this;
 	}
 });
+
+Object.toQueryString = function(object, base){
+	var queryString = [];
+
+	Object.forEach(object, function(value, key){
+		if( base ) key = base + '[' + key + ']';
+		var result;
+
+		if( typeof value == 'object' ){
+			if( typeof value.toQueryString == 'function' ) value = value.toQueryString();
+			result = Object.toQueryString(value, key);
+		}
+		else{
+			result = key + '=' + encodeURIComponent(value);
+		}
+
+		if( value != null ) queryString.push(result);
+	});
+
+	return queryString.join('&');
+};
+
+Array.prototype.toQueryString = function(){
+	var queryString = {};
+
+	this.forEach(function(value, i){ queryString[i] = value; });
+
+	return queryString;
+};
+
+Element.prototype.toQueryString = function(){
+	var queryString = [];
+
+	this.getElements(function(el){ return el.tagName.match(/input|select|textarea/i); }).each(function(el){
+		var type = el.type, value;
+
+		if( !el.name || el.disabled || type == 'submit' || type == 'reset' || type == 'file' || type == 'image' ) return;
+		if( el.get('tag') == 'select' ){
+			value = el.getSelected().map(function(opt){ return opt.get('value'); });
+		}
+		else if( (type == 'radio' || type == 'checkbox') && !el.checked ){
+			value = null;
+		}
+		else{
+			value = el.get('value');
+		}
+
+		if( !(value instanceof Array) ) value = [value];
+		value.forEach(function(val){
+			if( typeof val != 'undefined' ) queryString.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(val));
+		});
+	});
+
+	return queryString.join('&');
+};

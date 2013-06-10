@@ -14,8 +14,8 @@ Item.extend('view.tree', 'selector', {
 		return this.getDom('root');
 	},
 
-	getChildItemName: function(){
-		return 'view.tree.option';
+	getChildItem: function(){
+		return Item('view.tree.option');
 	},
 
 	getHTML: function(){

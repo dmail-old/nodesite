@@ -10,12 +10,12 @@ Element.prototype = Browser.Element.prototype;
 Element.constructors = {};
 document.newElement = function(tag, props){
 	var element = document.createElement(tag);
-	
+
 	if( props ){
 		if( props.checked != null ) props.defaultChecked = props.checked;
 		element.set(props);
 	}
-	
+
 	return element;
 };
 
@@ -37,9 +37,9 @@ document.html = document.documentElement;
 if( !('classList' in Element.prototype) ){
 	Object.defineProperty(Element.prototype, 'classList', function(){
 		var element = this;
-		var list = Item.create('list.string', this.className);
+		var list = Item.new('list.string', this.className);
 		list.update = function(){ element.className = this.toString(); };
-		
+
 		return list;
 	});
 }
@@ -48,29 +48,29 @@ Element.implement({
 	hasClass: function(name){
 		return this.classList.contains(name);
 	},
-	
+
 	addClass: function(name){
 		this.classList.add(name);
 		return this;
 	},
-	
+
 	removeClass: function(name){
 		this.classList.remove(name);
 		return this;
 	}
 });
 
-Element.implement({	
+Element.implement({
 	toggleClass: function(name, force){
 		if( force === undefined ) force = !this.hasClass(name);
 		return force ? this.addClass(name) : this.removeClass(name);
 	},
-	
+
 	destroy: function(){
 		this.clean().getElements('*').call('clean');
 		this.dispose();
 		return null;
-	},	
+	},
 
 	getSelected: function(){
 		//this.selectedIndex; // Safari 3.2.1
@@ -103,12 +103,12 @@ Element.implement({
 	adopt: function(){
 		var parent = this, fragment, elements = toArray(arguments), length = elements.length;
 		if( length > 1 ) parent = fragment = document.createDocumentFragment();
-		
+
 		for(var i = 0; i < length; i++){
 			var element = elements[i];
 			if (element) parent.appendChild(element);
 		}
-		
+
 		if( fragment ) this.appendChild(fragment);
 
 		return this;
@@ -136,16 +136,16 @@ Element.implement({
 	wraps: function(el, where){
 		return this.replaces(el).grab(el, where);
 	},
-	
+
 	dispose: function(){
 		return this.parentNode ? this.parentNode.removeChild(this) : this;
 	},
-	
+
 	empty: function(){
 		Array.prototype.call.call(this.childNodes, 'dispose');
 		return this;
 	},
-	
+
 	clean: function(){
 		if( this.removeListeners ) this.removeListeners();
 		if( this.clearAttributes ) this.clearAttributes();

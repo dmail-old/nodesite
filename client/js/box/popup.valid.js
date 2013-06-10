@@ -3,12 +3,12 @@ function suggest(title, message, choices, callback){
 	function onclose(){
 		callback.call(this, choices[choices.length-1]);
 	}
-	
+
 	if( !(choices instanceof Array) ) choices = [choices];
-	
+
 	var buttons = choices.map(function(choice, i){
 		if( typeof choice == 'string' ) choice = {value: choice};
-		
+
 		var button = {
 			type: 'button',
 			'class': 'vx',
@@ -19,14 +19,14 @@ function suggest(title, message, choices, callback){
 				callback.call(popup, choice);
 			}
 		};
-		
+
 		// focus sur le premier choix
 		if( i === 0 ) button['data-autofocus'] = true;
-		
+
 		return button;
 	});
-	
-	var popup = Item.create('domrectangle.box.popup', {
+
+	var popup = Item.new('domrectangle.box.popup', {
 		title: title,
 		properties: {
 			'class': 'box popup big valid'
@@ -38,14 +38,14 @@ function suggest(title, message, choices, callback){
 		},
 		buttons: buttons
 	});
-	
+
 	popup.on('close', onclose);
 	popup.done = function(e){
 		this.off('close', onclose);
 		this.close(e);
 	};
 	popup.open();
-	
+
 	return popup;
 }
 

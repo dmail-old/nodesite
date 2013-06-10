@@ -12,15 +12,15 @@ Item.define('model', {}, 'emitter', {
 		this.cid = this.cid++;
 	},
 
-	getModelItemName: function(){
-		return this.__name__;
+	getModelItem: function(){
+		return Item.proto(this);
 	},
 
 	create: function(data){
-		var name = this.getModelItemName();
+		var item = this.getModelItem();
 
-		if( Item.is(name, data) ) return data;
-		return Item.create(name, data);		
+		if( item.isPrototypeOf(data) ) return data;
+		return Item.new(item, data);
 	},
 
 	parse: function(properties){
@@ -99,7 +99,7 @@ Item.define('servermodel', {
 	},
 
 	createAction: function(name, args){
-		var action = Item.create('action', this, name, args);
+		var action = Item.new('action', this, name, args);
 		return action;
 	},
 

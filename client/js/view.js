@@ -12,11 +12,11 @@ Item.define('view', {}, 'emitter', {
 		// we have to set it manually because this can be called with an other context
 		// that's why Item doesn't provide help as this.class or this.super
 		this.constructor = Item('view').constructor;
- 
+
 		this.constructor.instances[this.id = this.constructor.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = Item.create('listener', null, this.modelEvents, this);
+		this.modelListener = Item.new('listener', null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -53,7 +53,7 @@ Item.define('view', {}, 'emitter', {
 	},
 
 	getClassName: function(){
-		return Item.create('list.string', this.className);
+		return Item.new('list.string', this.className);
 	},
 
 	getAttributes: function(){

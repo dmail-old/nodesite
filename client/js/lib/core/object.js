@@ -65,7 +65,6 @@ Object.mergePair = function(key, value){
 		var current = this[key];
 
 		if( typeof current == 'object' && current !== null ){
-			current = this[key] = Object.create(current);
 			Object.eachOwnPair(value, Object.mergePair, current);
 		}
 		else{

@@ -22,7 +22,7 @@ Item.extend('view', 'tree', 'treestructure', 'treetraversal', 'treefinder', {
 	},
 
 	constructor: function(){
-		// this.treeEmitter = Item.create('emitter.tree', this);
+		// this.treeEmitter = Item.new('emitter.tree', this);
 		// this.on('*', function(name, args){
 		// 	args = [this].concat(args);
 		// 	this.treeEmitter.applyListeners(name, args);

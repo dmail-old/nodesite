@@ -17,9 +17,9 @@ Item.define('controller', {
 	events: null,
 	requires: null,
 
-	constructor: function(view){		
-		this.viewListener = Item.create('listener', null, this.viewEvents, this);
-		this.elementListener = Item.create('listener.event', null, this.events, this);
+	constructor: function(view){
+		this.viewListener = Item.new('listener', null, this.viewEvents, this);
+		this.elementListener = Item.new('listener.event', null, this.events, this);
 		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
@@ -47,7 +47,7 @@ Item.define('controller', {
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = Item.create('controller.' + name, this.view);
+				instance = Item.new('controller.' + name, this.view);
 			}
 		}
 

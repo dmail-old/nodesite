@@ -58,7 +58,7 @@ var DB = {
 	getTable: function(name){
 		var table = this.tables[name];
 		if( !table ){
-			table = this.tables[name] = Item.create('table', name);
+			table = this.tables[name] = Item.new('table', name);
 		}
 		return table;
 	},

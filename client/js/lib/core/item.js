@@ -25,7 +25,7 @@ provides:
 	Function.prototype.implement, Function.prototype.complement
 */
 
-var Item = window.Item = function(name){	
+var Item = window.Item = function(name){
 	if( typeof name == 'string' ){
 		if( name in Item.items ){
 			name = Item.items[name];
@@ -33,7 +33,7 @@ var Item = window.Item = function(name){
 		else{
 			console.trace();
 			throw new Error('class ' + name + ' not found');
-		}			
+		}
 	}
 	return name;
 };
@@ -42,12 +42,36 @@ Item.exists = function(name){
 	return name in Item.items;
 };
 
+Item.proto = function(item){
+	return Object.getPrototypeOf(item);
+};
+
 Item.is = function(name, object){
-	return '__name__' in object && object.__name__ === name;
+	return Item(name).isPrototypeOf(object);
+};
+
+// set key/value pair in this creating conflictual object and merging them
+Item.implementPair = function(key, value){
+
+	if( typeof value == 'object' && value !== null ){
+		var current = this[key];
+		if( typeof current == 'object' && current !== null ){
+			current = this[key] = Object.create(current);
+			Object.eachOwnPair(value, Item.implementPair, current);
+		}
+		else{
+			Object.setPair.apply(this, arguments);
+		}
+	}
+	else{
+		Object.setPair.apply(this, arguments);
+	}
+
+	return this;
 };
 
 Item.implement = function(){
-	Array.eachObject(arguments, 'eachPair', Object.mergePair, this);
+	Array.eachObject(arguments, 'eachPair', Item.implementPair, this);
 };
 
 Item.complement = function(){
@@ -74,7 +98,7 @@ Item.define = function(name, object){
 			if( typeof arg == 'string' ) arg = Item(arg);
 			Item.implement.call(object, arg);
 		}
-	}	
+	}
 
 	object.implement = Item.implement;
 
@@ -103,7 +127,7 @@ Item.extend = function(parent, name){
 };
 
 // return an instance of object calling it's constructor
-Item.create = function(object){
+Item.new = function(object){
 	if( typeof object == 'string' ){
 		object = Item(object);
 	}
@@ -116,17 +140,22 @@ Item.create = function(object){
 };
 
 Item.define('options', {
-	setOptions: function(clientOptions){
-		var options = {};
+	setOptions: function(options){
 
-		if( 'options' in this ){
-			Object.merge(options, this.options);
-		}
-		if( clientOptions ){
-			Object.merge(options, clientOptions);
+		// only if this has not yet an options object
+		if( !this.hasOwnProperty('options') ){
+			// create object derived from parent options
+			if( 'options' in this ){
+				this.options = Object.copy(this.options);
+			}
+			else{
+				this.options = {};
+			}
 		}
 
-		this.options = options;
+		if( options ){
+			Object.merge(this.options, options);
+		}
 
 		return this;
 	}
