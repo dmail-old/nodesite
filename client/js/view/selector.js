@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('view.tree', 'selector', {
+Item('view.tree').extend('selector', {
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',

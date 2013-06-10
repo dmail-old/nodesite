@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('emitter', 'tree', {
+Item('emitter').extend('tree', {
 	applyListeners: function(name, args){
 		if( this.bind.parentNode ){
 			this.bind.parentNode.treeEmitter.applyListeners(name, args);
@@ -9,7 +9,7 @@ Item.extend('emitter', 'tree', {
 	}
 });
 
-Item.extend('view', 'tree', 'treestructure', 'treetraversal', 'treefinder', {
+Item('view').extend('tree', 'treestructure', 'treetraversal', 'treefinder', {
 	//className: 'node',
 	modelEvents: {
 		'adopt': function(child, index){

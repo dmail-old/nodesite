@@ -1,4 +1,4 @@
-Item.define('treetraversal', {
+Item('treetraversal', {
 	// call fn on every child of the element, returns true to break the loop
 	crossChild: function(fn, bind){
 		var children = this.children, i = 0, j = children.length;
@@ -77,7 +77,7 @@ unused, cross next or prev node
 
 TreeTraversal.crossNextNode = function(fn, bind){
 	var node = this, next, first, ret;
-	
+
 	while( true ){
 		first = node.firstChild;
 		if( first ){
@@ -85,7 +85,7 @@ TreeTraversal.crossNextNode = function(fn, bind){
 			ret = fn.call(bind, node);
 			if( ret === true ) break;
 		}
-		
+
 		while( node.parentNode ){
 			next = node.nextSibling;
 			if( next ){
@@ -97,17 +97,17 @@ TreeTraversal.crossNextNode = function(fn, bind){
 			node = node.parentNode;
 		}
 	}
-	
+
 	return this;
 };
 
 TreeTraversal.crossPrevNode = function(fn, bind){
 	var node = this, parent, prev, last, ret;
-	
+
 	while( true ){
 		parent = node.parentNode;
 		if( !parent ) break;
-		
+
 		prev = node.previousSibling;
 		if( prev ){
 			node = prev;
@@ -116,13 +116,13 @@ TreeTraversal.crossPrevNode = function(fn, bind){
 			ret = fn.call(bind, node);
 			if( ret == true ) break;
 		}
-		
+
 		node = parent;
 		ret = fn.call(bind, node);
 		if( ret === true ) break;
 	}
 
-	return this;	
+	return this;
 };
 
 in the case we want to add it to Element.prototype we have to add the lastNode property
@@ -153,33 +153,33 @@ Object.defineProperties(TreeStructure, {
 			return this.children.length === 0 ? null : this.children[0];
 		}
 	},
-	
+
 	'lastChild': {
 		'get': function(){
 			return this.children.length === 0 ? null : this.children[this.children.length - 1];
 		}
 	},
-	
+
 	'nextSibling': {
 		'get': function(){
 			var node = this, parent = node.parentNode, next = null;
-			
+
 			if( parent ){
 				next = parent.children[parent.children.indexOf(node) + 1] || null;
 			}
-			
+
 			return next;
 		}
 	},
-	
-	'previousSibling': {		
-		'get': function(){		
+
+	'previousSibling': {
+		'get': function(){
 			var node = this, parent = node.parentNode, prev = null;
-			
+
 			if( parent ){
 				prev = parent.children[parent.children.indexOf(node) - 1] || null;
 			}
-			
+
 			return prev;
 		}
 	}

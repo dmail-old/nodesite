@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller.tree', 'state', {
+Item('controller.tree').extend('state', {
 	constructor: function(view, state, multiple){
 		this.name = state;
 		this.events = {};
@@ -96,9 +96,9 @@ Item.extend('controller.tree', 'state', {
 
 Object.eachPair(Item('viewstate').states, function(name){
 	Item('controller').providers[name] = function(view){
-		return Item.new('controller.tree.state', view, name);
+		return Item('controller.tree.state').new(view, name);
 	};
 	Item('controller').providers[name + 's'] = function(view){
-		return Item.new('controller.tree.state', view, name, true);
+		return Item('controller.tree.state').new(view, name, true);
 	};
 });

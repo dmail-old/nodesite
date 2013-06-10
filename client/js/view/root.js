@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('view.tree', 'root', {
+Item('view.tree').extend('root', {
 	tagName: 'ul',
 	className: 'root',
 	attributes: {

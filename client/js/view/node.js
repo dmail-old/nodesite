@@ -1,4 +1,4 @@
-Item.extend('view.tree', 'node', 'viewstate', {
+Item('view.tree').extend('node', 'viewstate', {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {

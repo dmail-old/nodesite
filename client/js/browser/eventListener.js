@@ -1,4 +1,4 @@
-Item.extend('listener', 'event', {
+Item('listener').extend('event', {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},

@@ -1,6 +1,6 @@
 /* global Finder, TreeTraversal */
 
-Item.define('treefinder', {
+Item('treefinder', {
 	matchIterator: function(iterator, match, first){
 		return Finder.matchIterator.call(this, iterator, match, first);
 	},

@@ -10,7 +10,7 @@ require: String, Array, Item
 
 */
 
-Item.extend('list', 'string', {
+Item('list').extend('string', {
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);

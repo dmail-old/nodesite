@@ -7,7 +7,7 @@ mousedown focused se produit avant mousedownmultiselect et shiftView est faussé
 
 */
 
-Item.extend('controller', 'multiselection', {
+Item('controller').extend('multiselection', {
 	requires: ['selecteds', 'focused', 'tree.visibles'],
 
 	constructor: function(){

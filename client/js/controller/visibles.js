@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller.tree', 'visibles', {
+Item('controller.tree').extend('visibles', {
 	events: {
 		'view:insertElement': function(view){
 			this.changeVisibility(view, false);

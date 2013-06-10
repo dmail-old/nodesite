@@ -1,4 +1,4 @@
-var FileInfo = Item.define('fileinfo', {
+module.exports = Item('base').extend('fileinfo', {
 	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;
@@ -20,5 +20,3 @@ var FileInfo = Item.define('fileinfo', {
 		return data;
 	}
 });
-
-module.exports = FileInfo;

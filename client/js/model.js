@@ -1,7 +1,7 @@
 /* global */
 
 // model
-Item.define('model', {}, 'emitter', {
+Item('base').extend('model', 'emitter', {
 	validationError: null,
 	cid: 0,
 
@@ -13,14 +13,14 @@ Item.define('model', {}, 'emitter', {
 	},
 
 	getModelItem: function(){
-		return Item.proto(this);
+		return this.getPrototype();
 	},
 
 	create: function(data){
 		var item = this.getModelItem();
 
 		if( item.isPrototypeOf(data) ) return data;
-		return Item.new(item, data);
+		return item.new(data);
 	},
 
 	parse: function(properties){
@@ -87,7 +87,7 @@ Item.define('model', {}, 'emitter', {
 	}
 });
 
-Item.define('servermodel', {
+Item('servermodel', {
 	definitions: {
 		parsers: {},
 		cancels: {},
@@ -99,7 +99,7 @@ Item.define('servermodel', {
 	},
 
 	createAction: function(name, args){
-		var action = Item.new('action', this, name, args);
+		var action = Item('action').new(this, name, args);
 		return action;
 	},
 
@@ -144,7 +144,7 @@ Item.define('servermodel', {
 	}
 });
 
-Item.define('action', {
+Item('base').extend('action', {
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

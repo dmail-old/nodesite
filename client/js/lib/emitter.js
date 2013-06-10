@@ -8,7 +8,7 @@ require: Item, Object
 
 */
 
-Item.define('emitter', {
+Item('base').extend('emitter', {
 	$events: {},
 
 	constructor: function(bind){
@@ -21,7 +21,7 @@ Item.define('emitter', {
 		}
 		else{
 			return this.$events = Object.clone(this.$events);
-		}		
+		}
 	},
 
 	deleteEvents: function(){

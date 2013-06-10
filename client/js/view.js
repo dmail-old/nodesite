@@ -1,6 +1,6 @@
 /* global */
 
-Item.define('view', {}, 'emitter', {
+Item('base').extend('view', 'emitter', {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -16,7 +16,7 @@ Item.define('view', {}, 'emitter', {
 		this.constructor.instances[this.id = this.constructor.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = Item.new('listener', null, this.modelEvents, this);
+		this.modelListener = Item('listener').new(null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -53,7 +53,7 @@ Item.define('view', {}, 'emitter', {
 	},
 
 	getClassName: function(){
-		return Item.new('list.string', this.className);
+		return Item('list.string').new(this.className);
 	},
 
 	getAttributes: function(){
@@ -203,7 +203,7 @@ Item('view').on('*', function(name, args){
 	}
 });
 
-Item.define('viewstate', {
+Item('viewstate', {
 	states: {
 		lighted: ['light', 'unlight'],
 		selected: ['select', 'unselect'],

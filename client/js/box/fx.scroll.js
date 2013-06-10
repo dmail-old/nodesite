@@ -1,6 +1,6 @@
 /* global Fx, Browser */
 
-Item.extend('fx', 'scroll', {
+Item('fx').extend('scroll', {
 	options: {
 		step: 30,
 		wheelStops: true

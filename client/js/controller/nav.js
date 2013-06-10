@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller', 'nav', {
+Item('controller').extend('nav', {
 	requires: ['focused', 'tree.visibles'],
 	events: {
 		'keydown': function(e){

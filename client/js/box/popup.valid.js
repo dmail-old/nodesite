@@ -26,7 +26,7 @@ function suggest(title, message, choices, callback){
 		return button;
 	});
 
-	var popup = Item.new('domrectangle.box.popup', {
+	var popup = Item('domrectangle.box.popup').new({
 		title: title,
 		properties: {
 			'class': 'box popup big valid'

@@ -75,7 +75,7 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = Item.define('domrectangle', {}, 'emitter', 'bound', {
+var DOMRectangle = Item('base').extend('domrectangle', 'emitter', 'bound', {
 	name: 'domrectangle',
 	options: {
 		axis: 'xy',
@@ -100,7 +100,7 @@ var DOMRectangle = Item.define('domrectangle', {}, 'emitter', 'bound', {
 
 		this.element.storage.set(this.name, this);
 
-		this.scroller = Item.new('fx.scroll', {
+		this.scroller = Item('fx.scroll').new({
 			link: 'ignore',
 			transition: 'linear',
 			wheelStops: true,
@@ -291,7 +291,7 @@ DOMRectangle.implement({
 	},
 
 	// déplace et resize en même temps
-	extend: function(axis, value, e){
+	extendTo: function(axis, value, e){
 		if( !this.reseted ) this.reset();
 
 		var
@@ -431,7 +431,7 @@ DOMRectangle.implement({
 			// on resize gauche ou haut (resize + move)
 			if( this.resizer.contains(axis == 'x' ? 'w' : 'n') ){
 				name = axis == 'x' ? 'left' : 'top';
-				return this.extend(axis, this.start[name] + value, e);
+				return this.extendTo(axis, this.start[name] + value, e);
 			}
 			// on resize droite ou bas (resize)
 			else if( this.resizer.contains(axis == 'x' ? 'e' : 's') ){
@@ -583,18 +583,18 @@ DOMRectangle.retrieveInstance = function(e){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target;
 
-			if( element ) instance = Item.new('domrectangle', element, true);
+			if( element ) instance = Item('domrectangle').new(element, true);
 		}
 		else if( e.target.hasClass('vector') ){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target.parentNode;
 
-			if( element ) instance = Item.new('domrectangle', element, true);
+			if( element ) instance = Item('domrectangle').new(element, true);
 		}
 		else if( e.type == 'keydown' && e.target.hasClass('selectionRectangle') ){
 			element = e.target;
 
-			if( element ) instance = Item.new('domrectangle', element, true);
+			if( element ) instance = Item('domrectangle').new(element, true);
 		}
 	}
 

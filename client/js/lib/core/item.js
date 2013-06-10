@@ -12,134 +12,99 @@ provides: Item
 ...
 */
 
-/*
-
-name: Implement
-
-provides:
-	Object.implement, Object.complement,
-	String.implement, String.complement,
-	Number.implement, Number.complement,
-	Function.implement, Function.complement,
-	Array.implement, Array.complement
-	Function.prototype.implement, Function.prototype.complement
-*/
-
-var Item = window.Item = function(name){
-	if( typeof name == 'string' ){
-		if( name in Item.items ){
-			name = Item.items[name];
+var Item = window.Item = function(key, value){
+	switch(arguments.length){
+	case 0:
+		return Item.store;
+	case 1:
+		if( typeof key == 'string' ){
+			if( key in Item.store ){
+				key = Item.store[key];
+			}
+			else{
+				key = null;
+			}
 		}
-		else{
-			console.trace();
-			throw new Error('class ' + name + ' not found');
-		}
+		return key;
+	case 2:
+		Item.store[key] = value;
+		return value;
 	}
-	return name;
 };
 
-Item.exists = function(name){
-	return name in Item.items;
-};
+Item.store = {};
 
-Item.proto = function(item){
-	return Object.getPrototypeOf(item);
-};
+Item('base', {
+	// return object giving him name & implement other arguments
+	extend: function(name){
+		if( '__name__' in this ){
+			name = this.__name__ + '.' + name;
+		}
 
-Item.is = function(name, object){
-	return Item(name).isPrototypeOf(object);
-};
+		var object = Object.create(this), i = 1, j = arguments.length, arg;
 
-// set key/value pair in this creating conflictual object and merging them
-Item.implementPair = function(key, value){
+		for(;i<j;i++){
+			arg = arguments[i];
+			if( typeof arg == 'string' ) arg = Item(arg);
+			object.implement(arg);
+		}
 
-	if( typeof value == 'object' && value !== null ){
-		var current = this[key];
-		if( typeof current == 'object' && current !== null ){
-			current = this[key] = Object.create(current);
-			Object.eachOwnPair(value, Item.implementPair, current);
+		//object.__name__ = name;
+		Object.defineProperty(object, '__name__', {
+			writable: true,
+			ennumerable: false,
+			value: name
+		});
+
+		Item(name, object);
+
+		return object;
+	},
+
+	getPrototype: function(){
+		return Object.getPrototypeOf(this);
+	},
+
+	getParentPrototype: function(){
+		return this.getPrototype().getPrototype();
+	},
+
+	// set key/value pair in this creating conflictual object and merging them
+	implementPair: function(key, value){
+
+		if( typeof value == 'object' && value !== null ){
+			var current = this[key];
+			if( typeof current == 'object' && current !== null ){
+				current = this[key] = Object.create(current);
+				Object.eachOwnPair(value, Item('base').implementPair, current);
+			}
+			else{
+				Object.setPair.apply(this, arguments);
+			}
 		}
 		else{
 			Object.setPair.apply(this, arguments);
 		}
+
+		return this;
+	},
+
+	implement: function(){
+		Array.eachObject(arguments, 'eachPair', this.implementPair, this);
+		return this;
+	},
+
+	// return an instance of this calling it's constructor
+	new: function(){
+		var instance = Object.create(this);
+
+		if( 'constructor' in instance ) instance.constructor.apply(instance, arguments);
+
+		return instance;
 	}
-	else{
-		Object.setPair.apply(this, arguments);
-	}
-
-	return this;
-};
-
-Item.implement = function(){
-	Array.eachObject(arguments, 'eachPair', Item.implementPair, this);
-};
-
-Item.complement = function(){
-	Array.eachObject(arguments, 'eachPair', Object.completePair, this);
-};
-
-[Object, String, Number, Function, Array].forEach(function(item){
-	item.implement = Item.implement.bind(item.prototype);
-	item.complement = Item.complement.bind(item.prototype);
 });
 
-Item.items = {};
-
-// return object giving him name & implement properties, merged with arguments
-Item.define = function(name, object){
-	var i = 2, j = arguments.length, arg;
-
-	if( j == 1 ){
-		object = {};
-	}
-	else{
-		for(;i<j;i++){
-			arg = arguments[i];
-			if( typeof arg == 'string' ) arg = Item(arg);
-			Item.implement.call(object, arg);
-		}
-	}
-
-	object.implement = Item.implement;
-
-	//object.__name__ = name;
-	Object.defineProperty(object, '__name__', {
-		writable: true,
-		ennumerable: false,
-		value: name
-	});
-
-	this.items[name] = object;
-
-	return object;
-};
-
-// Item.extend create an object starting from an instance of parent
-Item.extend = function(parent, name){
-	if( typeof parent == 'string' ){
-		parent = Item(parent);
-	}
-	if( '__name__' in parent ){
-		name = parent.__name__ + '.' + name;
-	}
-
-	return this.define.apply(this, [name, Object.create(parent)].concat(toArray(arguments, 2)));
-};
-
-// return an instance of object calling it's constructor
-Item.new = function(object){
-	if( typeof object == 'string' ){
-		object = Item(object);
-	}
-
-	var instance = Object.create(object);
-
-	if( 'constructor' in instance ) instance.constructor.apply(instance, toArray(arguments, 1));
-
-	return instance;
-};
-
-Item.define('options', {
+Item('options', {
 	setOptions: function(options){
 
 		// only if this has not yet an options object
@@ -161,7 +126,7 @@ Item.define('options', {
 	}
 });
 
-Item.define('chain', {
+Item('chain', {
 	resetChain: function(){
 		this.$chain = [];
 	},
@@ -191,7 +156,7 @@ Item.define('chain', {
 	}
 });
 
-Item.define('bound', {
+Item('bound', {
 	resetBound: function(){
 		this.bound = {};
 	},
@@ -207,4 +172,30 @@ Item.define('bound', {
 
 		return bound[key];
 	}
+});
+
+/*
+
+name: Implement
+
+provides:
+	Object.implement, Object.complement,
+	String.implement, String.complement,
+	Number.implement, Number.complement,
+	Function.implement, Function.complement,
+	Array.implement, Array.complement
+
+*/
+
+Item.implement = function(){
+	Array.eachObject(arguments, 'eachPair', Object.mergePair, this);
+};
+
+Item.complement = function(){
+	Array.eachObject(arguments, 'eachPair', Object.completePair, this);
+};
+
+[Object, String, Number, Function, Array].forEach(function(constructor){
+	constructor.implement = Item.implement.bind(constructor.prototype);
+	constructor.complement = Item.complement.bind(constructor.prototype);
 });

@@ -21,7 +21,7 @@ Element.Properties.onclick = {
 	}
 };
 
-Item.extend('domrectangle.box', 'popup', {
+Item('domrectangle.box').extend('popup', {
 	options: {
 		properties: {
 			'html': '\

@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('model', 'tree', 'treestructure', 'treetraversal', 'treefinder', {
+Item('model').extend('tree', 'treestructure', 'treetraversal', 'treefinder', {
 	name: '',
 
 	constructor: function(){

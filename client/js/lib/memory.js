@@ -13,7 +13,7 @@ memory.restore(action, mode): function you have to define to tell how to cancel 
 
 */
 
-Item.define('memory', {
+Item('base').extend('memory', {
 	constructor: function(limit){
 		this.limit = limit || 10;
 		this.reset();

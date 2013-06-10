@@ -1,5 +1,5 @@
 /* global */
 
-Item.extend('view.tree', 'option', {
+Item('view.tree').extend('option', {
 
 });

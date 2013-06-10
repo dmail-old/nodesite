@@ -1,6 +1,6 @@
 /* global */
 
-Item.define('controller', {
+Item('base').extend('controller', {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -18,8 +18,8 @@ Item.define('controller', {
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = Item.new('listener', null, this.viewEvents, this);
-		this.elementListener = Item.new('listener.event', null, this.events, this);
+		this.viewListener = Item('listener').new(null, this.viewEvents, this);
+		this.elementListener = Item('listener.event').new(null, this.events, this);
 		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
@@ -47,7 +47,7 @@ Item.define('controller', {
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = Item.new('controller.' + name, this.view);
+				instance = Item('controller.' + name).new(this.view);
 			}
 		}
 

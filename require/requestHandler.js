@@ -1,4 +1,4 @@
-Item.define('fileresponse', {
+Item('base').extend('fileresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -44,7 +44,7 @@ Item.define('fileresponse', {
 
 	start: function(path){
 		var
-			file = Item.new('file', root + '/client/' + path),
+			file = Item('file').new(root + '/client/' + path),
 			extension = file.getExtension(),
 			acceptEncoding
 		;
@@ -199,14 +199,14 @@ var Page = {
 	}
 };
 
-Item.define('errorresponse', {
+Item('base').extend('errorresponse', {
 	constructor: function(response){
 		response.writeHead(500, 'Internal server error');
 		response.end();
 	}
 });
 
-Item.define('pageresponse', {
+Item('base').extend('pageresponse', {
 	constructor: function(response){
 		function serveError(e){
 			logger.error(e);
@@ -216,7 +216,7 @@ Item.define('pageresponse', {
 			response.end();
 		}
 
-		var htmlFile = Item.new('file', root + '/app.html'), html;
+		var htmlFile = Item('file').new(root + '/app.html'), html;
 
 		try{
 			html = String(htmlFile.readSync());
@@ -262,7 +262,7 @@ Item.define('pageresponse', {
 	}
 });
 
-Item.define('ajaxresponse', {
+Item('base').extend('ajaxresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -398,7 +398,7 @@ Item.define('ajaxresponse', {
 	sendFile: function(filepath){
 		console.log('senfile', filepath);
 		this.response.request.parsedUrl.pathname = filepath;
-		return Item.new('fileresponse', this.response);
+		return Item('fileresponse').new(this.response);
 	},
 
 	error: function(e){
@@ -481,7 +481,7 @@ function findHandler(request, callback){
 
 	// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 	dirname = pathname.substr(0, slash);
-	file = Item.new('file', root + '/client/' + dirname);
+	file = Item('file').new(root + '/client/' + dirname);
 	file.isDir(function(isdir){ return callback(isdir ? 'file' : 'page'); });
 }
 
@@ -489,14 +489,14 @@ function handle(request, response){
 	function onfind(handlerName){
 		response.request = request;
 
-		var name = handlerName + 'response';
+		var name = handlerName + 'response', item = Item(name);
 
-		if( Item.exists(name) ){
+		if( item ){
 			try{
-				Item.new(name, response);
+				item.new(response);
 			}
 			catch(e){
-				response.writeHead(500, 'Internal server error');
+				response.writeHead(500, 'Internal server error' + e);
 				response.end();
 			}
 		}

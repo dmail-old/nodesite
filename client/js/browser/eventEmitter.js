@@ -1,11 +1,11 @@
 /* global */
 
-Item.extend('emitter', 'event', {
+Item('emitter').extend('event', {
 	getEvents: function(){
 		var listeners = this.storage.listeners;
 
 		if( !listeners ) listeners = this.storage.listeners = {};
-		
+
 		return listeners;
 	},
 

@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller.tree', 'mouseoverlight', {
+Item('controller.tree').extend('mouseoverlight', {
 	requires: 'lighted',
 	events: {
 		'mouseover': function(view, e){

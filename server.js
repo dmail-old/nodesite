@@ -173,7 +173,7 @@ var Server = {
 	}
 };
 
-var Client = Item.define('client', {
+var Client = Item('base').extend('client', {
 	constructor: function(socket){
 		// console.log(socket.handshake.headers.cookie);
 		// grace au cookie de session, s'il existe on restaureras le compte de l'user

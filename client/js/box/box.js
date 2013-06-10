@@ -21,7 +21,7 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-Item.extend('domrectangle', 'box', 'options', {
+Item('domrectangle').extend('box', 'options', {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -161,7 +161,7 @@ Item.extend('domrectangle', 'box', 'options', {
 		else{
 			fx.options.onComplete = callback.bind(this);
 			if( this.fx ){ this.fx.cancel(); }
-			this.fx = Item.new('fx.morph', this.frame, fx.options).start(fx.styles);
+			this.fx = Item('fx.morph').new(this.frame, fx.options).start(fx.styles);
 		}
 		return this;
 	},

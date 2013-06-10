@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller.tree', 'mousedownmultiselect', {
+Item('controller.tree').extend('mousedownmultiselect', {
 	requires: 'multiselection',
 	events: {
 		'mousedown': function(view, e){

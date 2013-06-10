@@ -1,6 +1,6 @@
 /* global */
 
-Item.extend('controller.tree', 'mousedownselect', {
+Item('controller.tree').extend('mousedownselect', {
 	requires: 'selected',
 	events: {
 		mousedown: function(view, e){
