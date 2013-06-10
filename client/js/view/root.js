@@ -1,6 +1,6 @@
 /* global */
 
-Item('view.tree').extend('root', {
+NS('view.tree').extend('root', {
 	tagName: 'ul',
 	className: 'root',
 	attributes: {
@@ -8,7 +8,7 @@ Item('view.tree').extend('root', {
 	},
 
 	getChildItem: function(){
-		return Item('view.tree.node');
+		return NS('view.tree.node');
 	},
 
 	getChildrenElement: function(){

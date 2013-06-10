@@ -1,6 +1,6 @@
 /* global */
 
-Item('controller').extend('openstate', {
+NS('controller').extend('openstate', {
 	events: {
 		'mousedown': function(e){
 			this.view.toggle(e);

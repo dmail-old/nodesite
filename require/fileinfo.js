@@ -1,4 +1,4 @@
-module.exports = Item('proto').extend('fileinfo', {
+module.exports = NS('item').extend('fileinfo', {
 	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;

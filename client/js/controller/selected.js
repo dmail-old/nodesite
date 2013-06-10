@@ -1,6 +1,6 @@
 /* global */
 
-Item('controller.tree').extend('selected', {
+NS('controller.tree').extend('selected', {
 	events:{
 		'view:addclass:selected': function(view, e){
 			if( !e || e.type != 'mousemove' ) this.setSelected(view);

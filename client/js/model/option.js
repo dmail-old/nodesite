@@ -1,5 +1,5 @@
 /* global */
 
-Item('model.tree').extend('option', {
+NS('model.tree').extend('option', {
 
 });

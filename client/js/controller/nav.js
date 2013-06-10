@@ -1,6 +1,6 @@
 /* global */
 
-Item('controller').extend('nav', {
+NS('controller').extend('nav', {
 	requires: ['focused', 'tree.visibles'],
 	events: {
 		'keydown': function(e){
@@ -99,7 +99,7 @@ Item('controller').extend('nav', {
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return self.isEnabled(view) && Item('view').matchLetter(view, e.key);
+				return self.isEnabled(view) && NS('view').matchLetter(view, e.key);
 			}, 'right', index, true);
 		}
 	},
@@ -143,7 +143,7 @@ Item('controller').extend('nav', {
 	}
 });
 
-Item('view').matchLetter = function(view, letter){
+NS('view').matchLetter = function(view, letter){
 	var name = view.getDom('name');
 	return name && name.innerHTML.startsWith(letter);
 };

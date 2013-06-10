@@ -1,3 +1,3 @@
-Item('model.tree').extend('node', {
+NS('model.tree').extend('node', {
 
 });

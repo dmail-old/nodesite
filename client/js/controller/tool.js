@@ -1,6 +1,6 @@
 /* global */
 
-Item('controller.tree').extend('tool', {
+NS('controller.tree').extend('tool', {
 	events: {
 		'mousedown': function(view, e){
 			if( view && view != this.view && e.target.hasClass('tool') ){

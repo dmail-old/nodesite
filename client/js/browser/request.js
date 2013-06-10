@@ -2,7 +2,7 @@
 
 var progressSupport = 'onprogress' in new XMLHttpRequest();
 
-Item('proto').extend('request', {}, 'emitter', 'options', 'chain', {
+NS('item').extend('request', 'emitter', 'options', 'chain', {
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},

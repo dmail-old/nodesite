@@ -1,4 +1,4 @@
-Item('listener').extend('event', {
+NS('listener').extend('event', {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -22,5 +22,5 @@ Item('listener').extend('event', {
 	}
 });
 
-delete Item('listener.event').handleListener;
-delete Item('listener.event').applyHandler;
+delete NS('listener.event').handleListener;
+delete NS('listener.event').applyHandler;

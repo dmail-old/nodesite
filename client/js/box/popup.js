@@ -21,7 +21,7 @@ Element.Properties.onclick = {
 	}
 };
 
-Item('domrectangle.box').extend('popup', {
+NS('domrectangle.box').extend('popup', {
 	options: {
 		properties: {
 			'html': '\
@@ -43,8 +43,8 @@ Item('domrectangle.box').extend('popup', {
 		title: 'Titre',
 		content: 'Hello world',
 		zIndex: 90,
-		left: Item('domrectangle.box').calcPositionSpacePercent.curry('x', 0.5),
-		top: Item('domrectangle.box').calcPositionSpacePercent.curry('y', 0.5),
+		left: NS('domrectangle.box').calcPositionSpacePercent.curry('x', 0.5),
+		top: NS('domrectangle.box').calcPositionSpacePercent.curry('y', 0.5),
 		overflow: 'auto',
 		autoOpen: true,
 		master: true,
@@ -59,7 +59,7 @@ Item('domrectangle.box').extend('popup', {
 	},
 
 	constructor: function(){
-		Item('domrectangle.box').constructor.apply(this, arguments);
+		NS('domrectangle.box').constructor.apply(this, arguments);
 
 		if( this.options.submitclose ) this.on('submit', this.close);
 	},
@@ -70,7 +70,7 @@ Item('domrectangle.box').extend('popup', {
 		this.options.properties.html = this.options.properties.html.parse({title: this.options.title, content: this.options.content});
 
 		var
-			element = Item('domrectangle.box').createElement.call(this),
+			element = NS('domrectangle.box').createElement.call(this),
 			header = element.getElement('className:*header*'),
 			form = element.getElement('tagName:form'),
 			title = header.getElement('tagName:h1'),
@@ -173,7 +173,7 @@ Item('domrectangle.box').extend('popup', {
 // autres classes qui se serviront de Popup
 
 /*
-var popFiles = new Item({
+var popFiles = new NS({
 	Extends: Popup,
 	options:{
 		preview: false,

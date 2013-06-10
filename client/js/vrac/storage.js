@@ -1,4 +1,4 @@
-var Item = new Class({
+var NS = new Class({
 	constructor: function(){
 		this.clear();
 	},
@@ -27,7 +27,7 @@ var Item = new Class({
 });
 
 var Storage = new Class({
-	Extends: Item,
+	Extends: NS,
 
 	onset: function(){
 		this.length++;
@@ -49,19 +49,19 @@ var Storage = new Class({
 	clear: function(){
 		this.forEach(this.remove, this);
 		this.onclear();
-		return Item.prototype.clear.call(this);
+		return NS.prototype.clear.call(this);
 	},
 
 	set: function(key, value){
 		this.remove(key);
 		this.onset(key, value);
-		return Item.prototype.set.call(this, key, value);
+		return NS.prototype.set.call(this, key, value);
 	},
 
 	remove: function(key){
 		if( this.contains(key) ){
 			this.onremove(key, this.get(key));
-			Item.prototype.remove.call(this, key);
+			NS.prototype.remove.call(this, key);
 			return true;
 		}
 		return false;

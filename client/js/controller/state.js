@@ -1,6 +1,6 @@
 /* global */
 
-Item('controller.tree').extend('state', {
+NS('controller.tree').extend('state', {
 	constructor: function(view, state, multiple){
 		this.name = state;
 		this.events = {};
@@ -16,7 +16,7 @@ Item('controller.tree').extend('state', {
 		this.events['view:removeclass:' + state] = this.onremovestate;
 		this.events['view:leave'] = this.events['view:removeclass:' + state];
 
-		Item('controller.tree').constructor.call(this, view);
+		NS('controller.tree').constructor.call(this, view);
 	},
 
 	onaddstate: function(view, e){
@@ -94,11 +94,11 @@ Item('controller.tree').extend('state', {
 	}
 });
 
-Object.eachPair(Item('viewstate').states, function(name){
-	Item('controller').providers[name] = function(view){
-		return Item('controller.tree.state').new(view, name);
+Object.eachPair(NS('viewstate').states, function(name){
+	NS('controller').providers[name] = function(view){
+		return NS('controller.tree.state').new(view, name);
 	};
-	Item('controller').providers[name + 's'] = function(view){
-		return Item('controller.tree.state').new(view, name, true);
+	NS('controller').providers[name + 's'] = function(view){
+		return NS('controller.tree.state').new(view, name, true);
 	};
 });

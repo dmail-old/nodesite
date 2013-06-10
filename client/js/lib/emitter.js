@@ -4,11 +4,11 @@ name: Emitter
 
 description: Emitter provide methods to emit and listen for events
 
-require: Item, Object
+require: NS, Object
 
 */
 
-Item('proto').extend('emitter', {
+NS('item').extend('emitter', {
 	$events: {},
 
 	constructor: function(bind){

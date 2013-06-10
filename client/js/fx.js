@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-Item('proto').extend('fx', 'chain', 'emitter', 'options', {
+NS('item').extend('fx', 'chain', 'emitter', 'options', {
 	options: {
 		fps: 60,
 		unit: false,
@@ -62,7 +62,7 @@ Item('proto').extend('fx', 'chain', 'emitter', 'options', {
 	},
 
 	compute: function(from, to, delta){
-		return Item('fx').compute(from, to, delta);
+		return NS('fx').compute(from, to, delta);
 	},
 
 	check: function(){
@@ -88,7 +88,7 @@ Item('proto').extend('fx', 'chain', 'emitter', 'options', {
 		this.time = null;
 		this.transition = this.getTransition();
 		var frames = this.options.frames, fps = this.options.fps, duration = this.options.duration;
-		this.duration = Item('fx').Durations[duration] || duration.toInt();
+		this.duration = NS('fx').Durations[duration] || duration.toInt();
 		this.frameInterval = 1000 / fps;
 		this.frames = frames || Math.round(this.duration / this.frameInterval);
 		this.emit('start', this.subject);
@@ -139,7 +139,7 @@ Item('proto').extend('fx', 'chain', 'emitter', 'options', {
 	}
 });
 
-Object.append(Item('fx'), {
+Object.append(NS('fx'), {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},

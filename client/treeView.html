@@ -8,16 +8,16 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = Item('model.tree.node').new(treeData);
-var view = Item('view.tree.node').new(model);
-var rootView = Item('view.tree.root').new();
+var model = NS('model.tree.node').new(treeData);
+var view = NS('view.tree.node').new(model);
+var rootView = NS('view.tree.root').new();
 
-Item('controller.tree.indent').new(rootView);
-Item('controller.tree.tool').new(rootView);
-Item('controller.tree.mouseoverlight').new(rootView);
-Item('controller.tree.mousedownmultiselect').new(rootView); // 'mousedownselect');
-Item('controller.tree.mousedownfocus').new(rootView);
-Item('controller.nav').new(rootView);
+NS('controller.tree.indent').new(rootView);
+NS('controller.tree.tool').new(rootView);
+NS('controller.tree.mouseoverlight').new(rootView);
+NS('controller.tree.mousedownmultiselect').new(rootView); // 'mousedownselect');
+NS('controller.tree.mousedownfocus').new(rootView);
+NS('controller.nav').new(rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);
@@ -28,7 +28,7 @@ view.children[2].expand();
 view.children[3].expand();
 
 /*
-var FileModel = new Item({
+var FileModel = new NS({
 	Extends: NodeModel,
 	Implements: Model.serverMethods,
 

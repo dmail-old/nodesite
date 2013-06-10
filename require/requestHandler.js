@@ -1,4 +1,4 @@
-Item('proto').extend('fileresponse', {
+NS('item').extend('fileresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -44,7 +44,7 @@ Item('proto').extend('fileresponse', {
 
 	start: function(path){
 		var
-			file = Item('file').new(root + '/client/' + path),
+			file = NS('file').new(root + '/client/' + path),
 			extension = file.getExtension(),
 			acceptEncoding
 		;
@@ -199,14 +199,14 @@ var Page = {
 	}
 };
 
-Item('proto').extend('errorresponse', {
+NS('item').extend('errorresponse', {
 	constructor: function(response){
 		response.writeHead(500, 'Internal server error');
 		response.end();
 	}
 });
 
-Item('proto').extend('pageresponse', {
+NS('item').extend('pageresponse', {
 	constructor: function(response){
 		function serveError(e){
 			logger.error(e);
@@ -216,7 +216,7 @@ Item('proto').extend('pageresponse', {
 			response.end();
 		}
 
-		var htmlFile = Item('file').new(root + '/app.html'), html;
+		var htmlFile = NS('file').new(root + '/app.html'), html;
 
 		try{
 			html = String(htmlFile.readSync());
@@ -262,7 +262,7 @@ Item('proto').extend('pageresponse', {
 	}
 });
 
-Item('proto').extend('ajaxresponse', {
+NS('item').extend('ajaxresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -398,7 +398,7 @@ Item('proto').extend('ajaxresponse', {
 	sendFile: function(filepath){
 		console.log('senfile', filepath);
 		this.response.request.parsedUrl.pathname = filepath;
-		return Item('fileresponse').new(this.response);
+		return NS('fileresponse').new(this.response);
 	},
 
 	error: function(e){
@@ -481,7 +481,7 @@ function findHandler(request, callback){
 
 	// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 	dirname = pathname.substr(0, slash);
-	file = Item('file').new(root + '/client/' + dirname);
+	file = NS('file').new(root + '/client/' + dirname);
 	file.isDir(function(isdir){ return callback(isdir ? 'file' : 'page'); });
 }
 
@@ -489,7 +489,7 @@ function handle(request, response){
 	function onfind(handlerName){
 		response.request = request;
 
-		var name = handlerName + 'response', item = Item(name);
+		var name = handlerName + 'response', item = NS(name);
 
 		if( item ){
 			try{

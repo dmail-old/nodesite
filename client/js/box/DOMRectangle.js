@@ -75,7 +75,7 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = Item('proto').extend('domrectangle', 'emitter', 'bound', {
+var DOMRectangle = NS('item').extend('domrectangle', 'emitter', 'bound', {
 	name: 'domrectangle',
 	options: {
 		axis: 'xy',
@@ -86,7 +86,7 @@ var DOMRectangle = Item('proto').extend('domrectangle', 'emitter', 'bound', {
 	},
 
 	constructor: function(element, autodestroy){
-		Item('bound').constructor.call(this);
+		NS('bound').constructor.call(this);
 
 		var instance = element.storage.get(this.name);
 		if( instance ){
@@ -100,7 +100,7 @@ var DOMRectangle = Item('proto').extend('domrectangle', 'emitter', 'bound', {
 
 		this.element.storage.set(this.name, this);
 
-		this.scroller = Item('fx.scroll').new({
+		this.scroller = NS('fx.scroll').new({
 			link: 'ignore',
 			transition: 'linear',
 			wheelStops: true,
@@ -583,18 +583,18 @@ DOMRectangle.retrieveInstance = function(e){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target;
 
-			if( element ) instance = Item('domrectangle').new(element, true);
+			if( element ) instance = NS('domrectangle').new(element, true);
 		}
 		else if( e.target.hasClass('vector') ){
 			forId = e.target.getProperty('data-for') || e.target.getProperty('for');
 			element = forId ? $(forId) : e.target.parentNode;
 
-			if( element ) instance = Item('domrectangle').new(element, true);
+			if( element ) instance = NS('domrectangle').new(element, true);
 		}
 		else if( e.type == 'keydown' && e.target.hasClass('selectionRectangle') ){
 			element = e.target;
 
-			if( element ) instance = Item('domrectangle').new(element, true);
+			if( element ) instance = NS('domrectangle').new(element, true);
 		}
 	}
 

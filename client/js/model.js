@@ -1,7 +1,7 @@
 /* global */
 
 // model
-Item('proto').extend('model', 'emitter', {
+NS('item').extend('model', 'emitter', {
 	validationError: null,
 	cid: 0,
 
@@ -87,7 +87,7 @@ Item('proto').extend('model', 'emitter', {
 	}
 });
 
-Item('servermodel', {
+NS('servermodel', {
 	definitions: {
 		parsers: {},
 		cancels: {},
@@ -99,7 +99,7 @@ Item('servermodel', {
 	},
 
 	createAction: function(name, args){
-		var action = Item('action').new(this, name, args);
+		var action = NS('action').new(this, name, args);
 		return action;
 	},
 
@@ -144,7 +144,7 @@ Item('servermodel', {
 	}
 });
 
-Item('proto').extend('action', {
+NS('item').extend('action', {
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

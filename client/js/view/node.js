@@ -1,4 +1,4 @@
-Item('view.tree').extend('node', 'viewstate', {
+NS('view.tree').extend('node', 'viewstate', {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {
@@ -17,7 +17,7 @@ Item('view.tree').extend('node', 'viewstate', {
 	},
 
 	getClassName: function(){
-		var className = Item('view.tree').getClassName.call(this);
+		var className = NS('view.tree').getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');

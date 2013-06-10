@@ -1,4 +1,4 @@
-Item('proto').extend('listener', {
+NS('item').extend('listener', {
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

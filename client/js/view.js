@@ -1,6 +1,6 @@
 /* global */
 
-Item('proto').extend('view', 'emitter', {
+NS('item').extend('view', 'emitter', {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -10,13 +10,13 @@ Item('proto').extend('view', 'emitter', {
 
 	constructor: function(model){
 		// we have to set it manually because this can be called with an other context
-		// that's why Item doesn't provide help as this.class or this.super
-		this.constructor = Item('view').constructor;
+		// that's why NS doesn't provide help as this.class or this.super
+		this.constructor = NS('view').constructor;
 
 		this.constructor.instances[this.id = this.constructor.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = Item('listener').new(null, this.modelEvents, this);
+		this.modelListener = NS('listener').new(null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -53,7 +53,7 @@ Item('proto').extend('view', 'emitter', {
 	},
 
 	getClassName: function(){
-		return Item('list.string').new(this.className);
+		return NS('list.string').new(this.className);
 	},
 
 	getAttributes: function(){
@@ -150,7 +150,7 @@ Item('proto').extend('view', 'emitter', {
 	}
 });
 
-Object.append(Item('view').constructor, {
+Object.append(NS('view').constructor, {
 	instances: {},
 	IDAttribute: 'data-view',
 	lastID: 0,
@@ -183,12 +183,12 @@ Object.append(Item('view').constructor, {
 	}
 });
 
-Element.prototype.toView = function(){ return Item('view').constructor.findElementView(this); };
+Element.prototype.toView = function(){ return NS('view').constructor.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 
 // View émet des évènements via le DOM de son élément
-Item('view').on('*', function(name, args){
+NS('view').on('*', function(name, args){
 	if( this.element ){
 		var event = new CustomEvent('view:' + name, {
 			bubbles: true,
@@ -203,7 +203,7 @@ Item('view').on('*', function(name, args){
 	}
 });
 
-Item('viewstate', {
+NS('viewstate', {
 	states: {
 		lighted: ['light', 'unlight'],
 		selected: ['select', 'unselect'],
@@ -214,13 +214,13 @@ Item('viewstate', {
 	}
 });
 
-Object.eachPair(Item('viewstate').states, function(state, methods){
+Object.eachPair(NS('viewstate').states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
-	Item('viewstate')[on] = function(e){
+	NS('viewstate')[on] = function(e){
 		return this.addClass(state, e);
 	};
-	Item('viewstate')[off] = function(e){
+	NS('viewstate')[off] = function(e){
 		return this.removeClass(state, e);
 	};
 });

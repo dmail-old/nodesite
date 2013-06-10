@@ -1,6 +1,6 @@
 /* global */
 
-Item('proto').extend('controller', {
+NS('item').extend('controller', {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -18,8 +18,8 @@ Item('proto').extend('controller', {
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = Item('listener').new(null, this.viewEvents, this);
-		this.elementListener = Item('listener.event').new(null, this.events, this);
+		this.viewListener = NS('listener').new(null, this.viewEvents, this);
+		this.elementListener = NS('listener.event').new(null, this.events, this);
 		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
@@ -41,20 +41,20 @@ Item('proto').extend('controller', {
 			instance = this.view.controllers[name];
 		}
 		else{
-			provider = Item('controller').providers[name];
+			provider = NS('controller').providers[name];
 
 			if( provider ){
 				instance = provider.call(this, this.view);
 			}
 			else{
-				instance = Item('controller.' + name).new(this.view);
+				instance = NS('controller.' + name).new(this.view);
 			}
 		}
 
 		this[name] = instance;
 	},
 
-	callHandler: Item('listener.event').callHandler,
+	callHandler: NS('listener.event').callHandler,
 
 	setView: function(view){
 		if( view ){
@@ -102,12 +102,12 @@ Item('proto').extend('controller', {
 	}
 });
 
-Item('controller').providers = {};
+NS('controller').providers = {};
 
-Item('view').on('create', function(){
+NS('view').on('create', function(){
 	this.controllers = {};
 });
-Item('view').on('destroy', function(){
+NS('view').on('destroy', function(){
 	delete this.controllers;
 });
 

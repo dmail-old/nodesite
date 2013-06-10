@@ -7,9 +7,9 @@ Such controller have to extend controller.tree
 
 */
 
-Item('controller').extend('tree', {
+NS('controller').extend('tree', {
 	callHandler: function(handler, bind, e){
-		var view = Item('view').cast(e);
+		var view = NS('view').cast(e);
 
 		if( e instanceof CustomEvent ){
 			return handler.apply(bind, [view].concat(e.detail.args));
