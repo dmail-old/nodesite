@@ -75,7 +75,7 @@ String.prototype.percentOf = function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 };
 
-var DOMRectangle = Item('base').extend('domrectangle', 'emitter', 'bound', {
+var DOMRectangle = Item('proto').extend('domrectangle', 'emitter', 'bound', {
 	name: 'domrectangle',
 	options: {
 		axis: 'xy',

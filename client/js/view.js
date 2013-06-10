@@ -1,6 +1,6 @@
 /* global */
 
-Item('base').extend('view', 'emitter', {
+Item('proto').extend('view', 'emitter', {
 	modelEvents: {
 		'destroy': 'destroy'
 	},

@@ -33,7 +33,7 @@ config.css = [
 // fichier js qu'on donne au client
 config.js = [].concat(
 	[
-		"util", "object", "item", "string", "number", "function", "array"
+		"util", "object", "string", "number", "function", "array", "item", "proto"
 	].prefix('/lib/core/'),
 	[
 		"object.at", "finder", "array.iterate", "array.find",

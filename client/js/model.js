@@ -1,7 +1,7 @@
 /* global */
 
 // model
-Item('base').extend('model', 'emitter', {
+Item('proto').extend('model', 'emitter', {
 	validationError: null,
 	cid: 0,
 
@@ -144,7 +144,7 @@ Item('servermodel', {
 	}
 });
 
-Item('base').extend('action', {
+Item('proto').extend('action', {
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

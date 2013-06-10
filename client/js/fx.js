@@ -16,7 +16,7 @@ provides: Fx
 ...
 */
 
-Item('base').extend('fx', 'chain', 'emitter', 'options', {
+Item('proto').extend('fx', 'chain', 'emitter', 'options', {
 	options: {
 		fps: 60,
 		unit: false,

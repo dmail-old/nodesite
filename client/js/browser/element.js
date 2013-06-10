@@ -20,8 +20,8 @@ document.newElement = function(tag, props){
 };
 
 Object.append(Element, {
-	implement: Item.implement.bind(Element.prototype),
-	complement: Item.complement.bind(Element.prototype)
+	implement: Object.implement.bind(Element),
+	complement: Object.complement.bind(Element)
 });
 
 String.prototype.toElement = function(){

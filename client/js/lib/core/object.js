@@ -261,3 +261,30 @@ Object.complete(Object, {
 		return [keys, values];
 	}
 });
+
+
+/*
+
+name: Implement
+
+provides:
+	Object.implement, Object.complement,
+	String.implement, String.complement,
+	Number.implement, Number.complement,
+	Function.implement, Function.complement,
+	Array.implement, Array.complement
+
+*/
+
+Object.implement = function(){
+	Array.eachObject(arguments, 'eachPair', Object.mergePair, this.prototype);
+};
+
+Object.complement = function(){
+	Array.eachObject(arguments, 'eachPair', Object.completePair, this.prototype);
+};
+
+[String, Number, Function, Array].forEach(function(constructor){
+	constructor.implement = Object.implement.bind(constructor);
+	constructor.complement = Object.complement.bind(constructor);
+});

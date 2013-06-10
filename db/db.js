@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = Item('base').extend('table', 'emitter', {
+var Table = Item('proto').extend('table', 'emitter', {
 	methods: {},
 	state: 'closed',
 	lockers: 0,

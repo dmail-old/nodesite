@@ -1,4 +1,4 @@
-Item('base').extend('listener', {
+Item('proto').extend('listener', {
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

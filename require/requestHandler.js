@@ -1,4 +1,4 @@
-Item('base').extend('fileresponse', {
+Item('proto').extend('fileresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;
@@ -199,14 +199,14 @@ var Page = {
 	}
 };
 
-Item('base').extend('errorresponse', {
+Item('proto').extend('errorresponse', {
 	constructor: function(response){
 		response.writeHead(500, 'Internal server error');
 		response.end();
 	}
 });
 
-Item('base').extend('pageresponse', {
+Item('proto').extend('pageresponse', {
 	constructor: function(response){
 		function serveError(e){
 			logger.error(e);
@@ -262,7 +262,7 @@ Item('base').extend('pageresponse', {
 	}
 });
 
-Item('base').extend('ajaxresponse', {
+Item('proto').extend('ajaxresponse', {
 	constructor: function(response){
 		this.response = response;
 		this.request = response.request;

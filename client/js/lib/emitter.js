@@ -8,7 +8,7 @@ require: Item, Object
 
 */
 
-Item('base').extend('emitter', {
+Item('proto').extend('emitter', {
 	$events: {},
 
 	constructor: function(bind){

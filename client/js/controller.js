@@ -1,6 +1,6 @@
 /* global */
 
-Item('base').extend('controller', {
+Item('proto').extend('controller', {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
