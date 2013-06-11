@@ -1,9 +1,10 @@
 NS.Item = {
-	// set key/value pair in this creating conflictual object and merging them
 	implementPair: function(key, value){
 
 		if( typeof value == 'object' && value !== null ){
 			var current = this[key];
+			// when an object exists in this and in value for key
+			// we create an object heriting from current then we merge it
 			if( typeof current == 'object' && current !== null ){
 				current = this[key] = Object.create(current);
 				Object.eachOwnPair(value, NS.Item.implementPair, current);
@@ -20,14 +21,14 @@ NS.Item = {
 	},
 
 	implement: function(){
-		Array.eachObject(arguments, 'eachPair', this.implementPair, this);
+		Array.eachObject(arguments, 'eachPair', NS.Item.implementPair, this);
 		return this;
 	},
 
 	extend: function(){
 		var object = Object.create(this);
 
-		object.implement.apply(object, arguments);
+		NS.Item.implement.apply(object, arguments);
 
 		return object;
 	},
@@ -46,7 +47,8 @@ NS.Item = {
 	},
 
 	getParentPrototype: function(){
-		return this.getPrototype().getPrototype();
+		var proto = NS.Item.getPrototype.call(this);
+		return proto ? NS.Item.getPrototype.call(proto) : null;
 	}
 };
 

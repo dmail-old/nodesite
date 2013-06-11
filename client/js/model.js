@@ -12,17 +12,6 @@ NS.Model = NS.Item.extend(NS.Emitter, {
 		this.cid = this.cid++;
 	},
 
-	getModelItem: function(){
-		return this.getPrototype();
-	},
-
-	create: function(data){
-		var item = this.getModelItem();
-
-		if( item.isPrototypeOf(data) ) return data;
-		return item.new(data);
-	},
-
 	parse: function(properties){
 		return properties;
 	},

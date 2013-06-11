@@ -9,11 +9,7 @@ NS.View = NS.Item.extend(NS.Emitter, {
 	attributes: null,
 
 	constructor: function(model){
-		// we have to set it manually because this can be called with an other context
-		// that's why NS doesn't provide help as this.class or this.super
-		this.constructor = NS.View.constructor;
-
-		this.constructor.instances[this.id = this.constructor.lastID++] = this;
+		this.self.instances[this.id = this.self.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
 		this.modelListener = NS.Listener.new(null, this.modelEvents, this);
@@ -27,7 +23,7 @@ NS.View = NS.Item.extend(NS.Emitter, {
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
-		delete this.constructor.instances[this.id];
+		delete this.self.instances[this.id];
 	},
 
 	cast: function(item){
@@ -60,7 +56,7 @@ NS.View = NS.Item.extend(NS.Emitter, {
 		var attr = this.attributes ? Object.copy(this.attributes) : {};
 
 		attr['class'] = this.getClassName();
-		attr[this.constructor.IDAttribute] = this.id;
+		attr[this.self.IDAttribute] = this.id;
 
 		return attr;
 	},
@@ -150,7 +146,7 @@ NS.View = NS.Item.extend(NS.Emitter, {
 	}
 });
 
-Object.append(NS.View.constructor, {
+NS.View.self =  {
 	instances: {},
 	IDAttribute: 'data-view',
 	lastID: 0,
@@ -181,9 +177,9 @@ Object.append(NS.View.constructor, {
 
 		return view;
 	}
-});
+};
 
-Element.prototype.toView = function(){ return NS.View.constructor.findElementView(this); };
+Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 

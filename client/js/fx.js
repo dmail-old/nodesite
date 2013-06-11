@@ -88,7 +88,7 @@ NS.Fx = NS.Item.extend(NS.chain, NS.Emitter, NS.options, {
 		this.time = null;
 		this.transition = this.getTransition();
 		var frames = this.options.frames, fps = this.options.fps, duration = this.options.duration;
-		this.duration = NS.Fx.Durations[duration] || duration.toInt();
+		this.duration = this.self.Durations[duration] || duration.toInt();
 		this.frameInterval = 1000 / fps;
 		this.frames = frames || Math.round(this.duration / this.frameInterval);
 		this.emit('start', this.subject);
@@ -139,7 +139,7 @@ NS.Fx = NS.Item.extend(NS.chain, NS.Emitter, NS.options, {
 	}
 });
 
-Object.append(NS.Fx, {
+NS.Fx.self = {
 	compute: function(from, to, delta){
 		return (to - from) * delta + from;
 	},
@@ -149,7 +149,7 @@ Object.append(NS.Fx, {
 		'normal': 500,
 		'long': 1000
 	}
-});
+};
 
 // global timers
 

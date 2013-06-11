@@ -32,7 +32,7 @@ NS.Fx.Scroll = NS.Fx.extend({
 
 	compute: function(from, to, delta){
 		return [0, 1].map(function(i){
-			return NS.Fx.compute(from[i], to[i], delta);
+			return NS.Fx.self.compute(from[i], to[i], delta);
 		});
 	},
 
