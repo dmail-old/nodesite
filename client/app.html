@@ -1,0 +1,62 @@
+<!--
+
+Ce fichier est renvoyé à toute requête GET aux URLS suivantes:
+
+- /*
+- sauf si l'URL débute par un dossier existant: '/css/*, /js/*, /img/*'
+- sauf si l'URL cible la racine, sur un fichier possédant extension autre que .js: '/manifest.appcache'
+
+Il se charge d'afficher la page depuis le cache ou le serveur
+
+-->
+
+<!DOCTYPE html>
+
+<html dir="ltr">
+
+<head>
+
+{metas}
+
+<title>{title}</title>
+
+{favicon}
+
+<script>
+
+	var config = {config};
+	var lang = JSON.stringify({lang});
+	// Function.reviver existe pas encore ici
+	lang = JSON.parse(lang, function(key, value){
+		return typeof value == 'string' && value.indexOf('(function (') === 0 ? eval(value) : value;
+	});
+
+	window.onerror = function(msg, url, line){
+		//console.log('window error', arguments);
+	};
+
+</script>
+<script src="./js/require.js" type="text/javascript"></script>
+<script>
+
+	require.config.root = config.protocol + '://' + config.host + (config.port ? ':' + config.port : '') + '/';
+
+</script>
+
+</head>
+
+<body>
+
+<script>
+
+	// avoid initial popstate event
+	window.onload = function(){ setTimeout(app.init, 0); };
+
+	require.loadFiles(config.css, 'css');
+	require.loadFiles(config.js, 'js');
+
+</script>
+
+</body>
+
+</html>

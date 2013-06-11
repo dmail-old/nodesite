@@ -151,12 +151,75 @@ NS.Fileresponse = NS.Item.extend({
 	}
 });
 
-var Cookie = require(root + '/require/cookie.js');
+NS.Errorresponse = NS.Item.extend({
+	constructor: function(response, e){
+		if( e ) logger.error(e);
 
-var Page = {
+		response.writeHead(500, {'content-type': 'text/plain'});
+		response.write('Internal server error');
+		response.end();
+	}
+});
+
+NS.Pageresponse = NS.Item.extend({
+	cookie: require(root + '/require/cookie.js'),
 	// metas utilisant l'attribut "http-equiv"
-	http_equiv: ['content-language','content-type','refresh','pragma','expires','cache-control','cache'],
+	http_equiv: [
+		'content-language',
+		'content-type',
+		'refresh',
+		'pragma',
+		'expires',
+		'cache-control',
+		'cache'
+	],
 	metaTemplate: '<meta {attr}="{name}" content="{value}" />',
+
+	constructor: function(response){
+		var htmlFile = NS.File.new(root + '/client/app.html'), html;
+
+		try{
+			html = String(htmlFile.readSync());
+		}catch(e){
+			return NS.errorResponse.new(response, e);
+		}
+
+		var metas = {
+			'charset': config.encoding,
+			'content-type': 'text/html',
+			'content-language': config.lang,
+			'description': lang.metas.description,
+			'keywords': lang.metas.keywords,
+			'robots': config.robot || 'all'
+			// viewport: 'width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=1;' // pour les portables
+		};
+
+		// si on est en local ceci évite la mise en cache qui est pénible
+		if( config.local ){
+			metas['cache-control'] = metas['pragma'] = 'no-cache';
+			// metas['cache'] = 'no store';
+			metas['expires'] = 0;
+		}
+
+		var data = {
+			'metas': this.parseMetas(metas),
+			'title': lang.metas.title,
+			'favicon': this.setTagUrl('<link href="#" type="image/x-icon" rel="shortcut icon"/>', 'favicon.png'),
+			'lang': JSON.stringify(lang, Function.replacer),
+			'config': JSON.stringify({
+				'js': config.js,
+				'css': config.css,
+				'protocol': config.protocol,
+				'host': config.host,
+				'port': config.port
+			})
+		};
+
+		logger.info('Send app.html');
+		response.writeHead(200, {'content-type': 'text/html'});
+		response.write(html.parse(data));
+		response.end();
+	},
 
 	parseMeta: function(name, value){
 		name = name.toLowerCase();
@@ -196,69 +259,6 @@ var Page = {
 		});
 
 		return tag.replace('#', url);
-	}
-};
-
-NS.Errorresponse = NS.Item.extend({
-	constructor: function(response){
-		response.writeHead(500, 'Internal server error');
-		response.end();
-	}
-});
-
-NS.Pageresponse = NS.Item.extend({
-	constructor: function(response){
-		function serveError(e){
-			logger.error(e);
-
-			response.writeHead(500, {'content-type': 'text/plain'});
-			response.write('500 Internal error');
-			response.end();
-		}
-
-		var htmlFile = NS.File.new(root + '/app.html'), html;
-
-		try{
-			html = String(htmlFile.readSync());
-		}catch(e){
-			return serveError(e);
-		}
-
-		var metas = {
-			'charset': config.encoding,
-			'content-type': 'text/html',
-			'content-language': config.lang,
-			'description': lang.metas.description,
-			'keywords': lang.metas.keywords,
-			'robots': config.robot || 'all'
-			// viewport: 'width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=1;' // pour les portables
-		};
-
-		// si on est en local ceci évite la mise en cache qui est pénible
-		if( config.local ){
-			metas['cache-control'] = metas['pragma'] = 'no-cache';
-			// metas['cache'] = 'no store';
-			metas['expires'] = 0;
-		}
-
-		var data = {
-			'metas': Page.parseMetas(metas),
-			'title': lang.metas.title,
-			'favicon': Page.setTagUrl('<link href="#" type="image/x-icon" rel="shortcut icon"/>', 'favicon.png'),
-			'lang': JSON.stringify(lang, Function.replacer),
-			'config': JSON.stringify({
-				'js': config.js,
-				'css': config.css,
-				'protocol': config.protocol,
-				'host': config.host,
-				'port': config.port
-			})
-		};
-
-		logger.info('Send app.html');
-		response.writeHead(200, {'content-type': 'text/html'});
-		response.write(html.parse(data));
-		response.end();
 	}
 });
 
@@ -469,13 +469,15 @@ function findHandler(request, callback){
 	pathname = pathname.substr(1);
 
 	// page d'index demandée
-	if( pathname === '' ) return callback('page');
+	if( pathname === '' || pathname === '/app.html' ) return callback('page');
 
 	slash = pathname.indexOf('/');
 	// on demande quelque chose à la racine
 	if( slash === -1 ){
 		// sans extension ou finissant par pageExtension
-		if( !pathname.contains('.') || pathname.endsWith('.'+pageExtension) || pathname.endsWith('.html') ) return callback('page');
+		if( !pathname.contains('.') || pathname.endsWith('.' + pageExtension) || pathname.endsWith('.html') ){
+			return callback('page');
+		}
 		return callback('file');
 	}
 
@@ -489,7 +491,7 @@ function handle(request, response){
 	function onfind(handlerName){
 		response.request = request;
 
-		var name = handlerName + 'response', item = NS(name.capitalize());
+		var name = handlerName + 'response', item = NS[name.capitalize()];
 
 		if( item ){
 			try{

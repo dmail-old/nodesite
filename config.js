@@ -80,7 +80,8 @@ config.js = [].concat(
 		"popup",
 		"popup.valid",
 		"selectionRectangle"
-	].prefix('box/')
+	].prefix('box/'),
+	"app"
 	/*[
 		"selector", "multiSelector", "popupSelector"
 	].prefix('ui/')
