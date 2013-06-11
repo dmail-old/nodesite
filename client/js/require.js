@@ -1,3 +1,9 @@
+// le problème maintenant c'est quand je fait un require pendant un require
+// et pas un provide pendant un require
+// paske le prochain provide concerne le précédent require
+// hors on perd cette référence puisqu'on crée un nouveau require
+// à faire
+
 function DependencyResolver(array){
 	this.index = 0;
 	this.dependencies = array;
@@ -15,10 +21,6 @@ DependencyResolver.prototype.setId = function(id){
 	this.id = id;
 };
 
-DependencyResolver.prototype.getId = function(id){
-	return this.id;
-};
-
 DependencyResolver.prototype.resolve = function(id){
 	
 };
@@ -31,7 +33,7 @@ DependencyResolver.prototype.next = function(){
 	if( this.hasNext() ){
 		this.setId(this.dependencies[this.index]);
 		this.index++;
-		this.loadModule(this.getId());
+		this.loadModule(this.id);
 	}
 	else{
 		if( this.callback ) this.callback.apply(window, this.dependencies);
@@ -49,7 +51,11 @@ DependencyResolver.prototype.loadModule = function(id){
 };
 
 DependencyResolver.prototype.provide = function(){
-	if( arguments.length === 0 ){
+	console.log(this.hasNext(), this.callback.toString(), arguments);
+	return;
+
+	this.onprovide(arguments[0]);
+	/*if( arguments.length === 0 ){
 		this.onprovide(null);
 	}
 	else if( arguments.length === 1 ){
@@ -65,6 +71,7 @@ DependencyResolver.prototype.provide = function(){
 
 		new this.constructor(args);
 	}
+	*/
 };
 
 DependencyResolver.prototype.onprovide = function(data){
@@ -84,7 +91,7 @@ DependencyResolver.prototype.onend = function(){
 };
 
 function require(){
-	if( this instanceof DependencyResolver ){
+	if( this instanceof require ){
 		return DependencyResolver.prototype.constructor.apply(this, arguments);
 	}
 	else{
@@ -99,9 +106,6 @@ require.prototype.cache = require.cache = {};
 require.prototype.setId = function(id){
 	// use require.alias here	
 	this.id = require.fileURL(id);
-};
-require.prototype.getId = function(id){
-	return this.id;
 };
 require.prototype.resolve = function(id){
 	require.currentResolver = this;
@@ -192,7 +196,7 @@ provide({
 });
 
 require.id("dependency");
-provide('dependency', function(superdependency){
+provide('superdependency', function(superdependency){
 	superdependency.dependency = true;
 	return superdependency;
 });
@@ -201,6 +205,26 @@ require.id("provide");
 provide('superdependency', function(superdependency){
 	superdependency.dependency = true;
 	return superdependency;
+});
+
+require('provide', function(provide){
+	console.log(provide);
+});
+
+
+
+
+require.id("dependency");
+provide({foo: 'bar'});
+
+require.id("module");
+require('dependency', function(dependency){
+	dependency.more = true;
+	provide(dependency);
+});
+
+require('module', function(module){
+	console.log(module);
 });
 */
 

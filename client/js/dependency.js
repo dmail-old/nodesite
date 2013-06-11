@@ -1,4 +1,4 @@
-provide('superdependency', function(superdependency){
+require('superdependency', function(superdependency){
 	superdependency.dependency = true;
-	return superdependency;
+	provide(superdependency);
 });
