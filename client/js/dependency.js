@@ -1,3 +1,4 @@
-provide({
-	foo: 'bar'
+provide('superdependency', function(superdependency){
+	superdependency.dependency = true;
+	return superdependency;
 });

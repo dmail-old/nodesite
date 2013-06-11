@@ -1,4 +1,4 @@
 provide('dependency', function(dependency){
-	dependency.test = 'yeah';
+	dependency.provide = true;
 	return dependency;
 });

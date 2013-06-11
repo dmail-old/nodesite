@@ -67,8 +67,8 @@ window.require = (function(){
 		this.names = array;
 		this.dependencies = [];
 
-		if( array.length > 0 && typeof array[array.length -1 ] == 'function' ){
-			this.callback = function(){};
+		if( array.length > 0 && typeof array[array.length - 1] == 'function' ){
+			this.callback = array.pop();
 		}
 
 		this.next();
