@@ -23,9 +23,9 @@ Il se charge d'afficher la page depuis le cache ou le serveur
 {favicon}
 
 <script>
-
-	var config = {config};
-	var lang = JSON.stringify({lang});
+	window.NS = {};
+	window.config = {config};
+	window.lang = JSON.stringify({lang});
 	// Function.reviver existe pas encore ici
 	lang = JSON.parse(lang, function(key, value){
 		return typeof value == 'string' && value.indexOf('(function (') === 0 ? eval(value) : value;
