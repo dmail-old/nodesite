@@ -183,7 +183,7 @@ require.loadFiles = function(names, extension){
 };
 
 require.id = function(id){
-	require.prototype.setId(id);
+	require.currentResolver.setId(id);
 };
 
 /*
