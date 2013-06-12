@@ -1,3 +1,0 @@
-provide({
-	superdependency: true
-});

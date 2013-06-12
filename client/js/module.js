@@ -1,4 +1,3 @@
-require('dependency', function(dependency){
-	dependency.module = true;
-	provide(dependency);
+require('dependency', function(d){
+	provide('module');
 });

@@ -1,128 +1,171 @@
-// le problème maintenant c'est quand je fait un require pendant un require
-// et pas un provide pendant un require
-// paske le prochain provide concerne le précédent require
-// hors on perd cette référence puisqu'on crée un nouveau require
-// à faire
+/*
 
-function DependencyResolver(array){
-	this.index = 0;
-	this.dependencies = array;
+test files
 
-	if( array.length > 0 && typeof array[array.length - 1] == 'function' ){
-		this.callback = array.pop();
-	}
+en écrivant direct comme ça on peut concaténer les fichiers puisque le fichier et ce qu'il provide est
+immédiatement stocké
 
-	this.next();
+require.id("superdependency");
+provide({
+	superdependency: true
+});
+
+require.id("dependency");
+provide('superdependency', function(superdependency){
+	superdependency.dependency = true;
+	return superdependency;
+});
+
+require.id("provide");
+provide('superdependency', function(superdependency){
+	superdependency.dependency = true;
+	return superdependency;
+});
+
+require('provide', function(provide){
+	console.log(provide);
+});
+
+require.id("dependency");
+provide({foo: 'bar'});
+
+require.id("module");
+require('dependency', function(dependency){
+	dependency.more = true;
+	provide(dependency);
+});
+
+require('module', function(module){
+	console.log(module);
+});
+
+require.id("dep"); provide({foo: 'bar'}); require.id("mod"); require('dep', function(d){ d.more = true; provide(d); });
+
+*/
+
+/*
+
+MORE
+- dependencyTree qu'on remplit au fur et à mesure
+
+tester avec un require sur plusieurs dependency
+tester avec des require se suivant les un les autres
+
+require('foo', 'bar', function(){ console.log(arguments); });
+
+*/
+
+function OnceEmitter(){
+	this.listeners = {};
+	this.test = arguments[0];
 }
 
-DependencyResolver.prototype.cache = {};
+OnceEmitter.prototype.once = function(event, fn, bind){
+	var listener = {fn: fn, bind: bind || this};
 
-DependencyResolver.prototype.setId = function(id){
+	if( event in this.listeners ){
+		this.listeners[event].push(listener);
+	}
+	else{
+		this.listeners[event] = [listener];
+	}
+};
+
+OnceEmitter.prototype.emit = function(event, arg1){
+	var listeners = this.listeners[event], i, listener;
+
+	if( listeners ){
+		i = listeners.length;
+		while(i--){
+			listener = listeners.shift();
+			listener.fn.call(listener.bind, arg1);
+		}
+	}
+};
+
+function Module(id){
 	this.id = id;
+	this.emitter = new OnceEmitter(this);
+}
+
+Module.resolving = {};
+
+Module.prototype.provide = function(data){
+	this.data = data;
+	this.emitter.emit('provide', data);
 };
 
-DependencyResolver.prototype.resolve = function(id){
-	
+Module.prototype.onload = function(e){
+	if( e && e.type == 'error' ) throw new Error('loadfail');
+
+	console.log('module loaded', this.id);
+
+	// no require call in this file
+	if( this.beforeLoadRequire == require.current ){
+		console.log('no require call in ', this.id);
+		this.getProvide();
+	}
+	// the require as immediatly call provide
+	else if( require.provided ){
+		console.log('require immediatly provided in ', this.id);
+		this.getProvide();
+	}
+	// a require call has occured in the file, wait for his resolution
+	else{
+		require.current.emitter.once('resolve', this.getProvide, this);
+	}
 };
 
-DependencyResolver.prototype.hasNext = function(){
-	return this.index < this.dependencies.length;
-};
+Module.prototype.getProvide = function(){
+	delete Module.resolving[this.id];
 
-DependencyResolver.prototype.next = function(){
-	if( this.hasNext() ){
-		this.setId(this.dependencies[this.index]);
-		this.index++;
-		this.loadModule(this.id);
+	var provided = require.provided;
+
+	if( provided ){
+		delete require.provided;
+		this.provide(provided);
 	}
 	else{
-		if( this.callback ) this.callback.apply(window, this.dependencies);
-		this.onend();
+		this.provide(null);
 	}
 };
 
-DependencyResolver.prototype.loadModule = function(id){
-	if( id in this.cache ){
-		this.onresolve(this.cache[id]);
-	}
-	else{
-		this.resolve(id);
-	}
+Module.prototype.load = function(){
+	require.loadFile(this.id, this.onload.bind(this));
 };
 
-DependencyResolver.prototype.provide = function(){
-	console.log(this.hasNext(), this.callback.toString(), arguments);
-	return;
-
-	this.onprovide(arguments[0]);
-	/*if( arguments.length === 0 ){
-		this.onprovide(null);
+Module.prototype.resolve = function(){
+	if( 'data' in this ){
+		this.emitter.emit('provide', this.data);
 	}
-	else if( arguments.length === 1 ){
-		this.onprovide(arguments[0]);
+	else if( this.id in Module.resolving ){
+		if( Module.resolving[this.id] != this){
+			Module.resolving[this.id].emitter.once('provide', this.provide, this);
+		}
 	}
 	else{
-		// sinon c'est plus complexe, il faut charger les dépendances avant de pouvoir continuer
-		var args = Array.apply(Array, arguments), callback = args.pop();
-
-		args.push(function(){
-			if( callback ) this.onprovide(callback.apply(window, arguments));
-		}.bind(this));
-
-		new this.constructor(args);
+		this.beforeLoadRequire = require.current;
+		Module.resolving[this.id] = this;
+		this.load();
 	}
-	*/
 };
 
-DependencyResolver.prototype.onprovide = function(data){
-	this.cache[this.getId()] = data;
-	if( this.dependencies ){
-		this.onresolve(data);
-	}	
-};
-
-DependencyResolver.prototype.onresolve = function(data){
-	this.dependencies[this.index - 1] = data;
-	this.next();
-};
-
-DependencyResolver.prototype.onend = function(){
-	
-};
-
-function require(){
+function require(dependencies){
 	if( this instanceof require ){
-		return DependencyResolver.prototype.constructor.apply(this, arguments);
+		this.emitter = new OnceEmitter();
+		this.dependencies = dependencies;
+		if( dependencies.length > 0 && typeof dependencies[dependencies.length - 1] == 'function' ){
+			this.callback = dependencies.pop();
+		}
+		require.current = this;
+		this.start();
 	}
 	else{
 		return new require(Array.apply(Array, arguments));
 	}
 }
 
-require.prototype = Object.create(DependencyResolver.prototype);
-require.prototype.constructor = require;
-require.prototype.cache = require.cache = {};
-
-require.prototype.setId = function(id){
-	// use require.alias here	
-	this.id = require.fileURL(id);
-};
-require.prototype.resolve = function(id){
-	require.currentResolver = this;
-	require.loadFile(id);
-};
-require.prototype.onend = function(id){
-	require.currentResolver = require.prototype;
-};
-
-require.currentResolver = require.prototype;
-
-function provide(){
-	require.currentResolver.provide.apply(require.currentResolver, arguments);
-}
-
-require.alias = {};
-
+require.cache = {};
 require.config = {
 	async: true,
 	root: './',
@@ -186,46 +229,74 @@ require.id = function(id){
 	require.currentResolver.setId(id);
 };
 
+require.prototype.cache = require.cache;
+
+require.prototype.parseId = function(id){
+	return require.fileURL(id);
+};
+
+require.prototype.onresolve = function(){
+	if( this.callback ){
+		this.callback.apply(window, this.datas);
+	}
+	this.emitter.emit('resolve');
+};
+
+require.prototype.getModule = function(id){
+	if( id in this.cache ) return this.cache[id];
+	return this.cache[id] = new Module(id);
+};
+
+require.prototype.resolve = function(id){
+
+	var module = this.getModule(id);
+
+	module.emitter.once('provide', function(){
+
+		this.datas[this.dependencies.indexOf(module.id)] = module.data;
+		this.count++;
+
+		if( this.count == this.dependencies.length ){
+			this.onresolve();
+		}
+
+	}, this);
+
+	module.resolve();
+};
+
+require.prototype.start = function(){
+	this.count = 0;
+	this.datas = [];
+
+	var i = 0, j = this.dependencies.length, name;
+
+	for(;i<j;i++){
+		this.dependencies[i] = this.parseId(this.dependencies[i]);
+		this.resolve(this.dependencies[i]);
+	}
+
+};
+
+function provide(data){
+	require.provided = data;
+}
+
 /*
-en écrivant direct comme ça on peut concaténer les fichiers puisque le fichier et ce qu'il provide est
-immédiatement stocké
 
-require.id("superdependency");
-provide({
-	superdependency: true
+in b.js
+provide('b');
+
+in a.js:
+require('b', function(){
+	provide('bar');
 });
 
-require.id("dependency");
-provide('superdependency', function(superdependency){
-	superdependency.dependency = true;
-	return superdependency;
+in foo.js
+require('a', function(){
+	provide('foo');
 });
 
-require.id("provide");
-provide('superdependency', function(superdependency){
-	superdependency.dependency = true;
-	return superdependency;
-});
+require('foo', 'a')
 
-require('provide', function(provide){
-	console.log(provide);
-});
-
-
-
-
-require.id("dependency");
-provide({foo: 'bar'});
-
-require.id("module");
-require('dependency', function(dependency){
-	dependency.more = true;
-	provide(dependency);
-});
-
-require('module', function(module){
-	console.log(module);
-});
 */
-
-
