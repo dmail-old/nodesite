@@ -18,7 +18,7 @@ global.root = process.cwd();
 global.config = require('./config.js');
 
 var
-	Watcher = require(root + '/require/watcher.js'),
+	Watcher = require(root + '/module/watcher.js'),
 	util = require('util'),
 	platform = process.platform,
 	isWindows = platform === 'win32',
@@ -44,7 +44,7 @@ Object.append = function(source, append){
 Object.append(App.prototype, {
 	processName: 'node',
 	state: 'closed', // closed, started, restarting?
-	
+
 	start: function(){
 		if( this.standby ){
 			this.standby.close(function(){
@@ -54,23 +54,23 @@ Object.append(App.prototype, {
 			}.bind(this));
 			return;
 		}
-		
+
 		this.process = childProcess.spawn(this.processName, this.args, {stdio: [null, null, null, null, 'ipc']});
 		this.ctime = Number(new Date());
-		
+
 		this.process.stdout.on('data', function(data){ process.stdout.write(data); });
 		this.process.stderr.on('data', function(data){ process.stderr.write(data); });
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
-		
+
 		// pinched from https://github.com/DTrejo/run.js - pipes stdin to the child process - cheers DTrejo ;-)
 		process.stdin.resume();
 		process.stdin.setEncoding('utf8');
 		process.stdin.pipe(this.process.stdin);
-		
+
 		this.emit('start');
 	},
-	
+
 	restart: function(){
 		if( this.process ){
 			if( isWindows ){
@@ -85,12 +85,12 @@ Object.append(App.prototype, {
 			this.start();
 		}
 	},
-	
+
 	kill: function(signal){
 		this.process.kill(signal);
 		this.emit('kill', signal);
 	},
-	
+
 	onexit: function(code, signal){
 		if( this.restarting ){
 			delete this.restarting;
@@ -98,7 +98,7 @@ Object.append(App.prototype, {
 		}
 		// this is nasty, but it gives it windows support
 		if( isWindows && signal == 'SIGTERM' ) signal = 'SIGUSR2';
-		
+
 		// exit the monitor, but do it gracefully
 		if( signal == 'SIGUSR2' ){
 			this.start();
@@ -119,14 +119,14 @@ Object.append(App.prototype, {
 			this.emit('stop');
 		}
 	},
-	
+
 	send: function(message, handle){
 		this.process.send(message, handle);
 	},
-	
+
 	onmessage: function(message, handle){
 		if( typeof message == 'string' ){
-			
+
 		}
 	}
 });
@@ -144,7 +144,7 @@ server.on('start', function(){
 
 server.on('stop', function(){
 	var http = require('http');
-	
+
 	// répond à toutes les requêtes par 'serveur en maintenance'
 	server.standby = http.createServer(function(request, response){
 		response.writeHead(200, {'Content-Type': 'text/plain'});

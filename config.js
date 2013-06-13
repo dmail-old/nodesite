@@ -9,7 +9,7 @@ var config = {
 	"serverFiles": [
 		"config.js",
 		"server.js",
-		"require",
+		"module",
 		"db",
 		"client/js/lib",
 		"lang/fr"
@@ -33,11 +33,12 @@ config.css = [
 // fichier js qu'on donne au client
 config.js = [].concat(
 	[
-		"util", "object", "string", "number", "function", "array", "item"
+		"util", "object", "string", "number", "function", "array", "item", "list"
 	].prefix('/lib/core/'),
 	[
+		"object.util", "options", "chain", "bound",
 		"object.at", "finder", "array.iterate", "array.find",
-		"random", "list", "stringList", "memory", "path",
+		"random", "stringList", "memory", "path",
 		"emitter", "listener",
 		"treeTraversal", "treeFinder", "treeStructure",
 	].prefix('lib/'),

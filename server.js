@@ -40,8 +40,8 @@ global.NS = {};
 var files = FS.readdirSync(root + '/lang/' + config.lang);
 files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name); });
 
-require(root + '/require/color.js');
-require(root + '/require/fs.extra.js');
+require(root + '/module/color.js');
+require(root + '/module/fs.extra.js');
 
 // var Module = require('module');
 // Module.prototype.require = function(path){
@@ -51,15 +51,15 @@ require(root + '/require/fs.extra.js');
 	// console.log(path, end[1]);
 	// return ret;
 // };
-global.File = require(root + '/require/file.js');
-global.FileInfo = require(root + '/require/fileinfo.js');
-global.logger = require(root + '/require/logger.js');
+global.File = require(root + '/module/file.js');
+global.FileInfo = require(root + '/module/fileinfo.js');
+global.logger = require(root + '/module/logger.js');
 //global.DB = require(root + '/db/db.js');
 
 var http = require('http');
 var Crypto = require('crypto');
-var Cookie = require('./require/cookie.js');
-var requestHandler = require('./require/requestHandler.js');
+var Cookie = require('./module/cookie.js');
+var requestHandler = require('./module/requestHandler.js');
 
 global.applyScript = function(path, bind, args, callback){
 	if( typeof callback != 'function' ) throw new Error('callback expected');

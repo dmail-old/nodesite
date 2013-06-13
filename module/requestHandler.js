@@ -162,7 +162,7 @@ NS.Errorresponse = NS.Item.extend({
 });
 
 NS.Pageresponse = NS.Item.extend({
-	cookie: require(root + '/require/cookie.js'),
+	cookie: require(root + '/module/cookie.js'),
 	// metas utilisant l'attribut "http-equiv"
 	http_equiv: [
 		'content-language',
