@@ -248,9 +248,11 @@ function provide(data){
 		delete require.module;
 		module.provide(data);
 	}
+	// loaded module
 	else{
 		require.provided = data;
 	}
+
 }
 
 // the next immediate provide call or the next require resolved

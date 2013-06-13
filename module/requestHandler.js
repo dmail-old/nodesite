@@ -215,6 +215,27 @@ NS.Pageresponse = NS.Item.extend({
 			})
 		};
 
+		html = html.replace(/<script([^>]*)>.*?<\/script>/gi, function(match, opentag){
+			if( opentag.indexOf('data-autoload="true"') !== -1 ){
+				var src = opentag.match(/src="(.*?)"/);
+
+				if( src ){
+					try{
+						return '<script>' + NS.File.new(root + '/client' + src[1]).readSync() + '</script>';
+					}
+					catch(e){
+						return '<script>console.error("file not found '+ src[1] + '")</script>';
+					}
+				}
+				else{
+					return '<script>console.log("no src provided")</script>';
+				}
+			}
+			else{
+				return match;
+			}
+		});
+
 		logger.info('Send app.html');
 		response.writeHead(200, {'content-type': 'text/html'});
 		response.write(html.parse(data));
