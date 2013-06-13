@@ -1,4 +1,5 @@
-// ['  a','b',' c '].forEach(Function.prototype.call, String.prototype.trim) -> ['a','b','c']
+Array.implement = Object.implement.bind(Array);
+Array.complement = Object.complement.bind(Array);
 
 Array.complement({
 	applyEach: function(method, args){
@@ -140,3 +141,10 @@ Array.prototype.call = Array.prototype.callEach;
 Array.prototype.apply = Array.prototype.applyEach;
 Array.prototype.invoke = Array.prototype.mapCall;
 
+/*
+
+cool:
+
+['  a','b',' c '].forEach(Function.prototype.call, String.prototype.trim) -> ['a','b','c']
+
+*/

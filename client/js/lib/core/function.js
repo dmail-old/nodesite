@@ -1,3 +1,6 @@
+Function.implement = Object.implement.bind(Function);
+Function.complement = Object.complement.bind(Function);
+
 Function.complement({
 	toSource: function(){
 		return '(' + this.toString() + ')';
@@ -17,9 +20,9 @@ Function.complement({
 				result = self.call(this, a);
 			}
 			return result;
-		}
+		};
 	},
-	
+
 	// allow to prefill that execution of a function with x arguments
 	curry: function(){
 		var self = this, args = toArray(arguments);
@@ -38,27 +41,17 @@ Function.argumentNames = function(fn){
     return names.length == 1 && !names[0] ? [] : names;
 };
 
-(function(){
-
-var enumerables = true;
-for (var i in {toString: 1}) enumerables = null;
-if (enumerables) enumerables = ['hasOwnProperty', 'valueOf', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'constructor'];
-
 Function.prototype.overloadSetter = function(usePlural){
 	var self = this;
 	return function(a, b){
-		if (a == null) return this;
-		if (usePlural || typeof a != 'string'){
-			for (var k in a) self.call(this, k, a[k]);
-			if (enumerables) for (var i = enumerables.length; i--;){
-				k = enumerables[i];
-				if (a.hasOwnProperty(k)) self.call(this, k, a[k]);
-			}
-		} else {
+		if( a == null ) return this;
+		if( usePlural || typeof a != 'string' ){
+			for( var k in a ) self.call(this, k, a[k]);
+		}
+		else{
 			self.call(this, a, b);
 		}
-		return this;
-	}
-};
 
-})();
+		return this;
+	};
+};

@@ -3,6 +3,10 @@
 
 NS.List = Object.append(Object.create(Array.prototype), NS.Item, {
 	constructor: function(){
-		this.push.apply(this, arguments);
+		if( arguments.length ) this.push.apply(this, arguments);
+	},
+
+	clear: function(){
+		this.length = 0;
 	}
 });

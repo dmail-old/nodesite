@@ -1,6 +1,6 @@
 // arguments to array
 window.toArray = function(item, start, end){
-	if( !start && typeof end != 'number' ) return Array.apply(null, item);	
+	if( !start && typeof end != 'number' ) return Array.apply(null, item);
 	return Array.prototype.slice.call(item, start, end);
 };
 
