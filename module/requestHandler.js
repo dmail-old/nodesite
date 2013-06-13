@@ -174,6 +174,12 @@ NS.Pageresponse = NS.Item.extend({
 		'cache'
 	],
 	metaTemplate: '<meta {attr}="{name}" content="{value}" />',
+	styleTemplate: '<link type="text/css" rel="stylesheet" href="#" />',
+	scriptTemplate: '<script type="text/javascript" src="#"></script>',
+	
+	// TODO, to avoid http request we serve the file directly
+	//inlineStyleTemplate: '<style type="text/css">{css}</style>',
+	//inlineScriptTemplate: '<script type="text/javascript">{js}</script>',
 
 	constructor: function(response){
 		var htmlFile = NS.File.new(root + '/client/app.html'), html;
@@ -205,41 +211,48 @@ NS.Pageresponse = NS.Item.extend({
 			'metas': this.parseMetas(metas),
 			'title': lang.metas.title,
 			'favicon': this.setTagUrl('<link href="#" type="image/x-icon" rel="shortcut icon"/>', 'favicon.png'),
+			'styles': this.parseStyles(config.css),
+			'scripts': this.parseScripts(config.js),			
 			'lang': JSON.stringify(lang, Function.replacer),
 			'config': JSON.stringify({
-				'js': config.js,
-				'css': config.css,
 				'protocol': config.protocol,
 				'host': config.host,
 				'port': config.port
 			})
 		};
 
-		html = html.replace(/<script([^>]*)>.*?<\/script>/gi, function(match, opentag){
-			if( opentag.indexOf('data-autoload="true"') !== -1 ){
-				var src = opentag.match(/src="(.*?)"/);
-
-				if( src ){
-					try{
-						return '<script>' + NS.File.new(root + '/client' + src[1]).readSync() + '</script>';
-					}
-					catch(e){
-						return '<script>console.error("file not found '+ src[1] + '")</script>';
-					}
-				}
-				else{
-					return '<script>console.log("no src provided")</script>';
-				}
-			}
-			else{
-				return match;
-			}
-		});
-
 		logger.info('Send app.html');
 		response.writeHead(200, {'content-type': 'text/html'});
 		response.write(html.parse(data));
 		response.end();
+	},
+
+	parseStyle: function(name){
+		return this.setTagUrl(this.styleTemplate, 'css/' + name + '.css');
+	},
+
+	parseStyles: function(names){
+		var output = [];
+
+		names.forEach(function(name){
+			output.push(this.parseStyle(name));
+		}, this);
+
+		return output.join('\n\t');
+	},
+
+	parseScript: function(name){
+		return this.setTagUrl(this.scriptTemplate, 'js/' + name + '.js');
+	},
+
+	parseScripts: function(names){
+		var output = [];
+
+		names.forEach(function(name){
+			output.push(this.parseScript(name));
+		}, this);
+
+		return output.join('\n\t');
 	},
 
 	parseMeta: function(name, value){

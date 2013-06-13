@@ -6,7 +6,6 @@ Ce fichier est renvoyé à toute requête GET sauf:
 - si l'URL cible la racine et un fichier d'extension différente de .js: '/manifest.appcache'
 
 Il consititue le cadre du site, on récup des infos depuis le serveur dans les {}
-Puis on charge tout les fichiers css et js nécéssaires
 Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 
 -->
@@ -19,8 +18,12 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 		{metas}
 		<title>{title}</title>
 		{favicon}
+		{styles}
 
-		<script>
+		<script type="text/javascript">
+			// je vais surement juste écrire et laisser le serveur les mettre au lieu
+			// d'appeler requirejs, en plus je mettrais directement des balises script remplies pour le serveur
+
 			window.NS = {};
 			window.config = {config};
 			window.lang = JSON.stringify({lang});
@@ -33,23 +36,24 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 
 			window.onerror = function(msg, url, line){
 				//console.log('window error', arguments);
-			};		
-		</script>
-		<script data-autoload="true" src="/js/require.js"></script>
-		<script data-autoload="true" src="/js/require.client.js"></script>
-		<script>
-			// setTimeout is to avoid initial popstate event
-			// app.init will be called once css and js have fully loaded
-			window.onload = function(){ setTimeout(app.init, 0); };
+			};
 
-			require.css(config.css);
-			require.js(config.js);
 		</script>
 
 	</head>
 
 	<body>
-		<!-- empty body isn't it beautiful :) -->
+
+		{scripts}
+
+		<script>
+			// app.init will be called once css and js have fully loaded
+			window.onload = function(){
+				// setTimeout is to avoid initial popstate event
+				setTimeout(app.init, 0);
+			};
+		</script>
+
 	</body>
 
 </html>
