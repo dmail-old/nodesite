@@ -31,17 +31,15 @@ Il se charge d'afficher la page depuis le cache ou le serveur
 		return typeof value == 'string' && value.indexOf('(function (') === 0 ? eval(value) : value;
 	});
 
+	window.root = config.protocol + '://' + config.host + (config.port ? ':' + config.port : '');
+
 	window.onerror = function(msg, url, line){
 		//console.log('window error', arguments);
 	};
 
 </script>
 <script src="./js/require.js" type="text/javascript"></script>
-<script>
-
-	require.config.root = config.protocol + '://' + config.host + (config.port ? ':' + config.port : '') + '/';
-
-</script>
+<script src="./js/require.client.js" type="text/javascript"></script>
 
 </head>
 
@@ -52,8 +50,8 @@ Il se charge d'afficher la page depuis le cache ou le serveur
 	// avoid initial popstate event
 	window.onload = function(){ setTimeout(app.init, 0); };
 
-	require.loadFiles(config.css, 'css');
-	require.loadFiles(config.js, 'js');
+	require.css(config.css);
+	require.js(config.js);
 
 </script>
 

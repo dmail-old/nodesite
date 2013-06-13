@@ -1,123 +1,170 @@
 /*
 
-test files
+ceci marche, c'est l'exemple ultime
+des provide direct et des require sur des trucs en cache ou distant suivi de provide
 
-en écrivant direct comme ça on peut concaténer les fichiers puisque le fichier et ce qu'il provide est
-immédiatement stocké
+require.id('a');
+provide('a');
 
-require.id("superdependency");
-provide({
-	superdependency: true
+require.id('b');
+require('a', 'foo', function(){
+	provide('b');
 });
 
-require.id("dependency");
-provide('superdependency', function(superdependency){
-	superdependency.dependency = true;
-	return superdependency;
-});
-
-require.id("provide");
-provide('superdependency', function(superdependency){
-	superdependency.dependency = true;
-	return superdependency;
-});
-
-require('provide', function(provide){
-	console.log(provide);
-});
-
-require.id("dependency");
-provide({foo: 'bar'});
-
-require.id("module");
-require('dependency', function(dependency){
-	dependency.more = true;
-	provide(dependency);
-});
-
-require('module', function(module){
-	console.log(module);
-});
-
-require.id("dep"); provide({foo: 'bar'}); require.id("mod"); require('dep', function(d){ d.more = true; provide(d); });
+require('b', console.log, console);
 
 */
 
-/*
+function BindedFunctionList(){
 
-MORE
-- dependencyTree qu'on remplit au fur et à mesure
+}
+BindedFunctionList.prototype = [];
 
-tester avec un require sur plusieurs dependency
-tester avec des require se suivant les un les autres
+BindedFunctionList.prototype.add = function(fn, bind){
+	this.push({fn: fn, bind: bind || this});
+};
 
-require('foo', 'bar', function(){ console.log(arguments); });
+BindedFunctionList.prototype.applyEachOnce = function(args){
+	var i = this.length, fn;
 
-*/
+	while(i--){
+		fn = this.shift();
+		fn.fn.apply(fn.bind, args);
+	}
 
-function OnceEmitter(){
-	this.listeners = {};
-	this.test = arguments[0];
+	return this;
+};
+
+BindedFunctionList.prototype.callEachOnce = function(){
+	return this.applyEachOnce(arguments);
+};
+
+function require(dependencies, callback, bind){
+	// called with new
+	if( this instanceof require ){
+
+		this.listeners = new BindedFunctionList();
+		this.dependencies = dependencies;
+
+		if( callback ){
+			this.listeners.add(callback, bind);
+		}
+
+		// when this require resolve, the simulated module will do getprovide
+		if( require.module ){
+			this.listeners.add(require.module.getProvide, require.module);
+			delete require.module;
+		}
+
+		require.current = this;
+		this.start();
+	}
+	// called without new
+	else{
+		return require.new(require, arguments);
+	}
 }
 
-OnceEmitter.prototype.once = function(event, fn, bind){
-	var listener = {fn: fn, bind: bind || this};
+require.new = function(constructor, args){
+	var dependencies, callback, bind;
 
-	if( event in this.listeners ){
-		this.listeners[event].push(listener);
+	if( args[0] instanceof Array ){
+		dependencies = args[0];
+		callback = args[1];
+		bind = args[2];
 	}
 	else{
-		this.listeners[event] = [listener];
-	}
-};
+		dependencies = [];
+		var i = 0, j = args.length, arg;
 
-OnceEmitter.prototype.emit = function(event, arg1){
-	var listeners = this.listeners[event], i, listener;
-
-	if( listeners ){
-		i = listeners.length;
-		while(i--){
-			listener = listeners.shift();
-			listener.fn.call(listener.bind, arg1);
+		for(;i<j;i++){
+			arg = args[i];
+			if( typeof arg == 'string' ){
+				dependencies.push(arg);
+			}
+			else if( typeof arg == 'function' ){
+				callback = arg;
+				bind = args[i+1];
+				break;
+			}
 		}
 	}
+
+	return new constructor(dependencies, callback, bind);
 };
 
-function Module(id){
-	this.id = id;
-	this.emitter = new OnceEmitter(this);
+require.extend = function(properties){
+	var proto = Object.create(require.prototype), key;
+
+	if( properties ){
+		for(key in properties){
+			proto[key] = properties[key];
+		}
+	}
+
+	function constructor(){
+		if( this instanceof constructor ){
+			require.apply(this, arguments);
+		}
+		else{
+			require.new(constructor, arguments);
+		}
+	}
+
+	proto.constructor = constructor;
+	constructor.prototype = proto;
+
+	return constructor;
+};
+
+function Module(require, name){
+	this.require = require;
+	this.name = name;
+	this.id = this.resolveName(name);
+	this.listeners = new BindedFunctionList();
 }
 
-Module.resolving = {};
+require.Module = Module;
+
+Module.prototype.resolving = {};
+
+Module.prototype.resolveName = function(name){
+	return this.require.root + '/' + name + '.' + this.require.extension;
+};
+
+Module.prototype.onprovide = function(data){
+	this.listeners.callEachOnce(data);
+};
 
 Module.prototype.provide = function(data){
 	this.data = data;
-	this.emitter.emit('provide', data);
+	this.onprovide(data);
+};
+
+Module.prototype.onerror = function(e){
+	//throw new Error('loadfail' + e);
 };
 
 Module.prototype.onload = function(e){
-	if( e && e.type == 'error' ) throw new Error('loadfail');
-
-	console.log('module loaded', this.id);
+	this.loaded = true;
 
 	// no require call in this file
 	if( this.beforeLoadRequire == require.current ){
-		console.log('no require call in ', this.id);
 		this.getProvide();
 	}
 	// the require as immediatly call provide
 	else if( require.provided ){
-		console.log('require immediatly provided in ', this.id);
 		this.getProvide();
 	}
 	// a require call has occured in the file, wait for his resolution
 	else{
-		require.current.emitter.once('resolve', this.getProvide, this);
+		require.current.listeners.add(this.getProvide, this);
 	}
+
 };
 
 Module.prototype.getProvide = function(){
-	delete Module.resolving[this.id];
+	delete this.resolving[this.id];
 
 	var provided = require.provided;
 
@@ -130,134 +177,49 @@ Module.prototype.getProvide = function(){
 	}
 };
 
-Module.prototype.load = function(){
-	require.loadFile(this.id, this.onload.bind(this));
-};
+Module.prototype.load = function(){};
 
 Module.prototype.resolve = function(){
 	if( 'data' in this ){
-		this.emitter.emit('provide', this.data);
+		this.onprovide(this.data);
 	}
-	else if( this.id in Module.resolving ){
-		if( Module.resolving[this.id] != this){
-			Module.resolving[this.id].emitter.once('provide', this.provide, this);
+	else if( this.id in this.resolving ){
+		var module = this.resolving[this.id];
+		if( module != this ){
+			module.listeners.add(this.provide, this);
 		}
 	}
 	else{
-		this.beforeLoadRequire = require.current;
-		Module.resolving[this.id] = this;
-		this.load();
-	}
-};
-
-function require(dependencies){
-	if( this instanceof require ){
-		this.emitter = new OnceEmitter();
-		this.dependencies = dependencies;
-		if( dependencies.length > 0 && typeof dependencies[dependencies.length - 1] == 'function' ){
-			this.callback = dependencies.pop();
+		this.resolving[this.id] = this;
+		// simulated module dont need to load they just wait provide calls
+		if( !this.simulated ){
+			this.beforeLoadRequire = require.current;
+			this.load();
 		}
-		require.current = this;
-		this.start();
 	}
-	else{
-		return new require(Array.apply(Array, arguments));
-	}
-}
-
-require.cache = {};
-require.config = {
-	async: true,
-	root: './',
-	extension: 'js',
-	charset: 'utf8'
 };
 
-require.filepath = function(name){
-	return require.config.extension + '/' + name + '.' + require.config.extension;
+require.prototype.cache = {};
+require.prototype.root = './';
+require.prototype.extension = 'js';
+require.prototype.Module = Module;
+
+require.prototype.getModule = function(name){
+	if( name in this.cache ) return this.cache[name];
+	return this.cache[name] = new this.Module(this, name);
 };
 
-require.fileURL = function(name){
-	return require.config.root + require.filepath(name, require.config.extension);
-};
+require.prototype.resolve = function(name){
 
-require.loadFile = function(path, callback){
-	var type, element;
+	var module = this.getModule(name);
 
-	if( path.match(/.js$/) ){
-		type = 'js';
-		element = document.createElement('script');
-		element.type = 'text/javascript';
-		element.charset = require.config.charset;
-		element.async = require.config.async;
-	}
-	else if( path.match(/.css$/) ){
-		type = 'css';
-		element = document.createElement('link');
-		element.type = 'text/css';
-		element.rel = 'stylesheet';
-	}
-	else{
-		throw new Error('unsupported file extension');
-	}
+	module.listeners.add(function(){
 
-	if( typeof callback == 'function' ){
-		element.onerror = callback;
-		element.onload = callback;
-	}
-
-	document.head.appendChild(element);
-
-	if( type == 'js' ) element.src = path;
-	else element.href = path;
-};
-
-require.loadFiles = function(names, extension){
-	var i = 0, j = names.length, prevExt = require.config.extension, prevAsync = require.config.async;
-
-	require.config.extension = extension;
-	require.config.async = false;
-	for(;i<j;i++){
-		require.loadFile(require.fileURL(names[i]));
-	}
-	require.config.extension = prevExt;
-	require.config.async = prevAsync;
-
-};
-
-require.id = function(id){
-	require.currentResolver.setId(id);
-};
-
-require.prototype.cache = require.cache;
-
-require.prototype.parseId = function(id){
-	return require.fileURL(id);
-};
-
-require.prototype.onresolve = function(){
-	if( this.callback ){
-		this.callback.apply(window, this.datas);
-	}
-	this.emitter.emit('resolve');
-};
-
-require.prototype.getModule = function(id){
-	if( id in this.cache ) return this.cache[id];
-	return this.cache[id] = new Module(id);
-};
-
-require.prototype.resolve = function(id){
-
-	var module = this.getModule(id);
-
-	module.emitter.once('provide', function(){
-
-		this.datas[this.dependencies.indexOf(module.id)] = module.data;
+		this.datas[this.dependencies.indexOf(module.name)] = module.data;
 		this.count++;
 
 		if( this.count == this.dependencies.length ){
-			this.onresolve();
+			this.listeners.applyEachOnce(this.datas);
 		}
 
 	}, this);
@@ -269,34 +231,32 @@ require.prototype.start = function(){
 	this.count = 0;
 	this.datas = [];
 
-	var i = 0, j = this.dependencies.length, name;
+	var i = 0, j = this.dependencies.length;
 
 	for(;i<j;i++){
-		this.dependencies[i] = this.parseId(this.dependencies[i]);
 		this.resolve(this.dependencies[i]);
 	}
-
 };
 
+require.cache = require.prototype.cache;
+
 function provide(data){
-	require.provided = data;
+
+	// simulated module
+	var module = require.module;
+	if( module ){
+		delete require.module;
+		module.provide(data);
+	}
+	else{
+		require.provided = data;
+	}
 }
 
-/*
-
-in b.js
-provide('b');
-
-in a.js:
-require('b', function(){
-	provide('bar');
-});
-
-in foo.js
-require('a', function(){
-	provide('foo');
-});
-
-require('foo', 'a')
-
-*/
+// the next immediate provide call or the next require resolved
+// will provide a simulated id module
+// usefull for file concat
+require.id = function(id){
+	require.module = require.prototype.getModule(id);
+	require.module.simulated = true;
+};
