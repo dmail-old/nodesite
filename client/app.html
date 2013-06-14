@@ -19,7 +19,6 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 		<title>{title}</title>
 		{favicon}
 		{styles}
-
 		<script type="text/javascript">
 			// je vais surement juste écrire et laisser le serveur les mettre au lieu
 			// d'appeler requirejs, en plus je mettrais directement des balises script remplies pour le serveur
@@ -39,13 +38,10 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 			};
 
 		</script>
-
 	</head>
 
 	<body>
-
 		{scripts}
-
 		<script>
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){

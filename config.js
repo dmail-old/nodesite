@@ -36,9 +36,6 @@ config.js = [].concat(
 		"util", "object", "string", "number", "function", "array", "item", "list"
 	].prefix('lib/core/'),
 	[
-		"require", "require.client"
-	],
-	[
 		"object.util", "options", "chain", "bound",
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "stringList", "memory", "path",
