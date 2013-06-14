@@ -59,7 +59,6 @@ global.logger = require(root + '/module/logger.js');
 var http = require('http');
 var Crypto = require('crypto');
 var Cookie = require('./module/cookie.js');
-var requestHandler = require('./module/requestHandler.js');
 
 global.applyScript = function(path, bind, args, callback){
 	if( typeof callback != 'function' ) throw new Error('callback expected');
@@ -121,10 +120,14 @@ var PlayerItems = DB.getTable('players.items');*/
 // User.read(function(){ console.log(arguments); });
 
 var Server = {
+	onrequest: function(request, response){
+		require(root + '/module/response.js').new(request, response);
+	},
+
 	create: function(){
 		this.server = http.createServer();
 
-		this.server.on('request', requestHandler);
+		this.server.on('request', Server.onrequest);
 		this.server.on('listening', function(){ });
 		this.server.on('clientError', function(e){ console.log('client', e); });
 

@@ -2,10 +2,15 @@
 
 var Watcher = require('./watcher.js');
 
-var File = NS.File = NS.Item.extend({
+module.exports = NS.File = NS.Item.extend({
 	constructor: function(path){
 		this.setPath(path);
 		return this;
+	},
+
+	cleanPath: function(path){
+		// remplace les backslash par des slash
+		return path.replace(/\\/g, '/');
 	},
 
 	setPath: function(path){
@@ -120,7 +125,7 @@ var File = NS.File = NS.Item.extend({
 		var files = FS.readdirSync(this.path), i = 0, j = files.length, file;
 
 		for(;i<j;i++){
-			file = new File(this.path + '/' + files[i]);
+			file = NS.File.new(this.path + '/' + files[i]);
 			callback.call(bind, file);
 		}
 	},
@@ -192,10 +197,3 @@ var File = NS.File = NS.Item.extend({
 		return FS.unlinkSync(this.path);
 	}
 });
-
-File.cleanPath = function(path){
-	// remplace les backslash par des slash
-	return path.replace(/\\/g, '/');
-};
-
-module.exports = File;

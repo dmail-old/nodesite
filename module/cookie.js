@@ -1,20 +1,20 @@
-var Cookie = {
+module.exports = {
 	cache: {},
-	
+
 	getRegexp: function(){
 		var regexp = this.cache[name];
-		
-		if( regexp ) return regexp
+
+		if( regexp ) return regexp;
 
 		regexp = new RegExp(
 			"(?:^|;) *" +
 			name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") +
 			"=([^;]*)"
 		);
-		
-		return cache[name] = regexp;
+
+		return this.cache[name] = regexp;
 	},
-	
+
 	parse: function(str, name){
 		var match;
 
@@ -24,12 +24,12 @@ var Cookie = {
 		}
 		return null;
 	},
-	
+
 	stringify: function(cookie){
 		var output = '';
-		
+
 		if( !cookie ) return '';
-		
+
 		output = cookie.name + '=' + cookie.value;
 
 		if( cookie.path ) output+= "; path=" + cookie.path;
@@ -44,9 +44,7 @@ var Cookie = {
 		if( cookie.domain ) output+= "; domain=" + cookie.domain;
 		if( cookie.secure ) output+= "; secure";
 		if( cookie.httpOnly ) output+= "; httponly";
-		
+
 		return output;
 	}
 };
-
-module.exports = Cookie;

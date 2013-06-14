@@ -144,7 +144,10 @@ NS.Emitter = NS.Item.extend({
 		}
 		else if( typeof name == 'string' ){
 			if( RegExp.SPACE.test(name) ){
-				name.split(RegExp.SPACE).forEach(function(name){ args[0] = name; method.apply(this, args); }, this);
+				name.split(RegExp.SPACE).forEach(function(name){
+					args[0] = name;
+					method.apply(this, args);
+				}, this);
 			}
 			else{
 				method.apply(this, args);
