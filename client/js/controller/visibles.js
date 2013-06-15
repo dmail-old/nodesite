@@ -1,6 +1,4 @@
-/* global */
-
-NS.VisiblesTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'VisiblesTreeController',
 	events: {
 		'view:insertElement': function(view){
@@ -96,4 +94,7 @@ NS.VisiblesTreeController = NS.TreeController.extend({
 	get: function(){
 		return this.visibles;
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.VisiblesTreeController = exports;

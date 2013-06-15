@@ -1,4 +1,4 @@
-var Listener = Object.prototype.extend({
+var exports = {
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){
@@ -64,6 +64,7 @@ var Listener = Object.prototype.extend({
 		if( this.handlers ) Object.eachPair(this.handlers, this.disable, this);
 		return this;
 	}
-});
+};
 
-module.exports = Listener;
+exports = Object.prototype.extend(exports);
+NS.Listener = exports;

@@ -1,8 +1,8 @@
 /* global Finder, TreeTraversal */
 
-var treeFinder = {
+var exports = {
 	matchIterator: function(iterator, match, first){
-		return require('./finder.js').matchIterator.call(this, iterator, match, first);
+		return NS.Finder.matchIterator.call(this, iterator, match, first);
 	},
 
 	matchFirst: function(iterator){
@@ -39,7 +39,7 @@ var treeFinder = {
 		var i = 0, j = arguments.length;
 
 		for(;i<j;i++){
-			if( require('./finder.js').from(arguments[i])(this) ) return true;
+			if( NS.Finder.from(arguments[i])(this) ) return true;
 		}
 
 		return false;
@@ -54,9 +54,9 @@ var treeFinder = {
 	}
 };
 
-treeFinder.treeTraversal = require('./treeTraversal.js');
+exports.treeTraversal = NS.treeTraversal;
 
-treeFinder.methods = {
+exports.methods = {
 	node: 'crossNode',
 	parent: 'crossParent',
 	child: 'crossChild',
@@ -66,20 +66,20 @@ treeFinder.methods = {
 	sibling: 'crossSibling'
 };
 
-Object.eachPair(treeFinder.methods, function(axis, iteratorName){
+Object.eachPair(exports.methods, function(axis, iteratorName){
 	var maj = axis.capitalize();
 
-	treeFinder['get' + maj] = treeFinder.createFindMethod(treeFinder.treeTraversal[iteratorName]);
-	treeFinder['get' + maj + 's'] = treeFinder.createFindAllMethod(treeFinder.treeTraversal[iteratorName]);
+	exports['get' + maj] = exports.createFindMethod(exports.treeTraversal[iteratorName]);
+	exports['get' + maj + 's'] = exports.createFindAllMethod(exports.treeTraversal[iteratorName]);
 });
-
-module.exports = treeFinder;
 
 /*
 
 unused
 
-TreeFinder.getPrevNode = TreeFinder.createFindMethod(TreeTraversal.crossPrevNode);
-TreeFinder.getNextNode = TreeFinder.createFindMethod(TreeTraversal.crossNextNode);
+exports.getPrevNode = exports.createFindMethod(exports.treeTraversal.crossPrevNode);
+exports.getNextNode = exports.createFindMethod(exports.treeTraversal.crossNextNode);
 
 */
+
+NS.treeFinder = exports;

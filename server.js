@@ -43,8 +43,6 @@ files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name
 require(root + '/module/color.js');
 require(root + '/module/fs.extra.js');
 
-require('./test.js');
-
 // var Module = require('module');
 // Module.prototype.require = function(path){
 	// var start = process.hrtime();

@@ -1,6 +1,6 @@
 /* global */
 
-NS.Adapt = require('../controller.js').extend({
+var exports = {
 	events: {
 		'view:change:name': 'adapt',
 		'view:insertElement': 'adapt',
@@ -11,4 +11,7 @@ NS.Adapt = require('../controller.js').extend({
 	adapt: function(){
 		this.view.adapt();
 	}
-});
+};
+
+exports = NS.Controller.extend(exports);
+NS.Adapt = exports;

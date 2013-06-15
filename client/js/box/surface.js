@@ -75,7 +75,7 @@ String.implement('percentOf', function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 });
 
-var Surface = NS.Surface = Object.prototype.extend(require('../lib/emitter.js'), NS.bound, {
+var exports = {
 	name: 'surface',
 	options: {
 		axis: 'xy',
@@ -86,7 +86,7 @@ var Surface = NS.Surface = Object.prototype.extend(require('../lib/emitter.js'),
 	},
 
 	constructor: function(element, autodestroy){
-		NS('bound').constructor.call(this);
+		NS.Bound.constructor.call(this);
 
 		var instance = element.storage.get(this.name);
 		if( instance ){
@@ -216,9 +216,9 @@ var Surface = NS.Surface = Object.prototype.extend(require('../lib/emitter.js'),
 		this.start.height = this.getHeight();
 		// }
 	}
-});
+};
 
-Surface.supplement({
+exports.supplement({
 	get: function(name){
 		return this.element.getStyle(name).toInt() || 0;
 	},
@@ -336,7 +336,7 @@ Surface.supplement({
 	}
 });
 
-Surface.supplement({
+exports.supplement({
 	calcSpace: function(axis){
 		return this.element.measure('scrollSpace', axis);
 	},
@@ -447,7 +447,7 @@ Surface.supplement({
 });
 
 // mousedown, mouseup, mousemove, focus, blur, scroll, keydown
-Surface.supplement({
+exports.supplement({
 	getMode: function(axis){
 		if( this.handle && this.handle.hasClass('vector') ){
 			this.resizer = this.handle.getStyle('cursor').substr(0, 2);
@@ -575,7 +575,7 @@ Surface.supplement({
 });
 
 // crée ou retourne une instance existante pour cet élément
-Surface.retrieveInstance = function(e){
+exports.retrieveInstance = function(e){
 	var instance, forId, element;
 
 	if( e.target instanceof Element ){
@@ -601,22 +601,22 @@ Surface.retrieveInstance = function(e){
 	return instance;
 };
 
-Surface.startInstanceFromEvent = function(e){
-	var instance = Surface.retrieveInstance(e);
+exports.startInstanceFromEvent = function(e){
+	var instance = this.retrieveInstance(e);
 	if( instance ) instance[e.type](e);
 };
 
-document.on('mousedown focus keydown', Surface.startInstanceFromEvent, true);
+document.on('mousedown focus keydown', exports.startInstanceFromEvent, true);
 
 ['left', 'top', 'width', 'height'].forEach(function(name){
-	Surface['getMin' + name.capitalize()] = Surface.getLimit.curry(name, 'min');
-	Surface['getMax' + name.capitalize()] = Surface.getLimit.curry(name, 'max');
-	Surface['get' + name.capitalize()] = Surface.get.curry(name);
-	Surface['set' + name.capitalize()] = Surface.set.curry(name);
+	exports['getMin' + name.capitalize()] = exports.getLimit.curry(name, 'min');
+	exports['getMax' + name.capitalize()] = exports.getLimit.curry(name, 'max');
+	exports['get' + name.capitalize()] = exports.get.curry(name);
+	exports['set' + name.capitalize()] = exports.set.curry(name);
 });
 
 // scroll handling
-Surface.supplement({
+exports.supplement({
 	options: {
 		scrollAuto: true,
 		scrollDelay: 100,
@@ -711,6 +711,9 @@ Surface.supplement({
 		}
 	}
 });
+
+exports = Object.prototype.extend(NS.Emitter, NS.Bound, exports);
+NS.Surface = exports;
 
 // TODO: distance handling
 // var drag = Surface.prototype.drag;

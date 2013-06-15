@@ -1,6 +1,4 @@
-/* global */
-
-NS.NavController = require('../controller.js').extend({
+var exports = {
 	name: 'NavController',
 	requires: ['focused', 'VisiblesTreeController'],
 	events: {
@@ -147,4 +145,7 @@ NS.NavController = require('../controller.js').extend({
 
 		return count;
 	}
-});
+};
+
+exports = NS.Controller.extend(exports);
+NS.NavController = exports;

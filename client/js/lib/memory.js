@@ -13,7 +13,7 @@ memory.restore(action, mode): function you have to define to tell how to cancel 
 
 */
 
-var Memory = Object.prototype.extend({
+var exports = {
 	constructor: function(limit){
 		this.limit = limit || 10;
 		this.reset();
@@ -79,6 +79,7 @@ var Memory = Object.prototype.extend({
 	redo: function(){
 		return Boolean(this.go(1));
 	}
-});
+};
 
-module.exports = Memory;
+exports = Object.prototype.extend(exports);
+NS.Memory = exports;

@@ -1,6 +1,6 @@
 /* global */
 
-NS.Selector = require('./tree.js').extend({
+var exports = {
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
@@ -114,4 +114,7 @@ NS.Selector = require('./tree.js').extend({
 			minWidth: this.minwidth
 		});
 	}
-});
+};
+
+exports = NS.TreeView.extend(exports);
+NS.Selector = exports;

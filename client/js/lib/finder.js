@@ -12,38 +12,42 @@ provides: Finder
 ...
 */
 
-var Finder = {
-	getProperty: function(item, key){
-		return Object.getAt(item, key);
-	},
+var exports = {};
 
-	hasProperty: function(item, key){
-		return item ? item.hasOwnProperty(key) : false;
-	},
-
-	matchPart: function(item, part){
-		if( part.operator ) return part.test(String(Finder.getProperty(item, part.key)).toLowerCase());
-		return Finder.hasProperty(item, part.key);
-	}
+exports.getProperty = function(item, key){
+	return Object.getAt(item, key);
 };
 
-// on ne prend pas en compte les espaces \\s*
-// on chope key operator si possible (?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?
-// on ne prend pas en compte les espaces \\s*
-// on chope quotedvalue ou value (?:\"(.+)\"|[^<operator>])
-// qui peut contenir des espaces ce qu'on vérifie par (?=\\s+.+[<operator>]|$) cad suivi d'un opérateur ou fin de chaine
-// comme on fait trim() sur la chaine les espaces de fin de chaine ne sont pas considéré comme une valeur ce qui aurait été le cas pour "a   "
+exports.hasProperty = function(item, key){
+	return item ? item.hasOwnProperty(key) : false;
+};
 
-Finder.exp = "^(?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?\\s*(?:\"(.+)\"|([^<operator>]+)(?=\\s+.+[<operator>]|$))"
-	.replace(/<unicode>/, '(?:[:\\w\\u00a1-\\uFFFF-]|\\\\[^\\s0-9a-f])')
-	.replace(/operator/g, ':<>');
-Finder.regexp = new RegExp(Finder.exp);
+exports.matchPart = function(item, part){
+	if( part.operator ) return part.test(String(this.getProperty(item, part.key)).toLowerCase());
+	return this.hasProperty(item, part.key);
+};
 
-Finder.parser = function(match, key, operator, quotedValue, value){
+/*
+on ne prend pas en compte les espaces \\s*
+on chope key operator si possible (?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?
+on ne prend pas en compte les espaces \\s*
+on chope quotedvalue ou value (?:\"(.+)\"|[^<operator>])
+qui peut contenir des espaces ce qu'on vérifie par (?=\\s+.+[<operator>]|$) cad
+suivi d'un opérateur ou fin de chaine
+comme on fait trim() sur la chaine les espaces de fin de chaine ne sont pas
+considéré comme une valeur ce qui aurait été le cas pour "a   "
+*/
+exports.exp = "^(?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?\\s*(?:\"(.+)\"|([^<operator>]+)(?=\\s+.+[<operator>]|$))";
+exports.exp = exports.exp.replace(/<unicode>/, '(?:[:\\w\\u00a1-\\uFFFF-]|\\\\[^\\s0-9a-f])');
+exports.exp = exports.exp.replace(/operator/g, ':<>');	
+	
+exports.regexp = new RegExp(exports.exp);
+
+exports.parser = function(match, key, operator, quotedValue, value){
 	if( quotedValue ) value = quotedValue;
 	if(	value ){
 		if( value == '*' ){
-			if( key ) Finder.parsed.push({key:key}); // value == '*' means hasOwnProperty
+			if( key ) this.parsed.push({key:key}); // value == '*' means hasOwnProperty
 			return ''; // but if no property given it means always true
 		}
 		if( !key ) key = 'name';
@@ -107,7 +111,7 @@ Finder.parser = function(match, key, operator, quotedValue, value){
 			break;
 		}
 
-		Finder.parsed.push({
+		this.parsed.push({
 			key: key,
 			operator: operator,
 			value: value,
@@ -118,17 +122,17 @@ Finder.parser = function(match, key, operator, quotedValue, value){
 	return '';
 };
 
-Finder.cache = {};
-Finder.parse = function(expression){
+exports.cache = {};
+exports.parse = function(expression){
 	expression = String(expression).trim(); // remove begining and ending spaces
-	var parsed = Finder.cache[expression];
+	var parsed = exports.cache[expression];
 
 	if( !parsed ){
-		parsed = Finder.parsed = [];
+		parsed = this.parsed = [];
 		parsed.isParse = true;
 		parsed.raw = expression;
-		while( expression != (expression = expression.replace(Finder.regexp, Finder.parser)) );
-		Finder.cache[parsed.raw] = parsed;
+		while( expression != (expression = expression.replace(this.regexp, this.parser)) );
+		this.cache[parsed.raw] = parsed;
 	}
 
 	return parsed;
@@ -136,7 +140,7 @@ Finder.parse = function(expression){
 
 // turn the first argument into a function who returns if the first arguments supplied match
 // ex: Finder.from('name:hello') -> function(item){ return item.name == 'hello'; };
-Finder.from = function(expression, reverse){
+exports.from = function(expression, reverse){
 	if( expression == null ) return reverse ? Function.TRUE : Function.FALSE;
 
 	var match;
@@ -153,12 +157,12 @@ Finder.from = function(expression, reverse){
 		};
 		break;
 	case 'string':
-		expression = Finder.parse(expression); // no break to go to expression.isParse
+		expression = this.parse(expression); // no break to go to expression.isParse
 	case 'object':
 		if( expression.isParse ){
 			match = function(item){
 				var i = expression.length;
-				while(i--) if( !Finder.matchPart(item, expression[i]) ) return false;
+				while(i--) if( !exports.matchPart(item, expression[i]) ) return false;
 				return true;
 			};
 			break;
@@ -167,10 +171,10 @@ Finder.from = function(expression, reverse){
 		if( Array.isArray(expression) ){
 			var i = expression.length;
 			if( i === 0 ) match = Function.FALSE;
-			else if( i === 1 ) match = Finder.from(expression[0], reverse);
+			else if( i === 1 ) match = this.from(expression[0], reverse);
 			else{
 				// each array item is turned into a function
-				var matchers = expression.map(function(exp){ return Finder.from(exp, reverse); });
+				var matchers = expression.map(function(exp){ return this.from(exp, reverse); }, this);
 				match = function(item){
 					var i = 0, j = matchers.length;
 					for(;i<j;i++) if( !matchers[i](item) ) return false;
@@ -195,10 +199,10 @@ Finder.from = function(expression, reverse){
 };
 
 // iterator supply items to test, we returns the first or all items passing the test
-Finder.matchIterator = function(iterator, match, first, bind){
+exports.matchIterator = function(iterator, match, first, bind){
 	var found = first ? null : [];
 
-	match = Finder.from(match);
+	match = this.from(match);
 	if( match != Function.FALSE ){
 		iterator.call(this, function(item){
 			if( match.call(bind, item) === true ){
@@ -215,8 +219,8 @@ Finder.matchIterator = function(iterator, match, first, bind){
 };
 
 // not implemented, would allow an option to tell to test a property with indexOf instead of == without having to pass '*'
-function getPartial(expression){
-	var parsed = Finder.parse(expression);
+exports.getPartial = function(expression){
+	var parsed = this.parse(expression);
 
 	function match(item){
 		var i = parsed.length, part;
@@ -228,12 +232,12 @@ function getPartial(expression){
 				// si j vaut -1 c'est que indexOf a échoué sur toutes les parties du nom recherché
 				if( j < 0 ) return false;
 			}
-			else if( !Finder.matchPart(item, part) ) return false;
+			else if( !this.matchPart(item, part) ) return false;
 		}
 		return true;
 	}
 
 	return match;
-}
+};
 
-module.exports = Finder;
+NS.Finder = exports;

@@ -1,4 +1,4 @@
-var EventListener = {
+var exports = {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -22,4 +22,5 @@ var EventListener = {
 	}
 };
 
-module.exports = require('../lib/listener.js').extend(EventListener);
+exports = NS.Listener.extend(exports);
+NS.EventListener = exports;

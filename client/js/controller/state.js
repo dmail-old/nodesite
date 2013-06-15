@@ -1,6 +1,4 @@
-/* global */
-
-NS.StateTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'StateTreeController',
 	constructor: function(view, state, multiple){
 		this.name = state;
@@ -93,13 +91,16 @@ NS.StateTreeController = NS.TreeController.extend({
 			delete this.current;
 		}
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.StateTreeController = exports;
 
 Object.eachPair(NS.viewstate.states, function(name){
-	require('../controller.js').providers[name] = function(view){
+	NS.Controller.providers[name] = function(view){
 		return NS.StateTreeController.new(view, name);
 	};
-	require('../controller.js').providers[name + 's'] = function(view){
+	NS.Controller.providers[name + 's'] = function(view){
 		return NS.StateTreeController.new(view, name, true);
 	};
 });

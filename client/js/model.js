@@ -1,4 +1,4 @@
-var Model = {
+var exports = {
 	validationError: null,
 	cid: 0,
 
@@ -73,7 +73,9 @@ var Model = {
 	}
 };
 
-module.exports = Object.prototype.extend(require('./lib/emitter.js'), Model);
+
+exports = Object.prototype.extend(NS.Emitter, exports);
+NS.Model = exports;
 
 NS.servermodel = {
 	definitions: {

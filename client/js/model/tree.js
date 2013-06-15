@@ -1,8 +1,8 @@
-var TreeModel = {
+var exports = {
 	name: '',
 
 	constructor: function(){
-		require('../model.js').constructor.apply(this, arguments);
+		NS.Model.constructor.apply(this, arguments);
 
 		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');
@@ -37,9 +37,10 @@ var TreeModel = {
 	}
 };
 
-module.exports = require('../model.js').extend(
-	require('../lib/treeStructure.js'),
-	require('../lib/treeTraversal.js'),
-	require('../lib/treeFinder.js'),
-	TreeModel
+exports = NS.Model.extend(
+	NS.treeStructure,
+	NS.treeTraversal,
+	NS.treeFinder,
+	exports
 );
+NS.TreeModel = exports;

@@ -1,6 +1,6 @@
 /* global */
 
-NS.OpenstateController = require('../controller.js').extend({
+var exports = {
 	name: 'OpenstateController',
 	events: {
 		'mousedown': function(e){
@@ -24,4 +24,7 @@ NS.OpenstateController = require('../controller.js').extend({
 			}
 		}
 	}
-});
+};
+
+exports = NS.Controller.extend(exports);
+NS.OpenstateController = exports;

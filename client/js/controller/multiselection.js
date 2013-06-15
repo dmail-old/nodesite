@@ -1,5 +1,3 @@
-/* global */
-
 /*
 
 dependant de focused, si on ajoute mousedown focused avant ce controlleur
@@ -7,12 +5,12 @@ mousedown focused se produit avant mousedownmultiselect et shiftView est faussé
 
 */
 
-NS.MultiSelectionController = require('../controller.js').extend({
+var exports = {
 	name: 'MultiSelectionController',
 	requires: ['selecteds', 'focused', 'VisiblesTreeController'],
 
 	constructor: function(){
-		require('../controller.js').constructor.apply(this, arguments);
+		NS.Controller.constructor.apply(this, arguments);
 		this.selecteds.removeCurrent = this.removeCurrent.bind(this);
 	},
 
@@ -111,4 +109,7 @@ NS.MultiSelectionController = require('../controller.js').extend({
 		// select view in the range
 		range.forEach(function(view){ view.addClass('selected', e); });
 	}
-});
+};
+
+exports = NS.Controller.extend(exports);
+NS.MultiSelectionController = exports;

@@ -1,4 +1,4 @@
-NS.NodeTreeView = require('./tree.js').extend(NS.viewstate, {
+var exports = {
 	tagName: 'li',
 	className: 'node',
 	modelEvents: {
@@ -17,7 +17,7 @@ NS.NodeTreeView = require('./tree.js').extend(NS.viewstate, {
 	},
 
 	getClassName: function(){
-		var className = require('./tree.js').getClassName.call(this);
+		var className = NS.NodeView.getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');
@@ -62,4 +62,7 @@ NS.NodeTreeView = require('./tree.js').extend(NS.viewstate, {
 	updateName: function(name){
 		this.getDom('name').innerHTML = name;
 	}
-});
+};
+
+exports = NS.TreeView.extend(NS.viewstate, exports);
+NS.NodeTreeView = exports;

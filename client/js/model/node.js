@@ -1,5 +1,5 @@
-var NodeTreeModel = require('./tree.js').extend({
+var exports = {
+};
 
-});
-
-module.exports = NodeTreeModel;
+exports = NS.TreeModel.extend(exports);
+NS.NodeTreeModel = exports;

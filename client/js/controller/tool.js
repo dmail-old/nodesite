@@ -1,6 +1,4 @@
-/* global */
-
-NS.ToolTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'ToolTreeController',
 	events: {
 		'mousedown': function(view, e){
@@ -21,4 +19,7 @@ NS.ToolTreeController = NS.TreeController.extend({
 			if( !view.getChildrenElement() ) view.renderChildren();
 		}
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.ToolTreeController = exports;

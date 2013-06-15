@@ -1,15 +1,15 @@
 /* global */
 
-NS.TreeEmitter = require('../lib/emitter.js').extend({
+NS.TreeEmitter = NS.Emitter.extend({
 	applyListeners: function(name, args){
 		if( this.bind.parentNode ){
 			this.bind.parentNode.treeEmitter.applyListeners(name, args);
 		}
-		return require('../lib/emitter.js').applyListeners.call(this, name, args);
+		return NS.emitter.applyListeners.call(this, name, args);
 	}
 });
 
-var TreeView = {
+var exports = {
 	//className: 'node',
 	modelEvents: {
 		'adopt': function(child, index){
@@ -73,9 +73,10 @@ var TreeView = {
 	}
 };
 
-module.exports = require('../view.js').extend(
-	require('../lib/treeStructure.js'),
-	require('../lib/treeTraversal.js'),
-	require('../lib/treeFinder.js'),
-	TreeView
+exports = NS.View.extend(
+	NS.treeStructure,
+	NS.treeTraversal,
+	NS.treeFinder,
+	exports
 );
+NS.TreeView = exports;

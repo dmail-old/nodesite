@@ -1,4 +1,4 @@
-var treeTraversal = {
+var exports = {
 	// call fn on every child of the element, returns true to break the loop
 	crossChild: function(fn, bind){
 		var children = this.children, i = 0, j = children.length;
@@ -71,7 +71,7 @@ var treeTraversal = {
 	}
 };
 
-module.exports = treeTraversal;
+NS.treeTraversal = exports;
 
 /*
 

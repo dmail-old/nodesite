@@ -1,6 +1,6 @@
 // https://github.com/kanso/path/blob/master/path.js
 
-var exports = NS.Path = {};
+var exports = {};
 
 exports.normalizeArray = function(parts, keepBlanks){
 	var directories = [], prev, i = 0, j = parts.length - 1, directory;
@@ -70,7 +70,6 @@ exports.extdot = function(path){
 		
 	return dot <= slash + 1 ? -1 : dot;
 };
-
 	
 exports.extname = function(path){
 	var dot = this.extdot(path);
@@ -157,3 +156,5 @@ exports.relative = function(from, to){
 
 	return outputParts.join('/');
 };
+
+NS.Path = exports;

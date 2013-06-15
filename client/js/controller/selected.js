@@ -1,6 +1,4 @@
-/* global */
-
-NS.SelectedTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'SelectedTreeController',
 	events: {
 		'view:addclass:selected': function(view, e){
@@ -39,4 +37,7 @@ NS.SelectedTreeController = NS.TreeController.extend({
 			this.view.setValue('');
 		}
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.SelectedTreeController = exports;

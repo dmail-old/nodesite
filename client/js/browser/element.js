@@ -19,10 +19,8 @@ document.newElement = function(tag, props){
 	return element;
 };
 
-Object.append(Element, {
-	implement: Object.implement.bind(Element),
-	complement: Object.complement.bind(Element)
-});
+Element.implement = Object.implement.bind(Element);
+Element.complement = Object.complement.bind(Element);
 
 String.implement('toElement', function(){
 	var div = document.createElement('div');
@@ -153,9 +151,7 @@ Element.implement({
 	}
 });
 
-var eventEmitter = require('./eventEmitter.js');
-
-Object.eachPair(eventEmitter, function(key, value, object){
+Object.eachPair(NS.EventEmitter, function(key, value, object){
 	if( key != 'constructor' && key != '$events' ){
 		Object.appendPair.call(window, key, value, object);
 		Object.appendPair.call(document, key, value, object);

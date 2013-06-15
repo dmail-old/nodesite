@@ -6,11 +6,11 @@ description: StringList is used to manipulate a list of string separated by a sp
 
 */
 
-var StringList = require('./list.js').extend({
+var exports = {
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) require('./list.js').constructor.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) NS.List.constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},
@@ -52,6 +52,7 @@ var StringList = require('./list.js').extend({
 	toString: function(){
 		return this.join(' ');
 	}
-});
+};
 
-module.exports = StringList;
+exports = NS.List.extend(exports);
+NS.StringList = exports;

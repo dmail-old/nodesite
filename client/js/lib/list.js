@@ -1,4 +1,4 @@
-var List = Array.prototype.extend({
+var exports = {
 	constructor: function(){
 		if( arguments.length ) this.push.apply(this, arguments);
 	},
@@ -6,6 +6,7 @@ var List = Array.prototype.extend({
 	clear: function(){
 		this.length = 0;
 	}
-});
+};
 
-module.exports = List;
+exports = Array.prototype.extend(exports);
+NS.List = exports;

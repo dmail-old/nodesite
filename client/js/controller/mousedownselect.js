@@ -1,6 +1,4 @@
-/* global */
-
-NS.MousedownselectTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'MousedownselectTreeController',
 	requires: 'selected',
 	events: {
@@ -23,4 +21,7 @@ NS.MousedownselectTreeController = NS.TreeController.extend({
 		if( this.element ) this.element.removeClass('unselectable');
 		return NS.TreeController.unsetElement.call(this);
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.MousedownselectTreeController = exports;

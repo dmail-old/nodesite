@@ -1,6 +1,4 @@
-/* global */
-
-NS.MouseoverlightTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'MouseoverlightTreeController',
 	requires: 'lighted',
 	events: {
@@ -17,10 +15,13 @@ NS.MouseoverlightTreeController = NS.TreeController.extend({
 		'mouseout': function(view, e){
 			// when the mouse go very fast out of the view
 			// mouseover event is'nt fired on other view but we can check mouseout relatedTarget
-			view = require('../view.js').cast(e.relatedTarget);
+			view = NS.View.cast(e.relatedTarget);
 			if( !view ){
 				this.lighted.remove(this.lighted.current, e);
 			}
 		}
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.MouseoverlightTreeController = exports;

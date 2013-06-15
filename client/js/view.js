@@ -1,4 +1,4 @@
-var View = {
+var exports = {
 	modelEvents: {
 		'destroy': 'destroy'
 	},
@@ -10,7 +10,7 @@ var View = {
 		this.self.instances[this.id = this.self.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = require('./lib/listener.js').new(null, this.modelEvents, this);
+		this.modelListener = NS.Listener.new(null, this.modelEvents, this);
 
 		this.emit('create');
 
@@ -144,7 +144,7 @@ var View = {
 	}
 };
 
-View.self =  {
+exports.self =  {
 	instances: {},
 	IDAttribute: 'data-view',
 	lastID: 0,
@@ -177,14 +177,14 @@ View.self =  {
 	}
 };
 
-Element.prototype.toView = function(){ return View.self.findElementView(this); };
+Element.prototype.toView = function(){ return exports.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 
-View = Object.prototype.extend(require('./lib/emitter.js'), View);
+exports = Object.prototype.extend(NS.Emitter, exports);
 
 // View émet des évènements via le DOM de son élément
-View.on('*', function(name, args){
+exports.on('*', function(name, args){
 	if( this.element ){
 		var event = new CustomEvent('view:' + name, {
 			bubbles: true,
@@ -199,7 +199,7 @@ View.on('*', function(name, args){
 	}
 });
 
-module.exports = View;
+NS.View = exports;
 
 NS.viewstate = {
 	states: {

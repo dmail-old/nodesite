@@ -1,6 +1,4 @@
-/* global */
-
-NS.IndentTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'IndentTreeController',
 	events: {
 		'view:insertElement': function(view){
@@ -17,4 +15,7 @@ NS.IndentTreeController = NS.TreeController.extend({
 		}
 		return level - 1;
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.IndentTreeController = exports;

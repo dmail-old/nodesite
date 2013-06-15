@@ -19,7 +19,7 @@ Element.Properties.onclick = {
 	}
 };
 
-var Popup = NS.Box.extend({
+var exports = {
 	options: {
 		properties: {
 			'html': '\
@@ -166,9 +166,10 @@ var Popup = NS.Box.extend({
 		button.setProperty('disabled', true);
 		return this.dial(msg,true);
 	}
-});
+};
 
-NS.Popup = Popup;
+exports = NS.Box.extend(exports);
+NS.Popup = exports;
 
 // autres classes qui se serviront de Popup
 

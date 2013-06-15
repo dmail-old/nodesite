@@ -1,4 +1,4 @@
-var Controller = {
+var exports = {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -17,8 +17,8 @@ var Controller = {
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = require('./lib/listener.js').new(null, this.viewEvents, this);
-		this.elementListener = require('./browser/eventListener.js').new(null, this.events, this);
+		this.viewListener = NS.Listener.new(null, this.viewEvents, this);
+		this.elementListener = NS.EventListener.new(null, this.events, this);
 
 		this.setView(view);
 		this.resolveDependency();
@@ -99,7 +99,7 @@ var Controller = {
 	}
 };
 
-require('./view.js').on({
+NS.View.on({
 	create: function(){
 		this.controllers = {};
 	},
@@ -109,4 +109,5 @@ require('./view.js').on({
 	}
 });
 
-module.exports = Object.prototype.extend(Controller);
+exports = Object.prototype.extend(exports);
+NS.Controller = exports;

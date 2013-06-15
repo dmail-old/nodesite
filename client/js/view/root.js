@@ -1,6 +1,6 @@
 /* global */
 
-NS.RootTreeView = require('./tree.js').extend({
+var exports = {
 	tagName: 'ul',
 	className: 'root',
 	attributes: {
@@ -14,4 +14,7 @@ NS.RootTreeView = require('./tree.js').extend({
 	getChildrenElement: function(){
 		return this.element;
 	},
-});
+};
+
+exports = NS.TreeView.extend(exports);
+NS.RootTreeView = exports;

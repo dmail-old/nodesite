@@ -8,7 +8,7 @@ require: Object
 
 */
 
-var Emitter = Object.prototype.extend({
+var exports = {
 	$events: {},
 
 	constructor: function(bind){
@@ -178,6 +178,7 @@ var Emitter = Object.prototype.extend({
 	emit: function(){
 		return this.eachEvent(this.callListeners, arguments);
 	}
-});
+};
 
-module.exports = Emitter;
+exports = Object.prototype.extend(exports);
+NS.Emitter = exports;

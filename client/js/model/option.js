@@ -1,3 +1,5 @@
-NS.OptionTreeModel = require('./tree.js').extend({
+var exports = {
+};
 
-});
+exports = NS.TreeModel.extend(exports);
+NS.OptionTreeModel = exports;

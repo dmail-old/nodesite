@@ -15,7 +15,7 @@ faire la largeur de son contenu
 
 */
 
-NS.MousedownfocusTreeController = NS.TreeController.extend({
+var exports = {
 	name: 'MousedownfocusTreeController',
 	requires: 'focused',
 	events: {
@@ -25,4 +25,7 @@ NS.MousedownfocusTreeController = NS.TreeController.extend({
 			}
 		}
 	}
-});
+};
+
+exports = NS.TreeController.extend(exports);
+NS.MousedownfocusTreeController = exports;

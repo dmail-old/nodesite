@@ -1,8 +1,4 @@
-/* global */
-
-var progressSupport = 'onprogress' in new XMLHttpRequest();
-
-NS.Request = Object.prototype.extend(require('../lib/emitter.js'), NS.options, NS.chain, {
+var exports = {
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
@@ -59,7 +55,7 @@ NS.Request = Object.prototype.extend(require('../lib/emitter.js'), NS.options, N
 		catch(e){}
 
 		xhr.onreadystatechange = Function.EMPTY;
-		if( progressSupport ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
+		if( 'onprogress' in xhr ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
 		clearTimeout(this.timer);
 
 		this.response = {text: this.xhr.responseText || '', xml: this.xhr.responseXML};
@@ -180,7 +176,7 @@ NS.Request = Object.prototype.extend(require('../lib/emitter.js'), NS.options, N
 		}
 
 		var xhr = this.xhr;
-		if( progressSupport ){
+		if( 'onprogress' in xhr ){
 			xhr.onloadstart = this.loadstart.bind(this);
 			xhr.onprogress = this.progress.bind(this);
 		}
@@ -213,12 +209,12 @@ NS.Request = Object.prototype.extend(require('../lib/emitter.js'), NS.options, N
 		xhr.abort();
 		clearTimeout(this.timer);
 		xhr.onreadystatechange = Function.EMPTY;
-		if( progressSupport ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
+		if( 'onprogress' in xhr ) xhr.onprogress = xhr.onloadstart = Function.EMPTY;
 		this.xhr = new XMLHttpRequest();
 		this.emit('cancel');
 		return this;
 	}
-});
+};
 
 Object.toQueryString = function(object, base){
 	var queryString = [];
@@ -274,3 +270,6 @@ Element.implement('toQueryString', function(){
 
 	return queryString.join('&');
 });
+
+exports = Object.prototype.extend(NS.Emitter, NS.options, NS.chain, exports);
+NS.Request = exports;

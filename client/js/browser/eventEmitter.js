@@ -1,4 +1,4 @@
-var EventEmitter = {
+var exports = {
 	getEvents: function(){
 		var listeners = this.storage.listeners;
 
@@ -25,4 +25,5 @@ var EventEmitter = {
 	}
 };
 
-module.exports = require('../lib/emitter.js').extend(EventEmitter);
+exports = NS.Emitter.extend(exports);
+NS.EventEmitter = exports;
