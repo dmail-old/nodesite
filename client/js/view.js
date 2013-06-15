@@ -12,7 +12,7 @@ NS.View = Object.prototype.extend(NS.Emitter, {
 		this.self.instances[this.id = this.self.lastID++] = this;
 
 		// Listener call this.handlers over this.model events with this as context
-		this.modelListener = NS.Listener.new(null, this.modelEvents, this);
+		this.modelListener = require('lib/listener').new(null, this.modelEvents, this);
 
 		this.emit('create');
 

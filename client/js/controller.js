@@ -18,8 +18,8 @@ NS.Controller = Object.prototype.extend({
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = NS.Listener.new(null, this.viewEvents, this);
-		this.elementListener = NS.EventListener.new(null, this.events, this);
+		this.viewListener = require('lib/listener').new(null, this.viewEvents, this);
+		this.elementListener = require('browser/eventListener').new(null, this.events, this);
 		this.elementListener.callHandler = this.callHandler;
 
 		this.setView(view);
@@ -55,7 +55,7 @@ NS.Controller = Object.prototype.extend({
 		this[name] = instance;
 	},
 
-	callHandler: NS.EventListener.callHandler,
+	callHandler: require('browser/eventListener').callHandler,
 
 	setView: function(view){
 		if( view ){
@@ -105,9 +105,12 @@ NS.Controller = Object.prototype.extend({
 
 NS.Controller.providers = {};
 
-NS.View.on('create', function(){
-	this.controllers = {};
-});
-NS.View.on('destroy', function(){
-	delete this.controllers;
+NS.View.on({
+	create: function(){
+		this.controllers = {};
+	},
+
+	destroy: function(){
+		delete this.controllers;
+	}
 });

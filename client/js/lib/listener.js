@@ -1,4 +1,4 @@
-NS.Listener = Object.prototype.extend({
+module.exports = Object.prototype.extend({
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

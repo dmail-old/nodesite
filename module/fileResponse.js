@@ -143,7 +143,8 @@ module.exports = Object.prototype.extend({
 			if( error ) return this.writeEnd(500);
 
 			if( this.file.getExtension() == '.js' ){
-				var begin = '(function(){\r\rvar module = new Module("'+ this.file.getFilename() +'");\r\r';
+				var filename = this.file.cleanPath(Path.relative(root + '/client/js/', this.file.path)).replace(/\.js$/, '');
+				var begin = '(function(){\r\rvar module = new Module("'+ filename +'");\r\r';
 				var end = '\r})();';
 
 				this.headers['content-length']+= begin.length + end.length;

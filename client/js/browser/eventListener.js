@@ -1,4 +1,4 @@
-NS.EventListener = NS.Listener.extend({
+module.exports = require('lib/listener').extend({
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
