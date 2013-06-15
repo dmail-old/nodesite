@@ -8,7 +8,7 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = require('./model/tree.js').new(treeData);
+var model = NS.TreeModel.new(treeData);
 var view = NS.NodeTreeView.new(model);
 var rootView = NS.RootTreeView.new();
 
