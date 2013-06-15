@@ -5,14 +5,14 @@ name: Finder
 
 description: Help to get match(es) against a function called in a loop
 
-requires: Object.path, Function.TRUE, Function.FALSE
+requires: Object.at, Function.TRUE, Function.FALSE
 
 provides: Finder
 
 ...
 */
 
-var Finder = window.Finder = {
+var Finder = {
 	getProperty: function(item, key){
 		return Object.getAt(item, key);
 	},
@@ -235,3 +235,5 @@ function getPartial(expression){
 
 	return match;
 }
+
+module.exports = Finder;

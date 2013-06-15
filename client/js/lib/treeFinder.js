@@ -2,7 +2,7 @@
 
 NS.treefinder = {
 	matchIterator: function(iterator, match, first){
-		return Finder.matchIterator.call(this, iterator, match, first);
+		return require('finder').matchIterator.call(this, iterator, match, first);
 	},
 
 	matchFirst: function(iterator){
@@ -39,7 +39,7 @@ NS.treefinder = {
 		var i = 0, j = arguments.length;
 
 		for(;i<j;i++){
-			if( Finder.from(arguments[i])(this) ) return true;
+			if( require('finder').from(arguments[i])(this) ) return true;
 		}
 
 		return false;

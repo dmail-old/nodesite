@@ -218,7 +218,7 @@ var Surface = NS.Surface = Object.prototype.extend(NS.Emitter, NS.bound, {
 	}
 });
 
-Surface.implement({
+Surface.supplement({
 	get: function(name){
 		return this.element.getStyle(name).toInt() || 0;
 	},
@@ -336,7 +336,7 @@ Surface.implement({
 	}
 });
 
-Surface.implement({
+Surface.supplement({
 	calcSpace: function(axis){
 		return this.element.measure('scrollSpace', axis);
 	},
@@ -447,7 +447,7 @@ Surface.implement({
 });
 
 // mousedown, mouseup, mousemove, focus, blur, scroll, keydown
-Surface.implement({
+Surface.supplement({
 	getMode: function(axis){
 		if( this.handle && this.handle.hasClass('vector') ){
 			this.resizer = this.handle.getStyle('cursor').substr(0, 2);
@@ -616,7 +616,7 @@ document.on('mousedown focus keydown', Surface.startInstanceFromEvent, true);
 });
 
 // scroll handling
-Surface.implement({
+Surface.supplement({
 	options: {
 		scrollAuto: true,
 		scrollDelay: 100,

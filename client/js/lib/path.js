@@ -1,6 +1,6 @@
 // https://github.com/kanso/path/blob/master/path.js
 
-var Path = {
+module.exports = {
 	normalizeArray: function(parts, keepBlanks){
 		var directories = [], prev, i = 0, j = parts.length - 1, directory;
 		
@@ -8,7 +8,7 @@ var Path = {
 			directory = parts[i];
 
 			// if it's blank, but it's not the first thing, and not the last thing, skip it.
-			if( directory === "" && i !== 0 && i !== l && !keepBlanks ) continue;
+			if( directory === "" && i !== 0 && i !== j && !keepBlanks ) continue;
 
 			// if it's a dot, and there was some previous dir already, then skip it.
 			if( directory === "." && prev !== undefined ) continue;
@@ -45,9 +45,12 @@ var Path = {
 		
 		lastSlash = path.lastIndexOf('/');
 		switch(lastSlash){
-			case -1: return '.';
-			case 0: return '/';
-			default: return path.substring(0, lastSlash);
+		case -1:
+			return '.';
+		case 0:
+			return '/';
+		default:
+			return path.substring(0, lastSlash);
 		}
 	},
 	
