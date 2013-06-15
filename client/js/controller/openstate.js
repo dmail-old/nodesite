@@ -1,6 +1,6 @@
 /* global */
 
-NS.OpenstateController = NS.Controller.extend({
+NS.OpenstateController = require('../controller.js').extend({
 	name: 'OpenstateController',
 	events: {
 		'mousedown': function(e){

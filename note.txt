@@ -1,0 +1,1 @@
+semble que model qui émet des event pour view qui émet des events pour controlleur soit plutot lent

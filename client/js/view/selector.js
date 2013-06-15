@@ -1,6 +1,6 @@
 /* global */
 
-NS.Selector = NS.TreeView.extend({
+NS.Selector = require('./tree.js').extend({
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',

@@ -1,20 +1,16 @@
-/* global */
-
 /*
 
 name: StringList
 
 description: StringList is used to manipulate a list of string separated by a space (similar to native classList)
 
-require: String, Array, NS
-
 */
 
-NS.StringList = NS.List.extend({
+var StringList = require('./list.js').extend({
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
-			if( trimmed ) NS.List.constructor.apply(this, trimmed.split(RegExp.SPACE));
+			if( trimmed ) require('./list.js').constructor.apply(this, trimmed.split(RegExp.SPACE));
 		}
 		return this;
 	},
@@ -57,3 +53,5 @@ NS.StringList = NS.List.extend({
 		return this.join(' ');
 	}
 });
+
+module.exports = StringList;

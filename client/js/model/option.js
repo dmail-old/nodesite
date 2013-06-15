@@ -1,5 +1,3 @@
-/* global */
-
-NS.OptionTreeModel = NS.TreeModel.extend({
+NS.OptionTreeModel = require('./tree.js').extend({
 
 });

@@ -1,5 +1,3 @@
-/* global IFrame, Files, loader */
-
 /*
 ---
 
@@ -21,7 +19,7 @@ Element.Properties.onclick = {
 	}
 };
 
-NS.Popup = NS.Box.extend({
+var Popup = NS.Box.extend({
 	options: {
 		properties: {
 			'html': '\
@@ -88,7 +86,7 @@ NS.Popup = NS.Box.extend({
 
 		if( this.options.url ){
 			this.options.overflow = 'hidden';
-			this.dom.iframe = new IFrame({width:'100%', height:'100%', frameborder:0, onload:this.loaded.bind(this)});
+			this.dom.iframe = new window.IFrame({width:'100%', height:'100%', frameborder:0, onload:this.loaded.bind(this)});
 			this.dom.content.innerHTML = '';
 			this.dom.content.appendChild(this.dom.iframe);
 		}
@@ -169,6 +167,8 @@ NS.Popup = NS.Box.extend({
 		return this.dial(msg,true);
 	}
 });
+
+NS.Popup = Popup;
 
 // autres classes qui se serviront de Popup
 

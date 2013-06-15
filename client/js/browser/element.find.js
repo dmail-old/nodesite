@@ -55,7 +55,8 @@ Element.implement('getCommonAncestor', function(element){
 	return null;
 });
 
-Element.implement(NS.treetraversal, NS.treefinder);
+Element.implement(require('../lib/treeTraversal.js'));
+Element.implement(require('../lib/treeFinder.js'));
 
 document.getNode = document.html.getNode.bind(document.html);
 document.getNodes = window.$$ = document.html.getNodes.bind(document.html);

@@ -96,10 +96,10 @@ NS.StateTreeController = NS.TreeController.extend({
 });
 
 Object.eachPair(NS.viewstate.states, function(name){
-	NS.Controller.providers[name] = function(view){
+	require('../controller.js').providers[name] = function(view){
 		return NS.StateTreeController.new(view, name);
 	};
-	NS.Controller.providers[name + 's'] = function(view){
+	require('../controller.js').providers[name + 's'] = function(view){
 		return NS.StateTreeController.new(view, name, true);
 	};
 });

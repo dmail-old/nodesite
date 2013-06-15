@@ -152,3 +152,13 @@ Element.implement({
 		return this;
 	}
 });
+
+var eventEmitter = require('./eventEmitter.js');
+
+Object.eachPair(eventEmitter, function(key, value, object){
+	if( key != 'constructor' && key != '$events' ){
+		Object.appendPair.call(window, key, value, object);
+		Object.appendPair.call(document, key, value, object);
+		Object.appendPair.call(Element.prototype, key, value, object);
+	}
+});

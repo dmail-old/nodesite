@@ -1,5 +1,3 @@
-/* global Options */
-
 /*
 ---
 
@@ -21,7 +19,7 @@ Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
 
-NS.Box = NS.Surface.extend(NS.options, {
+var Box = NS.Surface.extend(NS.options, {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -298,8 +296,6 @@ NS.Box = NS.Surface.extend(NS.options, {
 	}
 });
 
-var Box = NS.Box;
-
 Box.UID = 0;
 Box.instances = [];
 // contient la boite en cours d'utilisation (focused)
@@ -318,3 +314,5 @@ Box.getInstanceFromElement = function(element){
 
 	return null;
 };
+
+NS.Box = Box;

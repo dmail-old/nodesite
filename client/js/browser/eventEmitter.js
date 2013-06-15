@@ -1,6 +1,4 @@
-/* global */
-
-NS.EventEmitter = NS.Emitter.extend({
+var EventEmitter = {
 	getEvents: function(){
 		var listeners = this.storage.listeners;
 
@@ -25,12 +23,6 @@ NS.EventEmitter = NS.Emitter.extend({
 	onremovelistener: function(name, listener, capture){
 		this.removeEventListener(name, listener, capture);
 	}
-});
+};
 
-Object.eachPair(NS.EventEmitter, function(key, value, object){
-	if( key != 'constructor' && key != '$events' ){
-		Object.appendPair.call(window, key, value, object);
-		Object.appendPair.call(document, key, value, object);
-		Object.appendPair.call(Element.prototype, key, value, object);
-	}
-});
+module.exports = require('../lib/emitter.js').extend(EventEmitter);

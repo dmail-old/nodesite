@@ -1,6 +1,4 @@
-/* global */
-
-NS.Controller = Object.prototype.extend({
+var Controller = {
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);
@@ -14,13 +12,13 @@ NS.Controller = Object.prototype.extend({
 			this.destroy();
 		}
 	},
+	providers: {},
 	events: null,
 	requires: null,
 
 	constructor: function(view){
-		this.viewListener = require('lib/listener').new(null, this.viewEvents, this);
-		this.elementListener = require('browser/eventListener').new(null, this.events, this);
-		this.elementListener.callHandler = this.callHandler;
+		this.viewListener = require('./lib/listener.js').new(null, this.viewEvents, this);
+		this.elementListener = require('./browser/eventListener.js').new(null, this.events, this);
 
 		this.setView(view);
 		this.resolveDependency();
@@ -41,7 +39,7 @@ NS.Controller = Object.prototype.extend({
 			instance = this.view.controllers[name];
 		}
 		else{
-			provider = NS.Controller.providers[name];
+			provider = this.providers[name];
 
 			if( provider ){
 				instance = provider.call(this, this.view);
@@ -54,8 +52,6 @@ NS.Controller = Object.prototype.extend({
 
 		this[name] = instance;
 	},
-
-	callHandler: require('browser/eventListener').callHandler,
 
 	setView: function(view){
 		if( view ){
@@ -101,11 +97,9 @@ NS.Controller = Object.prototype.extend({
 		this.unsetView();
 		this.unsetElement();
 	}
-});
+};
 
-NS.Controller.providers = {};
-
-NS.View.on({
+require('./view.js').on({
 	create: function(){
 		this.controllers = {};
 	},
@@ -114,3 +108,5 @@ NS.View.on({
 		delete this.controllers;
 	}
 });
+
+module.exports = Object.prototype.extend(Controller);

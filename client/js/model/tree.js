@@ -1,10 +1,8 @@
-/* global */
-
-NS.TreeModel = NS.Model.extend(NS.treestructure, NS.treetraversal, NS.treefinder, {
+var TreeModel = {
 	name: '',
 
 	constructor: function(){
-		NS.Model.constructor.apply(this, arguments);
+		require('../model.js').constructor.apply(this, arguments);
 
 		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');
@@ -37,4 +35,11 @@ NS.TreeModel = NS.Model.extend(NS.treestructure, NS.treetraversal, NS.treefinder
 	sync: function(action, args, callback){
 
 	}
-});
+};
+
+module.exports = require('../model.js').extend(
+	require('../lib/treeStructure.js'),
+	require('../lib/treeTraversal.js'),
+	require('../lib/treeFinder.js'),
+	TreeModel
+);

@@ -75,7 +75,7 @@ String.implement('percentOf', function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 });
 
-var Surface = NS.Surface = Object.prototype.extend(NS.Emitter, NS.bound, {
+var Surface = NS.Surface = Object.prototype.extend(require('../lib/emitter.js'), NS.bound, {
 	name: 'surface',
 	options: {
 		axis: 'xy',

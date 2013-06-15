@@ -1,4 +1,4 @@
-module.exports = require('lib/listener').extend({
+var EventListener = {
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -20,4 +20,6 @@ module.exports = require('lib/listener').extend({
 			}
 		}
 	}
-});
+};
+
+module.exports = require('../lib/listener.js').extend(EventListener);

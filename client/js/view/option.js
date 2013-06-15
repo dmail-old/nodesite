@@ -1,5 +1,5 @@
 /* global */
 
-NS.OptionTreeView = NS.TreeView.extend({
+NS.OptionTreeView = require('./tree.js').extend({
 
 });

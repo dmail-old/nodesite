@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = NS.Table = Object.prototype.extend(NS.Emitter, {
+var Table = NS.Table = Object.prototype.extend(require(root + '/client/js/lib/emitter.js'), {
 	methods: {},
 	state: 'closed',
 	lockers: 0,

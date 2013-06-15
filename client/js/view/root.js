@@ -1,6 +1,6 @@
 /* global */
 
-NS.RootTreeView = NS.TreeView.extend({
+NS.RootTreeView = require('./tree.js').extend({
 	tagName: 'ul',
 	className: 'root',
 	attributes: {

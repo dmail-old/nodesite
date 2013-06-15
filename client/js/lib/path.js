@@ -1,6 +1,6 @@
 // https://github.com/kanso/path/blob/master/path.js
 
-module.exports = {
+var path = {
 	normalizeArray: function(parts, keepBlanks){
 		var directories = [], prev, i = 0, j = parts.length - 1, directory;
 		
@@ -80,3 +80,81 @@ module.exports = {
 		return this.basename(path, this.extname(path));
 	}
 };
+
+path.resolve = function(){
+	var resolvedPath = '', resolvedAbsolute = false, i = arguments.length - 1, path;
+
+	while(i >= -1){
+		path = i >= 0 ? arguments[i] : './'; //document.location.pathname;
+
+		// Skip empty and invalid entries
+		if( typeof path !== 'string' ){
+			throw new TypeError('Arguments to path.resolve must be strings');
+		}
+		else if( !path ) {
+			continue;
+		}
+
+		resolvedPath = path + '/' + resolvedPath;
+		resolvedAbsolute = path.charAt(0) === '/';
+		if( resolvedAbsolute ) break;
+
+		i--;
+	}
+
+	// At this point the path should be resolved to a full absolute path, but
+	// handle relative paths to be safe (might happen when process.cwd() fails)
+
+	// Normalize the path
+	resolvedPath = resolvedPath.split('/');
+	resolvedPath = resolvedPath.filter(function(p){ return Boolean(p); });
+	resolvedPath = this.normalizeArray(resolvedPath, !resolvedAbsolute);
+	resolvedPath = resolvedPath.join('/');
+
+	return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+path.relative = function(from, to){
+	var start, end, i, j, fromParts, toParts, length, samePartsLength, outputParts = [];
+
+	function trim(arr) {
+		start = 0;
+		for(;start<arr.length;start++){
+			if( arr[start] !== '' ) break;
+		}
+		end = arr.length - 1;
+		for (; end >= 0; end--) {
+			if (arr[end] !== '') break;
+		}
+
+		if( start > end ) return [];
+		return arr.slice(start, end - start + 1);
+	}
+
+	from = this.normalize(from);
+	to = this.normalize(to);
+	fromParts = trim(from.split('/'));
+	toParts = trim(to.split('/'));
+	
+	i = 0;
+	samePartsLength = j = Math.min(fromParts.length, toParts.length);
+	for(;i<j;i++){
+		if( fromParts[i] !== toParts[i] ){
+			samePartsLength = i;
+			break;
+		}
+	}
+
+	outputParts = [];
+	i = samePartsLength;
+	j = fromParts.length;
+	for(;i<j;i++){
+		outputParts.push('..');
+	}
+
+	outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	return outputParts.join('/');
+};
+
+module.exports = path;

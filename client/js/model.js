@@ -1,7 +1,4 @@
-/* global */
-
-// model
-NS.Model = Object.prototype.extend(NS.Emitter, {
+var Model = {
 	validationError: null,
 	cid: 0,
 
@@ -74,7 +71,9 @@ NS.Model = Object.prototype.extend(NS.Emitter, {
 
 		return this;
 	}
-});
+};
+
+module.exports = Object.prototype.extend(require('./lib/emitter.js'), Model);
 
 NS.servermodel = {
 	definitions: {

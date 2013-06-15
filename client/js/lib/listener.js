@@ -1,4 +1,4 @@
-module.exports = Object.prototype.extend({
+var Listener = Object.prototype.extend({
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){
@@ -65,3 +65,5 @@ module.exports = Object.prototype.extend({
 		return this;
 	}
 });
+
+module.exports = Listener;

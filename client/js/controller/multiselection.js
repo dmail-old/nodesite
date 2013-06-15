@@ -7,13 +7,12 @@ mousedown focused se produit avant mousedownmultiselect et shiftView est faussé
 
 */
 
-NS.MultiSelectionController = NS.Controller.extend({
+NS.MultiSelectionController = require('../controller.js').extend({
 	name: 'MultiSelectionController',
 	requires: ['selecteds', 'focused', 'VisiblesTreeController'],
 
 	constructor: function(){
-		NS.Controller.constructor.apply(this, arguments);
-
+		require('../controller.js').constructor.apply(this, arguments);
 		this.selecteds.removeCurrent = this.removeCurrent.bind(this);
 	},
 

@@ -7,10 +7,16 @@ Such controller have to extend controller.tree
 
 */
 
-NS.TreeController = NS.Controller.extend({
+NS.TreeController = require('../controller.js').extend({
 	name: 'TreeController',
+	constructor: function(){
+		require('../controller.js').constructor.apply(this, arguments);
+
+		this.elementListener.callHandler = this.callHandler;
+	},
+
 	callHandler: function(handler, bind, e){
-		var view = NS.View.cast(e);
+		var view = require('../view.js').cast(e);
 
 		if( e instanceof CustomEvent ){
 			return handler.apply(bind, [view].concat(e.detail.args));

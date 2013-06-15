@@ -1,6 +1,6 @@
 /* global */
 
-NS.NavController = NS.Controller.extend({
+NS.NavController = require('../controller.js').extend({
 	name: 'NavController',
 	requires: ['focused', 'VisiblesTreeController'],
 	events: {
@@ -100,7 +100,7 @@ NS.NavController = NS.Controller.extend({
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return self.isEnabled(view) && NS('view').matchLetter(view, e.key);
+				return self.isEnabled(view) && self.matchLetter(view, e.key);
 			}, 'right', index, true);
 		}
 	},
@@ -135,6 +135,11 @@ NS.NavController = NS.Controller.extend({
 		return element.getChild('div').measure('size', 'y') - 1;
 	},
 
+	matchLetter: function(view, letter){
+		var name = view.getDom('name');
+		return name && name.innerHTML.startsWith(letter);
+	},
+
 	getPageCount: function(view){
 		var element = view.element;
 		var total = element.offsetParent.clientHeight;
@@ -143,8 +148,3 @@ NS.NavController = NS.Controller.extend({
 		return count;
 	}
 });
-
-NS.View.matchLetter = function(view, letter){
-	var name = view.getDom('name');
-	return name && name.innerHTML.startsWith(letter);
-};
