@@ -1,4 +1,4 @@
-/* global */
+/* global Browser */
 
 String.implement('stripScripts', function(exec){
 	var scripts = '';
@@ -17,7 +17,7 @@ String.implement('stripScripts', function(exec){
 	return text;
 });
 
-var server = {
+window.server = {
 	link: null,
 	handlers: {
 		'application/json': function(){
@@ -55,8 +55,8 @@ var server = {
 			if( ok ){
 				var type = this.getHeader('content-type');
 
-				if( type in server.handlers ){
-					server.handlers[type].call(this);
+				if( type in window.server.handlers ){
+					window.server.handlers[type].call(this);
 				}
 				else{
 					this.emit('handle', new Error('response content type not supported'));
@@ -108,7 +108,7 @@ var server = {
 	}
 };
 
-var app = {
+window.app = {
 	setters: {
 		title: function(title){
 			document.title = title;
@@ -116,12 +116,12 @@ var app = {
 	},
 
 	init: function(){
-		server.createLink();
+		window.server.createLink();
 
-		document.on('click', app.click, true);
-		window.on('popstate', app.popstate);
+		document.on('click', window.app.click, true);
+		window.on('popstate', window.app.popstate);
 
-		app.go();
+		window.app.go();
 	},
 
 	showProgress: function(){
@@ -155,7 +155,7 @@ var app = {
 		// prevent browser caching document
 		// if( filename.endsWith('.html') ) filename+= '?rand=' + new Date().getTime();
 
-		server.callAction('go', filename, function(error, response){
+		window.server.callAction('go', filename, function(error, response){
 			if( error ) return console.error(error);
 
 			var type = this.getHeader('content-type');
@@ -172,7 +172,7 @@ var app = {
 
 	// bouton back ou next activé
 	popstate: function(e){
-		app.go(document.location.href, e.state);
+		window.app.go(document.location.href, e.state);
 	},
 
 	// lorsqu'on click sur un élément de la page
@@ -191,7 +191,7 @@ var app = {
 
 			// les URL internes entrainent une requête AJAX et history.pushState
 			history.pushState(null, null, element.href);
-			app.go(element.href);
+			window.app.go(element.href);
 			e.preventDefault();
 			return false;
 		}

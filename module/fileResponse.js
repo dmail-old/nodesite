@@ -1,4 +1,4 @@
-module.exports = NS.Item.extend({
+module.exports = Object.prototype.extend({
 	constructor: function(request, response){
 		this.response = response;
 		this.request = request;
@@ -141,6 +141,14 @@ module.exports = NS.Item.extend({
 	serve: function(){
 		function read(error, data){
 			if( error ) return this.writeEnd(500);
+
+			if( this.file.getExtension() == '.js' ){
+				var begin = '(function(){\r\rvar module = new Module("'+ this.file.getFilename() +'");\r\r';
+				var end = '\r})();';
+
+				this.headers['content-length']+= begin.length + end.length;
+				data = begin + data + end;
+			}
 
 			this.writeHead(200, this.headers);
 			this.write(data);
