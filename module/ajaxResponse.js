@@ -1,4 +1,4 @@
-module.exports = NS.Item.extend({
+module.exports = Object.prototype.extend({
 	constructor: function(request, response){
 		this.response = response;
 		this.request = request;

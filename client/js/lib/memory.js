@@ -13,7 +13,7 @@ memory.restore(action, mode): function you have to define to tell how to cancel 
 
 */
 
-NS.Memory = NS.Item.extend({
+NS.Memory = Object.prototype.extend({
 	constructor: function(limit){
 		this.limit = limit || 10;
 		this.reset();

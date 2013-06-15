@@ -8,7 +8,7 @@ require: Object
 
 */
 
-NS.Emitter = NS.Item.extend({
+NS.Emitter = Object.prototype.extend({
 	$events: {},
 
 	constructor: function(bind){

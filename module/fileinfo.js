@@ -1,4 +1,4 @@
-module.exports = NS.Item.extend({
+module.exports = Object.prototype.extend({
 	constructor: function(path, stat){
 		this.path = path;
 		this.stat = stat;

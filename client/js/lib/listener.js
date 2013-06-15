@@ -1,4 +1,4 @@
-NS.Listener = NS.Item.extend({
+NS.Listener = Object.prototype.extend({
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){

@@ -136,10 +136,10 @@ Array.complement({
 
 // compat
 
-Array.prototype.each = Array.prototype.forEach;
-Array.prototype.call = Array.prototype.callEach;
-Array.prototype.apply = Array.prototype.applyEach;
-Array.prototype.invoke = Array.prototype.mapCall;
+Array.implement('each', Array.prototype.forEach);
+Array.implement("call", Array.prototype.callEach);
+Array.implement("apply", Array.prototype.applyEach);
+Array.implement("invoke", Array.prototype.mapCall);
 
 /*
 

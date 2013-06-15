@@ -24,11 +24,11 @@ Object.append(Element, {
 	complement: Object.complement.bind(Element)
 });
 
-String.prototype.toElement = function(){
+String.implement('toElement', function(){
 	var div = document.createElement('div');
 	div.innerHTML = this.trim();
 	return div.firstChild;
-};
+});
 
 window.$ = document.getElementById.bind(document);
 

@@ -29,8 +29,8 @@ NS.EventEmitter = NS.Emitter.extend({
 
 Object.eachPair(NS.EventEmitter, function(key, value, object){
 	if( key != 'constructor' && key != '$events' ){
-		Object.setPair.call(window, key, value, object);
-		Object.setPair.call(document, key, value, object);
-		Object.setPair.call(Element.prototype, key, value, object);
+		Object.appendPair.call(window, key, value, object);
+		Object.appendPair.call(document, key, value, object);
+		Object.appendPair.call(Element.prototype, key, value, object);
 	}
 });

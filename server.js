@@ -29,7 +29,7 @@ global.config = require('./config.js');
 global.lang = {};
 global.NS = {};
 
-['util', 'object', 'string', 'function', 'array', 'item'].forEach(function(name){
+['util', 'object', 'string', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/lib/core/' + name);
 });
 
@@ -177,7 +177,7 @@ var Server = {
 	}
 };
 
-var Client = NS.Item.extend({
+var Client = Object.prototype.extend({
 	constructor: function(socket){
 		// console.log(socket.handshake.headers.cookie);
 		// grace au cookie de session, s'il existe on restaureras le compte de l'user

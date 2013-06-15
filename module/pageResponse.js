@@ -1,4 +1,4 @@
-module.exports = NS.Item.extend({
+module.exports = Object.prototype.extend({
 	Url: require('url'),
 	Cookie: require(root + '/module/cookie.js'),
 	// metas utilisant l'attribut "http-equiv"

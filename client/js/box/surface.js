@@ -70,12 +70,12 @@ Element.implement({
 	}
 });
 
-String.prototype.percentOf = function(number){
+String.implement('percentOf', function(number){
 	var percent = parseInt(this, 10) || 0;
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
-};
+});
 
-var Surface = NS.Surface = NS.Item.extend(NS.Emitter, NS.bound, {
+var Surface = NS.Surface = Object.prototype.extend(NS.Emitter, NS.bound, {
 	name: 'surface',
 	options: {
 		axis: 'xy',

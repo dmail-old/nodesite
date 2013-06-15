@@ -5,56 +5,13 @@ name: Object
 description: required almost everywhere
 
 provides:
-	Object.eachOwnPair, Object.eachObjectIn,
-	Object.setPair, Object.append,
+	Object.eachObjectIn, Object.ownKeys, Object.eachOwnPair,
+	Object.appendPair, Object.append,
 	Object.completePair, Object.complete
+	Object.implementPair, Object.implement,
+	Object.complementPair, Object.complement
 
 */
-
-if( 'getOwnPropertyNames' in Object ){
-
-	Object.ownKeys = Object.getOwnPropertyNames;
-
-}
-else{
-
-	Object.ownKeys = Object.keys;
-
-}
-
-if( 'getOwnPropertyDescriptor' in Object ){
-
-	Object.setPair = function(key, value, object){
-		if( object ){
-			Object.defineProperty(this, key, Object.getOwnPropertyDescriptor(object, key));
-		}
-		else{
-			this[key] = value;
-		}
-	};
-
-}
-else{
-
-	Object.setPair = function(key, value, object){
-		this[key] = value;
-	};
-
-}
-
-// set key/value pair in this if not existing
-Object.completePair = function(key){
-	if( !(key in this) ) Object.setPair.apply(this, arguments);
-};
-
-Object.eachOwnPair = function(object, fn, bind){
-	var keys = Object.ownKeys(object), i = 0, j = keys.length, key;
-	for(;i<j;i++){
-		key = keys[i];
-		fn.call(bind, key, object[key], object);
-	}
-	return object;
-};
 
 Object.eachObjectIn = function(array, method, fn, bind){
 	var i = 0, j = array.length, item;
@@ -74,9 +31,50 @@ Object.eachObjectIn = function(array, method, fn, bind){
 	}
 };
 
-Object.append = function(object){
-	Object.eachObjectIn(toArray(arguments, 1), 'eachOwnPair', Object.setPair, object);
+if( 'getOwnPropertyNames' in Object ){
+	Object.ownKeys = Object.getOwnPropertyNames;
+}
+else{
+	Object.ownKeys = Object.keys;
+}
+
+Object.eachOwnPair = function(object, fn, bind){
+	var keys = Object.ownKeys(object), i = 0, j = keys.length, key;
+	for(;i<j;i++){
+		key = keys[i];
+		fn.call(bind, key, object[key], object);
+	}
 	return object;
+};
+
+if( 'getOwnPropertyDescriptor' in Object ){
+
+	Object.appendPair = function(key, value, object){
+		if( object ){
+			Object.defineProperty(this, key, Object.getOwnPropertyDescriptor(object, key));
+		}
+		else{
+			this[key] = value;
+		}
+	};
+
+}
+else{
+
+	Object.appendPair = function(key, value, object){
+		this[key] = value;
+	};
+
+}
+
+Object.append = function(object){
+	Object.eachObjectIn(toArray(arguments, 1), 'eachOwnPair', Object.appendPair, object);
+	return object;
+};
+
+// set key/value pair in this if not existing
+Object.completePair = function(key){
+	if( !(key in this) ) Object.appendPair.apply(this, arguments);
 };
 
 Object.complete = function(object){
@@ -84,13 +82,30 @@ Object.complete = function(object){
 	return object;
 };
 
+Object.implementPair = function(key, value){
+	if( typeof value == 'function' ){
+		Object.defineProperty(this, key, {enumerable: false, writable: true, value: value});
+	}
+	else{
+		this[key] = value;
+	}
+};
+
+Object.implement = function(){
+	Object.eachObjectIn(arguments, 'eachOwnPair', Object.implementPair, this.prototype);
+};
+
+Object.complementPair = function(key, value){
+	if( !(key in this) ) Object.implementPair.apply(this, arguments);
+};
+
+Object.complement = function(){
+	Object.eachObjectIn(arguments, 'eachOwnPair', Object.complementPair, this.prototype);
+};
+
 /*
 
-name: Implement/Complement
-
-requires: Object.eachObjectIn, Object.mergePair, Object.completePair
-
-provides: Object.eachPair, Object.implement, Object.complement
+name: Object.eachPair
 
 */
 
@@ -150,10 +165,70 @@ else{
 
 }
 
-Object.implement = function(){
-	Object.eachObjectIn(arguments, 'eachPair', Object.setPair, this.prototype);
-};
+/*
 
-Object.complement = function(){
-	Object.eachObjectIn(arguments, 'eachPair', Object.completePair, this.prototype);
-};
+name: Object.prototype
+
+*/
+
+Object.implement({
+	supplementPair: function(key, value){
+
+		if( typeof value == 'object' && value !== null ){
+			var current = this[key];
+			// when an object exists in this and in value for key
+			// we create an object heriting from current then we merge it
+			if( typeof current == 'object' && current !== null ){
+				current = this[key] = Object.create(current);
+				Object.eachOwnPair(value, Object.prototype.supplementPair, current);
+			}
+			else{
+				Object.appendPair.apply(this, arguments);
+			}
+		}
+		else{
+			Object.appendPair.apply(this, arguments);
+		}
+
+		return this;
+	},
+
+	supplement: function(){
+		Object.eachObjectIn(arguments, 'eachPair', Object.prototype.supplementPair, this);
+		return this;
+	},
+
+	extend: function(){
+		var object = Object.create(this);
+
+		object.supplement.apply(object, arguments);
+
+		return object;
+	},
+
+	// return an instance of this calling it's constructor
+	new: function(){
+		var instance = Object.create(this), constructor = instance.constructor;
+
+		if( typeof constructor == "function" ) instance.constructor.apply(instance, arguments);
+
+		return instance;
+	},
+
+	getPrototype: function(){
+		return Object.getPrototypeOf(this);
+	},
+
+	getParentPrototype: function(){
+		var proto = this.getPrototype();
+		return proto ? proto.getPrototype() : null;
+	}
+});
+
+if( !Object.create ){
+	Object.create = function(object){
+		var F = function(){};
+		F.prototype = object;
+		return new F();
+	};
+}

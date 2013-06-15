@@ -1,6 +1,6 @@
 /* global */
 
-NS.Controller = NS.Item.extend({
+NS.Controller = Object.prototype.extend({
 	viewEvents: {
 		'setElement': function(element){
 			this.setElement(element);

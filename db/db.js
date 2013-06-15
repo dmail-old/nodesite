@@ -73,7 +73,7 @@ var DB = {
 	}
 };
 
-var Table = NS.Table = NS.Item.extend(NS.Emitter, {
+var Table = NS.Table = Object.prototype.extend(NS.Emitter, {
 	methods: {},
 	state: 'closed',
 	lockers: 0,

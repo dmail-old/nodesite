@@ -2,7 +2,7 @@
 
 var progressSupport = 'onprogress' in new XMLHttpRequest();
 
-NS.Request = NS.Item.extend(NS.Emitter, NS.options, NS.chain, {
+NS.Request = Object.prototype.extend(NS.Emitter, NS.options, NS.chain, {
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
@@ -241,15 +241,15 @@ Object.toQueryString = function(object, base){
 	return queryString.join('&');
 };
 
-Array.prototype.toQueryString = function(){
+Array.implement('toQueryString', function(){
 	var queryString = {};
 
 	this.forEach(function(value, i){ queryString[i] = value; });
 
 	return queryString;
-};
+});
 
-Element.prototype.toQueryString = function(){
+Element.implement('toQueryString', function(){
 	var queryString = [];
 
 	this.getElements(function(el){ return el.tagName.match(/input|select|textarea/i); }).each(function(el){
@@ -273,4 +273,4 @@ Element.prototype.toQueryString = function(){
 	});
 
 	return queryString.join('&');
-};
+});

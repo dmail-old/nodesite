@@ -1,7 +1,7 @@
 /* global */
 
 // model
-NS.Model = NS.Item.extend(NS.Emitter, {
+NS.Model = Object.prototype.extend(NS.Emitter, {
 	validationError: null,
 	cid: 0,
 
@@ -133,7 +133,7 @@ NS.servermodel = {
 	}
 };
 
-NS.Action = NS.Item.extend({
+NS.Action = Object.prototype.extend({
 	constructor: function(model, name, args){
 		this.model = model;
 		this.name = name;

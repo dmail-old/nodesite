@@ -38,7 +38,7 @@ Element.sorter = (function(){
 	return Function.ZERO;
 })();
 
-Element.prototype.getCommonAncestor = function(element){
+Element.implement('getCommonAncestor', function(element){
 	var parentA = this, parents = [], parentB = element;
 
 	while(parentA){
@@ -53,7 +53,7 @@ Element.prototype.getCommonAncestor = function(element){
 	}
 
 	return null;
-};
+});
 
 Element.implement(NS.treetraversal, NS.treefinder);
 

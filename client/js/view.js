@@ -1,6 +1,6 @@
 /* global */
 
-NS.View = NS.Item.extend(NS.Emitter, {
+NS.View = Object.prototype.extend(NS.Emitter, {
 	modelEvents: {
 		'destroy': 'destroy'
 	},

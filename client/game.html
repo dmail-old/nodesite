@@ -249,7 +249,7 @@ var Game = new Class({
 				this.ctx.restore();
 			},
 			draw: function(){
-				SquareSurface.prototype.draw.call(this);
+				SquareSurface.draw.call(this);
 
 				this.game.units.forEach(function(unit){
 					if( unit.surface ){

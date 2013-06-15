@@ -62,7 +62,7 @@ Object.mergePair = function(key, value){
 		}
 	}
 	else{
-		Object.setPair.apply(this, arguments);
+		Object.appendPair.apply(this, arguments);
 	}
 
 	return this;
@@ -73,15 +73,13 @@ Object.merge = function(object){
 	return object;
 };
 
-RegExp.prototype.clone = Function.THIS;
-Date.prototype.clone = Function.THIS;
-Array.prototype.clone = function(){
+Array.implement('clone', function(){
 	var i = this.length, clone = new Array(i);
 
 	while(i--) clone[i] = Object.clone(this[i]);
 
 	return clone;
-};
+});
 
 /*
 

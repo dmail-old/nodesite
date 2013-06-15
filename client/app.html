@@ -20,8 +20,6 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 		{favicon}
 		{styles}
 		<script type="text/javascript">
-			// je vais surement juste écrire et laisser le serveur les mettre au lieu
-			// d'appeler requirejs, en plus je mettrais directement des balises script remplies pour le serveur
 
 			window.NS = {};
 			window.config = {config};
@@ -37,6 +35,21 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 				//console.log('window error', arguments);
 			};
 
+			window.Module = function(id){
+				window.require.cache[id] = this;
+				this.id = id;
+			};
+
+			window.require = function(id){
+				if( id in window.require.cache ){
+					return window.require.cache[id].exports;
+				}
+				else{
+					throw new Error('unknow module ' + id);
+				}
+			};
+			window.require.cache = {};
+
 		</script>
 	</head>
 
@@ -46,10 +59,9 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){
 				// setTimeout is to avoid initial popstate event
-				setTimeout(app.init, 0);
+				setTimeout(function(){ window.app.init.call(window.app); }, 0);
 			};
 		</script>
-
 	</body>
 
 </html>

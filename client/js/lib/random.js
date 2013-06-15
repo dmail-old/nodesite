@@ -65,11 +65,11 @@ String.UPPER = Array.range('A', 'Z').join('');
 String.NUMBER = Array.range(0, 9).join('');
 String.ALL = String.LOWER + String.UPPER + String.NUMBER;
 
-Array.prototype.getRandom = function(){
+Array.implement('getRandom', function(){
 	return this.length ? this[Number.random(0, this.length - 1)] : null;
-};
+});
 
-String.prototype.getRandom = function(){
+String.implement('getRandom', function(){
 	return this.length ? this.charAt(Number.random(0, this.length - 1)) : '';
-};
+});
 

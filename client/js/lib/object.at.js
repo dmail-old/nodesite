@@ -104,13 +104,13 @@ Replace {.*?} into a string by key/value of object
 
 */
 
-String.prototype.parse = function(object){
+String.implement('parse', function(object){
 	return String(this).replace(/\\?\{([\w.]+)\}/g, function(match, path){
 		if( match.charAt(0) == '\\' ) return match.slice(1);
 		var value = Object.getAt(object, path);
 		return value != null ? value : '';
 	});
-};
+});
 
 /**
 
@@ -122,7 +122,7 @@ orderBy('name', 'index', -1, function(a){ return a.name.toLowerCase(); }, 'getCo
 
 */
 
-Array.prototype.orderBy = function(){
+Array.implement('orderBy', function(){
 	var i, n, j = arguments.length, fns = [], orders = [], arg;
 
 	i = n = 0;
@@ -155,4 +155,4 @@ Array.prototype.orderBy = function(){
 	}
 	
 	return this.sort(compare);
-};
+});

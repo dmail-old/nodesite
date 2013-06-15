@@ -41,7 +41,7 @@ Function.argumentNames = function(fn){
     return names.length == 1 && !names[0] ? [] : names;
 };
 
-Function.prototype.overloadSetter = function(usePlural){
+Function.implement('overloadSetter', function(usePlural){
 	var self = this;
 	return function(a, b){
 		if( a == null ) return this;
@@ -54,4 +54,4 @@ Function.prototype.overloadSetter = function(usePlural){
 
 		return this;
 	};
-};
+});
