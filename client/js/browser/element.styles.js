@@ -142,7 +142,7 @@ Element.implement({
 });
 
 // chrome et safari bug 13343
-if( Browser.safari || Browser.chrome ){
+if( browser.safari || browser.chrome ){
 	['top', 'left', 'bottom', 'right'].each(function(direction){
 		Element.Styles['margin-'+direction] = {
 			get: function(){

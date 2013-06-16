@@ -1,4 +1,4 @@
-/* global Browser */
+/* global browser */
 
 var exports = {
 	options: {
@@ -25,7 +25,7 @@ var exports = {
 	},
 
 	set: function(now){
-		if( Browser.firefox ) now = [Math.round(now[0]), Math.round(now[1])]; // not needed anymore in newer firefox versions
+		if( browser.firefox ) now = [Math.round(now[0]), Math.round(now[1])]; // not needed anymore in newer firefox versions
 		this.subject.scrollTo(now[0], now[1]);
 		return this;
 	},

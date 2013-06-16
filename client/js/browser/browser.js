@@ -47,4 +47,4 @@ if( !window.setImmediate ){
 
 }
 
-window.Browser = exports;
+window.browser = exports;

@@ -1,13 +1,11 @@
-/* global Browser */
+/* global browser */
 
-Browser.Element = window.Element;
-
-window.Element = function(tag, props){
+var exports = function Element(tag, props){
 	return tag in Element.constructors ? Element.constructors[tag](props) : document.newElement(tag, props);
 };
-Element.prototype = Browser.Element.prototype;
 
-Element.constructors = {};
+exports.prototype = window.Element.prototype;
+
 document.newElement = function(tag, props){
 	var element = document.createElement(tag);
 
@@ -19,8 +17,10 @@ document.newElement = function(tag, props){
 	return element;
 };
 
-Element.implement = Object.implement.bind(Element);
-Element.complement = Object.complement.bind(Element);
+exports.constructors = {};
+
+exports.implement = Object.implement.bind(exports);
+exports.complement = Object.complement.bind(exports);
 
 String.implement('toElement', function(){
 	var div = document.createElement('div');
@@ -32,8 +32,8 @@ window.$ = document.getElementById.bind(document);
 
 document.html = document.documentElement;
 
-if( !('classList' in Element.prototype) ){
-	Object.defineProperty(Element.prototype, 'classList', function(){
+if( !('classList' in exports.prototype) ){
+	Object.defineProperty(exports.prototype, 'classList', function(){
 		var element = this;
 		var list = NS.ListString.new(this.className);
 		list.update = function(){ element.className = this.toString(); };
@@ -42,7 +42,7 @@ if( !('classList' in Element.prototype) ){
 	});
 }
 
-Element.implement({
+exports.implement({
 	hasClass: function(name){
 		return this.classList.contains(name);
 	},
@@ -58,7 +58,7 @@ Element.implement({
 	}
 });
 
-Element.implement({
+exports.implement({
 	toggleClass: function(name, force){
 		if( force === undefined ) force = !this.hasClass(name);
 		return force ? this.addClass(name) : this.removeClass(name);
@@ -76,7 +76,7 @@ Element.implement({
 	}
 });
 
-Element.inserters = {
+exports.inserters = {
 	before: function(context, element){
 		var parent = element.parentNode;
 		if (parent) parent.insertBefore(context, element);
@@ -95,9 +95,9 @@ Element.inserters = {
 		element.insertBefore(context, element.firstChild);
 	}
 };
-Element.inserters.inside = Element.inserters.bottom;
+exports.inserters.inside = exports.inserters.bottom;
 
-Element.implement({
+exports.implement({
 	adopt: function(){
 		var parent = this, fragment, elements = toArray(arguments), length = elements.length;
 		if( length > 1 ) parent = fragment = document.createDocumentFragment();
@@ -155,6 +155,9 @@ Object.eachPair(NS.EventEmitter, function(key, value, object){
 	if( key != 'constructor' && key != '$events' ){
 		Object.appendPair.call(window, key, value, object);
 		Object.appendPair.call(document, key, value, object);
-		Object.appendPair.call(Element.prototype, key, value, object);
+		Object.appendPair.call(exports.prototype, key, value, object);
 	}
 });
+
+browser.Element = window.Element;
+window.Element = exports;

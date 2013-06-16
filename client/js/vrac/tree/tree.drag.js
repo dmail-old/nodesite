@@ -214,7 +214,7 @@ Tree.definePlugin('drag', {
 				this.where = where;
 				
 				// chrome ne donne pas accès à dataTransfer.getData('nodes') pendant le dragover, on considère toujours la cible comme valide
-				if( Browser.chrome || this.updateEffect(e) != 'none' ) this.addPointer();				
+				if( browser.chrome || this.updateEffect(e) != 'none' ) this.addPointer();				
 			},
 						
 			addPointer: function(){

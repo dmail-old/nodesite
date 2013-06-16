@@ -1,4 +1,4 @@
-/* global Browser */
+/* global browser */
 
 String.implement('stripScripts', function(exec){
 	var scripts = '';
@@ -8,7 +8,7 @@ String.implement('stripScripts', function(exec){
 	});
 
 	if( exec === true ){
-		Browser.exec(scripts);
+		browser.exec(scripts);
 	}
 	else if( typeof exec == 'function' ){
 		exec(scripts, text);

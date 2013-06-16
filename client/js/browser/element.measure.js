@@ -107,7 +107,7 @@ var measurers = {
 		
 		while(element){
 			offset+= element.measure('offset', axis);	
-			if( element != this && (Browser.safari || Browser.firefox && !borderBox(element)) ){
+			if( element != this && (browser.safari || browser.firefox && !borderBox(element)) ){
 				offset+= element.getBorder(axis == 'x' ? 'left' : 'top');
 			}
 			element = element.offsetParent;
@@ -126,7 +126,7 @@ var measurers = {
 };
 
 // getOffsets speed improvment
-if( 'getBoundingClientRect' in Element.prototype && !Browser.ios ){
+if( 'getBoundingClientRect' in Element.prototype && !browser.ios ){
 	measurers.offsets = function(axis){
 		var html = this.getDocument().documentElement, offset = parseInt(this.getBoundingClientRect()[axis == 'x' ? 'left' : 'top']);
 			
@@ -138,7 +138,7 @@ if( 'getBoundingClientRect' in Element.prototype && !Browser.ios ){
 	};
 }
 
-if( Browser.firefox ){
+if( browser.firefox ){
 	measurers.offset = function(axis){
 		var offset = this['offset' + (axis == 'x' ? 'Left' : 'Top')], parent = this.parentNode;
 		
@@ -187,7 +187,7 @@ var measurers = {
 	cumulativePosition: Function.ZERO
 };
 
-if( Browser.ie ){
+if( browser.ie ){
 	measurers.scroll = Element.measurers.scroll.bind(document.compatElement);
 }
 
