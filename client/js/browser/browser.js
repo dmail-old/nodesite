@@ -1,42 +1,31 @@
-if( !window.setImmediate ){
-	window.setImmediate = function(fn, args){
-		return window.setTimeout(fn, 0, args);
-	};
-	window.clearImmediate = window.clearTimeout;
-}
+var exports = {};
 
-// browser 
-(function(){
+exports.ua = navigator.userAgent.toLowerCase();
+exports.plat = navigator.platform.toLowerCase();
+exports.UA = exports.ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0];
 
-var
-	ua = navigator.userAgent.toLowerCase(),
-	platform = navigator.platform.toLowerCase(),
-	UA = ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0],
-	mode = UA[1] == 'ie' && document.documentMode
-;
+exports.name = exports.UA[1] == 'version' ? exports.UA[3] : exports.UA[1];
 
-var Browser = this.Browser = {
-	name: (UA[1] == 'version') ? UA[3] : UA[1],
+// version
+if( exports.UA[1] == 'ie' && document.documentMode ) exports.version = true;
+else if( exports.UA[1] == 'opera' && exports.UA[4] ) exports.version = parseFloat(exports.UA[4]);
+else exports.version = parseFloat(exports.UA[2]);
 
-	version: mode || parseFloat((UA[1] == 'opera' && UA[4]) ? UA[4] : UA[2]),
+// platform
+if( exports.ua.match(/ip(?:ad|od|hone)/) ) exports.platform  = 'ios';
+else exports.platform = (exports.ua.match(/(?:webos|android)/) || exports.plat.match(/mac|win|linux/) || ['other'])[0];
 
-	Platform: {
-		name: ua.match(/ip(?:ad|od|hone)/) ? 'ios' : (ua.match(/(?:webos|android)/) || platform.match(/mac|win|linux/) || ['other'])[0]
-	},
-
-	Features: {
-		xpath: !!(document.evaluate),
-		air: !!(window.runtime),
-		query: !!(document.querySelector),
-		json: !!(window.JSON)
-	}
+exports.features = {
+	xpath: Boolean(document.evaluate),
+	air: Boolean(window.runtime),
+	query: Boolean(document.querySelector),
+	json: Boolean(window.JSON)
 };
+exports[exports.name] = true;
+exports[exports.name + parseInt(exports.version, 10)] = true;
+exports[exports.platform] = true;
 
-Browser[Browser.name] = true;
-Browser[Browser.name + parseInt(Browser.version, 10)] = true;
-Browser.Platform[Browser.Platform.name] = true;
-
-Browser.exec = function(text){
+exports.exec = function(text){
 	if( !text ) return text;
 	if( window.execScript ) window.execScript(text);
 	else{
@@ -49,4 +38,13 @@ Browser.exec = function(text){
 	return text;
 };
 
-})();
+if( !window.setImmediate ){
+
+	window.setImmediate = function(fn, args){
+		return window.setTimeout(fn, 0, args);
+	};
+	window.clearImmediate = window.clearTimeout;
+
+}
+
+window.Browser = exports;

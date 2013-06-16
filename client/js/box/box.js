@@ -14,12 +14,7 @@ FIX:
 ...
 */
 
-// retourne la taille de l'espace visible disponible pour cet élément (dimension + scroll du parent)
-Element.defineMeasurer('fixedSpace', function(axis){
-	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
-});
-
-var Box = NS.Surface.extend(NS.options, {
+var exports = {
 	options: {
 		tagName: 'div',
 		properties: {
@@ -59,7 +54,7 @@ var Box = NS.Surface.extend(NS.options, {
 		if( this.options.closedestroy ) this.on('close', this.destroy);
 
 		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
-		this.constructor.instances[this.id = this.constructor.UID++] = this;
+		this.self.instances[this.id = this.self.UID++] = this;
 		NS.Surface.constructor.call(this, this.createElement());
 	},
 
@@ -103,7 +98,7 @@ var Box = NS.Surface.extend(NS.options, {
 
 	destroy: function(){
 		this.element.destroy();
-		delete this.constructor.instances[this.id];
+		delete this.self.instances[this.id];
 		NS.Surface.destroy.call(this);
 	},
 
@@ -294,25 +289,33 @@ var Box = NS.Surface.extend(NS.options, {
 	keydown: function(e){
 		this.emit('keydown', e);
 	}
-});
-
-Box.UID = 0;
-Box.instances = [];
-// contient la boite en cours d'utilisation (focused)
-Box.active = null;
-
-Box.getInstanceFromElement = function(element){
-	var id;
-
-	while(element){
-		id = element.getProperty('id');
-		if( id && id.startsWith('box-') ){
-			return Box.instances[id.substr(4)];
-		}
-		element = element.parentNode;
-	}
-
-	return null;
 };
 
-NS.Box = Box;
+exports.self = {
+	UID: 0,
+	instances: [],
+	// contient la boite en cours d'utilisation (focused)
+	active: null,
+
+	getInstanceFromElement: function(element){
+		var id;
+
+		while(element){
+			id = element.getProperty('id');
+			if( id && id.startsWith('box-') ){
+				return this.instances[id.substr(4)];
+			}
+			element = element.parentNode;
+		}
+
+		return null;
+	}
+};
+
+// retourne la taille de l'espace visible disponible pour cet élément (dimension + scroll du parent)
+Element.defineMeasurer('fixedSpace', function(axis){
+	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
+});
+
+exports = NS.Surface.extend(NS.options, exports);
+NS.Box = exports;

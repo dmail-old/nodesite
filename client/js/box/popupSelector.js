@@ -15,7 +15,8 @@ FIX
 
 */
 
-NS.PopupSelector = NS.Selector.extend({
+
+var exports ={
 	html: '\
 		<div class="selector">\
 			<div class="input" tabindex="0"></div>\
@@ -53,4 +54,7 @@ NS.PopupSelector = NS.Selector.extend({
 	hideListElement: function(e){
 		this.popup.close(e);
 	}
-});
+};
+
+exports = NS.Selector.extend(exports);
+NS.PopupSelector = exports;

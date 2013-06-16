@@ -1,5 +1,3 @@
-/* global */
-
 var exports = {
 	name: 'OpenstateController',
 	events: {

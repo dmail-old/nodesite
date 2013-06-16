@@ -68,7 +68,7 @@ Array.complement({
 		return this;
 	},
 
-	unique: function(){
+	uniq: function(){
 		return [].combine(this);
 	},
 

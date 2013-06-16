@@ -142,17 +142,6 @@ Element.implement({
 	}
 });
 
-// fix IE button submit
-(function(){
-	var input = document.createElement('input');
-	input.value = 't';
-	input.type = 'submit';
-
-	if( input.value != 't' ){
-		propertySetters.type = function(type){ var value = this.value; this.type = type; this.value = value; };
-	}
-})();
-
 [Element.prototype, window, document].forEach(function(item){
 	Object.defineProperty(item, 'storage', {
 		get: function(){

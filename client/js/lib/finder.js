@@ -125,13 +125,13 @@ exports.parser = function(match, key, operator, quotedValue, value){
 exports.cache = {};
 exports.parse = function(expression){
 	expression = String(expression).trim(); // remove begining and ending spaces
-	var parsed = exports.cache[expression];
+	var parsed = this.cache[expression];
 
 	if( !parsed ){
 		parsed = this.parsed = [];
 		parsed.isParse = true;
 		parsed.raw = expression;
-		while( expression != (expression = expression.replace(this.regexp, this.parser)) );
+		while( expression != (expression = expression.replace(this.regexp, this.parser.bind(this))) );
 		this.cache[parsed.raw] = parsed;
 	}
 
@@ -162,13 +162,13 @@ exports.from = function(expression, reverse){
 		if( expression.isParse ){
 			match = function(item){
 				var i = expression.length;
-				while(i--) if( !exports.matchPart(item, expression[i]) ) return false;
+				while(i--) if( !NS.Finder.matchPart(item, expression[i]) ) return false;
 				return true;
 			};
 			break;
 		}
 
-		if( Array.isArray(expression) ){
+		if( expression instanceof Array ){
 			var i = expression.length;
 			if( i === 0 ) match = Function.FALSE;
 			else if( i === 1 ) match = this.from(expression[0], reverse);
@@ -199,12 +199,12 @@ exports.from = function(expression, reverse){
 };
 
 // iterator supply items to test, we returns the first or all items passing the test
-exports.matchIterator = function(iterator, match, first, bind){
+exports.matchIterator = function(iterator, iteratorBind, match, first, bind){
 	var found = first ? null : [];
 
 	match = this.from(match);
 	if( match != Function.FALSE ){
-		iterator.call(this, function(item){
+		iterator.call(iteratorBind, function(item){
 			if( match.call(bind, item) === true ){
 				if( first ){
 					found = item;

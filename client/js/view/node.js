@@ -17,7 +17,7 @@ var exports = {
 	},
 
 	getClassName: function(){
-		var className = NS.NodeView.getClassName.call(this);
+		var className = NS.TreeView.getClassName.call(this);
 
 		if( this.isEmpty() ){
 			className.add('empty');

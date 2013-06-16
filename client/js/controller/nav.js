@@ -9,7 +9,7 @@ var exports = {
 			if( key in this.keys ){
 				method = key;
 			}
-			else if( key.length == 1 && RegExp.alphanum.test(key) ){
+			else if( key.length == 1 && RegExp.ALPHANUM.test(key) ){
 				method = '*';
 			}
 

@@ -606,7 +606,7 @@ exports.startInstanceFromEvent = function(e){
 	if( instance ) instance[e.type](e);
 };
 
-document.on('mousedown focus keydown', exports.startInstanceFromEvent, true);
+//document.on('mousedown focus keydown', exports.startInstanceFromEvent, true);
 
 ['left', 'top', 'width', 'height'].forEach(function(name){
 	exports['getMin' + name.capitalize()] = exports.getLimit.curry(name, 'min');

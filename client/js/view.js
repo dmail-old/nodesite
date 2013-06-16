@@ -47,7 +47,7 @@ var exports = {
 	},
 
 	getClassName: function(){
-		return require('./lib/stringList.js').new(this.className);
+		return NS.StringList.new(this.className);
 	},
 
 	getAttributes: function(){
@@ -177,7 +177,7 @@ exports.self =  {
 	}
 };
 
-Element.prototype.toView = function(){ return exports.self.findElementView(this); };
+Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 

@@ -1,16 +1,12 @@
-Object.append(window, {
-	getWindow: Function.THIS,
-	getDocument: function(){ return this.document; }
-});
+window.getWindow = Function.THIS;
+window.getDocument = function(){ return this.document; };
+
+document.getWindow = function(){ return window; };
+document.getDocument = Function.THIS;
 
 Element.implement({
 	getWindow: function(){ return this.ownerDocument.getWindow(); },
 	getDocument: function(){ return this.ownerDocument; }
-});
-
-Object.append(document, {
-	getWindow: function(){ return window; },
-	getDocument: Function.THIS
 });
 
 // element measure
@@ -130,7 +126,7 @@ var measurers = {
 };
 
 // getOffsets speed improvment
-if( 'getBoundingClientRect' in Element.prototype && !Browser.Platform.ios ){
+if( 'getBoundingClientRect' in Element.prototype && !Browser.ios ){
 	measurers.offsets = function(axis){
 		var html = this.getDocument().documentElement, offset = parseInt(this.getBoundingClientRect()[axis == 'x' ? 'left' : 'top']);
 			

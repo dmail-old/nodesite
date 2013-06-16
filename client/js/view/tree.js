@@ -29,11 +29,11 @@ var exports = {
 		// });
 
 		this.initChildren();
-		require('../view.js').constructor.apply(this, arguments);
+		NS.View.constructor.apply(this, arguments);
 	},
 
 	setModel: function(model){
-		require('../view.js').setModel.call(this, model);
+		NS.View.setModel.call(this, model);
 		if( model && model.children ){
 			this.setChildren(model.children);
 		}

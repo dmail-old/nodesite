@@ -1,6 +1,4 @@
-/* global */
-
-/* finder
+/*
 
 NOTE
 - les doublons ne sont pas géré, il faut appeler uniq() sur le tableau retourné (sinon getNodes(0,0) retourne un tableau contenant deux fois le même noeud)
@@ -8,35 +6,33 @@ NOTE
 
 */
 
-Element.sorter = (function(){
-	if( document.html.compareDocumentPosition ){
-		return function(a, b){
-			if( !a.compareDocumentPosition || !b.compareDocumentPosition ) return 0;
-			return a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
-		};
-	}
-
-	if( 'sourceIndex' in document.html ){
-		return function(a, b){
-			if( !a.sourceIndex || !b.sourceIndex ) return 0;
-			return a.sourceIndex - b.sourceIndex;
-		};
-	}
-
-	if( document.createRange ){
-		return function(a, b){
-			if (!a.ownerDocument || !b.ownerDocument) return 0;
-			var aRange = a.ownerDocument.createRange(), bRange = b.ownerDocument.createRange();
-			aRange.setStart(a, 0);
-			aRange.setEnd(a, 0);
-			bRange.setStart(b, 0);
-			bRange.setEnd(b, 0);
-			return aRange.compareBoundaryPoints(window.Range.START_TO_END, bRange);
-		};
-	}
-
-	return Function.ZERO;
-})();
+// Element.sorter
+if( document.html.compareDocumentPosition ){
+	Element.sorter = function(a, b){
+		if( !a.compareDocumentPosition || !b.compareDocumentPosition ) return 0;
+		return a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
+	};
+}
+else if( 'sourceIndex' in document.html ){
+	Element.sorter = function(a, b){
+		if( !a.sourceIndex || !b.sourceIndex ) return 0;
+		return a.sourceIndex - b.sourceIndex;
+	};
+}
+else if( document.createRange ){
+	Element.sorter = function(a, b){
+		if( !a.ownerDocument || !b.ownerDocument ) return 0;
+		var aRange = a.ownerDocument.createRange(), bRange = b.ownerDocument.createRange();
+		aRange.setStart(a, 0);
+		aRange.setEnd(a, 0);
+		bRange.setStart(b, 0);
+		bRange.setEnd(b, 0);
+		return aRange.compareBoundaryPoints(window.Range.START_TO_END, bRange);
+	};
+}
+else{
+	Element.sorter = Function.ZERO;
+}
 
 Element.implement('getCommonAncestor', function(element){
 	var parentA = this, parents = [], parentB = element;

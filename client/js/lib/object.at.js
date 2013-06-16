@@ -10,7 +10,7 @@ provides: Object.examine, Object.follow, Object.setAt, Object.getAt, Object.appl
 
 Object.cache = {};
 
-RegExp.alphanumdot = /^[\w\.]*$/;
+RegExp.ALPHANUMDOT = /^[\w\.]*$/;
 
 Object.append(Object, {
 	examine: function(path){
@@ -22,11 +22,11 @@ Object.append(Object, {
 			return cached;
 		}
 		// if path contains only alphanumeric chars (0-9,a-z,_)
-		if( RegExp.alphanum.test(path) ){
+		if( RegExp.ALPHANUM.test(path) ){
 			return cache[path] = path;
 		}
 		// the path has the form 'name1.name2.name3'
-		if( RegExp.alphanumdot.test(path) ){
+		if( RegExp.ALPHANUMDOT.test(path) ){
 			return cache[path] = path.split('.');
 		}
 		// the path contains somethign else than alphanum or '.' we assume the path contains function call

@@ -1,5 +1,3 @@
-/* global */
-
 var exports = {
 	events: {
 		'view:change:name': 'adapt',

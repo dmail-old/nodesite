@@ -13,12 +13,6 @@ FIX
 ...
 */
 
-Element.Properties.onclick = {
-	set: function(listener){
-		this.on('click', listener);
-	}
-};
-
 var exports = {
 	options: {
 		properties: {
@@ -165,6 +159,12 @@ var exports = {
 
 		button.setProperty('disabled', true);
 		return this.dial(msg,true);
+	}
+};
+
+Element.Properties.onclick = {
+	set: function(listener){
+		this.on('click', listener);
 	}
 };
 
