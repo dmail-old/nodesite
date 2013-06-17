@@ -1,22 +1,5 @@
 /* global browser */
 
-String.implement('stripScripts', function(exec){
-	var scripts = '';
-	var text = this.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, function(all, code){
-		scripts += code + '\n';
-		return '';
-	});
-
-	if( exec === true ){
-		browser.exec(scripts);
-	}
-	else if( typeof exec == 'function' ){
-		exec(scripts, text);
-	}
-
-	return text;
-});
-
 window.server = {
 	link: null,
 	handlers: {
@@ -76,7 +59,7 @@ window.server = {
 		this.link = request;
 	},
 
-	init: function(callback){
+	init: function(callback){		
 		var data = {
 			page: document.location.pathname
 		};
@@ -115,6 +98,23 @@ window.app = {
 	},
 
 	init: function(){
+		String.implement('stripScripts', function(exec){
+			var scripts = '';
+			var text = this.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, function(all, code){
+				scripts += code + '\n';
+				return '';
+			});
+
+			if( exec === true ){
+				browser.exec(scripts);
+			}
+			else if( typeof exec == 'function' ){
+				exec(scripts, text);
+			}
+
+			return text;
+		});
+		
 		window.server.createLink();
 
 		document.on('click', window.app.click, true);

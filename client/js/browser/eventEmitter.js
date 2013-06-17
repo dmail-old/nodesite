@@ -1,29 +1,34 @@
-var exports = {
-	getEvents: function(){
-		var listeners = this.storage.listeners;
+define('browser/eventEmitter', function(require){
 
-		if( !listeners ) listeners = this.storage.listeners = {};
+	var exports = {
+		getEvents: function(){
+			var listeners = this.storage.listeners;
 
-		return listeners;
-	},
+			if( !listeners ) listeners = this.storage.listeners = {};
 
-	deleteEvents: function(){
-		this.storage.unset('listeners');
-		return this;
-	},
+			return listeners;
+		},
 
-	applyHandler: function(handler, name, args){
-		return handler.handleEvent(args[0]);
-	},
+		deleteEvents: function(){
+			this.storage.unset('listeners');
+			return this;
+		},
 
-	onaddlistener: function(name, listener, capture){
-		this.addEventListener(name, listener, capture);
-	},
+		applyHandler: function(handler, name, args){
+			return handler.handleEvent(args[0]);
+		},
 
-	onremovelistener: function(name, listener, capture){
-		this.removeEventListener(name, listener, capture);
-	}
-};
+		onaddlistener: function(name, listener, capture){
+			this.addEventListener(name, listener, capture);
+		},
 
-exports = NS.Emitter.extend(exports);
-NS.EventEmitter = exports;
+		onremovelistener: function(name, listener, capture){
+			this.removeEventListener(name, listener, capture);
+		}
+	};
+
+	exports = require('../lib/emitter').extend(exports);
+	NS.EventEmitter = exports;
+
+});
+

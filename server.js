@@ -19,7 +19,6 @@ Mise en place de compte utilisateur, connexion, inscription, déconnexion en uti
 FIX
 
 */
-
 global.root = process.cwd();
 global.window = global;
 global.FS = require('fs');
@@ -28,6 +27,14 @@ global.Path = require('path');
 global.config = require('./config.js');
 global.lang = {};
 global.NS = {};
+
+//console.log(this.require, module.require);
+
+global.define = function(filename, fn){
+	var path = require('path').resolve(root + '/client/js/' + filename + '.js');
+	var module = require.cache[path];
+	return fn.call(module, module.require, module.filename);
+};
 
 ['util', 'object', 'string', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/lib/core/' + name);

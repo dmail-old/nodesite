@@ -181,7 +181,7 @@ Element.prototype.toView = function(){ return NS.View.self.findElementView(this)
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 
-exports = Object.prototype.extend(NS.Emitter, exports);
+exports = Object.prototype.extend(require('lib/emitter'), exports);
 
 // View émet des évènements via le DOM de son élément
 exports.on('*', function(name, args){

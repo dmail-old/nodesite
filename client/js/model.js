@@ -74,7 +74,7 @@ var exports = {
 };
 
 
-exports = Object.prototype.extend(NS.Emitter, exports);
+exports = Object.prototype.extend(require('lib/emitter'), exports);
 NS.Model = exports;
 
 NS.servermodel = {

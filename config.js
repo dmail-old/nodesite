@@ -39,7 +39,7 @@ config.js = [].concat(
 		"list",
 		"object.util", "options", "chain", "bound",
 		"object.at", "finder", "array.iterate", "array.find",
-		"random", "stringList", "memory", "path",
+		"random", "stringList", "memory",// "path",
 		"emitter", "listener",
 		"treeTraversal", "treeFinder", "treeStructure",
 	].prefix('lib/'),

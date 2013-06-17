@@ -1,6 +1,6 @@
 // https://github.com/kanso/path/blob/master/path.js
 
-var exports = NS.Path = {
+window.path = {
 	normalizeArray: function(parts, keepBlanks){
 		var directories = [], prev, i = 0, j = parts.length - 1, directory;
 		
@@ -16,7 +16,9 @@ var exports = NS.Path = {
 			// if it starts with "", and is a . or .., then skip it.
 			if( directories.length === 1 && directories[0] === "" && (directory === "." || directory === "..") ) continue;
 
-			if( directory === ".." && directories.length && prev !== ".." && prev !== "." && prev !== undefined && (prev !== "" || keepBlanks) ){
+			if( directory === ".." && directories.length && prev !== ".." &&
+				prev !== "." && prev !== undefined && (prev !== "" || keepBlanks)
+			){
 				directories.pop();
 				prev = directories.slice(-1)[0];
 			}
