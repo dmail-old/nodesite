@@ -1,4 +1,4 @@
-module.exports = Object.prototype.extend({
+var exports = {
 	Url: require('url'),
 	Cookie: require(root + '/module/cookie.js'),
 	// metas utilisant l'attribut "http-equiv"
@@ -132,4 +132,6 @@ module.exports = Object.prototype.extend({
 
 		return tag.replace('#', url);
 	}
-});
+};
+
+module.exports = exports;

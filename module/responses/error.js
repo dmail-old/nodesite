@@ -1,4 +1,4 @@
-module.exports = Object.prototype.extend({
+var exports = {
 	constructor: function(request, response, e){
 		if( e ) logger.error(e);
 
@@ -6,4 +6,6 @@ module.exports = Object.prototype.extend({
 		response.write('Internal server error');
 		response.end();
 	}
-});
+};
+
+module.exports = exports;

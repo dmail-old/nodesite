@@ -1,10 +1,13 @@
-module.exports = Object.prototype.extend({
+var exports = {
 	constructor: function(request, response){
 		this.response = response;
 		this.request = request;
 		this.method = this.request.method || 'GET';
 		this.url = this.request.parsedUrl;
 		this.headers = {};
+
+		this.headers["access-control-allow-origin"] = this.request.headers.origin || "*";
+		this.headers["content-type"] = 'application/json';
 
 		/*
 		on considéère que je recoit toujours du JSON
@@ -139,7 +142,7 @@ module.exports = Object.prototype.extend({
 	write: function(data){
 		if( data == null ) return this.error(new TypeError('sending null data to client'));
 
-		this.response.writeHead(200, {'content-type': 'application/json'});
+		this.response.writeHead(200, this.headers);
 
 		switch(typeof data){
 		case 'object':
@@ -166,4 +169,6 @@ module.exports = Object.prototype.extend({
 	end: function(){
 		this.response.end();
 	}
-});
+};
+
+module.exports = exports;

@@ -1,4 +1,5 @@
-module.exports = Object.prototype.extend({
+
+var exports = {
 	Url: require('url'),
 
 	constructor: function(request, response){
@@ -13,10 +14,10 @@ module.exports = Object.prototype.extend({
 	},
 
 	handle: function(type){
-		var name = type + 'response', responseModule;
+		var responseModule;
 
 		try{
-			responseModule = require(root + '/module/' + type + 'Response');
+			responseModule = require('./responses/' + type);
 
 			try{
 				responseModule.new(this.request, this.response);
@@ -41,12 +42,13 @@ module.exports = Object.prototype.extend({
 	},
 
 	start: function(){
-		var
-			request = this.request,
-			url = this.parseUrl(this.request.url),
-			pageExtension = 'js',
-			pathname, slash, dirname, file
-		;
+		var request = this.request, url, pathname, slash, dirname, file;
+
+		if( request.method == 'OPTIONS' ){
+			return this.handle('options');
+		}
+
+		url = this.parseUrl(this.request.url);
 
 		if( !url ) return this.handle('error');
 
@@ -67,7 +69,7 @@ module.exports = Object.prototype.extend({
 		// on demande quelque chose à la racine
 		if( slash === -1 ){
 			// sans extension ou finissant par pageExtension
-			if( !pathname.contains('.') || pathname.endsWith('.' + pageExtension) || pathname.endsWith('.html') ){
+			if( !pathname.contains('.') || pathname.endsWith('.js') || pathname.endsWith('.html') ){
 				return this.handle('page');
 			}
 			return this.handle('file');
@@ -78,4 +80,6 @@ module.exports = Object.prototype.extend({
 		file = NS.File.new(root + '/client/' + dirname);
 		file.isDir(function(isdir){ return this.handle(isdir ? 'file' : 'page'); }.bind(this));
 	}
-});
+};
+
+module.exports = exports;

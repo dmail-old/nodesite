@@ -1,4 +1,4 @@
-module.exports = Object.prototype.extend({
+var exports = {
 	constructor: function(request, response){
 		this.response = response;
 		this.request = request;
@@ -141,7 +141,7 @@ module.exports = Object.prototype.extend({
 	serve: function(){
 		function read(error, data){
 			if( error ) return this.writeEnd(500);
-			
+
 			this.writeHead(200, this.headers);
 			this.write(data);
 			this.end();
@@ -149,4 +149,6 @@ module.exports = Object.prototype.extend({
 
 		this.file.read(read.bind(this));
 	}
-});
+};
+
+module.exports = exports;
