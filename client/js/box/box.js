@@ -15,7 +15,7 @@ FIX:
 */
 
 var exports = {
-	options: {
+	options: Object.createMerge(NS.Surface.options, {
 		tagName: 'div',
 		properties: {
 			html: 'Hello world',
@@ -44,7 +44,7 @@ var exports = {
 			open: false,
 			close: false
 		}
-	},
+	}),
 
 	constructor: function(options){
 		this.setOptions(options);

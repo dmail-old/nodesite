@@ -14,7 +14,7 @@ FIX
 */
 
 var exports = {
-	options: {
+	options: Object.createMerge(NS.Box.options, {
 		properties: {
 			'html': '\
 				<div class="body">\
@@ -48,7 +48,7 @@ var exports = {
 			// 'class': 'form'
 		},
 		buttons: []
-	},
+	}),
 
 	constructor: function(){
 		NS.Box.constructor.apply(this, arguments);

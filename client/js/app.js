@@ -48,7 +48,6 @@ window.server = {
 		});
 
 		request.setHeader('Accept', 'application/json');
-		request.setHeader('X-Request', 'JSON');
 		request.options.isSuccess = function(){
 			var status = this.status, ok = status >= 200 && status < 300;
 

@@ -1,15 +1,36 @@
+Object.createMergePair = function(key, value){
+	if( typeof value == 'object' && value !== null ){
+		var current = this[key];
+		// when an object exists in this and in value for key
+		// we create an object heriting from current then we merge it
+		if( typeof current == 'object' && current !== null ){
+			current = this[key] = Object.create(current);
+			Object.eachOwnPair(value, Object.createMergePair, current);
+		}
+		else{
+			Object.appendPair.apply(this, arguments);
+		}
+	}
+	else{
+		Object.appendPair.apply(this, arguments);
+	}
+};
+
 /*
-
-require: Object.util
-
-provide: NS.options
-
+create an object linked to object
+then merge it with merge but create subobject link if merge override subobject
 */
 
-// create a deep copy of object still linked to every object or subobject by prototype
+Object.createMerge = function(object, merge){
+	var instance = Object.create(object);
+
+	Object.eachOwnPair(merge, Object.createMergePair, instance);
+
+	return instance;
+};
+
+// create a deep copy of object linked to object and his subobject by prototype
 Object.copy = function(object){
-	// Object.create return a copy of the object passed still linked to object by prototype
-	// Consequently modifying object impacts the copy
 
 	var copy = Object.create(object), key, value;
 

@@ -105,7 +105,7 @@ Object.complement = function(){
 
 /*
 
-name: Object.eachPair
+Object.eachPair
 
 */
 
@@ -167,34 +167,17 @@ else{
 
 /*
 
-name: Object.prototype
+Object.instance
+
+provides:
+	Object.prototytpe.supplement, Object.prototype.extend,
+	Object.prototype.new, Object.prototype.getPrototype
 
 */
 
 Object.implement({
-	supplementPair: function(key, value){
-
-		if( typeof value == 'object' && value !== null ){
-			var current = this[key];
-			// when an object exists in this and in value for key
-			// we create an object heriting from current then we merge it
-			if( typeof current == 'object' && current !== null ){
-				current = this[key] = Object.create(current);
-				Object.eachOwnPair(value, Object.prototype.supplementPair, current);
-			}
-			else{
-				Object.appendPair.apply(this, arguments);
-			}
-		}
-		else{
-			Object.appendPair.apply(this, arguments);
-		}
-
-		return this;
-	},
-
 	supplement: function(){
-		Object.eachObjectIn(arguments, 'eachPair', Object.prototype.supplementPair, this);
+		Object.eachObjectIn(arguments, 'eachPair', Object.appendPair, this);
 		return this;
 	},
 
@@ -217,11 +200,6 @@ Object.implement({
 
 	getPrototype: function(){
 		return Object.getPrototypeOf(this);
-	},
-
-	getParentPrototype: function(){
-		var proto = this.getPrototype();
-		return proto ? proto.getPrototype() : null;
 	}
 });
 
