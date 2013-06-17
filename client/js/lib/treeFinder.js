@@ -1,4 +1,4 @@
-var exports = {
+var exports = NS.treeFinder = {
 	matchIterator: function(iterator, match, first){
 		return NS.Finder.matchIterator(iterator, this, match, first);
 	},
@@ -77,5 +77,3 @@ exports.getPrevNode = exports.createFindMethod(exports.treeTraversal.crossPrevNo
 exports.getNextNode = exports.createFindMethod(exports.treeTraversal.crossNextNode);
 
 */
-
-NS.treeFinder = exports;

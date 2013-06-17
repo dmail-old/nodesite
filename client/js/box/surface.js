@@ -218,7 +218,7 @@ var exports = {
 	}
 };
 
-exports.supplement({
+Object.append(exports, {
 	get: function(name){
 		return this.element.getStyle(name).toInt() || 0;
 	},
@@ -336,7 +336,7 @@ exports.supplement({
 	}
 });
 
-exports.supplement({
+Object.append(exports, {
 	calcSpace: function(axis){
 		return this.element.measure('scrollSpace', axis);
 	},
@@ -447,7 +447,7 @@ exports.supplement({
 });
 
 // mousedown, mouseup, mousemove, focus, blur, scroll, keydown
-exports.supplement({
+Object.append(exports, {
 	getMode: function(axis){
 		if( this.handle && this.handle.hasClass('vector') ){
 			this.resizer = this.handle.getStyle('cursor').substr(0, 2);
@@ -616,7 +616,7 @@ exports.startInstanceFromEvent = function(e){
 });
 
 // scroll handling
-exports.supplement({
+Object.append(exports, {
 	options: {
 		scrollAuto: true,
 		scrollDelay: 100,

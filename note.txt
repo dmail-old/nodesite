@@ -1,1 +1,30 @@
+----
+
+MVC lent
+
 semble que model qui émet des event pour view qui émet des events pour controlleur soit plutot lent
+
+- voir comment on peut s'inspirer de angular
+- ptet que les vues n'auront plus d'events
+	->  seuls les models en ont et les vues se content de les répercuter sur le controlleur
+	-> ou alors le controlleur écoute directement le modèle
+
+----
+
+Instantiation
+
+au maximum on va essayer de faire:
+
+var object = {
+	constructor: function(){
+		this.componnent = NS.Component.new(this);
+	}
+};
+
+plutot que
+
+var object = {};
+object.supplement(Component);
+
+cette notation étant préférable pour les interface
+
