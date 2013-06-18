@@ -1,6 +1,6 @@
 /* global */
 
-NS.TreeEmitter = require('../lib/emitter').extend({
+NS.TreeEmitter = NS.Emitter.extend({
 	applyListeners: function(name, args){
 		if( this.bind.parentNode ){
 			this.bind.parentNode.treeEmitter.applyListeners(name, args);

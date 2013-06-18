@@ -59,7 +59,7 @@ window.server = {
 		this.link = request;
 	},
 
-	init: function(callback){		
+	init: function(callback){
 		var data = {
 			page: document.location.pathname
 		};
@@ -106,7 +106,7 @@ window.app = {
 			});
 
 			if( exec === true ){
-				browser.exec(scripts);
+				NS.browser.exec(scripts);
 			}
 			else if( typeof exec == 'function' ){
 				exec(scripts, text);
@@ -114,7 +114,7 @@ window.app = {
 
 			return text;
 		});
-		
+
 		window.server.createLink();
 
 		document.on('click', window.app.click, true);

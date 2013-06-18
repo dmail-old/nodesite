@@ -1,12 +1,10 @@
-/* global Browser */
-
 Element.Styles = {};
 
-Element.Styles.opacity = {	
+Element.Styles.opacity = {
 	get: function(){
 		return this.style.opacity === '' ? 1 : this.style.opacity.toFloat();
 	},
-	
+
 	set: function(value){
 		this.style.opacity = value != null ? parseFloat(value) : value;
 	}
@@ -77,25 +75,25 @@ String.implement({
 
 var floatName = document.html.style.cssFloat == null ? 'styleFloat' : 'cssFloat';
 
-Element.implement({	
+Element.implement({
 	getComputedStyle: function(name){
 		if( this.currentStyle ) return this.currentStyle[name.camelCase()];
 		var defaultView = this.getDocument().defaultView, computed = defaultView ? defaultView.getComputedStyle(this, null) : null;
 		return computed ? computed.getPropertyValue(name == floatName ? 'float' : name.hyphenate()) : null;
 	},
-	
+
 	setStyle: function(name, value){
 		if( typeof name != 'string' ) throw new TypeError('string expected');
-		
+
 		var style = Element.Styles[name];
-				
+
 		if( style && style.set ){
 			style.set.call(this, value);
 		}
 		else{
 			if( typeof value == 'number' ) value+= 'px';
 			else if( value == String(Number(value)) ) value = Math.round(value);
-			
+
 			name = name == 'float' ? floatName : name.camelCase();
 			this.style[name] = value;
 		}
@@ -104,7 +102,7 @@ Element.implement({
 
 	getStyle: function(name){
 		var style = Element.Styles[name], result;
-		
+
 		if( style && style.get ){
 			result = style.get.call(this);
 		}
@@ -113,7 +111,7 @@ Element.implement({
 			result = this.style[name];
 			if( !result ) result = this.getComputedStyle(name);
 		}
-		
+
 		return result;
 	},
 
@@ -127,31 +125,31 @@ Element.implement({
 		Array.prototype.forEach.call(arguments, function(name){ result[name] = this.getStyle(name); }, this);
 		return result;
 	},
-	
+
 	blink: function(fn, bind){
 		// can't use setProperty hidden because an element having display: block tke priority over hidden and the element stays visible
-		
+
 		var display = this.style.display;
-		
+
 		this.style.display = 'none';
 		fn.call(bind || this);
 		this.style.display = display;
-		
+
 		return this;
 	}
 });
 
 // chrome et safari bug 13343
-if( browser.safari || browser.chrome ){
+if( NS.browser.safari || NS.browser.chrome ){
 	['top', 'left', 'bottom', 'right'].each(function(direction){
 		Element.Styles['margin-'+direction] = {
 			get: function(){
 				var margin;
-				
+
 				this.blink(function(){
 					margin = this.getComputedStyle('margin-' + direction);
 				});
-				
+
 				return margin;
 			}
 		};

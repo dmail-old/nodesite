@@ -44,11 +44,11 @@ config.js = [].concat(
 		"treeTraversal", "treeFinder", "treeStructure",
 	].prefix('lib/'),
 	[
-		"browser",
+		"browser", "os",
 		"event", "eventEmitter", "eventListener",
 		"element", "element.properties",
 		"element.styles", "element.measure", "element.keepIntoView", "element.find",
-		"request"		
+		"request"
 	].prefix('browser/'),
 	[
 		"model", "view", "controller", "fx"

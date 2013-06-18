@@ -271,5 +271,5 @@ Element.implement('toQueryString', function(){
 	return queryString.join('&');
 });
 
-exports = Object.prototype.extend(require('../lib/emitter'), NS.options, NS.chain, exports);
+exports = Object.prototype.extend(NS.Emitter, NS.options, NS.chain, exports);
 NS.Request = exports;

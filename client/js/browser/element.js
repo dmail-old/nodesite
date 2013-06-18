@@ -1,5 +1,3 @@
-/* global browser */
-
 var exports = function Element(tag, props){
 	return tag in Element.constructors ? Element.constructors[tag](props) : document.newElement(tag, props);
 };
@@ -159,5 +157,5 @@ Object.eachPair(NS.EventEmitter, function(key, value, object){
 	}
 });
 
-browser.Element = window.Element;
+NS.browser.Element = window.Element;
 window.Element = exports;

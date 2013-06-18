@@ -1,50 +1,42 @@
-var exports = {};
+/*
+equivalent to node process
+*/
 
-exports.ua = navigator.userAgent.toLowerCase();
-exports.plat = navigator.platform.toLowerCase();
-exports.UA = exports.ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0];
+(function(ua){
 
-exports.name = exports.UA[1] == 'version' ? exports.UA[3] : exports.UA[1];
+	var exports = NS.browser = {};
+	var UA = ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0];
+	var name = UA[1] == 'version' ? UA[3] : UA[1];
+	var version;
 
-// version
-if( exports.UA[1] == 'ie' && document.documentMode ) exports.version = true;
-else if( exports.UA[1] == 'opera' && exports.UA[4] ) exports.version = parseFloat(exports.UA[4]);
-else exports.version = parseFloat(exports.UA[2]);
+	// version
+	if( UA[1] == 'ie' && document.documentMode ) version = true;
+	else if( UA[1] == 'opera' && UA[4] ) version = parseFloat(UA[4]);
+	else version = parseFloat(UA[2]);
 
-// platform
-if( exports.ua.match(/ip(?:ad|od|hone)/) ) exports.platform  = 'ios';
-else exports.platform = (exports.ua.match(/(?:webos|android)/) || exports.plat.match(/mac|win|linux/) || ['other'])[0];
+	exports.version = version;
+	exports.name = name;
+	exports[name] = true;
+	exports[name + parseInt(version, 10)] = true;
 
-exports.features = {
-	xpath: Boolean(document.evaluate),
-	air: Boolean(window.runtime),
-	query: Boolean(document.querySelector),
-	json: Boolean(window.JSON)
-};
-exports[exports.name] = true;
-exports[exports.name + parseInt(exports.version, 10)] = true;
-exports[exports.platform] = true;
-
-exports.exec = function(text){
-	if( !text ) return text;
-	if( window.execScript ) window.execScript(text);
-	else{
-		var script = document.createElement('script');
-		script.setAttribute('type', 'text/javascript');
-		script.text = text;
-		document.head.appendChild(script);
-		document.head.removeChild(script);
-	}
-	return text;
-};
-
-if( !window.setImmediate ){
-
-	window.setImmediate = function(fn, args){
-		return window.setTimeout(fn, 0, args);
+	exports.features = {
+		xpath: Boolean(document.evaluate),
+		air: Boolean(window.runtime),
+		query: Boolean(document.querySelector),
+		json: Boolean(window.JSON)
 	};
-	window.clearImmediate = window.clearTimeout;
 
-}
+	exports.exec = function(text){
+		if( !text ) return text;
+		if( window.execScript ) window.execScript(text);
+		else{
+			var script = document.createElement('script');
+			script.setAttribute('type', 'text/javascript');
+			script.text = text;
+			document.head.appendChild(script);
+			document.head.removeChild(script);
+		}
+		return text;
+	};
 
-window.browser = exports;
+})(navigator.userAgent.toLowerCase());

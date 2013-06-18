@@ -19,7 +19,6 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 		<title>{title}</title>
 		{favicon}
 		{styles}
-		<script type="text/javascript" src="./js/lib/path.js"></script>
 		<script type="text/javascript">
 
 			window.NS = {};
@@ -36,50 +35,14 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 				//console.log('window error', arguments);
 			};
 
-			window.Module = function Module(id){
-				this.id = id;
-				this.filename = this.path.normalize(root + '/client/js/' + id + '.js');
-				this.cache[this.filename] = this;
-				this.pathCache[this.id] = this.filename;
-			};
+			if( !window.setImmediate ){
 
-			window.Module.prototype.path = window.path;
-			window.define = function(id, fn){
-				var module = new Module(id);
-				return fn.call(module, module.require.bind(module), module.filename);
-			};
-			
-			window.Module.prototype.cache = {};			
-			window.Module.prototype.require = function(id){
-				var path = this.resolve(id);
+				window.setImmediate = function(fn, args){
+					return window.setTimeout(fn, 0, args);
+				};
+				window.clearImmediate = window.clearTimeout;
 
-				if( path in this.cache ){
-					return this.cache[path].exports;
-				}
-				else{
-					console.trace();
-					throw new Error('unknow module ' + path);
-				}
-			};
-
-			window.Module.prototype.pathCache = {};
-			window.Module.prototype.resolve = function(id){
-				if( id in this.pathCache ){
-					return this.pathCache[id];
-				}
-				else{
-					var path = this.path.resolve(this.path.dirname(this.filename), id);
-					if( path.indexOf('.js', path.length - 3) === -1 ){
-						path = path + '.js';
-					}
-					return this.pathCache[id] = path;
-				}
-			};
-
-			define('.', function(require){
-				window.module = window.mainModule = this;
-				window.require = require;
-			});
+			}
 
 		</script>
 	</head>
