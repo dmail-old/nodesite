@@ -1,5 +1,18 @@
-var exports = {
-	viewEvents: {
+/*
+
+les controlleurs seront créé globalement
+ils s'appliqueront à toutes les vues indiquant qu'elles utilisent ce contrôleur
+leurs events (dom) sont ajouter à window
+un rootControlleur recoit les events de tous les controlleurs
+
+*/
+
+NS.Controller = {
+	providers: {},
+	requires: null,
+
+	// view listeners
+	listeners: {
 		'setElement': function(element){
 			this.setElement(element);
 		},
@@ -12,13 +25,17 @@ var exports = {
 			this.destroy();
 		}
 	},
-	providers: {},
+	modelListeners: null,
+	// view element event listeners
 	events: null,
-	requires: null,
 
 	constructor: function(view){
-		this.viewListener = NS.Listener.new(null, this.viewEvents, this);
-		this.elementListener = NS.EventListener.new(null, this.events, this);
+		// listen to view events
+		this.listener = NS.Listener.new(null, this.listeners, this);
+		// listen to view element events
+		this.eventListener = NS.EventListener.new(null, this.events, this);
+
+		this.emitter = NS.Emitter.new(this);
 
 		this.setView(view);
 		this.resolveDependency();
@@ -57,10 +74,11 @@ var exports = {
 		if( view ){
 			this.view = view;
 
+			if( !this.view.controllers ) this.view.controllers = {};
 			this.view.controllers[this.name] = this;
 
-			this.viewListener.emitter = view;
-			this.viewListener.listen();
+			this.listener.emitter = view;
+			this.listener.listen();
 
 			if( this.view.element ) this.setElement(this.view.element);
 		}
@@ -70,8 +88,8 @@ var exports = {
 		if( this.view ){
 			if( this.view.element && this.element == this.view.element ) this.unsetElement();
 
-			this.viewListener.stopListening();
-			delete this.viewListener.emitter;
+			this.listener.stopListening();
+			this.listener.emitter = null;
 
 			delete this.view.controllers[this.name];
 
@@ -81,15 +99,15 @@ var exports = {
 
 	setElement: function(element){
 		if( element ){
-			this.elementListener.emitter = element;
-			this.elementListener.listen();
+			this.eventListener.emitter = element;
+			this.eventListener.listen();
 		}
 	},
 
 	unsetElement: function(){
 		if( this.element ){
-			this.elementListener.stopListening();
-			delete this.elementListener.emitter;
+			this.eventListener.stopListening();
+			this.eventListener.emitter = null;
 		}
 	},
 
@@ -99,15 +117,4 @@ var exports = {
 	}
 };
 
-NS.View.on({
-	create: function(){
-		this.controllers = {};
-	},
-
-	destroy: function(){
-		delete this.controllers;
-	}
-});
-
-exports = Object.prototype.extend(exports);
-NS.Controller = exports;
+Object.append(NS.Controller, NS.EmitterInterface);

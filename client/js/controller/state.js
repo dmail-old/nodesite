@@ -1,8 +1,8 @@
-var exports = {
+NS.StateTreeController = NS.TreeController.extend({
 	name: 'StateTreeController',
 	constructor: function(view, state, multiple){
 		this.name = state;
-		this.events = {};
+		this.listeners = {};
 		this.state = state;
 		this.multiple = multiple;
 
@@ -11,16 +11,18 @@ var exports = {
 			this.name += 's';
 		}
 
-		this.events['view:addclass:' + state] = this.onaddstate;
-		this.events['view:removeclass:' + state] = this.onremovestate;
-		this.events['view:leave'] = this.events['view:removeclass:' + state];
+		//this.events['view:addclass:' + state] = this.onaddstate;
+		//this.events['view:removeclass:' + state] = this.onremovestate;
+		//this.events['view:leave'] = this.events['view:removeclass:' + state];
+
+		this.listeners['view:destroy'] = function(e){
+			this.onremovestate(e.target);
+		};
 
 		NS.TreeController.constructor.call(this, view);
 	},
 
 	onaddstate: function(view, e){
-		//if( view.hasItem(this.state) ) return;
-
 		if( this.multiple ){
 			this.removeCurrent(e);
 			this.set(view);
@@ -31,11 +33,11 @@ var exports = {
 			this.remove(prev, e);
 			this.set(view);
 		}
+
+		this.emit('add:state:' + this.state, e);
 	},
 
 	onremovestate: function(view, e){
-		// if( !view.hasItem(this.state) ) return;
-
 		if( this.multiple ){
 			this.unset(view);
 		}
@@ -44,14 +46,22 @@ var exports = {
 				this.unset(view);
 			}
 		}
+
+		this.emit('remove:state:' + this.state, e);
 	},
 
 	add: function(view, e){
-		if( view ) view.addClass(this.state, e);
+		if( view && !view.hasClass(this.state) ){
+			view.addClass(this.state, e);
+			this.onaddstate(view, e);
+		}
 	},
 
 	remove: function(view, e){
-		if( view ) view.removeClass(this.state, e);
+		if( view && view.hasClass(this.state) ){
+			view.removeClass(this.state, e);
+			this.onremovestate(view, e);
+		}
 	},
 
 	removeCurrent: function(e){
@@ -91,10 +101,7 @@ var exports = {
 			delete this.current;
 		}
 	}
-};
-
-exports = NS.TreeController.extend(exports);
-NS.StateTreeController = exports;
+});
 
 Object.eachPair(NS.viewstate.states, function(name){
 	NS.Controller.providers[name] = function(view){

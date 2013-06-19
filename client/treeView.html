@@ -12,12 +12,12 @@ var model = NS.TreeModel.new(treeData);
 var view = NS.NodeTreeView.new(model);
 var rootView = NS.RootTreeView.new();
 
-NS.IndentTreeController.new(rootView);
-NS.ToolTreeController.new(rootView);
+//NS.IndentTreeController.new(rootView);
+//NS.ToolTreeController.new(rootView);
 NS.MouseoverlightTreeController.new(rootView);
-NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
-NS.MousedownfocusTreeController.new(rootView);
-NS.NavController.new(rootView);
+//NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
+//NS.MousedownfocusTreeController.new(rootView);
+//NS.NavController.new(rootView);
 
 rootView.insertElement(document.body);
 rootView.appendChild(view);
