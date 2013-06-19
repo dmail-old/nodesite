@@ -20,21 +20,12 @@ FIX
 
 */
 global.root = process.cwd();
-global.window = global;
 global.FS = require('fs');
 global.util = require('util');
 global.Path = require('path');
 global.config = require('./config.js');
 global.lang = {};
 global.NS = {};
-
-//console.log(this.require, module.require);
-
-global.define = function(filename, fn){
-	var path = require('path').resolve(root + '/client/js/' + filename + '.js');
-	var module = require.cache[path];
-	return fn.call(module, module.require, module.filename);
-};
 
 ['util', 'object', 'string', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/lib/core/' + name);
@@ -50,14 +41,6 @@ files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name
 require(root + '/module/color.js');
 require(root + '/module/fs.extra.js');
 
-// var Module = require('module');
-// Module.prototype.require = function(path){
-	// var start = process.hrtime();
-	// var ret = Module._load(path, this);
-	// var end = process.hrtime(start);
-	// console.log(path, end[1]);
-	// return ret;
-// };
 global.File = require(root + '/module/file.js');
 global.FileInfo = require(root + '/module/fileinfo.js');
 global.logger = require(root + '/module/logger.js');
@@ -117,25 +100,21 @@ Error.stackTraceLimit = 20;
 String.defineType('name', {color: 'magenta', font: 'bold'});
 String.defineType('path', {color: 'magenta', font: 'bold'});
 
-/*DB.start();
-var User = DB.getTable('user');
-var Players = DB.getTable('players');
-var Items = DB.getTable('items');
-var PlayerItems = DB.getTable('players.items');*/
-
-// User.read(function(){ console.log(arguments); });
-
-var Server = {
+var server = {
 	onrequest: function(request, response){
 		require(root + '/module/response.js').new(request, response);
 	},
 
-	create: function(){
-		this.server = http.createServer();
+	onclientError: function(e){
+		console.log('client error', e);
+	},
 
-		this.server.on('request', Server.onrequest);
-		this.server.on('listening', function(){ });
-		this.server.on('clientError', function(e){ console.log('client', e); });
+	open: function(){
+		this.connection = http.createServer();
+
+		this.connection.on('request', this.onrequest);
+		//this.connection.on('listening', this.onlistening);
+		this.connection.on('clientError', this.onclientError);
 
 		/*
 		var socket = require('socket.io');
@@ -148,28 +127,27 @@ var Server = {
 	},
 
 	listen: function(port, host, callback){
-		var server = this.server;
+		var connection = this.connection;
 
 		function serverError(error){
-			server.removeListener('error', serverError);
-			server.removeListener('listen', serverListening);
+			connection.removeListener('error', serverError);
+			connection.removeListener('listen', serverListening);
 			callback(error);
 		}
 
 		function serverListening(){
-			server.removeListener('error', serverError);
-			server.removeListener('listen', serverListening);
+			connection.removeListener('error', serverError);
+			connection.removeListener('listen', serverListening);
 			callback();
 		}
 
-		server.on('listening', serverListening);
-		server.on('error', serverError);
-
-		server.listen(port, host);
+		connection.on('listening', serverListening);
+		connection.on('error', serverError);
+		connection.listen(port, host);
 	},
 
 	close: function(callback){
-		this.server.close(callback);
+		this.connection.close(callback);
 	},
 
 	// lorsqu'une socket veut se connecter
@@ -179,114 +157,12 @@ var Server = {
 	},
 
 	onClient: function(socket){
-		new Client(socket);
+		//new Client(socket);
 	}
 };
 
-var Client = Object.prototype.extend({
-	constructor: function(socket){
-		// console.log(socket.handshake.headers.cookie);
-		// grace au cookie de session, s'il existe on restaureras le compte de l'user
-		// sinon on attendras une demande de login ou signin
-
-		var session = Cookie.parse(socket.handshake.headers.cookie, 'session');
-
-		/*if( session ){
-			Session.get(session, function(error, data){
-				if( error ){
-					// pas de session
-					return;
-				}
-				if( data ){
-
-				}
-				User.get()
-			});
-		}
-		*/
-
-		this.socket = socket;
-		this.name = 'Admin';
-
-		this.emit('news', 'Voici les dernière news');
-		this.on('demand', this.demand.bind(this));
-
-		logger.info(String.setType(this.name, 'name'), 'connected to the server');
-	},
-
-	toString: function(){
-		return this.name;
-	},
-
-	on: function(){
-		this.socket.on.apply(this.socket, arguments);
-		return this;
-	},
-
-	emit: function(){
-		this.socket.emit.apply(this.socket, arguments);
-		return this;
-	},
-
-	demand: function(action){
-		var args = toArray(arguments, 1);
-
-		if( action == 'join' || action == 'leave' ){
-			this[action].apply(this, args);
-			return;
-		}
-
-		logger.info(String.setType(this.name, 'name') + 'demand' + String.setType(action, 'function'));
-
-		var file = new File(root + '/action/' + action + '.js');
-
-		if( !file.existsSync() ){
-			// je fais rien
-			logger.warn(action + 'n\'est pas une action connue');
-		}
-		else{
-			args = [this].concat(args);
-			// j'éxécute le code de ce fichier
-			var script = require(file.path);
-			script.apply(null, args);
-		}
-	},
-
-	join: function(room, callback){
-		logger.info(String.setType(this.name, 'name'), 'ask to join', String.setType(room, 'function'));
-
-		this.socket.join(room);
-
-		// dit aux autres que celui-ci vient d'arriver
-		this.socket.broadcast.to(room).emit(room+'/join');
-
-		// dit au client qu'il a été accepté
-		callback(true);
-	},
-
-	leave: function(room, callback){
-		logger.info(String.setType(this.name, 'name'), 'ask to leave', String.setType(room, 'function'));
-
-		this.socket.leave(room);
-
-		// dit aux autres qu'il est parti
-		this.socket.broadcast.to(room).emit('leave');
-
-		// dit au client qu'il a bien été enlevé
-		callback(true);
-	},
-
-	memberOf: function(group){
-		var room = this.socket.manager.rooms[group];
-		return room && room.contains(this.socket.id);
-	}
-});
-
-// var server = http.createServer();
-// server.listen(config.port, config.host);
-
-Server.create();
-Server.listen(config.port, config.host, function(error){
+server.open();
+server.listen(config.port, config.host, function(error){
 	if( error ){
 		if( error.code == 'EADDRINUSE' ){
 			error.message = 'Port ' + config.port + ' already in use';
@@ -296,3 +172,4 @@ Server.listen(config.port, config.host, function(error){
 
 	logger.info('Server running at '+String.setType(config.host, 'b') + ':' + String.setType(config.port, 'c'));
 });
+
