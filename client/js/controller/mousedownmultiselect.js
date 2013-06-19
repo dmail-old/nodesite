@@ -1,4 +1,4 @@
-var exports = {
+NS.MousedownmultiselectTreeController = NS.TreeController.extend({
 	name: 'MousedownmultiselectTreeController',
 	requires: 'MultiSelectionController',
 	events: {
@@ -36,7 +36,4 @@ var exports = {
 		if( this.element ) this.element.removeClass('unselectable');
 		return NS.TreeController.unsetElement.call(this);
 	}
-};
-
-exports = NS.TreeController.extend(exports);
-NS.MousedownmultiselectTreeController = exports;
+});

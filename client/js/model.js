@@ -1,10 +1,9 @@
-var exports = {
+NS.Model = {
 	validationError: null,
 	cid: 0,
 
 	constructor: function(properties){
-		if( !this.parse ) console.trace(this);
-
+		this.emitter = NS.Emitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
 	},
@@ -73,9 +72,11 @@ var exports = {
 	}
 };
 
+Object.append(NS.Model, NS.EmitterInterface);
 
-exports = Object.prototype.extend(NS.Emitter, exports);
-NS.Model = exports;
+/*
+
+for later use
 
 NS.servermodel = {
 	definitions: {
@@ -177,3 +178,5 @@ NS.Action = Object.prototype.extend({
 		this.model.emit(this.name, this);
 	}
 });
+
+*/

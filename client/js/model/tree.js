@@ -1,4 +1,4 @@
-var exports = {
+NS.TreeModel = NS.Model.extend(NS.treeStructure, NS.treeTraversal, NS.treeFinder, {
 	name: '',
 
 	constructor: function(){
@@ -35,12 +35,4 @@ var exports = {
 	sync: function(action, args, callback){
 
 	}
-};
-
-exports = NS.Model.extend(
-	NS.treeStructure,
-	NS.treeTraversal,
-	NS.treeFinder,
-	exports
-);
-NS.TreeModel = exports;
+});

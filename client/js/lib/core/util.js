@@ -1,5 +1,5 @@
 // arguments to array
-window.toArray = function(item, start, end){
+(typeof window == 'undefined' ? global : window).toArray = function(item, start, end){
 	if( arguments.length == 1 ) return Array.apply(null, item);
 	return Array.prototype.slice.call(item, start, end);
 };

@@ -127,20 +127,6 @@ TreeTraversal.crossPrevNode = function(fn, bind){
 	return this;
 };
 
-in the case we want to add it to Element.prototype we have to add the lastNode property
-
-Object.defineProperty(Element.prototype, 'lastNode', {
-	'get': function(){
-		var node = this, last = null;
-
-		while( node = node.lastChild ){
-			last = node;
-		}
-
-		return last;
-	}
-});
-
 in case we want to add it to any NS implementing TreeStructure we have to add 'firstChild', 'lastChild', 'previousSibling', 'nextSibling'
 to be able to use those methods
 
@@ -150,6 +136,18 @@ Object.create should be used for that or TreeStructure have to be a NS with prot
 if we want to copy those hidden properties we have to do it manually
 
 Object.defineProperties(TreeStructure, {
+	'lastNode': {
+		'get': function(){
+			var node = this, last = null;
+
+			while( node = node.lastChild ){
+				last = node;
+			}
+
+			return last;
+		}
+	},
+
 	'firstChild': {
 		'get': function(){
 			return this.children.length === 0 ? null : this.children[0];
@@ -186,5 +184,9 @@ Object.defineProperties(TreeStructure, {
 		}
 	}
 });
+
+in the case we want to add it to Element.prototype we have to add the lastNode property
+
+Object.defineProperty(Element.prototype, 'lastNode', treeStructure.lastNode);
 
 */

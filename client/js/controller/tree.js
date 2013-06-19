@@ -7,12 +7,12 @@ Such controller have to extend controller.tree
 
 */
 
-var exports = {
+NS.TreeController = NS.Controller.extend({
 	name: 'TreeController',
 	constructor: function(){
 		NS.Controller.constructor.apply(this, arguments);
 
-		this.elementListener.callHandler = this.callHandler;
+		this.eventListener.callHandler = this.callHandler;
 	},
 
 	callHandler: function(handler, bind, e){
@@ -23,7 +23,4 @@ var exports = {
 		}
 		return handler.call(bind, view, e);
 	},
-};
-
-exports = NS.Controller.extend(exports);
-NS.TreeController = exports;
+});

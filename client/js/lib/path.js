@@ -1,9 +1,9 @@
 // https://github.com/kanso/path/blob/master/path.js
 
-window.path = {
+NS.path = {
 	normalizeArray: function(parts, keepBlanks){
 		var directories = [], prev, i = 0, j = parts.length - 1, directory;
-		
+
 		for(;i<=j;i++) {
 			directory = parts[i];
 
@@ -28,23 +28,23 @@ window.path = {
 				prev = directory;
 			}
 		}
-		
+
 		return directories;
 	},
-		
+
 	join: function(){
 		return this.normalize(Array.prototype.join.call(arguments, '/'));
 	},
-		
+
 	normalize: function(path, keepBlanks){
 		return this.normalizeArray(path.split('/'), keepBlanks).join('/');
 	},
-		
+
 	dirname: function(path){
 		var lastSlash;
-		
+
 		if( path.length > 1 && path[path.length - 1] == '/' ) path = path.replace(/\/+$/, '');
-		
+
 		lastSlash = path.lastIndexOf('/');
 		switch(lastSlash){
 		case -1:
@@ -55,29 +55,29 @@ window.path = {
 			return path.substring(0, lastSlash);
 		}
 	},
-		
+
 	basename: function(path, ext){
 		var basename = path.substr(path.lastIndexOf('/') + 1);
-		
+
 		if( typeof ext == 'string' && basename.substr(basename.length - ext.length) === ext ){
 			basename = basename.substr(0, basename.length - ext.length);
 		}
-		
+
 		return basename;
 	},
-		
+
 	extdot: function(path){
 		var dot = path.lastIndexOf('.'), slash = path.lastIndexOf('/');
-			
+
 		return dot <= slash + 1 ? -1 : dot;
 	},
-		
+
 	extname: function(path){
 		var dot = this.extdot(path);
-			
+
 		return dot > -1 ? path.substring(dot) : '';
 	},
-		
+
 	filename: function(path){
 		return this.basename(path, this.extname(path));
 	},
@@ -136,7 +136,7 @@ window.path = {
 		to = this.normalize(to);
 		fromParts = trim(from.split('/'));
 		toParts = trim(to.split('/'));
-		
+
 		i = 0;
 		samePartsLength = j = Math.min(fromParts.length, toParts.length);
 		for(;i<j;i++){

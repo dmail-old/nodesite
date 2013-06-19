@@ -1,5 +1,1 @@
-var exports = {
-};
-
-exports = NS.TreeModel.extend(exports);
-NS.OptionTreeModel = exports;
+NS.OptionTreeModel = NS.TreeModel.extend();

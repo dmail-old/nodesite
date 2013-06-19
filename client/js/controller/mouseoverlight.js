@@ -1,4 +1,4 @@
-var exports = {
+NS.MouseoverlightTreeController = NS.TreeController.extend({
 	name: 'MouseoverlightTreeController',
 	requires: 'lighted',
 	events: {
@@ -21,7 +21,4 @@ var exports = {
 			}
 		}
 	}
-};
-
-exports = NS.TreeController.extend(exports);
-NS.MouseoverlightTreeController = exports;
+});
