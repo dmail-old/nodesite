@@ -2,7 +2,7 @@ NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
-	listeners: {
+	modelEvents: {
 		'change:name': function(name){
 			this.updateName(name);
 		}
@@ -13,21 +13,18 @@ NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
 	},
 
 	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
+	// this function will surely be names hasChildren and transferred in childrenInterface
 	isEmpty: function(){
 		return this.children.length === 0;
 	},
 
-	createClassList: function(){
-		var classList = NS.TreeView.createClassList.call(this);
-
+	createElement: function(){
 		if( this.isEmpty() ){
-			classList.add('empty');
-			classList.add('expanded');
+			this.classList.add('empty');
+			this.classList.add('expanded');
 		}
 
-		//if( this.has('class') ) classList.add(this.get('class'));
-
-		return classList;
+		return NS.TreeView.createElement.call(this);
 	},
 
 	scrollTo: function(dom){

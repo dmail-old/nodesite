@@ -135,7 +135,7 @@ it doesn't copy properties defined by Object.defineProperty
 Object.create should be used for that or TreeStructure have to be a NS with prototype and not and object
 if we want to copy those hidden properties we have to do it manually
 
-Object.defineProperties(TreeStructure, {
+Object.defineProperties(childrenInterface, {
 	'lastNode': {
 		'get': function(){
 			var node = this, last = null;
@@ -187,6 +187,6 @@ Object.defineProperties(TreeStructure, {
 
 in the case we want to add it to Element.prototype we have to add the lastNode property
 
-Object.defineProperty(Element.prototype, 'lastNode', treeStructure.lastNode);
+Object.defineProperty(Element.prototype, 'lastNode', childrenInterface.lastNode);
 
 */

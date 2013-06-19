@@ -37,7 +37,7 @@ le lien vue/modèle
 
 c'est juste le controlleur ça non?
 
-ou alors le controlleur émat des events, et on a aussi rootControlleur qui recoit
+ou alors le controlleur émet des events, et on a aussi rootControlleur qui recoit
 les events de tous les controlleurs
 
 */
@@ -45,44 +45,30 @@ les events de tous les controlleurs
 NS.View = {
 	// model listeners
 	listeners: {
-		'destroy': 'destroy'
+		'destroy': 'destructor'
 	},
+	// element events listeners
+	events: null,
 	tagName: 'div',
 	className: '',
 	innerHTML: '',
 	attributes: null,
 
 	constructor: function(model){
-		this.emitter = NS.Emitter.new(this);
-		// Listener call this.listeners over this.model events with this as context
+		this.emitter = NS.TreeEmitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
+		this.eventListener = NS.EventListener.new(null, this.events, this);
 
 		this.self.instances[this.id = this.self.lastID++] = this;
-
-		// View émet des évènements via le DOM de son élément
-		this.on('*', function(name, args){
-			if( this.element ){
-				var event = new CustomEvent('view:' + name, {
-					bubbles: true,
-					cancelable: true,
-					detail: {
-						view: this,
-						name: name,
-						args: args
-					}
-				});
-				this.element.dispatchEvent(event);
-			}
-		});
-
 		this.emit('create');
+
 		this.setModel(model);
 
 		this.classList = this.createClassList();
 		this.attributes = this.createAttributes();
 	},
 
-	destroy: function(){
+	destructor: function(){
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
@@ -94,7 +80,13 @@ NS.View = {
 	},
 
 	createClassList: function(){
-		return NS.StringList.new(this.className);
+		var classList = NS.StringList.new(this.className);
+		var self = this;
+		classList.update = function(){
+			self.setAttribute('class', this.toString());
+		};
+
+		return classList;
 	},
 
 	createAttributes: function(){
@@ -104,6 +96,60 @@ NS.View = {
 		attr[this.self.IDAttribute] = this.id;
 
 		return attr;
+	},
+
+	createElement: function(){
+		var element = new Element(this.tagName);
+
+		element.setProperties(this.attributes);
+		if( this.innerHTML ){
+			if( this.model ){
+				this.innerHTML = this.innerHTML.parse(this.model.properties);
+			}
+			element.innerHTML = this.innerHTML;
+		}
+
+		return element;
+	},
+
+	setElement: function(element){
+		this.element = element;
+		this.eventListener.emitter = element;
+		this.eventListener.listen();
+		this.emit('setElement', element);
+		return this;
+	},
+
+	unsetElement: function(){
+		if( this.element ){
+			this.removeElement();
+
+			this.emit('unsetElement', this.element);
+			this.eventListener.stopListening();
+			this.eventListener.emitter = null;
+			this.element = null;
+		}
+		return this;
+	},
+
+	insertElement: function(into, before, test){
+		if( !this.element ) this.render();
+		into.insertBefore(this.element, before);
+		this.bubble('insertElement');
+		return this;
+	},
+
+	removeElement: function(){
+		if( this.element ){
+			this.emit('removeElement', this.element);
+			this.element.dispose();
+		}
+		return this;
+	},
+
+	render: function(){
+		this.setElement(this.createElement());
+		return this;
 	},
 
 	cast: function(item){
@@ -128,87 +174,43 @@ NS.View = {
 		}
 	},
 
-	createElement: function(){
-		var element = new Element(this.tagName);
-
-		element.setProperties(this.attributes);
-		if( this.innerHTML ){
-			if( this.model ){
-				this.innerHTML = this.innerHTML.parse(this.model.properties);
-			}
-			element.innerHTML = this.innerHTML;
-		}
-
-		return element;
-	},
-
-	setElement: function(element){
-		this.element = element;
-		this.emit('setElement', element);
-		return this;
-	},
-
-	unsetElement: function(){
-		if( this.element ){
-			this.removeElement();
-			this.emit('unsetElement', this.element);
-			this.element.destroy();
-			delete this.element;
-		}
-		return this;
-	},
-
-	insertElement: function(into, before, test){
-		if( !this.element ) this.render();
-		into.insertBefore(this.element, before);
-		this.emit('insertElement');
-		return this;
-	},
-
-	removeElement: function(){
-		if( this.element ){
-			this.emit('removeElement', this.element);
-			this.element.dispose();
-		}
-		return this;
-	},
-
-	render: function(){
-		this.setElement(this.createElement());
-		return this;
-	},
-
 	hasClass: function(name){
-		return this.element && this.element.hasClass(name);
+		return this.classList.contains(name);
 	},
 
-	addClass: function(name, e){
-		if( this.element && !this.hasClass(name) ){
-			this.element.addClass(name);
-			this.emit('addclass:' + name, e);
+	addClass: function(name){
+		if( !this.classList.contains(name) ){
+			this.classList.add(name);
 		}
 	},
 
-	removeClass: function(name, e){
-		if( this.element && this.hasClass(name) ){
-			this.element.removeClass(name);
-			this.emit('removeclass:' + name, e);
+	removeClass: function(name){
+		if( this.classList.contains(name) ){
+			this.classList.remove(name);
 		}
 	},
 
-	toggleClass: function(name, e){
+	toggleClass: function(name){
+		this.classList.toggle(name);
+	},
+
+	hasAttribute: function(name){
+		return name in this.attributes;
+	},
+
+	setAttribute: function(name, value){
+		this.attributes[name] = value;
 		if( this.element ){
-			if( this.hasClass(name) ){
-				this.removeClass(name, e);
-			}
-			else{
-				this.addClass(name, e);
-			}
+			this.element.setProperty(name, value);
 		}
-	}
-};
+	},
 
-Object.append(NS.View, NS.EmitterInterface);
+	getAttribute: function(name){
+		return this.attributes[name];
+	}
+}.extend(
+	NS.TreeEmitterInterface
+);
 
 NS.View.self =  {
 	instances: {},

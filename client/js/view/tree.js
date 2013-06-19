@@ -1,5 +1,4 @@
-var exports = {
-	//className: 'node',
+NS.TreeView = NS.View.extend(NS.childrenInterface, NS.treeTraversal, NS.treeFinder, {
 	modelEvents: {
 		'adopt': function(child, index){
 			this.insertBefore(child, this.children[index]);
@@ -54,12 +53,4 @@ var exports = {
 		this.element.appendChild(childrenElement);
 		this.insertChildren(childrenElement);
 	}
-};
-
-exports = NS.View.extend(
-	NS.treeStructure,
-	NS.treeTraversal,
-	NS.treeFinder,
-	exports
-);
-NS.TreeView = exports;
+});

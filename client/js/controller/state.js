@@ -1,8 +1,7 @@
-NS.StateTreeController = NS.TreeController.extend({
-	name: 'StateTreeController',
+NS.StateController = NS.Controller.extend({
 	constructor: function(view, state, multiple){
 		this.name = state;
-		this.listeners = {};
+		this.viewListeners = {};
 		this.state = state;
 		this.multiple = multiple;
 
@@ -11,15 +10,17 @@ NS.StateTreeController = NS.TreeController.extend({
 			this.name += 's';
 		}
 
-		//this.events['view:addclass:' + state] = this.onaddstate;
-		//this.events['view:removeclass:' + state] = this.onremovestate;
-		//this.events['view:leave'] = this.events['view:removeclass:' + state];
-
-		this.listeners['view:destroy'] = function(e){
+		this.viewListeners[NS.viewstate.states[state][0]] = function(view, e){
+			this.add(view, e);
+		};
+		this.viewListeners[NS.viewstate.states[state][1]] = function(e){
+			this.remove(this.current, e);
+		};
+		this.viewListeners['destroy'] = function(e){
 			this.onremovestate(e.target);
 		};
 
-		NS.TreeController.constructor.call(this, view);
+		NS.Controller.constructor.call(this, view);
 	},
 
 	onaddstate: function(view, e){
@@ -101,13 +102,4 @@ NS.StateTreeController = NS.TreeController.extend({
 			delete this.current;
 		}
 	}
-});
-
-Object.eachPair(NS.viewstate.states, function(name){
-	NS.Controller.providers[name] = function(view){
-		return NS.StateTreeController.new(view, name);
-	};
-	NS.Controller.providers[name + 's'] = function(view){
-		return NS.StateTreeController.new(view, name, true);
-	};
 });

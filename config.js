@@ -41,7 +41,8 @@ config.js = [].concat(
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "stringList", "memory",// "path",
 		"emitter", "listener",
-		"treeTraversal", "treeFinder", "treeStructure",
+		"treeEmitter",
+		"treeTraversal", "treeFinder", "childrenInterface",
 	].prefix('lib/'),
 	[
 		"browser", "os",
@@ -63,7 +64,7 @@ config.js = [].concat(
 		"adapt", "openstate",
 
 		"tree", "state", "tool", "indent", "visibles", "multiselection",
-		"mouseoverlight", "mousedownfocus", "mousedownselect", "mousedownmultiselect",
+		"mousedownfocus", "mousedownselect", "mousedownmultiselect",
 		"nav", "selected"
 	].prefix('controller/'),
 	/*[

@@ -12,9 +12,36 @@ var model = NS.TreeModel.new(treeData);
 var view = NS.NodeTreeView.new(model);
 var rootView = NS.RootTreeView.new();
 
+rootView.eventListener.handlers = {
+	'mouseover': function(e){
+		view = this.cast(e);
+
+		// when light only occur on the name element
+		if( view && view != this && (!this.hasClass('compact') || e.target ==
+			view.getDom('name')) ){
+			this.emit('light', view, e);
+		}
+		else{
+			this.emit('unlight', e);
+		}
+	},
+
+	'mouseout': function(e){
+		// when the mouse go very fast out of the view
+		// mouseover event is'nt fired on other view but we can check mouseout relatedTarget
+		view = this.cast(e.relatedTarget);
+		if( !view ){
+			this.emit('unlight', e);
+		}
+	}
+};
+
+NS.StateController.new(rootView, 'lighted');
+NS.IndentController.new(rootView);
+
 //NS.IndentTreeController.new(rootView);
 //NS.ToolTreeController.new(rootView);
-NS.MouseoverlightTreeController.new(rootView);
+//NS.MouseoverlightTreeController.new(rootView);
 //NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
 //NS.MousedownfocusTreeController.new(rootView);
 //NS.NavController.new(rootView);

@@ -1,120 +1,90 @@
 /*
 
-les controlleurs seront créé globalement
-ils s'appliqueront à toutes les vues indiquant qu'elles utilisent ce contrôleur
-leurs events (dom) sont ajouter à window
-un rootControlleur recoit les events de tous les controlleurs
+mouseover se produit sur le document
+je veux lighted la vue sur laquelle se produit le mouseover
+
+pour cela je récup la vue sur laquelle mouseover se produit
+-> ok c bon avec data-view sur les éléments
+
+je dois maintenant savoir si la vue implémente ce controlleur particulier
+-> ok avec un test sur view.controller.mouseoverlight == true
+
+je dois maintenant stocker lighted pour ce groupe de vue spécifique
+-> view.root.lighted = true;
+
+view doit disposer d'une propriété root sauf que view.root à maintenir c chiant
+sinon le controlleur doit être spécifique à cette vue
+
+je crée un groupe de controlleur pour cette vue
+ensuite je définit des controlleurs pour ce groupe
+
+RootController = new RootController(rootView);
+RootController.add('lighted');
+RootController.add('mouseoverLighted');
+
+la propriété root c'est ownerDocument pour element
+
+en fait ce qu'on fait là c'est une espèce de controllerDocument.createController();
+dailleurs pour view et model pareil
+sauf que on a plusieurs document dans un même document
 
 */
 
 NS.Controller = {
-	providers: {},
-	requires: null,
-
-	// view listeners
-	listeners: {
-		'setElement': function(element){
-			this.setElement(element);
-		},
-
-		'unsetElement': function(){
-			this.unsetElement();
-		},
-
-		'destroy': function(){
-			this.destroy();
-		}
-	},
+	viewListeners: null,
 	modelListeners: null,
-	// view element event listeners
-	events: null,
 
 	constructor: function(view){
-		// listen to view events
-		this.listener = NS.Listener.new(null, this.listeners, this);
-		// listen to view element events
-		this.eventListener = NS.EventListener.new(null, this.events, this);
-
-		this.emitter = NS.Emitter.new(this);
+		this.viewListener = NS.Listener.new(null, this.viewListeners, this);
+		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
+		this.emitter = NS.TreeEmitter.new(this);
 
 		this.setView(view);
-		this.resolveDependency();
 	},
 
-	resolveDependency: function(){
-		var requires = this.requires;
-		if( requires ){
-			if( typeof requires == 'string' ) requires = [requires];
-			requires.forEach(this.provide, this);
-		}
-	},
-
-	provide: function(name){
-		var provider, instance;
-
-		if( name in this.view.controllers ){
-			instance = this.view.controllers[name];
-		}
-		else{
-			provider = this.providers[name];
-
-			if( provider ){
-				instance = provider.call(this, this.view);
-			}
-			else{
-				if( !(name in NS) ) console.error(name);
-				instance = NS[name].new(this.view);
-			}
-		}
-
-		this[name] = instance;
+	destructor: function(){
+		this.unsetView();
+		this.unsetModel();
 	},
 
 	setView: function(view){
-		if( view ){
+		if( view && view != this.view ){
 			this.view = view;
+			this.viewListener.emitter = view;
+			this.viewListener.listen();
 
-			if( !this.view.controllers ) this.view.controllers = {};
-			this.view.controllers[this.name] = this;
-
-			this.listener.emitter = view;
-			this.listener.listen();
-
-			if( this.view.element ) this.setElement(this.view.element);
+			if( this.view.model ) this.setModel(this.view.model);
 		}
 	},
 
 	unsetView: function(){
 		if( this.view ){
-			if( this.view.element && this.element == this.view.element ) this.unsetElement();
+			if( this.view.model && this.model == this.view.model ) this.unsetModel();
 
-			this.listener.stopListening();
-			this.listener.emitter = null;
-
-			delete this.view.controllers[this.name];
-
-			delete this.view;
+			this.viewListener.stopListening();
+			this.viewListener.emitter = null;
+			this.view = null;
 		}
 	},
 
-	setElement: function(element){
-		if( element ){
-			this.eventListener.emitter = element;
-			this.eventListener.listen();
+	setModel: function(model){
+		if( model && model != this.model ){
+			this.model = model;
+			this.modelListener.emitter = model;
+			this.modelListener.listen();
 		}
 	},
 
-	unsetElement: function(){
+	unsetModel: function(){
 		if( this.element ){
 			this.eventListener.stopListening();
 			this.eventListener.emitter = null;
+			this.element = null;
 		}
-	},
-
-	destroy: function(){
-		this.unsetView();
-		this.unsetElement();
 	}
-};
-
-Object.append(NS.Controller, NS.EmitterInterface);
+}.extend(
+	NS.childrenInterface,
+	NS.treeTraversal, // besoin pour treeEmitterInterface
+	//NS.treeFinder,
+	NS.TreeEmitterInterface
+);

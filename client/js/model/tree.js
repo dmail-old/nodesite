@@ -1,4 +1,4 @@
-NS.TreeModel = NS.Model.extend(NS.treeStructure, NS.treeTraversal, NS.treeFinder, {
+NS.TreeModel = NS.Model.extend(NS.childrenInterface, NS.treeTraversal, NS.treeFinder, {
 	name: '',
 
 	constructor: function(){
