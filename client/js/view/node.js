@@ -1,7 +1,8 @@
-var exports = {
+NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
 	tagName: 'li',
+	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
-	modelEvents: {
+	listeners: {
 		'change:name': function(name){
 			this.updateName(name);
 		}
@@ -16,17 +17,17 @@ var exports = {
 		return this.children.length === 0;
 	},
 
-	getClassName: function(){
-		var className = NS.TreeView.getClassName.call(this);
+	createClassList: function(){
+		var classList = NS.TreeView.createClassList.call(this);
 
 		if( this.isEmpty() ){
-			className.add('empty');
-			className.add('expanded');
+			classList.add('empty');
+			classList.add('expanded');
 		}
 
-		//if( this.has('class') ) className+= ' ' + this.get('class');
+		//if( this.has('class') ) classList.add(this.get('class'));
 
-		return className;
+		return classList;
 	},
 
 	scrollTo: function(dom){
@@ -34,10 +35,6 @@ var exports = {
 		if( element ) element.keepIntoView();
 
 		return this;
-	},
-
-	getHTML: function(){
-		return '<div><ins class="tool"></ins><span class="name">' + this.model.name + '</span></div>';
 	},
 
 	getDom: function(what){
@@ -62,7 +59,4 @@ var exports = {
 	updateName: function(name){
 		this.getDom('name').innerHTML = name;
 	}
-};
-
-exports = NS.TreeView.extend(NS.viewstate, exports);
-NS.NodeTreeView = exports;
+});
