@@ -149,12 +149,15 @@ exports.implement({
 	}
 });
 
-Object.eachPair(NS.EventEmitter, function(key, value, object){
-	if( key != 'constructor' && key != '$events' ){
-		Object.appendPair.call(window, key, value, object);
-		Object.appendPair.call(document, key, value, object);
-		Object.appendPair.call(exports.prototype, key, value, object);
-	}
+[window, document, Element.prototype].forEach(function(object){
+	Object.append(object, NS.EmitterInterface);
+
+	Object.defineProperty(object, 'emitter', {
+		get: function(){
+			if( this.$emitter ) return this.$emitter;
+			else return this.$emitter = NS.EventEmitter.new(this);
+		}
+	});
 });
 
 NS.browser.Element = window.Element;

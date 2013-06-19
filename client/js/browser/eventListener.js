@@ -1,4 +1,4 @@
-var exports = {
+NS.EventListener = NS.Listener.extend({
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},
@@ -20,7 +20,4 @@ var exports = {
 			}
 		}
 	}
-};
-
-exports = NS.Listener.extend(exports);
-NS.EventListener = exports;
+});

@@ -11,6 +11,20 @@ semble que model qui émet des event pour view qui émet des events pour control
 
 ----
 
+Emitter/Listener
+
+emitter et listener avec un seul argument: NS.Event ?
+
+emit('name', 'coucou');
+on('name', function(e){
+	e.type == 'name';
+	e.args = ['coucou']; -> array of arguments passed to emit
+	e.currentTarget == this -> always true
+	e.target == this -> only if event is in bubble or capture phase
+});
+
+----
+
 Instantiation
 
 au maximum on va essayer de faire:
@@ -27,4 +41,77 @@ var object = {};
 object.supplement(Component);
 
 cette notation étant préférable pour les interface
+
+Ce que fait le navigateur:
+
+NodeList, pour simuler le truc:
+
+NodeList = {
+	constructor: function(node){
+		this.node = node;
+	},
+
+	item: function(index){
+		var node = this.node.firstChild;
+
+		while(index--){
+			node = node.nextSibling;
+		}
+
+		return node;
+	},
+
+	getLength: function(){
+		var child = this.node.firstChild;
+
+		while(child){
+			this[length] = child;
+			child = child.nextSibling;
+			length++;
+		}
+
+		return length;
+	}
+};
+
+Object.defineProperty(NodeList, 'length', NodeList.getLength());
+
+Element.prototype {
+	// principalement:
+	children:
+	firstElementChild: // et autres
+	innerHTML:
+	classList:
+};
+
+Node.prototype = {
+	// properties:
+	previousSibling:
+	firstChild:
+	lastChild:
+	nextSibling:
+	childNodes:
+	parentNode:
+	attributes:
+	// and others
+
+	//methods
+	removeChild:
+	insertBefore:
+	hasChildNodes:
+	cloneNode:
+	contains:
+	compareDocumentPosition:
+	appendChild:
+	replaceChild:
+	removeChild:
+	// and others
+}
+
+EventTargetPrototype = {
+	// methods
+	addEventListener:
+	removeEventListener:
+	dispatchEvent:
+}
 

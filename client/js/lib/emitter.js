@@ -9,32 +9,28 @@ require: Object
 */
 
 NS.Emitter = {
-	$events: {},
+	$listeners: {},
 
 	constructor: function(bind){
 		this.bind = bind;
 	},
 
-	getEvents: function(){
-		if( this.hasOwnProperty('$events') ){
-			return this.$events;
+	getListeners: function(){
+		if( this.hasOwnProperty('$listeners') ){
+			return this.$listeners;
 		}
 		else{
-			return this.$events = Object.clone(this.$events);
+			return this.$listeners = Object.clone(this.$listeners);
 		}
-	},
-
-	deleteEvents: function(){
-		delete this.$events;
 	},
 
 	listeners: function(name, create){
-		var events = this.getEvents(), listeners = false;
+		var listeners = this.getListeners(), list = false;
 
-		if( name in events ) listeners = events[name];
-		else if( create ) listeners = events[name] = [];
+		if( name in listeners ) list = listeners[name];
+		else if( create ) list = listeners[name] = [];
 
-		return listeners;
+		return list;
 	},
 
 	addListener: function(name, listener){
@@ -50,22 +46,22 @@ NS.Emitter = {
 	},
 
 	removeListener: function(name, listener){
-		var events = this.getEvents(), list, retain, i, j, item;
+		var listeners = this.getListeners(), list, retain, i, j, item;
 
 		if( name == null ){
-			for(name in events) this.removeListener(name, listener);
+			for(name in listeners) this.removeListener(name, listener);
 			if( !listener ) this.deleteEvents();
 		}
 		else if( listener == null ){
-			if( name in events ){
-				[].concat(events[name]).forEach(function(listener){
+			if( name in listeners ){
+				[].concat(listeners[name]).forEach(function(listener){
 					this.removeListener(name, listener);
 				}, this);
 			}
 		}
-		else if( name in events ){
-			list = events[name];
-			retain = events[name] = [];
+		else if( name in listeners ){
+			list = listeners[name];
+			retain = listeners[name] = [];
 			i = 0;
 			j = list.length;
 
@@ -79,7 +75,7 @@ NS.Emitter = {
 					retain.push(item);
 				}
 			}
-			if( retain.length === 0 ) delete events[name];
+			if( retain.length === 0 ) delete listeners[name];
 		}
 
 		return this;
@@ -134,13 +130,14 @@ NS.Emitter = {
 	},
 
 	/*
+
 	implement multiple event writing style:
 	on({focus: function(){}, blur: function(){}});
 	off('focus blur');
 	emit('focus blur', true);
 	*/
 	eachEvent: function(method, args){
-		var name = args[0];
+		var name = args[0], key;
 
 		if( !name ){
 			method.call(this);
@@ -158,9 +155,9 @@ NS.Emitter = {
 		}
 		else if( typeof name == 'object' ){
 			args = toArray(args, 1);
-			Object.eachPair(name, function(key, value){
-				method.apply(this, [key, value].concat(args));
-			}, this);
+			for(key in name){
+				method.apply(this, [key, name[key]].concat(args));
+			}
 		}
 
 		return this;
@@ -182,3 +179,71 @@ NS.Emitter = {
 		return this.eachEvent(this.callListeners, arguments);
 	}
 };
+
+NS.EmitterInterface = {
+	on: function(){
+		return this.emitter.on.apply(this.emitter, arguments);
+	},
+
+	off: function(){
+		return this.emitter.off.apply(this.emitter, arguments);
+	},
+
+	once: function(){
+		return this.emitter.once.apply(this.emitter, arguments);
+	},
+
+	emit: function(){
+		return this.emitter.emit.apply(this.emitter, arguments);
+	}
+};
+
+/*
+
+for later use
+
+NS.Event = {
+	constructor: function(name, target){
+		this.name = name;
+		this.target = target;
+	},
+
+	stopPropagation: function(){
+		this.propagationStopped = true;
+	},
+
+	preventDefault: function(){
+		this.defaultPrevented = true;
+	},
+
+	emit: function(target){
+		this.currentTarget = target;
+		target.emit(this);
+		return !Boolean(this.propagationStopped);
+	}
+};
+
+// emit event from this to the ancestors
+NS.Emitter.bubble = function(name, args){
+	var target = this, event = NS.Event.new(name, target);
+
+	while( event.emit(target) ){
+		target = target.parentNode;
+		if( !target ) break;
+	}
+
+	return event;
+};
+
+// emit event from this to the descendant
+NS.Emitter.capture = function(name, args){
+	var target = this, event = NS.Event.new(name, target);
+
+	target.crossNode(function(target){
+		if( !target.emit(event) ) return true;
+	}, null, true);
+
+	return event;
+};
+
+*/

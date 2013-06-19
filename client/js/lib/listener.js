@@ -1,4 +1,4 @@
-var exports = {
+NS.Listener = {
 	handlers: null,
 
 	constructor: function(emitter, handlers, listener){
@@ -65,6 +65,3 @@ var exports = {
 		return this;
 	}
 };
-
-exports = Object.prototype.extend(exports);
-NS.Listener = exports;

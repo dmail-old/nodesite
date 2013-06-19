@@ -1,14 +1,3 @@
-/* global */
-
-NS.TreeEmitter = NS.Emitter.extend({
-	applyListeners: function(name, args){
-		if( this.bind.parentNode ){
-			this.bind.parentNode.treeEmitter.applyListeners(name, args);
-		}
-		return this.getPrototype().getPrototype().applyListeners.call(this, name, args);
-	}
-});
-
 var exports = {
 	//className: 'node',
 	modelEvents: {
@@ -22,12 +11,6 @@ var exports = {
 	},
 
 	constructor: function(){
-		// this.treeEmitter = NS.new('emitter.tree', this);
-		// this.on('*', function(name, args){
-		// 	args = [this].concat(args);
-		// 	this.treeEmitter.applyListeners(name, args);
-		// });
-
 		this.initChildren();
 		NS.View.constructor.apply(this, arguments);
 	},
