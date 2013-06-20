@@ -37,7 +37,6 @@ NS.Controller = {
 	constructor: function(view){
 		this.viewListener = NS.Listener.new(null, this.viewListeners, this);
 		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
-		this.emitter = NS.TreeEmitter.new(this);
 
 		this.setView(view);
 	},
@@ -82,9 +81,4 @@ NS.Controller = {
 			this.element = null;
 		}
 	}
-}.extend(
-	NS.childrenInterface,
-	NS.treeTraversal, // besoin pour treeEmitterInterface
-	//NS.treeFinder,
-	NS.TreeEmitterInterface
-);
+};

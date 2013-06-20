@@ -1,4 +1,4 @@
-NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
+NS.NodeTreeView = NS.TreeView.extend({
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
@@ -20,8 +20,7 @@ NS.NodeTreeView = NS.TreeView.extend(NS.viewstate, {
 
 	createElement: function(){
 		if( this.isEmpty() ){
-			this.classList.add('empty');
-			this.classList.add('expanded');
+			this.classList.add('empty', 'expanded');
 		}
 
 		return NS.TreeView.createElement.call(this);

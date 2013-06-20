@@ -1,23 +1,27 @@
-var exports = {
-	name: 'SelectedTreeController',
-	events: {
-		'view:addclass:selected': function(view, e){
-			if( !e || e.type != 'mousemove' ) this.setSelected(view);
+NS.SelectedController = NS.Controller.extend({
+	name: 'SelectedController',
+	viewListeners: {
+		'select': function(e){
+			var event = e.args[0];
+
+			if( !event || event.type != 'mousemove' ) this.setSelected(e.target);
 		},
 
-		'view:removeclass:selected': function(view){
-			if( this.selected == view ) this.unsetSelected();
+		'unselect': function(e){
+			if( this.selected == e.target ) this.unsetSelected();
 		},
 
-		'view:addclass:actived': function(view, e){
-			view.removeClass('actived', e);
-			this.setSelected(view);
-			this.view.close(e);
+		'active': function(e){
+			var event = e.args[0];
+
+			e.target.unactive(event);
+			this.setSelected(e.target);
+			this.view.close(event);
 		},
 
-		'blur': function(view, e){
+		'blur': function(e){
 			if( this.prevSelected != this.selected ){
-				this.view.emit('change', this.selected, e);
+				this.view.bubble('change', this.selected, e);
 				this.prevSelected = this.selected;
 			}
 		}
@@ -37,7 +41,4 @@ var exports = {
 			this.view.setValue('');
 		}
 	}
-};
-
-exports = NS.TreeController.extend(exports);
-NS.SelectedTreeController = exports;
+});

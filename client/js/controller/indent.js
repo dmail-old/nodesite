@@ -1,3 +1,5 @@
+// indent subview of the controlled view
+
 NS.IndentController = NS.Controller.extend({
 	viewListeners: {
 		'insertElement': function(e){
@@ -12,11 +14,13 @@ NS.IndentController = NS.Controller.extend({
 	padding: 18,
 
 	getLevel: function(view){
-		var level = 0, parent = view.parentNode;
-		while(parent){
+		var level = -2;
+
+		while(view){
 			level++;
-			parent = parent.parentNode;
+			view = view.parentNode;
 		}
-		return level - 1;
+
+		return level;
 	}
 });

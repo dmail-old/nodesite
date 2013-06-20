@@ -1,6 +1,6 @@
 /* global */
 
-var exports = {
+NS.RootTreeView = NS.TreeView.extend({
 	tagName: 'ul',
 	className: 'root',
 	attributes: {
@@ -14,7 +14,4 @@ var exports = {
 	getChildrenElement: function(){
 		return this.element;
 	},
-};
-
-exports = NS.TreeView.extend(exports);
-NS.RootTreeView = exports;
+});

@@ -1,34 +1,37 @@
-var exports = {
-	name: 'VisiblesTreeController',
-	events: {
-		'view:insertElement': function(view){
-			this.changeVisibility(view, false);
+NS.VisiblesController = NS.Controller.extend({
+	viewListeners: {
+		'insertElement': function(e){
+			this.changeVisibility(e.target, false);
 		},
 
-		'view:removeElement': function(view){
-			this.changeVisibility(view, true);
+		'removeElement': function(e){
+			this.changeVisibility(e.target, true);
 		},
 
-		'view:hide': function(view){
-			this.changeVisibility(view, true);
+		'hide': function(e){
+			this.changeVisibility(e.target, true);
 		},
 
-		'view:show': function(view){
-			this.changeVisibility(view, false);
+		'show': function(e){
+			this.changeVisibility(e.target, false);
 		},
 
-		'view:expand': function(view){
-			if( this.visibles.contains(view) ) this.updateVisibles();
+		'expand': function(e){
+			if( this.visibles.contains(e.target) ) this.updateVisibles();
 		},
 
-		'view:contract': function(view){
-			if( this.visibles.contains(view) ) this.updateVisibles();
+		'contract': function(e){
+			if( this.visibles.contains(e.target) ) this.updateVisibles();
 		}
 	},
 	visibles: [],
 
 	isVisible: function(view){
 		return !view.hasClass('hidden');
+	},
+
+	isExpanded: function(view){
+		return view.hasClass('expanded');
 	},
 
 	/*
@@ -42,7 +45,7 @@ var exports = {
 		// view is a root direct child
 		if( !parent.parentNode ) return true;
 		// view has an expanded and visible parent
-		if( parent.hasClass('expanded') && this.visibles.contains(parent) ) return true;
+		if( this.isExpanded(parent) && this.visibles.contains(parent) ) return true;
 
 		return false;
 	},
@@ -80,13 +83,11 @@ var exports = {
 
 		this.view.crossNode(function(view){
 			// view is hidden, ignore all descendant
-			if( view.hasClass('hidden') ) return 'continue';
+			if( !this.isVisible(view) ) return 'continue';
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
-			if( !view.hasClass('expanded') ) return 'continue';
+			if( !this.isExpanded(view) ) return 'continue';
 		}, this);
-
-		// this.view.visibles = this.visibles;
 
 		return this;
 	},
@@ -94,7 +95,5 @@ var exports = {
 	get: function(){
 		return this.visibles;
 	}
-};
+});
 
-exports = NS.TreeController.extend(exports);
-NS.VisiblesTreeController = exports;

@@ -12,36 +12,59 @@ var model = NS.TreeModel.new(treeData);
 var view = NS.NodeTreeView.new(model);
 var rootView = NS.RootTreeView.new();
 
-rootView.eventListener.handlers = {
-	'mouseover': function(e){
-		view = this.cast(e);
+rootView.eventListener.handlers = {};
 
-		// when light only occur on the name element
-		if( view && view != this && (!this.hasClass('compact') || e.target ==
-			view.getDom('name')) ){
-			this.emit('light', view, e);
-		}
-		else{
-			this.emit('unlight', e);
-		}
-	},
+NS.IndentController.new(rootView);
 
-	'mouseout': function(e){
-		// when the mouse go very fast out of the view
-		// mouseover event is'nt fired on other view but we can check mouseout relatedTarget
-		view = this.cast(e.relatedTarget);
-		if( !view ){
-			this.emit('unlight', e);
-		}
+NS.StateController.new(rootView, 'lighted');
+rootView.eventListener.handlers.mouseover = function(e){
+	var view = this.cast(e) || this;
+
+	// when light only occur on the name element
+	if( view != this && this.hasClass('compact') && e.target != view.getDom('name') ){
+		view = this;
+	}
+
+	view.light(e);
+};
+rootView.eventListener.handlers.mouseout = function(e){
+	// when the mouse go very fast out of the view mouseover event is'nt fired
+	// on other view (event the parent view)
+	// but we can check the relatedTarget to see if the mouse go out of all view
+	var view = this.cast(e.relatedTarget);
+
+	if( !view ){
+		this.unlight(e);
 	}
 };
 
-NS.StateController.new(rootView, 'lighted');
-NS.IndentController.new(rootView);
+NS.StateController.new(rootView, 'focused');
 
-//NS.IndentTreeController.new(rootView);
-//NS.ToolTreeController.new(rootView);
-//NS.MouseoverlightTreeController.new(rootView);
+NS.StateController.new(rootView, 'selected');
+rootView.classList.add('unselectable');
+
+NS.ExpandController.new(rootView);
+
+rootView.eventListener.handlers.mousedown = function(e){
+	var view = this.cast(e) || this;
+
+	view.focus(e);
+	view.select(e);
+	if( e.target.hasClass('tool') ){
+		view.toggleState('expanded', e);
+	}
+};
+rootView.eventListener.handlers.dblclick = function(e){
+	var view = this.cast(e) || this;
+
+	// le futur menu contextuel doit prendre le pas sur ce dblclick
+	if( !e.target.hasClass('tool') ){
+		view.toggleState('expanded', e);
+	}
+};
+
+var visibles = NS.VisiblesController.new(rootView);
+
 //NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
 //NS.MousedownfocusTreeController.new(rootView);
 //NS.NavController.new(rootView);

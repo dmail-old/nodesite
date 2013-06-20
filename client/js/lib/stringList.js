@@ -28,25 +28,40 @@ var exports = NS.StringList =  NS.List.extend(exports, {
 
 	update: Function.NULL,
 
-	add: function(token){
-		if( !this.contains(token) ){
-			this.push(token);
-			this.update();
+	add: function(){
+		var tokens = arguments, i = 0, j = tokens.length, token, updated = false;
+
+		for(;i<j;i++){
+			token = String(tokens[i]);
+			if( !this.contains(token) ){
+				this.push(token);
+				updated = true;
+			}
 		}
+		if( updated ) this.update();
+
 		return this;
 	},
 
-	remove: function(token){
-		var index = this.indexOf(token);
-		if( index !== -1 ){
-			this.splice(index, 1);
-			this.update();
+	remove: function(){
+		var tokens = arguments, i = 0, j = tokens.length, token, updated = false, index;
+
+		for(;i<j;i++){
+			token = String(tokens[i]);
+			index = this.indexOf(token);
+			if( index !== -1 ){
+				this.splice(index, 1);
+				updated = true;
+			}
 		}
+		if( updated ) this.update();
+
 		return this;
 	},
 
-	toggle: function(token){
-		return this.contains(token) ? this.remove(token) : this.add(token);
+	toggle: function(token, force){
+		if( typeof force === undefined ) force = !this.contains(token);
+		return force ? this.add(token) : this.remove(token);
 	},
 
 	toString: function(){

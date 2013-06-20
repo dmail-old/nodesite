@@ -1,6 +1,6 @@
-var exports = {
+NS.NavController = NS.Controller.extend({
 	name: 'NavController',
-	requires: ['focused', 'VisiblesTreeController'],
+	require: ['focused', 'VisiblesController'],
 	events: {
 		'keydown': function(e){
 			// need String(e.key) because the 0-9 key return numbers
@@ -15,7 +15,7 @@ var exports = {
 
 			if( method ){
 				this.currentView = this.focused.get();
-				this.list = this.VisiblesTreeController.get();
+				this.list = this.VisiblesController.get();
 				this.target = null;
 
 				// no currentView -> naviguate to home view
@@ -40,7 +40,7 @@ var exports = {
 
 		'left': function(e){
 			if( this.currentView.hasClass('expanded') ){
-				this.currentView.removeClass('expanded', e);
+				this.currentView.contract(e);
 			}
 			else{
 				this.target = this.currentView.parentNode;
@@ -49,7 +49,7 @@ var exports = {
 
 		'right': function(e){
 			if( !this.currentView.hasClass('expanded') ){
-				this.currentView.addClass('expanded', e);
+				this.currentView.expand(e);
 			}
 			else{
 				this.target = this.currentView.getChild(this.isEnabled);
@@ -118,7 +118,7 @@ var exports = {
 				}
 			}
 
-			this.focused.add(view, e);
+			view.focus(e);
 
 			return true;
 		}
@@ -145,7 +145,4 @@ var exports = {
 
 		return count;
 	}
-};
-
-exports = NS.Controller.extend(exports);
-NS.NavController = exports;
+});

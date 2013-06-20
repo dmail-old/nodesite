@@ -10,11 +10,16 @@ NS.StateController = NS.Controller.extend({
 			this.name += 's';
 		}
 
-		this.viewListeners[NS.viewstate.states[state][0]] = function(view, e){
-			this.add(view, e);
+		this.viewListeners[NS.viewstate.states[state][0]] = function(e){
+			if( e.target == this ){
+				this.remove(this.current, e.args[0]);
+			}
+			else{
+				this.add(e.target, e.args[0]);
+			}
 		};
 		this.viewListeners[NS.viewstate.states[state][1]] = function(e){
-			this.remove(this.current, e);
+			this.remove(this.current, e.args[0]);
 		};
 		this.viewListeners['destroy'] = function(e){
 			this.onremovestate(e.target);
@@ -34,8 +39,6 @@ NS.StateController = NS.Controller.extend({
 			this.remove(prev, e);
 			this.set(view);
 		}
-
-		this.emit('add:state:' + this.state, e);
 	},
 
 	onremovestate: function(view, e){
@@ -47,20 +50,18 @@ NS.StateController = NS.Controller.extend({
 				this.unset(view);
 			}
 		}
-
-		this.emit('remove:state:' + this.state, e);
 	},
 
 	add: function(view, e){
 		if( view && !view.hasClass(this.state) ){
-			view.addClass(this.state, e);
+			view.addClass(this.state);
 			this.onaddstate(view, e);
 		}
 	},
 
 	remove: function(view, e){
 		if( view && view.hasClass(this.state) ){
-			view.removeClass(this.state, e);
+			view.removeClass(this.state);
 			this.onremovestate(view, e);
 		}
 	},

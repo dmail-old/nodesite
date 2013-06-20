@@ -13,14 +13,19 @@ faire la largeur de son contenu
 
 */
 
-NS.MousedownfocusTreeController = NS.TreeController.extend({
-	name: 'MousedownfocusTreeController',
-	requires: 'focused',
-	events: {
-		'mousedown': function(view, e){
-			if( view && view != this.view ){
-				this.focused.add(view, e);
-			}
+NS.ExpandController = NS.Controller.extend({
+	name: 'expand',
+	viewListeners: {
+		'expand': function(e){
+			var view = e.target;
+
+			view.addClass('expanded');
+			if( !view.getChildrenElement() ) view.renderChildren();
+		},
+
+		'contract': function(e){
+			e.target.removeClass('expanded');
 		}
 	}
 });
+

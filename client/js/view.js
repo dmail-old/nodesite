@@ -55,11 +55,13 @@ NS.View = {
 	attributes: null,
 
 	constructor: function(model){
+		this.children = [];
+
 		this.emitter = NS.TreeEmitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
 		this.eventListener = NS.EventListener.new(null, this.events, this);
 
-		this.self.instances[this.id = this.self.lastID++] = this;
+		this.self.addInstance(this);
 		this.emit('create');
 
 		this.setModel(model);
@@ -72,7 +74,7 @@ NS.View = {
 		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
-		delete this.self.instances[this.id];
+		this.self.removeInstance(this);
 	},
 
 	toString: function(){
@@ -209,13 +211,45 @@ NS.View = {
 		return this.attributes[name];
 	}
 }.extend(
-	NS.TreeEmitterInterface
+	NS.TreeEmitterInterface,
+	NS.childrenInterface,
+	NS.treeTraversal,
+	NS.treeFinder,
+	{
+
+		oninsertchild: function(child){
+			var childrenElement = this.getChildrenElement();
+			// si cette vue possède l'élément qui contient les enfants on insère l'enfant
+			if( childrenElement ){
+				child.insertElement(childrenElement, child.getNextSibling(), true);
+			}
+		},
+
+		onremovechild: function(child){
+			child.removeElement();
+		},
+
+		getChildrenElement: Function.IMPLEMENT
+	}
 );
 
 NS.View.self =  {
 	instances: {},
 	IDAttribute: 'data-view',
 	lastID: 0,
+
+	nextId: function(){
+		return this.lastID++;
+	},
+
+	addInstance: function(view){
+		view.id = this.nextId();
+		this.instances[view.id] = view;
+	},
+
+	removeInstance: function(view){
+		delete this.instances[view.id];
+	},
 
 	isElementView: function(element){
 		return element.hasAttribute && element.hasAttribute(this.IDAttribute);
@@ -263,17 +297,20 @@ NS.viewstate = {
 		focused: ['focus', 'blur'],
 		hidden: ['hide', 'show'],
 		actived: ['active', 'unactive']
+	},
+	toggleState: function(state, e){
+		return this.bubble(this.states[state][Number(this.hasClass(state))], e);
 	}
 };
 
 Object.eachPair(NS.viewstate.states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
-	NS.viewstate[on] = function(e){
-		return this.addClass(state, e);
+	NS.viewstate[on] = function(){
+		return this.bubble(on, arguments);
 	};
 	NS.viewstate[off] = function(e){
-		return this.removeClass(state, e);
+		return this.bubble(off, arguments);
 	};
 });
 
