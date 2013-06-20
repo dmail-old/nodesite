@@ -144,14 +144,18 @@ NS.Emitter = {
 		}
 		else if( typeof name == 'string' ){
 			if( RegExp.SPACE.test(name) ){
-				name.split(RegExp.SPACE).forEach(function(name){
-					args[0] = name;
-					method.apply(this, args);
-				}, this);
+				args[0] = name.split(RegExp.SPACE);
+				return this.eachEvent(method, args);
 			}
 			else{
 				method.apply(this, args);
 			}
+		}
+		else if( name instanceof Array ){
+			name.forEach(function(name){
+				args[0] = name;
+				method.apply(this, args);
+			}, this);
 		}
 		else if( typeof name == 'object' ){
 			args = toArray(args, 1);

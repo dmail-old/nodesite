@@ -2,19 +2,20 @@ NS.TreeModel = NS.Model.extend(NS.childrenInterface, NS.treeTraversal, NS.treeFi
 	name: '',
 
 	constructor: function(){
+		this.initChildren();
+
 		NS.Model.constructor.apply(this, arguments);
 
-		this.initChildren(this.get('children'));
 		if( this.has('name') ) this.name = this.get('name');
 	},
 
 	oninsertchild: function(child){
 		this.emit('adopt', child, this.children.indexOf(child));
-		child.crossAll(function(node){ node.emit('enter'); }, null, true);
+		//child.crossNode(function(node){ node.emit('enter'); }, null, true);
 	},
 
 	onremovechild: function(child){
-		child.crossAll(function(node){ node.emit('leave'); }, null, true);
+		//child.crossNode(function(node){ node.emit('leave'); }, null, true);
 		child.emit('emancipate');
 	},
 

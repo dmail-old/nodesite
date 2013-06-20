@@ -8,69 +8,35 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-var model = NS.TreeModel.new(treeData);
-var view = NS.NodeTreeView.new(model);
-var rootView = NS.RootTreeView.new();
 
-rootView.eventListener.handlers = {};
+var documentModel = NS.DocumentModel.new();
+var model = documentModel.createNode(treeData);
 
-NS.IndentController.new(rootView);
+var documentView = NS.DocumentView.new();
+var view = documentView.createNode(model);
 
-NS.StateController.new(rootView, 'lighted');
-rootView.eventListener.handlers.mouseover = function(e){
-	var view = this.cast(e) || this;
+documentView.appendChild(view);
+documentView.insertElement(document.body);
 
-	// when light only occur on the name element
-	if( view != this && this.hasClass('compact') && e.target != view.getDom('name') ){
-		view = this;
-	}
-
-	view.light(e);
-};
-rootView.eventListener.handlers.mouseout = function(e){
-	// when the mouse go very fast out of the view mouseover event is'nt fired
-	// on other view (event the parent view)
-	// but we can check the relatedTarget to see if the mouse go out of all view
-	var view = this.cast(e.relatedTarget);
-
-	if( !view ){
-		this.unlight(e);
-	}
-};
-
-NS.StateController.new(rootView, 'focused');
-
-NS.StateController.new(rootView, 'selected');
-rootView.classList.add('unselectable');
-
-NS.ExpandController.new(rootView);
-
-rootView.eventListener.handlers.mousedown = function(e){
-	var view = this.cast(e) || this;
-
-	view.focus(e);
-	view.select(e);
-	if( e.target.hasClass('tool') ){
-		view.toggleState('expanded', e);
-	}
-};
-rootView.eventListener.handlers.dblclick = function(e){
-	var view = this.cast(e) || this;
-
-	// le futur menu contextuel doit prendre le pas sur ce dblclick
-	if( !e.target.hasClass('tool') ){
-		view.toggleState('expanded', e);
-	}
-};
-
-var visibles = NS.VisiblesController.new(rootView);
-
-//NS.MousedownmultiselectTreeController.new(rootView); // 'mousedownselect');
-//NS.MousedownfocusTreeController.new(rootView);
+documentView.control('indent');
+documentView.control('visibles');
+documentView.control('lighted');
+documentView.control('focused');
+documentView.control('expanded');
+documentView.control('selection');
+documentView.addClass('unselectable');
 //NS.NavController.new(rootView);
 
-rootView.insertElement(document.body);
-rootView.appendChild(view);
+documentView.events = [
+	// lighted
+	'mouseover', 'mouseout',
+	// selected, focused, expanded
+	'mousedown',
+	// selected
+	'click',
+	// expanded, nav
+	'keydown'
+];
 
 view.expand();
 view.children[0].expand();

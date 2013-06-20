@@ -1,50 +1,22 @@
 ----
 
-MVC lent
-
-semble que model qui émet des event pour view qui émet des events pour controlleur soit plutot lent
-
-- voir comment on peut s'inspirer de angular
-- ptet que les vues n'auront plus d'events
-	->  seuls les models en ont et les vues se content de les répercuter sur le controlleur
-	-> ou alors le controlleur écoute directement le modèle
-
-----
-
 Emitter/Listener
 
-emitter et listener avec un seul argument: NS.Event ?
+On va surement supprimer EventEmiter
+On va juste garder EventListener qu'on va modifier pour que toggle
+appelle addeventListener et removeEventListener
+et doérénavant tous les events qu'on veut ajouter ou enlever on doit
+passer par eventListener
 
-emit('name', 'coucou');
-on('name', function(e){
-	e.type == 'name';
-	e.args = ['coucou']; -> array of arguments passed to emit
-	e.currentTarget == this -> always true
-	e.target == this -> only if event is in bubble or capture phase
+genre NS.EventListener.new(window, {
+	'mousedown': function(){
+
+	}
 });
 
 ----
 
-Instantiation
-
-au maximum on va essayer de faire:
-
-var object = {
-	constructor: function(){
-		this.componnent = NS.Component.new(this);
-	}
-};
-
-plutot que
-
-var object = {};
-object.supplement(Component);
-
-cette notation étant préférable pour les interface
-
-Ce que fait le navigateur:
-
-NodeList, pour simuler le truc:
+Tree Structure
 
 NodeList = {
 	constructor: function(node){

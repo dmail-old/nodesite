@@ -1,5 +1,4 @@
-NS.NavController = NS.Controller.extend({
-	name: 'NavController',
+NS.Controller.define('nav', {
 	require: ['focused', 'VisiblesController'],
 	events: {
 		'keydown': function(e){
@@ -34,7 +33,6 @@ NS.NavController = NS.Controller.extend({
 	loop: false,
 	keys: {
 		'enter': function(e){
-			// activate currentView, do nothing if no view is active
 			this.currentView.active(e);
 		},
 
@@ -110,8 +108,8 @@ NS.NavController = NS.Controller.extend({
 	go: function(view, e){
 		if( view ){
 			if( e && !e.control ){
-				if( this.view.controllers['SelectionTreeController'] ){
-					this.view.controllers['SelectionTreeController'].add(view, e);
+				if( this.view.controllers['SelectionController'] ){
+					this.view.controllers['SelectionController'].add(view, e);
 				}
 				else if( this.view.controllers['MultiSelectionController'] ){
 					this.view.controllers['MultiSelectionController'].add(view, e);

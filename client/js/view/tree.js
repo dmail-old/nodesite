@@ -9,13 +9,6 @@ NS.TreeView = NS.View.extend(NS.viewstate, {
 		},
 	},
 
-	setModel: function(model){
-		NS.View.setModel.call(this, model);
-		if( model && model.children ){
-			this.setChildren(model.children);
-		}
-	},
-
 	setChildrenElement: function(element){
 		this.childrenElement = element;
 	},

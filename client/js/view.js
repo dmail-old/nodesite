@@ -48,18 +48,20 @@ NS.View = {
 		'destroy': 'destructor'
 	},
 	// element events listeners
-	events: null,
+	//events: null,
 	tagName: 'div',
 	className: '',
 	innerHTML: '',
 	attributes: null,
 
 	constructor: function(model){
+		this.controllers = {};
+
 		this.children = [];
 
 		this.emitter = NS.TreeEmitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
-		this.eventListener = NS.EventListener.new(null, this.events, this);
+		//this.eventListener = NS.EventListener.new(null, this.events, this);
 
 		this.self.addInstance(this);
 		this.emit('create');
@@ -116,8 +118,8 @@ NS.View = {
 
 	setElement: function(element){
 		this.element = element;
-		this.eventListener.emitter = element;
-		this.eventListener.listen();
+		//this.eventListener.emitter = element;
+		//this.eventListener.listen();
 		this.emit('setElement', element);
 		return this;
 	},
@@ -127,8 +129,8 @@ NS.View = {
 			this.removeElement();
 
 			this.emit('unsetElement', this.element);
-			this.eventListener.stopListening();
-			this.eventListener.emitter = null;
+			//this.eventListener.stopListening();
+			//this.eventListener.emitter = null;
 			this.element = null;
 		}
 		return this;
@@ -181,15 +183,11 @@ NS.View = {
 	},
 
 	addClass: function(name){
-		if( !this.classList.contains(name) ){
-			this.classList.add(name);
-		}
+		this.classList.add(name);
 	},
 
 	removeClass: function(name){
-		if( this.classList.contains(name) ){
-			this.classList.remove(name);
-		}
+		this.classList.remove(name);
 	},
 
 	toggleClass: function(name){
@@ -216,8 +214,9 @@ NS.View = {
 	NS.treeTraversal,
 	NS.treeFinder,
 	{
-
 		oninsertchild: function(child){
+			if( NS.DocumentView.isPrototypeOf(this) ) console.log('inserting', child);
+
 			var childrenElement = this.getChildrenElement();
 			// si cette vue possède l'élément qui contient les enfants on insère l'enfant
 			if( childrenElement ){
@@ -299,7 +298,7 @@ NS.viewstate = {
 		actived: ['active', 'unactive']
 	},
 	toggleState: function(state, e){
-		return this.bubble(this.states[state][Number(this.hasClass(state))], e);
+		return this.bubble(this.states[state][Number(this.hasClass(state))], [e]);
 	}
 };
 

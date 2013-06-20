@@ -51,6 +51,7 @@ NS.Controller = {
 			this.view = view;
 			this.viewListener.emitter = view;
 			this.viewListener.listen();
+			this.view.controllers[this.name] = this;
 
 			if( this.view.model ) this.setModel(this.view.model);
 		}
@@ -60,6 +61,7 @@ NS.Controller = {
 		if( this.view ){
 			if( this.view.model && this.model == this.view.model ) this.unsetModel();
 
+			delete this.view.controllers[this.name];
 			this.viewListener.stopListening();
 			this.viewListener.emitter = null;
 			this.view = null;
@@ -81,4 +83,25 @@ NS.Controller = {
 			this.element = null;
 		}
 	}
+};
+
+NS.Controller.controllers = {};
+NS.Controller.define = function(name, controller){
+	controller.name = name;
+	this.controllers[name] = this.extend(controller);
+};
+
+NS.View.control = function(name){
+	var controller = NS.Controller.controllers[name];
+
+	if( !controller ) console.log(name);
+
+	name = this;
+	return controller.new.apply(controller, arguments);
+};
+
+NS.View.relax = function(name){
+	var controller = this.controllers[name];
+
+	if( controller ) controller.destroy();
 };

@@ -1,4 +1,4 @@
-NS.Adapt = NS.Controller.extend({
+NS.Controller.define('adapt', {
 	modelListeners: {
 		'change:name': 'adapt'
 	},

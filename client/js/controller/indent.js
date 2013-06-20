@@ -1,6 +1,6 @@
 // indent subview of the controlled view
 
-NS.IndentController = NS.Controller.extend({
+NS.Controller.define('indent', {
 	viewListeners: {
 		'insertElement': function(e){
 			var view = e.target;

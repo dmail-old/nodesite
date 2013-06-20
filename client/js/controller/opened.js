@@ -1,6 +1,5 @@
-var exports = {
-	name: 'OpenstateController',
-	events: {
+NS.Controller.define('opened', {
+	viewListeners: {
 		'mousedown': function(e){
 			this.view.toggle(e);
 		},
@@ -22,7 +21,4 @@ var exports = {
 			}
 		}
 	}
-};
-
-exports = NS.Controller.extend(exports);
-NS.OpenstateController = exports;
+});

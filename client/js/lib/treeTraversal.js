@@ -146,42 +146,6 @@ Object.defineProperties(childrenInterface, {
 
 			return last;
 		}
-	},
-
-	'firstChild': {
-		'get': function(){
-			return this.children.length === 0 ? null : this.children[0];
-		}
-	},
-
-	'lastChild': {
-		'get': function(){
-			return this.children.length === 0 ? null : this.children[this.children.length - 1];
-		}
-	},
-
-	'nextSibling': {
-		'get': function(){
-			var node = this, parent = node.parentNode, next = null;
-
-			if( parent ){
-				next = parent.children[parent.children.indexOf(node) + 1] || null;
-			}
-
-			return next;
-		}
-	},
-
-	'previousSibling': {
-		'get': function(){
-			var node = this, parent = node.parentNode, prev = null;
-
-			if( parent ){
-				prev = parent.children[parent.children.indexOf(node) - 1] || null;
-			}
-
-			return prev;
-		}
 	}
 });
 

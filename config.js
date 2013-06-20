@@ -55,16 +55,17 @@ config.js = [].concat(
 		"model", "view", "controller", "fx"
 	],
 	[
-		"tree", "node"
+		"tree", "node", "document",
 	].prefix('model/'),
 	[
-		"tree", "node", "root", "selector"
+		"tree", "node", "document", "selector"
 	].prefix('view/'),
 	[
 		// tree controllers
-		"state", "expand", "indent", "visibles", "multiselection", "nav",
+		"expanded", "lighted", "focused", "selected", "selection",
+		"indent", "visibles", "nav",
 		// selector controllers
-		"adapt", "openstate", "selected"
+		"opened", "adapt"
 	].prefix('controller/'),
 	/*[
 		"tree", "tree.list", "tree.sort", "tree.swap",

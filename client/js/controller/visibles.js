@@ -1,4 +1,4 @@
-NS.VisiblesController = NS.Controller.extend({
+NS.Controller.define('visibles', {
 	viewListeners: {
 		'insertElement': function(e){
 			this.changeVisibility(e.target, false);
@@ -96,4 +96,3 @@ NS.VisiblesController = NS.Controller.extend({
 		return this.visibles;
 	}
 });
-

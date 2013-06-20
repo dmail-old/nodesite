@@ -1,14 +1,19 @@
-NS.SelectedController = NS.Controller.extend({
-	name: 'SelectedController',
+NS.Controller.define('selected', {
+	selected: null,
+	previousSelected: null,
+	state: 'selected',
 	viewListeners: {
 		'select': function(e){
-			var event = e.args[0];
+			var view = e.target;
+			e = e.args[0];
 
-			if( !event || event.type != 'mousemove' ) this.setSelected(e.target);
+			this.setSelected(view, e);
 		},
 
 		'unselect': function(e){
-			if( this.selected == e.target ) this.unsetSelected();
+			var view = e.target;
+
+			if( this.selected == view ) this.unsetSelected(view, e);
 		},
 
 		'active': function(e){
@@ -20,24 +25,29 @@ NS.SelectedController = NS.Controller.extend({
 		},
 
 		'blur': function(e){
-			if( this.prevSelected != this.selected ){
+			if( this.previousSelected != this.selected ){
 				this.view.bubble('change', this.selected, e);
-				this.prevSelected = this.selected;
+				this.previousSelected = this.selected;
 			}
+		},
+
+		'destroy': function(e){
+
 		}
 	},
-	prevSelected: null,
 
-	setSelected: function(view){
+	setSelected: function(view, e){
+		if( e && e.type == 'mousemove' ) return;
+
 		if( this.selected != view ){
 			this.selected = view;
 			this.view.setValue(view.model.get('name'));
 		}
 	},
 
-	unsetSelected: function(view){
+	unsetSelected: function(view, e){
 		if( this.selected ){
-			delete this.selected;
+			this.selected = null;
 			this.view.setValue('');
 		}
 	}
