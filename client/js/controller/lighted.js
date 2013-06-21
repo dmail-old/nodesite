@@ -1,3 +1,20 @@
+/*
+
+-- add lighted class if ---
+
+a view emit 'light'
+a view emit 'mouseover'
+
+and store the view in this.lighted
+
+-- remove lighted class if ---
+
+a view emit 'mouseout' and no controlled view is the relatedTarget
+an other view get lighted class
+a view emit 'unlight'
+
+*/
+
 NS.Controller.define('lighted', {
 	lighted: null,
 	state: 'lighted',
@@ -10,7 +27,7 @@ NS.Controller.define('lighted', {
 				view = this;
 			}
 
-			view.light(e);
+			view.bubble('light', e.args);
 		},
 
 		'mouseout': function(e){
@@ -19,17 +36,20 @@ NS.Controller.define('lighted', {
 			// but we can check the relatedTarget to see if the mouse go out of all view
 			var view = NS.View.cast(e.relatedTarget);
 
-			if( !view ){
+			// need the contains method in childrenInterface
+			if( !this.view.contains(view) ){
 				this.unsetLighted(this.lighted, e);
 			}
 		},
 
 		'light': function(e){
-			if( e.target == this ){
-				this.unsetLighted(this.lighted, e.args[0]);
+			var view = e.target;
+
+			if( view.light ){
+				this.setLighted(view, e.args[0]);
 			}
 			else{
-				this.setLighted(e.target, e.args[0]);
+				this.unsetLighted(this.lighted, e.args[0]);
 			}
 		},
 

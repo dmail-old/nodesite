@@ -1,1 +1,3 @@
-NS.OptionTreeModel = NS.TreeModel.extend();
+NS.modelDocument.define('option', {
+
+});

@@ -1,4 +1,4 @@
-NS.NodeTreeView = NS.TreeView.extend({
+NS.viewDocument.define('node', NS.viewstate, {
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
@@ -23,7 +23,7 @@ NS.NodeTreeView = NS.TreeView.extend({
 			this.classList.add('empty', 'expanded');
 		}
 
-		return NS.TreeView.createElement.call(this);
+		return NS.View.createElement.call(this);
 	},
 
 	scrollTo: function(dom){

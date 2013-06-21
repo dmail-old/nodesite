@@ -9,39 +9,35 @@ var treeData = {
 	]
 };
 
-var documentModel = NS.DocumentModel.new();
-var model = documentModel.createNode(treeData);
+var nodeModel = NS.modelDocument.createNode('node', treeData);
+var rootView = NS.viewDocument.createNode('root');
+var nodeView = NS.viewDocument.createNode('node', nodeModel);
 
-var documentView = NS.DocumentView.new();
-var view = documentView.createNode(model);
+rootView.eventListener.handlers = {
+	// lighted
+	'mouseover': 'bubbleEvent', 'mouseout': 'bubbleEvent',
+	// selected, focused, expanded
+	'mousedown': 'bubbleEvent', 'click': 'bubbleEvent',
+	// expanded, nav
+	'keydown': 'bubbleEvent'
+};
 
-documentView.appendChild(view);
-documentView.insertElement(document.body);
+rootView.insertElement(document.body);
+rootView.appendChild(nodeView);
 
-documentView.control('indent');
-documentView.control('visibles');
-documentView.control('lighted');
-documentView.control('focused');
-documentView.control('expanded');
-documentView.control('selection');
-documentView.addClass('unselectable');
+rootView.control('indent');
+rootView.control('visibles');
+rootView.control('lighted');
+rootView.control('focused');
+rootView.control('expanded');
+rootView.control('selection');
+rootView.addClass('unselectable');
 //NS.NavController.new(rootView);
 
-documentView.events = [
-	// lighted
-	'mouseover', 'mouseout',
-	// selected, focused, expanded
-	'mousedown',
-	// selected
-	'click',
-	// expanded, nav
-	'keydown'
-];
-
-view.expand();
-view.children[0].expand();
-view.children[2].expand();
-view.children[3].expand();
+nodeView.expand();
+nodeView.children[0].expand();
+nodeView.children[2].expand();
+nodeView.children[3].expand();
 
 /*
 var FileModel = new NS({

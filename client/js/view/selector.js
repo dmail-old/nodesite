@@ -1,21 +1,17 @@
-/* global */
-
-var exports = {
+NS.viewDocument.define('selector', {
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
-	width: 'auto',
-	height: 'auto',
-	minwidth: 200,
-	minheight: 24,
 	size: 4,
-
-	getChildElement: function(){
-		return this.getDom('root');
+	attributes: {
+		width: 'auto',
+		height: 'auto',
+		minwidth: 200,
+		minheight: 24
 	},
 
-	getChildItem: function(){
-		return NS.OptionTreeView;
+	getChildrenElement: function(){
+		return this.getDom('root');
 	},
 
 	getHTML: function(){
@@ -114,7 +110,4 @@ var exports = {
 			minWidth: this.minwidth
 		});
 	}
-};
-
-exports = NS.TreeView.extend(exports);
-NS.Selector = exports;
+});

@@ -42,7 +42,7 @@ config.js = [].concat(
 		"random", "stringList", "memory",// "path",
 		"emitter", "listener",
 		"treeEmitter",
-		"treeTraversal", "treeFinder", "childrenInterface",
+		"treeTraversal", "treeFinder", "childrenInterface", "document"
 	].prefix('lib/'),
 	[
 		"browser", "os",
@@ -55,10 +55,10 @@ config.js = [].concat(
 		"model", "view", "controller", "fx"
 	],
 	[
-		"tree", "node", "document",
+		"node"
 	].prefix('model/'),
 	[
-		"tree", "node", "document", "selector"
+		"node", "root", "selector"
 	].prefix('view/'),
 	[
 		// tree controllers

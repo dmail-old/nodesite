@@ -1,11 +1,15 @@
 NS.Model = {
 	validationError: null,
 	cid: 0,
+	name: '',
 
 	constructor: function(properties){
-		this.emitter = NS.Emitter.new(this);
+		this.emitter = NS.TreeEmitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
+
+		if( this.has('name') ) this.name = this.get('name');
+		if( this.has('children') ) this.children = this.get('children');
 	},
 
 	parse: function(properties){
@@ -70,9 +74,42 @@ NS.Model = {
 
 		return this;
 	}
-};
+}.supplement(
+	NS.TreeEmitterInterface,
+	NS.childrenInterface,
+	NS.treeTraversal,
+	NS.treeFinder,
+	{
+		oninsertchild: function(child){
+			this.bubble('adopt', child, this.children.indexOf(child));
+			//child.crossNode(function(node){ node.emit('enter'); }, null, true);
+		},
 
-Object.append(NS.Model, NS.EmitterInterface);
+		onremovechild: function(child){
+			//child.crossNode(function(node){ node.emit('leave'); }, null, true);
+			child.bubble('emancipate');
+		},
+
+		adopt: function(child, index){
+
+			if( typeof index == 'number' ){
+				this.insertBefore(child, this.children[index < 0 ? 0 : index]);
+			}
+			else{
+				this.appendChild(child);
+			}
+
+			return this;
+		},
+
+		emancipate: function(){
+			if( this.parentNode ) this.parentNode.removeChild(this);
+			return this;
+		}
+	}
+);
+
+NS.modelDocument = NS.Document.new(NS.Model);
 
 /*
 

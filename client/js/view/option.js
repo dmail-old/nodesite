@@ -1,4 +1,3 @@
-var exports = {};
+NS.viewDocument.define('option', {
 
-exports = NS.TreeView.extend(exports);
-NS.OptionTreeView = exports;
+});

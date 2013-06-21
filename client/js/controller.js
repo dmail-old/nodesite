@@ -1,35 +1,3 @@
-/*
-
-mouseover se produit sur le document
-je veux lighted la vue sur laquelle se produit le mouseover
-
-pour cela je récup la vue sur laquelle mouseover se produit
--> ok c bon avec data-view sur les éléments
-
-je dois maintenant savoir si la vue implémente ce controlleur particulier
--> ok avec un test sur view.controller.mouseoverlight == true
-
-je dois maintenant stocker lighted pour ce groupe de vue spécifique
--> view.root.lighted = true;
-
-view doit disposer d'une propriété root sauf que view.root à maintenir c chiant
-sinon le controlleur doit être spécifique à cette vue
-
-je crée un groupe de controlleur pour cette vue
-ensuite je définit des controlleurs pour ce groupe
-
-RootController = new RootController(rootView);
-RootController.add('lighted');
-RootController.add('mouseoverLighted');
-
-la propriété root c'est ownerDocument pour element
-
-en fait ce qu'on fait là c'est une espèce de controllerDocument.createController();
-dailleurs pour view et model pareil
-sauf que on a plusieurs document dans un même document
-
-*/
-
 NS.Controller = {
 	viewListeners: null,
 	modelListeners: null,

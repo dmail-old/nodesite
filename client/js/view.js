@@ -45,10 +45,17 @@ les events de tous les controlleurs
 NS.View = {
 	// model listeners
 	listeners: {
-		'destroy': 'destructor'
+		'destroy': 'destructor',
+		'adopt': function(child, index){
+			this.insertBefore(child, this.children[index]);
+		},
+
+		'emancipate': function(){
+			this.parentNode.removeChild(this);
+		}
 	},
 	// element events listeners
-	//events: null,
+	events: null,
 	tagName: 'div',
 	className: '',
 	innerHTML: '',
@@ -57,14 +64,12 @@ NS.View = {
 	constructor: function(model){
 		this.controllers = {};
 
-		this.children = [];
-
 		this.emitter = NS.TreeEmitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
-		//this.eventListener = NS.EventListener.new(null, this.events, this);
+		this.eventListener = NS.EventListener.new(null, this.events, this);
 
 		this.self.addInstance(this);
-		this.emit('create');
+		this.bubble('create');
 
 		this.setModel(model);
 
@@ -73,7 +78,7 @@ NS.View = {
 	},
 
 	destructor: function(){
-		this.emit('destroy');
+		this.bubble('destroy');
 		this.unsetElement();
 		this.unsetModel();
 		this.self.removeInstance(this);
@@ -84,8 +89,8 @@ NS.View = {
 	},
 
 	createClassList: function(){
-		var classList = NS.StringList.new(this.className);
-		var self = this;
+		var classList = NS.StringList.new(this.className), self = this;
+
 		classList.update = function(){
 			self.setAttribute('class', this.toString());
 		};
@@ -118,9 +123,9 @@ NS.View = {
 
 	setElement: function(element){
 		this.element = element;
-		//this.eventListener.emitter = element;
-		//this.eventListener.listen();
-		this.emit('setElement', element);
+		this.eventListener.emitter = element;
+		this.eventListener.listen();
+		this.bubble('setElement', element);
 		return this;
 	},
 
@@ -128,15 +133,15 @@ NS.View = {
 		if( this.element ){
 			this.removeElement();
 
-			this.emit('unsetElement', this.element);
-			//this.eventListener.stopListening();
-			//this.eventListener.emitter = null;
+			this.bubble('unsetElement', this.element);
+			this.eventListener.stopListening();
+			this.eventListener.emitter = null;
 			this.element = null;
 		}
 		return this;
 	},
 
-	insertElement: function(into, before, test){
+	insertElement: function(into, before){
 		if( !this.element ) this.render();
 		into.insertBefore(this.element, before);
 		this.bubble('insertElement');
@@ -145,10 +150,15 @@ NS.View = {
 
 	removeElement: function(){
 		if( this.element ){
-			this.emit('removeElement', this.element);
+			this.bubble('removeElement', this.element);
 			this.element.dispose();
 		}
 		return this;
+	},
+
+	bubbleEvent: function(e){
+		var view = this.cast(e) || this;
+		return view.bubble(e.type, arguments);
 	},
 
 	render: function(){
@@ -168,6 +178,11 @@ NS.View = {
 			this.model = model;
 			this.listener.emitter = model;
 			this.listener.listen();
+
+			this.children = this.model.children;
+			if( this.ownerDocument ){
+				this.ownerDocument.createChildren(this);
+			}
 		}
 	},
 
@@ -208,19 +223,20 @@ NS.View = {
 	getAttribute: function(name){
 		return this.attributes[name];
 	}
-}.extend(
+}.supplement(
 	NS.TreeEmitterInterface,
 	NS.childrenInterface,
 	NS.treeTraversal,
 	NS.treeFinder,
 	{
 		oninsertchild: function(child){
-			if( NS.DocumentView.isPrototypeOf(this) ) console.log('inserting', child);
-
 			var childrenElement = this.getChildrenElement();
 			// si cette vue possède l'élément qui contient les enfants on insère l'enfant
 			if( childrenElement ){
-				child.insertElement(childrenElement, child.getNextSibling(), true);
+				child.insertElement(
+					childrenElement,
+					child.nextSibling ? child.nextSibling.element : null
+				);
 			}
 		},
 
@@ -228,7 +244,26 @@ NS.View = {
 			child.removeElement();
 		},
 
-		getChildrenElement: Function.IMPLEMENT
+		getChildrenElement: Function.IMPLEMENT,
+
+		setChildrenElement: function(element){
+			this.childrenElement = element;
+		},
+
+		createChildrenElement: function(element){
+			return new Element('ul');
+		},
+
+		insertChildren: function(element){
+			this.setChildrenElement(element);
+			this.children.forEach(function(child){ child.insertElement(element); });
+		},
+
+		renderChildren: function(){
+			var childrenElement = this.createChildrenElement();
+			this.element.appendChild(childrenElement);
+			this.insertChildren(childrenElement);
+		}
 	}
 );
 
@@ -277,6 +312,8 @@ NS.View.self =  {
 		return view;
 	}
 };
+
+NS.viewDocument = NS.Document.new(NS.View);
 
 Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };

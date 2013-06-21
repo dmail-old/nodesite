@@ -1,1 +1,3 @@
-NS.NodeTreeModel = NS.TreeModel.extend();
+NS.modelDocument.define('node', {
+
+});
