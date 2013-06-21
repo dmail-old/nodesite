@@ -53,75 +53,34 @@ exports.implement({
 	removeClass: function(name){
 		this.classList.remove(name);
 		return this;
-	}
-});
+	},
 
-exports.implement({
 	toggleClass: function(name, force){
 		if( force === undefined ) force = !this.hasClass(name);
 		return force ? this.addClass(name) : this.removeClass(name);
-	},
-
-	destroy: function(){
-		this.clean().getElements('*').call('clean');
-		this.dispose();
-		return null;
-	},
-
-	getSelected: function(){
-		//this.selectedIndex; // Safari 3.2.1
-		return Array.prototype.filter.call(this.options, function(option){ return option.selected; });
 	}
 });
 
-exports.inserters = {
-	before: function(context, element){
-		var parent = element.parentNode;
-		if (parent) parent.insertBefore(context, element);
-	},
-
-	after: function(context, element){
-		var parent = element.parentNode;
-		if (parent) parent.insertBefore(context, element.nextSibling);
-	},
-
-	bottom: function(context, element){
-		element.appendChild(context);
-	},
-
-	top: function(context, element){
-		element.insertBefore(context, element.firstChild);
-	}
-};
-exports.inserters.inside = exports.inserters.bottom;
-
 exports.implement({
 	adopt: function(){
-		var parent = this, fragment, elements = toArray(arguments), length = elements.length;
-		if( length > 1 ) parent = fragment = document.createDocumentFragment();
+		var parent = this, fragment, i = 0, j = arguments.length, element;
 
-		for(var i = 0; i < length; i++){
-			var element = elements[i];
-			if (element) parent.appendChild(element);
+		if( j > 1 ){
+			parent = fragment = document.createDocumentFragment();
+		}
+		for(;i<j;i++){
+			element = arguments[i];
+			if( element ) parent.appendChild(element);
+		}
+		if( fragment ){
+			this.appendChild(fragment);
 		}
 
-		if( fragment ) this.appendChild(fragment);
-
 		return this;
 	},
 
-	appendText: function(text, where){
-		return this.grab(this.getDocument().newTextNode(text), where);
-	},
-
-	grab: function(el, where){
-		Element.inserters[where || 'bottom'](el, this);
-		return this;
-	},
-
-	inject: function(el, where){
-		Element.inserters[where || 'bottom'](this, el);
-		return this;
+	appendText: function(text){
+		return this.appendChild(this.getDocument().newTextNode(text));
 	},
 
 	replaces: function(el){
@@ -129,8 +88,8 @@ exports.implement({
 		return this;
 	},
 
-	wraps: function(el, where){
-		return this.replaces(el).grab(el, where);
+	wraps: function(el){
+		return this.replaces(el).appendChild(el);
 	},
 
 	dispose: function(){
@@ -146,18 +105,13 @@ exports.implement({
 		if( this.removeListeners ) this.removeListeners();
 		if( this.clearAttributes ) this.clearAttributes();
 		return this;
+	},
+
+	destroy: function(){
+		this.clean().getElements('*').call('clean');
+		this.dispose();
+		return null;
 	}
-});
-
-[window, document, Element.prototype].forEach(function(object){
-	Object.append(object, NS.EmitterInterface);
-
-	Object.defineProperty(object, 'emitter', {
-		get: function(){
-			if( this.$emitter ) return this.$emitter;
-			else return this.$emitter = NS.EventEmitter.new(this);
-		}
-	});
 });
 
 NS.browser.Element = window.Element;

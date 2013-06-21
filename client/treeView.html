@@ -1,5 +1,5 @@
 <script>
-var treeData = {
+var data = {
 	name: 'collection',
 	children: [
 		{name: 'node0', children: [{name: 'node0.1'}]},
@@ -8,19 +8,9 @@ var treeData = {
 		{name: 'node3', children: [{name: 'node3.1'}]}
 	]
 };
-
-var nodeModel = NS.modelDocument.createNode('node', treeData);
+var nodeModel = NS.modelDocument.createNode('node', data);
 var rootView = NS.viewDocument.createNode('root');
 var nodeView = NS.viewDocument.createNode('node', nodeModel);
-
-rootView.eventListener.handlers = {
-	// lighted
-	'mouseover': 'bubbleEvent', 'mouseout': 'bubbleEvent',
-	// selected, focused, expanded
-	'mousedown': 'bubbleEvent', 'click': 'bubbleEvent',
-	// expanded, nav
-	'keydown': 'bubbleEvent'
-};
 
 rootView.insertElement(document.body);
 rootView.appendChild(nodeView);
@@ -32,7 +22,7 @@ rootView.control('focused');
 rootView.control('expanded');
 rootView.control('selection');
 rootView.addClass('unselectable');
-//NS.NavController.new(rootView);
+//rootView.control('nav');
 
 nodeView.expand();
 nodeView.children[0].expand();
@@ -40,41 +30,78 @@ nodeView.children[2].expand();
 nodeView.children[3].expand();
 
 /*
-var FileModel = new NS({
-	Extends: NodeModel,
-	Implements: Model.serverMethods,
+Comment faire en sorte que ce qui suit soit
+- Réutilisable
+	-> selection utilisé par treeview et aussi par selectView
+	(qui en fait est un treeview wrapper dans un conteneur)
+- Modulable
+	-> sélection on écoute mousedown mais focus écoute aussi mousedown
+	idéalement faudrais séparer le code qui n'a pas vraiment de point commun
 
-	initialize: function(path){
-		NodeModel.prototype.initialize.call(this, typeof path == 'string' ? {path: path} : path);
-	},
+Sachant que le code appartiendras dorénavant aux vues
 
-	sync: function(action, callback){
-		server.applyAction('filesystem/' + action.name, action.args, callback);
-	},
+*/
 
-	rename: function(name, callback){
-		return this.send('rename', [this.get('path'), name], callback);
+// lighted
+rootView.eventListener.set('mouseover', function(e){
+	var view = this.cast(e.target);
+
+	// when light only occur on the name element
+	if( view != this && this.hasClass('compact') && e.target != view.getDom('name') ){
+		view = this;
+	}
+
+	if( view == this ){
+		this.emit('unlightAll', e);
+	}
+	else{
+		view.light(e);
+	}
+});
+rootView.eventListener.set('mouseout', function(e){
+	// when the mouse go very fast out of the view mouseover event is'nt fired
+	// on other view (event the parent view)
+	// but we can check the relatedTarget to see if the mouse go out of all view
+	var view = this.cast(e.relatedTarget);
+
+	if( !this.contains(view) ){
+		this.emit('unlightAll', e);
 	}
 });
 
-NodeView.prototype.modelEvents.send = function(){
-	// on n'affiche pas le loader tout de suite, uniquement si l'action dure
-	this.timeout = setTimeout(function(){
-		delete this.timeout;
-		this.getDom('li').addItem('loading');
-	}.bind(this), 300);
-};
 
-NodeView.prototype.modelEvents.complete = function(){
-	if( this.timeout ){
-		clearTimeout(this.timeout);
-		delete this.timeout;
+// selected, focused, expanded
+rootView.eventListener.set('mousedown', function(e){
+	var view = this.cast(e);
+
+	view.focus(e);
+	view.select(e);
+	if( e.target.hasClass('tool') ){
+		view.toggleState('expanded');
 	}
-	this.getDom('li').removeItem('loading');
-};
+});
+rootView.eventListener.set('click', function(e){
+	var view = this.cast(e);
 
-var imgA = new FileModel('/img/aa');
-imgA.rename('bb');
+	if( view == this ){
+		this.emit('unselectAll', e);
+	}
+	else{
+		view.bubble('collapse', e);
+	}
+});
+rootView.eventListener.set('dblclick', function(e){
+	// le futur menu contextuel doit prendre le pas sur ce dblclick
+	if( !e.target.hasClass('tool') ){
+		this.cast(e).toggleState('expanded');
+	}
+});
 
-*/
+// expanded, nav, selection
+rootView.eventListener.set('keydown', function(e){
+	if( e.control && e.key == 'a' ){
+		this.emit('selectAll', e);
+	}
+});
+
 </script>

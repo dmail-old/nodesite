@@ -19,41 +19,15 @@ NS.Controller.define('lighted', {
 	lighted: null,
 	state: 'lighted',
 	viewListeners: {
-		'mouseover': function(e){
-			var view = e.target;
-
-			// when light only occur on the name element
-			if( view != this && this.view.hasClass('compact') && e.args[0].target != view.getDom('name') ){
-				view = this;
-			}
-
-			view.bubble('light', e.args);
-		},
-
-		'mouseout': function(e){
-			// when the mouse go very fast out of the view mouseover event is'nt fired
-			// on other view (event the parent view)
-			// but we can check the relatedTarget to see if the mouse go out of all view
-			var view = NS.View.cast(e.relatedTarget);
-
-			// need the contains method in childrenInterface
-			if( !this.view.contains(view) ){
-				this.unsetLighted(this.lighted, e);
-			}
-		},
-
 		'light': function(e){
-			var view = e.target;
-
-			if( view.light ){
-				this.setLighted(view, e.args[0]);
-			}
-			else{
-				this.unsetLighted(this.lighted, e.args[0]);
-			}
+			this.setLighted(e.target, e.args[0]);
 		},
 
 		'unlight': function(e){
+			this.unsetLighted(e.target, e.args[0]);
+		},
+
+		'unlightAll': function(e){
 			this.unsetLighted(this.lighted, e.args[0]);
 		},
 

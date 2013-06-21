@@ -97,6 +97,11 @@ window.app = {
 		}
 	},
 
+	events: {
+		'click': 'click',
+		'popstate':  'popstate'
+	},
+
 	init: function(){
 		String.implement('stripScripts', function(exec){
 			var scripts = '';
@@ -117,8 +122,8 @@ window.app = {
 
 		window.server.createLink();
 
-		document.on('click', window.app.click, true);
-		window.on('popstate', window.app.popstate);
+		this.eventListeners = NS.EventListener.new(window, this.events, this);
+		this.eventListeners.listen();
 
 		window.app.go();
 	},

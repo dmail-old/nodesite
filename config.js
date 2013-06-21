@@ -40,13 +40,12 @@ config.js = [].concat(
 		"object.util", "options", "chain", "bound",
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "stringList", "memory",// "path",
-		"emitter", "listener",
-		"treeEmitter",
+		"emitter", "listener", "event", "eventEmitter",
 		"treeTraversal", "treeFinder", "childrenInterface", "document"
 	].prefix('lib/'),
 	[
 		"browser", "os",
-		"event", "eventEmitter", "eventListener",
+		"event", "eventListener",
 		"element", "element.properties",
 		"element.styles", "element.measure", "element.keepIntoView", "element.find",
 		"request"

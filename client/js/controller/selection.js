@@ -10,38 +10,28 @@ NS.Controller.define('selection', {
 	focusNode: null,
 	state: 'selected',
 	viewListeners: {
-		'mousedown': function(e){
-			e.target.select();
-		},
-
-		'click': function(e){
-			var view = e.target;
-
-			if( view != this.view ){
-				this.collapse(view, e.args[0]);
-			}
-			else{
-				this.removeAll(e.args[0]);
-			}
-		},
-
-		'focus': function(e){
-			this.anchorNode = e.target;
-		},
-
-		'keydown': function(e){
-			e = e.args[0];
-			if( e.control && e.key == 'a' ){
-				this.selectRange(this.getVisibles(), e);
-			}
-		},
-
 		'select': function(e){
 			this.add(e.target, e.args[0]);
 		},
 
 		'unselect': function(e){
 			this.remove(e.target, e.args[0]);
+		},
+
+		'selectAll': function(e){
+			this.selectRange(this.getVisibles(), e.args[0]);
+		},
+
+		'unselectAll': function(e){
+			this.removeAll(e.args[0]);
+		},
+
+		'collapse': function(e){
+			this.collapse(e.target, e.args[0]);
+		},
+
+		'focus': function(e){
+			this.anchorNode = e.target;
 		}
 	},
 

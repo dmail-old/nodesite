@@ -64,7 +64,7 @@ NS.View = {
 	constructor: function(model){
 		this.controllers = {};
 
-		this.emitter = NS.TreeEmitter.new(this);
+		this.emitter = NS.EventEmitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
 		this.eventListener = NS.EventListener.new(null, this.events, this);
 
@@ -156,11 +156,6 @@ NS.View = {
 		return this;
 	},
 
-	bubbleEvent: function(e){
-		var view = this.cast(e) || this;
-		return view.bubble(e.type, arguments);
-	},
-
 	render: function(){
 		this.setElement(this.createElement());
 		return this;
@@ -224,7 +219,7 @@ NS.View = {
 		return this.attributes[name];
 	}
 }.supplement(
-	NS.TreeEmitterInterface,
+	NS.EventEmitterInterface,
 	NS.childrenInterface,
 	NS.treeTraversal,
 	NS.treeFinder,

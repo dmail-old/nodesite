@@ -1,4 +1,8 @@
 NS.EventListener = NS.Listener.extend({
+	setListener: function(element, value, name, listener){
+		element[value ? 'addEventListener' : 'removeEventListener'](name, listener);
+	},
+
 	callHandler: function(handler, bind, e){
 		return handler.call(bind, e);
 	},

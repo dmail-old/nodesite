@@ -2,33 +2,13 @@ Object.defineAlias = function(object, nameA, nameB){
 	Object.defineProperty(object, nameB, {
 		'get': function(){
 			return this[nameA];
-		}		
+		}
 	});
 };
 Object.defineAlias(Event.prototype, 'shiftKey', 'shift');
 Object.defineAlias(Event.prototype, 'ctrlKey', 'control');
 Object.defineAlias(Event.prototype, 'altKey', 'alt');
 Object.defineAlias(Event.prototype, 'metaKey', 'meta');
-
-/*
-Object.defineProperty(Event.prototype, 'target', {
-	get: function(){
-		var target = this.target || this.srcElement;
-		while( target && target.nodeType == 3 ) target = target.parentNode;
-		return target;
-	}
-});
-
-Object.defineProperty(Event.prototype, 'relatedTarget', {
-	get: function(){
-		if( this.type == 'mouseover' || this.type == 'mouseout' ){
-			var related = this.relatedTarget || this[(this.type == 'mouseover' ? 'from' : 'to') + 'Element'];
-			while( related && related.nodeType == 3 ) related = related.parentNode;
-			return related;
-		}
-	}
-});
-*/
 
 Object.defineProperty(Event.prototype, 'rightClick', {
 	get: function(){
@@ -48,44 +28,44 @@ Object.defineProperty(Event.prototype, 'wheel', {
 Object.defineProperty(Event.prototype, 'page', {
 	get: function(){
 		var page = {};
-		
-		if( this.touches && this.touches[0] && (this.type.indexOf('touch') == 0 || this.type.indexOf('gesture') == 0) ){
+
+		if( this.touches && this.touches[0] && (this.type.startsWith('touch') || this.type.startsWith('gesture')) ){
 			page = {
 				x: this.touches[0].pageX,
 				y: this.touches[0].pageY
-			}
-		}		
-		else if( this.type == 'click' || this.type == 'dblclick' || this.type == 'contextmenu' || this.type == 'DOMMouseScroll' || this.type.indexOf('mouse') == 0 ){
+			};
+		}
+		else if( this.type == 'click' || this.type == 'dblclick' || this.type == 'contextmenu' || this.type == 'DOMMouseScroll' || this.type.startsWith('mouse') ){
 			var doc = window.document.compatElement;
-			
+
 			page = {
 				x: this.pageX != null ? this.pageX : this.clientX + doc.scrollLeft,
 				y: this.pageY != null ? this.pageY : this.clientY + doc.scrollTop
 			};
 		}
-		
-		return page;		
+
+		return page;
 	}
 });
 
 Object.defineProperty(Event.prototype, 'client', {
 	get: function(){
-		var client = {};
-		
-		if( this.touches && this.touches[0] && (this.type.indexOf('touch') == 0 || this.type.indexOf('gesture') == 0) ){
-			page = {
+		var client;
+
+		if( this.touches && this.touches[0] && (this.type.startsWith('touch') || this.type.startsWith('gesture')) ){
+			client = {
 				x: this.touches[0].clientX,
 				y: this.touches[0].clientY
-			}
+			};
 		}
-		else if( this.type == 'click' || this.type == 'dblclick' || this.type == 'contextmenu' || this.type == 'DOMMouseScroll' || this.type.indexOf('mouse') == 0 ){			
+		else if( this.type == 'click' || this.type == 'dblclick' || this.type == 'contextmenu' || this.type == 'DOMMouseScroll' || this.type.startsWith('mouse') ){
 			client = {
 				x: this.pageX != null ? this.pageX - window.pageXOffset : this.clientX,
 				y: this.pageY != null ? this.pageY - window.pageYOffset : this.clientY
 			};
 		}
-		
-		return client;		
+
+		return client;
 	}
 });
 
@@ -93,14 +73,14 @@ Event.keys = {};
 Object.defineProperty(Event.prototype, 'key', {
 	get: function(){
 		var code = this.wich || this.keyCode, key = Event.keys[code];
-		
+
 		if( this.type == 'keydown' || this.type == 'keyup' ){
 			if( code > 111 && code < 124 ) key = 'f' + (code - 111);
 			else if( code > 95 && code < 106 ) key = code - 96;
 		}
-		
+
 		if( key == null ) key = String.fromCharCode(code).toLowerCase();
-		
+
 		return key;
 	}
 });
@@ -128,7 +108,7 @@ Event.keys = {
 	'39': 'right',
 	'40': 'down',
 	'45': 'insert',
-	'46': 'delete',	
+	'46': 'delete',
 	'107': '+',
 	'144': 'numlock',
 	'145': 'scrolllock',

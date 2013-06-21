@@ -102,7 +102,7 @@ NS.Emitter = {
 	},
 
 	applyHandler: function(handler, name, args){
-		return handler.handleListener(name, args);
+		return handler.handleEvent(name, args);
 	},
 
 	onapplylisteners: function(name, args){

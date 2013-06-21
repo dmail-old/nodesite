@@ -4,7 +4,7 @@ NS.Model = {
 	name: '',
 
 	constructor: function(properties){
-		this.emitter = NS.TreeEmitter.new(this);
+		this.emitter = NS.EventEmitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
 
@@ -75,7 +75,7 @@ NS.Model = {
 		return this;
 	}
 }.supplement(
-	NS.TreeEmitterInterface,
+	NS.EventEmitterInterface,
 	NS.childrenInterface,
 	NS.treeTraversal,
 	NS.treeFinder,
@@ -88,23 +88,6 @@ NS.Model = {
 		onremovechild: function(child){
 			//child.crossNode(function(node){ node.emit('leave'); }, null, true);
 			child.bubble('emancipate');
-		},
-
-		adopt: function(child, index){
-
-			if( typeof index == 'number' ){
-				this.insertBefore(child, this.children[index < 0 ? 0 : index]);
-			}
-			else{
-				this.appendChild(child);
-			}
-
-			return this;
-		},
-
-		emancipate: function(){
-			if( this.parentNode ) this.parentNode.removeChild(this);
-			return this;
 		}
 	}
 );

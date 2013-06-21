@@ -2,10 +2,6 @@ NS.Controller.define('focused', {
 	focused: null,
 	state: 'focused',
 	viewListeners: {
-		'mousedown': function(e){
-			e.target.focus();
-		},
-
 		'focus': function(e){
 			this.setFocused(e.target, e.args[0]);
 		},

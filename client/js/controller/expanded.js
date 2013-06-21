@@ -16,19 +16,6 @@ faire la largeur de son contenu
 NS.Controller.define('expanded', {
 	state: 'expanded',
 	viewListeners: {
-		'mousedown': function(e){
-			if( e.args[0].target.hasClass('tool') ){
-				e.target.toggleState(this.state);
-			}
-		},
-
-		// le futur menu contextuel doit prendre le pas sur ce dblclick
-		'dblclick': function(e){
-			if( !e.args[0].target.hasClass('tool') ){
-				event.target.toggleState(this.state);
-			}
-		},
-
 		'expand': function(e){
 			var view = e.target;
 

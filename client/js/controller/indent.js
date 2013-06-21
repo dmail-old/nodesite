@@ -1,12 +1,14 @@
-// indent subview of the controlled view
+/*
+indent subview of the controlled view
+*/
 
 NS.Controller.define('indent', {
 	viewListeners: {
 		'insertElement': function(e){
-			var view = e.target;
+			var view = e.target, padding;
 
 			if( view && view != this.view ){
-				var padding = this.padding * this.getLevel(view);
+				padding = this.padding * this.getLevel(view);
 				view.getDom('div').style.paddingLeft = padding + 'px';
 			}
 		}
@@ -14,9 +16,9 @@ NS.Controller.define('indent', {
 	padding: 18,
 
 	getLevel: function(view){
-		var level = -2;
+		var level = -1;
 
-		while(view){
+		while(view != this.view){
 			level++;
 			view = view.parentNode;
 		}

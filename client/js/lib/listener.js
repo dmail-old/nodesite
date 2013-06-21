@@ -1,5 +1,10 @@
+/*
+it may be usefull to know if a specific event is being listened
+*/
+
 NS.Listener = {
 	handlers: null,
+	listening: false,
 
 	constructor: function(emitter, handlers, listener){
 		this.emitter = emitter;
@@ -11,7 +16,7 @@ NS.Listener = {
 		return handler.apply(bind, args);
 	},
 
-	handleListener: function(name, args){
+	handleEvent: function(name, args){
 		var listener = this.listener, handlers = this.handlers, handler;
 
 		if( handlers ){
@@ -21,7 +26,7 @@ NS.Listener = {
 			}
 			if( typeof handler == 'object' ){
 				listener = handler;
-				handler = handler.handleListener;
+				handler = handler.handleEvent;
 			}
 			if( typeof handler == 'function' ){
 				return this.applyHandler(handler, listener, args);
@@ -29,39 +34,60 @@ NS.Listener = {
 		}
 	},
 
-	toggle: function(value, args){
+	setListener: function(emitter, value, name, listener){
+		emitter[value ? 'on' : 'off'](name, listener);
+	},
+
+	toggle: function(name, value){
 		var emitter = this.emitter;
 
 		if( emitter ){
-			emitter[value ? 'on' : 'off'].apply(emitter, args);
+			this.setListener(emitter, value, name, this);
 		}
 
 		return this;
 	},
 
-	add: function(){
-		return this.toggle(true, arguments);
+	set: function(name, listener){
+		var exists = false;
+
+		if( this.handlers ){
+			exists = name in this.handlers;
+		}
+		else{
+			this.handlers = {};
+		}
+
+		this.handlers[name] = listener;
+
+		// dont listen twice
+		if( !exists && this.listening ) this.enable(name);
 	},
 
-	remove: function(){
-		return this.toggle(false, arguments);
+	unset: function(name){
+		if( this.handlers ){
+			if( this.listening ) this.disable(name);
+			delete this.handlers[name];
+		}
 	},
 
 	enable: function(name){
-		return this.add(name, this);
+		return this.toggle(name, true);
 	},
 
 	disable: function(name){
-		return this.remove(name, this);
+		return this.toggle(name, false);
 	},
 
 	listen: function(){
 		if( this.handlers ) Object.eachPair(this.handlers, this.enable, this);
+		this.listening = true;
 		return this;
 	},
 
 	stopListening: function(){
 		if( this.handlers ) Object.eachPair(this.handlers, this.disable, this);
+		this.listening = false;
 		return this;
 	}
 };
