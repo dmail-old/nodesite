@@ -10,8 +10,11 @@ It would work but in that case the logic should belong to the view
 */
 
 NS.Controller = {
+	viewListener: null,
 	viewListeners: null,
+	modelListener: null,
 	modelListeners: null,
+	view: null,
 
 	constructor: function(view){
 		this.viewListener = NS.Listener.new(null, this.viewListeners, this);
@@ -48,7 +51,8 @@ NS.Controller = {
 	},
 
 	setModel: function(model){
-		if( model && model != this.model ){
+		if( model ){
+			this.unsetModel();
 			this.model = model;
 			this.modelListener.emitter = model;
 			this.modelListener.listen();
@@ -56,10 +60,10 @@ NS.Controller = {
 	},
 
 	unsetModel: function(){
-		if( this.element ){
-			this.eventListener.stopListening();
-			this.eventListener.emitter = null;
-			this.element = null;
+		if( this.model ){
+			this.modelListener.stopListening();
+			this.modelListener.emitter = null;
+			this.model = null;
 		}
 	}
 };

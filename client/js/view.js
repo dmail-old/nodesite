@@ -43,7 +43,13 @@ les events de tous les controlleurs
 */
 
 NS.View = {
-	// model listeners
+	// about the view
+	id: null,
+	emitter: null,	
+	controllers: null,
+	// about model
+	model: null,
+	listener: null,
 	listeners: {
 		'destroy': 'destructor',
 		'adopt': function(child, index){
@@ -54,12 +60,14 @@ NS.View = {
 			this.parentNode.removeChild(this);
 		}
 	},
-	// element events listeners
-	events: null,
+	// about the element
+	element: null,
+	eventListener: null,
 	tagName: 'div',
-	className: '',
 	innerHTML: '',
 	attributes: null,
+	classList: null,
+	className: '',	
 
 	constructor: function(model){
 		this.controllers = {};

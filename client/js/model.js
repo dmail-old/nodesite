@@ -1,7 +1,10 @@
 NS.Model = {
-	validationError: null,
 	cid: 0,
+	emitter: null,
+	properties: null,	
 	name: '',
+
+	validationError: null,
 
 	constructor: function(properties){
 		this.emitter = NS.Emitter.new(this);
