@@ -1,23 +1,25 @@
 NS.EventEmitterInterface = NS.EmitterInterface.extend({
 	dispatchEvent: function(event){
-		var target = this, parents = [], j = 0;
-
-		event.target = this;
+		var target = this, parents = [], i, j = 0;
 
 		while(target = target.parentNode) parents[j++] = target;	
 
-		// capture phase, from the root to the target
-		while(j--){
-			if( !event.emit(parents[j]) ) return !event.defaultPrevented;
+		event.target = this;
+
+		// capture phase, from the root to the target parent
+		i = j;
+		while(i--){
+			if( !event.emit(parents[i]) ) return !event.defaultPrevented;
 		}
 
 		// emit on the target
 		if( !event.emit(this) ) return !event.defaultPrevented;
 
-		// bubble phase, from the target to the root
+		// bubble phase, from the target parent to the root
 		if( event.bubbles ){
-			while(target = target.parentNode){
-				if( !event.emit(target) ) return !event.defaultPrevented;
+			i = 0;
+			for(;i<j;i++){
+				if( !event.emit(parents[i]) ) return !event.defaultPrevented;
 			}
 		}
 
@@ -30,14 +32,14 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 		}*/
 	},
 
-	bubble: function(name){
+	/*bubble: function(name){
 		var event = NS.Event.new(name, true);
 
 		event.args = toArray(arguments, 1);
 		//event.arguments = [event].concat(event.args);
 
 		return this.dispatchEvent(event);
-	},
+	},*/
 
 	/*
 	inherit: function(name){
@@ -45,8 +47,7 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 
 		event.inherit = true;
 		event.args = toArray(arguments, 1);
-		event.arguments = [event].concat(event.args);
-
+		
 		return this.dispatchEvent(event);
 	},
 	*/
@@ -55,7 +56,6 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 		var event = NS.Event.new(name, false);
 
 		event.args = toArray(arguments, 1);
-		//event.arguments = [event].concat(event.args);
 
 		return this.dispatchEvent(event);
 	}
