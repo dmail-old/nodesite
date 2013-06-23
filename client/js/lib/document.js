@@ -18,8 +18,6 @@ NS.Document = {
 		return typeof name == 'string' ? this.constructors[name] : name;
 	},
 
-	getChildItem: Function.IMPLEMENT,
-
 	createNode: function(name, data){
 		var constructor = this.require(name), node;
 
@@ -51,4 +49,4 @@ NS.Document = {
 			}, this);
 		}
 	}
-}.supplement(NS.childrenInterface, NS.EmitterInterface);
+}.supplement(NS.NodeInterface, NS.EmitterInterface);

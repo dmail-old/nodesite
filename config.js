@@ -37,11 +37,11 @@ config.js = [].concat(
 	].prefix('lib/core/'),
 	[
 		"list",
-		"object.util", "options", "chain", "bound",
+		"object.util", "options", "chain",
 		"object.at", "finder", "array.iterate", "array.find",
 		"random", "stringList", "memory",// "path",
-		"emitter", "listener", "event", "eventEmitter",
-		"treeTraversal", "treeFinder", "childrenInterface", "document"
+		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
+		"treeTraversal", "treeFinder", "nodeInterface", "document"
 	].prefix('lib/'),
 	[
 		"browser", "os",

@@ -87,7 +87,7 @@ rootView.eventListener.set('click', function(e){
 		this.emit('unselectAll', e);
 	}
 	else{
-		view.bubble('collapse', e);
+		view.emit('collapse', e);
 	}
 });
 rootView.eventListener.set('dblclick', function(e){

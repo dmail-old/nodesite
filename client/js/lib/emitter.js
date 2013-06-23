@@ -39,7 +39,7 @@ NS.Emitter = {
 			throw new TypeError('listener should be a function or object');
 		}
 
-		if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
+		//if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
 		this.listeners(name, true).push(listener);
 
 		return this;
@@ -69,7 +69,7 @@ NS.Emitter = {
 				item = list[i];
 
 				if( item === listener || item.__listener === listener ){
-					if( this.onremovelistener ) this.onremovelistener.apply(this, arguments);
+					//if( this.onremovelistener ) this.onremovelistener.apply(this, arguments);
 				}
 				else{
 					retain.push(item);
@@ -105,16 +105,12 @@ NS.Emitter = {
 		return handler.handleEvent(name, args);
 	},
 
-	onapplylisteners: function(name, args){
-		if( name != '*' && name != 'addListener' && name != 'removeListener' ){
-			this.applyListeners('*', arguments);
-		}
-	},
-
 	applyListeners: function(name, args){
 		var listeners = this.listeners(name), i, j;
 
-		if( this.onapplylisteners && name != 'applyListeners' ) this.onapplylisteners.apply(this, arguments);
+		if( name != 'applyListeners' && name != 'addListener' && name != 'removeListener' && name != '*' ){
+			this.applyListeners('*', arguments);
+		}
 
 		if( listeners ){
 			i = -1;
@@ -181,23 +177,5 @@ NS.Emitter = {
 
 	emit: function(){
 		return this.eachEvent(this.callListeners, arguments);
-	}
-};
-
-NS.EmitterInterface = {
-	on: function(){
-		return this.emitter.on.apply(this.emitter, arguments);
-	},
-
-	off: function(){
-		return this.emitter.off.apply(this.emitter, arguments);
-	},
-
-	once: function(){
-		return this.emitter.once.apply(this.emitter, arguments);
-	},
-
-	emit: function(){
-		return this.emitter.emit.apply(this.emitter, arguments);
 	}
 };

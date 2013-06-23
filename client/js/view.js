@@ -64,12 +64,12 @@ NS.View = {
 	constructor: function(model){
 		this.controllers = {};
 
-		this.emitter = NS.EventEmitter.new(this);
+		this.emitter = NS.Emitter.new(this);
 		this.listener = NS.Listener.new(null, this.listeners, this);
 		this.eventListener = NS.EventListener.new(null, this.events, this);
 
 		this.self.addInstance(this);
-		this.bubble('create');
+		this.emit('create');
 
 		this.setModel(model);
 
@@ -78,7 +78,7 @@ NS.View = {
 	},
 
 	destructor: function(){
-		this.bubble('destroy');
+		this.emit('destroy');
 		this.unsetElement();
 		this.unsetModel();
 		this.self.removeInstance(this);
@@ -125,7 +125,7 @@ NS.View = {
 		this.element = element;
 		this.eventListener.emitter = element;
 		this.eventListener.listen();
-		this.bubble('setElement', element);
+		this.emit('setElement', element);
 		return this;
 	},
 
@@ -133,7 +133,7 @@ NS.View = {
 		if( this.element ){
 			this.removeElement();
 
-			this.bubble('unsetElement', this.element);
+			this.emit('unsetElement', this.element);
 			this.eventListener.stopListening();
 			this.eventListener.emitter = null;
 			this.element = null;
@@ -144,13 +144,13 @@ NS.View = {
 	insertElement: function(into, before){
 		if( !this.element ) this.render();
 		into.insertBefore(this.element, before);
-		this.bubble('insertElement');
+		this.emit('insertElement');
 		return this;
 	},
 
 	removeElement: function(){
 		if( this.element ){
-			this.bubble('removeElement', this.element);
+			this.emit('removeElement', this.element);
 			this.element.dispose();
 		}
 		return this;
@@ -220,7 +220,7 @@ NS.View = {
 	}
 }.supplement(
 	NS.EventEmitterInterface,
-	NS.childrenInterface,
+	NS.NodeInterface,
 	NS.treeTraversal,
 	NS.treeFinder,
 	{
@@ -330,7 +330,7 @@ NS.viewstate = {
 		actived: ['active', 'unactive']
 	},
 	toggleState: function(state, e){
-		return this.bubble(this.states[state][Number(this.hasClass(state))], [e]);
+		return this.emit(this.states[state][Number(this.hasClass(state))], [e]);
 	}
 };
 
@@ -338,10 +338,10 @@ Object.eachPair(NS.viewstate.states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
 	NS.viewstate[on] = function(){
-		return this.bubble(on, arguments);
+		return this.emit(on, arguments);
 	};
 	NS.viewstate[off] = function(e){
-		return this.bubble(off, arguments);
+		return this.emit(off, arguments);
 	};
 });
 

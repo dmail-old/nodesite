@@ -26,7 +26,7 @@ NS.Controller.define('selected', {
 
 		'blur': function(e){
 			if( this.previousSelected != this.selected ){
-				this.view.bubble('change', this.selected, e);
+				this.view.emit('change', this.selected, e);
 				this.previousSelected = this.selected;
 			}
 		},

@@ -4,7 +4,7 @@ NS.Model = {
 	name: '',
 
 	constructor: function(properties){
-		this.emitter = NS.EventEmitter.new(this);
+		this.emitter = NS.Emitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
 
@@ -76,18 +76,18 @@ NS.Model = {
 	}
 }.supplement(
 	NS.EventEmitterInterface,
-	NS.childrenInterface,
+	NS.NodeInterface,
 	NS.treeTraversal,
 	NS.treeFinder,
 	{
 		oninsertchild: function(child){
-			this.bubble('adopt', child, this.children.indexOf(child));
+			this.emit('adopt', child, this.children.indexOf(child));
 			//child.crossNode(function(node){ node.emit('enter'); }, null, true);
 		},
 
 		onremovechild: function(child){
 			//child.crossNode(function(node){ node.emit('leave'); }, null, true);
-			child.bubble('emancipate');
+			child.emit('emancipate');
 		}
 	}
 );

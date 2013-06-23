@@ -6,7 +6,7 @@ description: StringList is used to manipulate a list of string separated by a sp
 
 */
 
-var exports = NS.StringList =  NS.List.extend(exports, {
+NS.StringList =  NS.List.extend({
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
@@ -26,7 +26,7 @@ var exports = NS.StringList =  NS.List.extend(exports, {
 		return this.indexOf(token, index) !== -1;
 	},
 
-	update: Function.NULL,
+	update: Function.EMPTY,
 
 	add: function(){
 		var tokens = arguments, i = 0, j = tokens.length, token, updated = false;

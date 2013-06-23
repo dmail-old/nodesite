@@ -2,7 +2,7 @@
 
 IMPORTANT:
 
-Controllers exists to provide a two way data binding between view & model
+Controllers exists only to change model in response to view events
 Don't use it to act on view in response to view events
 It would work but in that case the logic should belong to the view
 (same goes for model)

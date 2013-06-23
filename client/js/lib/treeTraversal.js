@@ -10,7 +10,8 @@ var exports = {
 		return this;
 	},
 
-	// call fn on every descendant of the element, returns true to break the loop or 'continue' to ignore the descendant of the current element
+	// call fn on every descendant of the element
+	// returns true to break the loop or 'continue' to ignore the descendant of the current element
 	crossNode: function(fn, bind, includeSelf){
 		function run(node){
 			var ret = fn.call(bind, node);
@@ -127,9 +128,6 @@ TreeTraversal.crossPrevNode = function(fn, bind){
 	return this;
 };
 
-in case we want to add it to any NS implementing TreeStructure we have to add 'firstChild', 'lastChild', 'previousSibling', 'nextSibling'
-to be able to use those methods
-
 NOTE: calling NS.implement(TreeStructure) currently call Object.mergePair on object
 it doesn't copy properties defined by Object.defineProperty
 Object.create should be used for that or TreeStructure have to be a NS with prototype and not and object
@@ -152,5 +150,52 @@ Object.defineProperties(childrenInterface, {
 in the case we want to add it to Element.prototype we have to add the lastNode property
 
 Object.defineProperty(Element.prototype, 'lastNode', childrenInterface.lastNode);
+
++// pas mal ça aussi pour nextNode
++function nextNode(root, fn, bind){
++ 	var node = root.firstChild;
++	var first, node;
++
++	while( node != null ){
++		ret = fn.call(bind, node);
++		if( ret === true ) break;
++
++		first = node.firstChild;
++		if( first ){
++			node = first;
++		}
++		else{
++			next = node.nextSibling;
++			while(next == null){
++				node = node.parentNode;
++				if( node == root ) break;
++				next = node.nextSibling;
++			}
++			node = next;
++		}
++	}
++
++	return node;
++}
+ 
++function prevNode(root, fn, bind){
++	var node = node.parentNode;
++
++	while(node != null){
++		ret = fn.call(bind, node);
++		if( ret === true ) break;
++
++		prev = node.previousSibling;
++		if( prev ){
++			node = prev;
++			last = prev.lastNode;
++			if( last ) node = last;
++		}
++		else{
++			node = node.parentNode;
++		}
++	}
++}
+
 
 */

@@ -712,7 +712,7 @@ Object.append(exports, {
 	}
 });
 
-exports = Object.prototype.extend(NS.Emitter, NS.Bound, exports);
+exports = Object.prototype.extend(NS.Emitter, exports);
 NS.Surface = exports;
 
 // TODO: distance handling

@@ -2,15 +2,16 @@ NS.Event = {
 	name: null,
 	target: null,
 	currentTarget: null,
-	args: null,
-	test: null,
-	bubble: false,
-	capture: false,
+	bubbles: false,
+	//inherit: false,
 	stopped: false,
 	defaultPrevented: false,
 
-	constructor: function(name){
+	args: null,
+	
+	constructor: function(name, canBubble){
 		this.name = name;
+		this.bubbles = Boolean(canBubble);
 	},
 
 	stopPropagation: function(){
@@ -24,7 +25,7 @@ NS.Event = {
 	emit: function(target){
 		this.currentTarget = target;
 
-		target.emitter.applyListeners(this.name, this.arguments);
+		target.emitter.emit(this.name, this);
 
 		return !this.stopped;
 	}
