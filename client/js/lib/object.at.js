@@ -8,32 +8,43 @@ provides: Object.examine, Object.follow, Object.setAt, Object.getAt, Object.appl
 
 */
 
-Object.cache = {};
-
 RegExp.ALPHANUMDOT = /^[\w\.]*$/;
 
 Object.append(Object, {
+	cache: {},
 	examine: function(path){
-		if( !path.match ) console.trace(path);
+		var cache = Object.cache, route;
 
-		var cache = Object.cache, cached = cache[path];
+		if( path in cache ){
+			route = cache[path];
+		}
+		else{
+			// if path contains only alphanumeric chars (0-9,a-z,_)
+			if( RegExp.ALPHANUM.test(path) ){
+				route = path;
+			}
+			// the path has the form 'name1.name2.name3'
+			else if( RegExp.ALPHANUMDOT.test(path) ){
+				route = path.split('.');
+			}
+			// the path contains something else than alphanum or '.'
+			// we assume the path contains function call
+			else{
+				var body = 'return object';
 
-		if( cached ){
-			return cached;
+				body+= path.chartAt(0) == '[' ? path : '.' + path;
+				body+= ';';
+
+				route = new Function('object', body);
+			}
+
+			cache[path] = route;
 		}
-		// if path contains only alphanumeric chars (0-9,a-z,_)
-		if( RegExp.ALPHANUM.test(path) ){
-			return cache[path] = path;
-		}
-		// the path has the form 'name1.name2.name3'
-		if( RegExp.ALPHANUMDOT.test(path) ){
-			return cache[path] = path.split('.');
-		}
-		// the path contains somethign else than alphanum or '.' we assume the path contains function call
-		return cache[path] = new Function('object', 'return object'+(path.charAt(0) != '[' ? '.' + path : path) + ';');
+
+		return route;
 	},
-	
-	follow: function(object, path){		
+
+	follow: function(object, path){
 		switch(typeof path){
 		case 'string':
 			return object.get ? object.get(path) : object[path];
@@ -44,7 +55,7 @@ Object.append(Object, {
 			for(;i<j;i++){
 				part = path[i];
 				if( part in object ) object = Object.follow(object, part);
-				else return undefined;					
+				else return undefined;
 			}
 			return object;
 		case 'function':
@@ -53,22 +64,21 @@ Object.append(Object, {
 			return undefined;
 		}
 	},
-	
+
 	setAt: function(object, path, value){
 		path = Object.examine(path);
-		
+
 		switch(typeof path){
 		case 'string':
 			object[path] = value;
 			break;
 		case 'object':
-			var source = object;
-			var i = 0, j = path.length, key;
-			
+			var source = object, i = 0, j = path.length, key;
+
 			for(;i<j;i++){
 				key = path[i];
-				
-				if( i == j-1 ){
+
+				if( i == j - 1 ){
 					object[key] = value;
 				}
 				else{
@@ -76,23 +86,23 @@ Object.append(Object, {
 					object = object[key];
 				}
 			}
-			
+
 			object = source;
-			break;			
+			break;
 		}
-		
+
 		return object;
 	},
-	
+
 	getAt: function(object, path){
 		return Object.follow(object, Object.examine(path));
 	},
-	
+
 	applyAt: function(object, path, bind, args){
 		var fn = Object.getAt(object, path);
 		return typeof fn == 'function' ? fn.apply(bind, args) : undefined;
 	},
-	
+
 	callAt: function(object, path, bind){
 		return Object.applyAt(object, path, bind, toArray(arguments, 3));
 	}
@@ -104,8 +114,10 @@ Replace {.*?} into a string by key/value of object
 
 */
 
+RegExp.BRACLET = /\\?\{([\w.]+)\}/g;
+
 String.implement('parse', function(object){
-	return String(this).replace(/\\?\{([\w.]+)\}/g, function(match, path){
+	return String(this).replace(RegExp.BRACLET, function(match, path){
 		if( match.charAt(0) == '\\' ) return match.slice(1);
 		var value = Object.getAt(object, path);
 		return value != null ? value : '';
@@ -126,7 +138,7 @@ Array.implement('orderBy', function(){
 	var i, n, j = arguments.length, fns = [], orders = [], arg;
 
 	i = n = 0;
-	
+
 	for(;i<j;i++){
 		arg = arguments[i];
 		switch(typeof arg){
@@ -140,19 +152,19 @@ Array.implement('orderBy', function(){
 			break;
 		}
 	}
-		
+
 	function compare(a,b){
 		var calc, va, vb;
 		for(i=0;i<n;i++){
 			calc = fns[i];
 			va = calc.call(a, a);
 			vb = calc.call(b, b);
-			
+
 			if( va > vb ) return orders[i] || 1;
 			if( va < vb ) return -(orders[i] || 1);
 		}
 		return 0;
 	}
-	
+
 	return this.sort(compare);
 });

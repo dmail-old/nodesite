@@ -4,6 +4,8 @@ it may be usefull to know if a specific event is being listened
 
 NS.Listener = {
 	handlers: null,
+	emitter: null,
+	listener: null,
 	listening: false,
 
 	constructor: function(emitter, handlers, listener){

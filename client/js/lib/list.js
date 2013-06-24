@@ -1,12 +1,9 @@
-var exports = {
+NS.List = Array.prototype.extend({
 	constructor: function(){
-		if( arguments.length ) this.push.apply(this, arguments);
+		if( arguments.length > 0 ) this.push.apply(this, arguments);
 	},
 
 	clear: function(){
 		this.length = 0;
 	}
-};
-
-exports = Array.prototype.extend(exports);
-NS.List = exports;
+});

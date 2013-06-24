@@ -1,6 +1,6 @@
 var exports = NS.treeFinder = {
 	matchIterator: function(iterator, match, first){
-		return NS.Finder.matchIterator(iterator, this, match, first);
+		return NS.Filter.matchIterator(iterator, this, match, first);
 	},
 
 	matchFirst: function(iterator){
@@ -37,7 +37,7 @@ var exports = NS.treeFinder = {
 		var i = 0, j = arguments.length;
 
 		for(;i<j;i++){
-			if( NS.Finder.from(arguments[i])(this) ) return true;
+			if( NS.Filter.toFilter(arguments[i])(this) ) return true;
 		}
 
 		return false;

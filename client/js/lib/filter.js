@@ -1,41 +1,18 @@
 /*
 ---
 
-name: Finder
+name: Filter
 
 description: Help to get match(es) against a function called in a loop
 
 requires: Object.at, Function.TRUE, Function.FALSE
 
-provides: Finder
+provides: Filter
 
 ...
 */
 
-NS.Finder = {
-	getProperty: function(item, key){
-		return Object.getAt(item, key);
-	},
-
-	hasProperty: function(item, key){
-		return item ? item.hasOwnProperty(key) : false;
-	},
-
-	matchPart: function(item, part){
-		var compare = part.compare;
-
-		if( compare ){
-			return compare(String(this.getProperty(item, part.key)), part.value);
-		}
-		return this.hasProperty(item, part.key);
-	},
-
-	/*
-	turn expression into function returning if its first argument match
-
-	NS.Finder.toFilter('name:hello') -> function(item){ return item.name == 'hello'; };
-	'name:hello'.toFilter() would do the same
-	*/
+NS.Filter = {
 	toFilter: function(expression, reverse){
 		var filter;
 
@@ -120,9 +97,9 @@ Function.implement('toFilter', Function.THIS);
 Array.implement('toFilter', function(){
 
 	if( this.length === 0 ) return Function.FALSE;
-	if( this.length == 1 ) return NS.Finder.toFilter(this[0]);
+	if( this.length == 1 ) return NS.Filter.toFilter(this[0]);
 
-	var filters = this.map(NS.Finder.toFilter, NS.Finder);
+	var filters = this.map(NS.Filter.toFilter, NS.Filter);
 
 	return function(item){
 		var i = 0, j = filters.length;
@@ -139,7 +116,7 @@ Supporting String.prototype.toFilter
 
 */
 
-NS.Finder.Parser = {
+NS.Filter.Parser = {
 	cache: {},
 	expression: null,
 	raw: null,
@@ -160,32 +137,44 @@ NS.Finder.Parser = {
 	},
 
 	constructor: function(expression){
-		// remove begining and ending spaces
-		expression = String(expression).trim();
+		this.parts = [];
+		this.raw = expression;
+		this.expression = expression;
 
-		if( expression in this.cache ){
-			return this.cache[expression];
+		this.cache[expression] = this;
+
+		return this;
+	},
+
+	getProperty: function(item, key){
+		return Object.getAt(item, key);
+	},
+
+	hasProperty: function(item, key){
+		return item ? item.hasOwnProperty(key) : false;
+	},
+
+	matchPart: function(item, part){
+		var compare = part.compare;
+
+		if( compare ){
+			return compare(String(this.getProperty(item, part.key)), part.value);
 		}
-		else{
-			this.parts = [];
-			this.raw = expression;
-			this.expression = expression;
-			this.parse();
+		return this.hasProperty(item, part.key);
+	},
 
-			this.cache[expression] = this;
+	filter: function(item){
+		var i = this.parts.length;
 
-			return this;
+		while(i--){
+			if( !this.matchPart(item, this.parts[i]) ) return false;
 		}
+
+		return true;
 	},
 
 	toFilter: function(){
-		var parts = this.parts;
-
-		return function(item){
-			var i = parts.length;
-			while(i--) if( !NS.Finder.matchPart(item, parts[i]) ) return false;
-			return true;
-		};
+		return this.filter.bind(this);
 	},
 
 	parse: function(){
@@ -275,11 +264,22 @@ comme on fait trim() sur la chaine les espaces de fin de chaine ne sont pas
 considéré comme une valeur ce qui aurait été le cas pour "a   "
 
 */
-NS.Finder.Parser.exp = "^(?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?\\s*(?:\"(.+)\"|([^<operator>]+)(?=\\s+.+[<operator>]|$))";
-NS.Finder.Parser.exp = NS.Finder.Parser.exp.replace(/<unicode>/, '(?:[:\\w\\u00a1-\\uFFFF-]|\\\\[^\\s0-9a-f])');
-NS.Finder.Parser.exp = NS.Finder.Parser.exp.replace(/operator/g, ':<>');
-NS.Finder.Parser.regexp = new RegExp(NS.Finder.Parser.exp);
+NS.Filter.Parser.exp = "^(?:\\s*(<unicode>+)\\s*([!]?[<operator>]))?\\s*(?:\"(.+)\"|([^<operator>]+)(?=\\s+.+[<operator>]|$))";
+NS.Filter.Parser.exp = NS.Filter.Parser.exp.replace(/<unicode>/, '(?:[:\\w\\u00a1-\\uFFFF-]|\\\\[^\\s0-9a-f])');
+NS.Filter.Parser.exp = NS.Filter.Parser.exp.replace(/operator/g, ':<>');
+NS.Filter.Parser.regexp = new RegExp(NS.Filter.Parser.exp);
 
 String.implement('toFilter', function(){
-	return NS.Finder.Parser.new(this).toFilter();
+	// remove begining and ending spaces
+	var expression = String(this).trim(), parsed;
+
+	if( expression in NS.Filter.Parser.cache ){
+		parsed = NS.Filter.Parser.cache[expression];
+	}
+	else{
+		parsed = NS.Filter.Parser.new(expression);
+		parsed.parse();
+	}
+
+	return parsed.toFilter();
 });

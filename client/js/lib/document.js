@@ -1,6 +1,7 @@
 NS.Document = {
 	constructors: null,
 	baseNode: null,
+	emitter: null,
 
 	constructor: function(baseNode){
 		this.constructors = {};

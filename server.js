@@ -31,7 +31,7 @@ global.NS = {};
 	require(root + '/client/js/lib/core/' + name);
 });
 
-['object.at', 'finder', 'random', 'emitter'].forEach(function(name){
+['object.at', 'filter', 'random', 'emitter'].forEach(function(name){
 	require(root + '/client/js/lib/' + name);
 });
 

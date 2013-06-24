@@ -38,7 +38,7 @@ config.js = [].concat(
 	[
 		"list",
 		"object.util", "options", "chain",
-		"object.at", "finder", "array.iterate", "array.find",
+		"object.at", "filter", "array.iterate", "array.find",
 		"random", "stringList", "memory",// "path",
 		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
 		"treeTraversal", "treeFinder", "nodeInterface", "document"
