@@ -1,6 +1,6 @@
 (function(ua, hostname){
 
-	var exports = NS.os = {};
+	var os = NS.os = {};
 	var platform;
 
 	if( ua.match(/ip(?:ad|od|hone)/) ){
@@ -17,9 +17,9 @@
 		}
 	}
 
-	exports.hostname = hostname;
-	exports.platform = platform;
-	exports[platform] = true;
+	os.hostname = hostname;
+	os.platform = platform;
+	os[platform] = true;
 
 })(navigator.userAgent.toLowerCase(), navigator.platform.toLowerCase());
 

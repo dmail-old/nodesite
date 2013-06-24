@@ -142,7 +142,7 @@ Element.implement({
 	}
 });
 
-[Element.prototype, window, document].forEach(function(item){
+/*[Element.prototype, window, document].forEach(function(item){
 	Object.defineProperty(item, 'storage', {
 		get: function(){
 			if( !this.store ) this.store = {};
@@ -151,4 +151,4 @@ Element.implement({
 		enumerable: true,
 		configurable: false
 	});
-});
+});*/

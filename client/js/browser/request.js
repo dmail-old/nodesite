@@ -1,4 +1,11 @@
-var exports = {
+NS.Request = {
+	running: false,
+	emitter: false,
+	headers: null,
+	xhr: null,
+	status: null,
+	response: null,
+
 	options: {/*
 		onRequest: function(){},
 		onLoadstart: function(event, xhr){},
@@ -32,6 +39,7 @@ var exports = {
 	},
 
 	constructor: function(options){
+		this.emitter = NS.Emitter.new(this);
 		this.resetXhr();
 		this.setOptions(options);
 		this.headers = this.options.headers;
@@ -73,7 +81,7 @@ var exports = {
 	},
 
 	isRunning: function(){
-		return !!this.running;
+		return this.running;
 	},
 
 	success: function(text, xml){
@@ -81,7 +89,8 @@ var exports = {
 	},
 
 	onSuccess: function(){
-		this.applyListeners('complete', arguments).applyListeners('success', arguments).callChain();
+		this.emitter.applyListeners('complete', arguments).applyListeners('success', arguments);
+		this.callChain();
 	},
 
 	failure: function(){
@@ -214,7 +223,11 @@ var exports = {
 		this.emit('cancel');
 		return this;
 	}
-};
+}.supplement(
+	NS.EmitterInterface,
+	NS.options,
+	NS.chain
+);
 
 Object.toQueryString = function(object, base){
 	var queryString = [];
@@ -270,6 +283,3 @@ Element.implement('toQueryString', function(){
 
 	return queryString.join('&');
 });
-
-exports = Object.prototype.extend(NS.Emitter, NS.options, NS.chain, exports);
-NS.Request = exports;

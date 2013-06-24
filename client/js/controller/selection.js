@@ -136,7 +136,7 @@ NS.Controller.define('selection', {
 				from = temp;
 			}
 
-			list.iterate(function(item){ range.push(item); }, 'right', from - 1, to);
+			list.iterate(function(item){ range.push(item); }, null, 'next', from - 1, to);
 		}
 
 		return range;

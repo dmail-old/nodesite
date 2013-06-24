@@ -1,17 +1,17 @@
 var exports = NS.treeFinder = {
-	matchIterator: function(iterator, match, first){
-		return NS.Filter.matchIterator(iterator, this, match, first);
+	matchIterator: function(iterator, match, bind, first){
+		return NS.Filter.matchIterator(iterator, this, match, bind, first);
 	},
 
 	matchFirst: function(iterator){
 		var i, j = arguments.length, item;
 
 		if( j === 1 ){
-			item = this.matchIterator(iterator, true, true);
+			item = this.matchIterator(iterator, true, null, true);
 		}
 		else{
 			for(i=1;i<j;i++){
-				item = this.matchIterator(iterator, arguments[i], true);
+				item = this.matchIterator(iterator, arguments[i], null, true);
 				if( item ) break;
 			}
 		}

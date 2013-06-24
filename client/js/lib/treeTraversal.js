@@ -52,7 +52,7 @@ var exports = {
 		if( parent ){
 			children = parent.children;
 			index = Array.prototype.indexOf.call(children, this);
-			Array.prototype.iterate.call(children, fn, direction, index, null, bind);
+			Array.prototype.iterate.call(children, fn, bind, direction, index);
 		}
 
 		return this;

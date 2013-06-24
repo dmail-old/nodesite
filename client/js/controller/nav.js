@@ -55,21 +55,21 @@ NS.Controller.define('nav', {
 		},
 
 		'home': function(){
-			this.target = this.list.find(this.isEnabled, 'right');
+			this.target = this.list.find(this.isEnabled, this, 'right');
 		},
 
 		'end': function(){
-			this.target = this.list.find(this.isEnabled, 'left');
+			this.target = this.list.find(this.isEnabled, this, 'left');
 		},
 
 		'up': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(this.isEnabled, 'left', index, this.loop);
+			this.target = this.list.find(this.isEnabled, this, 'left', index, this.loop);
 		},
 
 		'down': function(){
 			var index = this.list.indexOf(this.currentView);
-			this.target = this.list.find(this.isEnabled, 'right', index, this.loop);
+			this.target = this.list.find(this.isEnabled, this, 'right', index, this.loop);
 		},
 
 		'pageup': function(){
@@ -77,7 +77,7 @@ NS.Controller.define('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.max(index - this.getPageCount(view), 0) - 1;
 
-			this.target = this.list.find(this.isEnabled, 'right', from, index);
+			this.target = this.list.find(this.isEnabled, this, 'right', from, index);
 		},
 
 		'pagedown': function(){
@@ -85,19 +85,17 @@ NS.Controller.define('nav', {
 			var index = this.list.indexOf(view);
 			var from = Math.min(index + this.getPageCount(view), this.list.length - 1 ) + 1;
 
-			this.target = this.list.find(this.isEnabled, 'left', from, index);
+			this.target = this.list.find(this.isEnabled, this, 'left', from, index);
 		},
 
 		'*': function(e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
 			if( e.control ) return;
-
-			var self = this;
 			var index = this.list.indexOf(this.currentView);
 
 			this.target = this.list.find(function(view){
-				return self.isEnabled(view) && self.matchLetter(view, e.key);
-			}, 'right', index, true);
+				return this.isEnabled(view) && this.matchLetter(view, e.key);
+			}, this, 'right', index, true);
 		}
 	},
 

@@ -34,7 +34,7 @@ NS.Filter = {
 	},
 
 	// iterator supply items to test, we returns the first or all items passing the test
-	matchIterator: function(iterator, iteratorBind, match, first, bind){
+	matchIterator: function(iterator, iteratorBind, match, bind, first){
 		var found = first ? null : [];
 
 		match = this.toFilter(match);
@@ -53,7 +53,7 @@ NS.Filter = {
 		return found;
 	},
 
-	// unused, would allow an option to tell to test a property with indexOf instead of == without having to pass '*'
+	// unused, would allow to test a value with indexOf over each space separated words
 	getPartial: function(expression){
 		var parsed = this.parse(expression);
 
@@ -62,7 +62,7 @@ NS.Filter = {
 			while(i--){
 				part = parsed[i];
 				if( part.operator == ':' && part.key.endsWith('name') ){
-					var name = String(Object.getAt(item, part.key)).toLowerCase(), value = part.value.split(/\s+/g), j = value.length;
+					var name = String(Object.getAt(item, part.key)), value = part.value.split(/\s+/g), j = value.length;
 					while(j--) if( name.indexOf(value[j]) > -1 ) break;
 					// si j vaut -1 c'est que indexOf a échoué sur toutes les parties du nom recherché
 					if( j < 0 ) return false;
@@ -122,7 +122,7 @@ NS.Filter.Parser = {
 	raw: null,
 	parts: null,
 	part: null,
-	operators: {
+	comparers: {
 		':': function(a, b){ return a === b; },
 		'>': function(a, b){ return a > b; },
 		'<': function(a, b){ return a < b; },
@@ -239,7 +239,7 @@ NS.Filter.Parser = {
 				this.part.operator = operator = this.parseOperator(operator);
 			}
 			if( value != '*' ){
-				this.part.compare = this.operators[operator];
+				this.part.compare = this.comparers[operator];
 			}
 
 			this.parts.push(this.part);
