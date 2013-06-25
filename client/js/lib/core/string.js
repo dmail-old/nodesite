@@ -4,6 +4,9 @@ String.complement = Object.complement.bind(String);
 Function.UPPERCASE = function(a){ return a.toUpperCase(); };
 Function.ESCAPE = function(a){ return '\\' + a; };
 
+String.SPACE = ' ';
+String.EMPTY = '';
+
 String.complement({
 	toInt: function(base){
 		return parseInt(this, base || 10);
@@ -31,11 +34,11 @@ String.complement({
 	},
 
 	singleSpace: function(){
-		return String(this).replace(RegExp.SPACE_GLOBAL, ' ');
+		return String(this).replace(RegExp.SPACE_GLOBAL, String.SPACE);
 	},
 
 	trim: function(){
-		return String(this).replace(RegExp.SPACE_TRAILING_GLOBAL, '');
+		return String(this).replace(RegExp.SPACE_TRAILING_GLOBAL, String.EMPTY);
 	},
 
 	clean: function(){

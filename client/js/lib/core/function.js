@@ -10,6 +10,9 @@ Function.THIS = function(){ return this; };
 Function.RETURN = function(a){ return a; };
 Function.IMPLEMENT = function(){ throw new Error('unimplemented'); };
 
+Function.UPPERCASE = function(a){ return a.toUpperCase(); };
+Function.ESCAPE = function(a){ return '\\' + a; };
+
 // keep function through JSON format JSON.parse(json, Function.reviver);
 Function.reviver = function(key, value){
 	return typeof value == 'string' && value.indexOf('(function ') === 0 ? eval(value) : value;
