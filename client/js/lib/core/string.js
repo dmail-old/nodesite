@@ -1,9 +1,6 @@
 String.implement = Object.implement.bind(String);
 String.complement = Object.complement.bind(String);
 
-Function.UPPERCASE = function(a){ return a.toUpperCase(); };
-Function.ESCAPE = function(a){ return '\\' + a; };
-
 String.SPACE = ' ';
 String.EMPTY = '';
 
