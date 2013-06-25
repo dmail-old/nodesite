@@ -41,7 +41,7 @@ config.js = [].concat(
 		"object.at", "filter", "array.iterate", "array.find",
 		"random", "stringList", "memory",// "path",
 		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
-		"treeTraversal", "treeFinder", "nodeInterface", "document"
+		"treeTraversal", "treeFinder", "nodeInterface", "nodeIterator", "document"
 	].prefix('lib/'),
 	[
 		"browser", "os",
