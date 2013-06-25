@@ -113,9 +113,11 @@ NS.Emitter = {
 		}
 
 		if( listeners ){
-			i = -1;
+			i = 0;
 			j = listeners.length;
-			while(++i < j) this.applyListener(listeners[i], name, args);
+			for(;i<j;i++){
+				this.applyListener(listeners[i], name, args);
+			}
 		}
 
 		return this;

@@ -5,7 +5,7 @@ NS.Document = {
 
 	constructor: function(baseNode){
 		this.constructors = {};
-		this.children = [];
+		this.childNodes = [];
 		this.emitter = NS.Emitter.new(this);
 		this.baseNode = baseNode;
 	},
@@ -34,18 +34,18 @@ NS.Document = {
 		}
 
 		node.ownerDocument = this;
-		this.createChildren(node);
+		this.createChildNodes(node);
 
 		return node;
 	},
 
-	createChildren: function(node){
-		var children = node.children;
+	createChildNodes: function(node){
+		var childNodes = node.childNodes;
 
-		node.children = [];
+		node.childNodes = [];
 
-		if( children ){
-			children.forEach(function(child){
+		if( childNodes ){
+			childNodes.forEach(function(child){
 				node.appendChild(this.createNode(node.getPrototype(), child));
 			}, this);
 		}

@@ -1,11 +1,11 @@
 <script>
 var data = {
 	name: 'collection',
-	children: [
-		{name: 'node0', children: [{name: 'node0.1'}]},
+	childNodes: [
+		{name: 'node0', childNodes: [{name: 'node0.1'}]},
 		{name: 'node1'},
-		{name: 'node2', children: [{name: 'node2.1'}, {name: 'node2.2'}]},
-		{name: 'node3', children: [{name: 'node3.1'}]}
+		{name: 'node2', childNodes: [{name: 'node2.1'}, {name: 'node2.2'}]},
+		{name: 'node3', childNodes: [{name: 'node3.1'}]}
 	]
 };
 var nodeModel = NS.modelDocument.createNode('node', data);
@@ -25,9 +25,9 @@ rootView.addClass('unselectable');
 //rootView.control('nav');
 
 nodeView.expand();
-nodeView.children[0].expand();
-nodeView.children[2].expand();
-nodeView.children[3].expand();
+nodeView.childNodes[0].expand();
+nodeView.childNodes[2].expand();
+nodeView.childNodes[3].expand();
 
 /*
 Comment faire en sorte que ce qui suit soit

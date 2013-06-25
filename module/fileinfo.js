@@ -14,7 +14,7 @@ module.exports = Object.prototype.extend({
 			ctime: this.stat.ctime
 		};
 
-		if( this.children ) data.children = this.children;
+		if( this.childNodes ) data.childNodes = this.childNodes;
 		if( this.listed ) data.listed = this.listed;
 
 		return data;

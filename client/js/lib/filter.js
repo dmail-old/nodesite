@@ -134,10 +134,7 @@ NS.Filter.Parser = {
 		'*:': function(a, b){ return a.contains(b); },
 		'^:': function(a, b){ return a.startsWith(b); },
 		'$:': function(a, b){ return a.endsWith(b); },
-		'~:': function(a, b){
-			var regexp = new RegExp(b.escapeRegExp().replace(/\\\*/g,'.'));
-			return a && regexp.test(a);
-		}
+		'~:': function(a, b){ return a && b.test(a); }
 	},
 
 	constructor: function(expression){
@@ -194,20 +191,24 @@ NS.Filter.Parser = {
 	},
 
 	parseOperator: function(operator){
+		// when operator is : check for presence of '*'
 		if( operator == ':' ){
 			var value = this.part.value, star = value.indexOf('*', 1), len = value.length;
 
 			if( star != -1 ){
-				// ~= a star is in middle of the value -> test by regexp
-				if( star != len - 1 ) operator = '~:';
-				// else star si at the begining, at the end or both
+				// ~= a * is in middle of the value -> test by regexp
+				if( star != len - 1 ){
+					operator = '~:';
+					this.part.value = new RegExp(value.escapeRegExp().replace(/\\\*/g, '.'));
+				}
+				// else * is at the begining, at the end or both
 				else{
 					var firstChar = value.charAt(0), lastChar = value.charAt(len-1);
 
 					// * surround the string wich mean contains
 					if( (firstChar == '"' || firstChar == '*') && firstChar == lastChar ){
 						operator = '*:';
-						this.part.value = value.substring(1, len-1);
+						this.part.value = value.substring(1, len - 1);
 					}
 					// * is firstChar wich means startsWith
 					else if( firstChar == '*' ){
@@ -217,7 +218,7 @@ NS.Filter.Parser = {
 					// * is lastChar wich means endsWith
 					else if( lastChar == '*' ){
 						operator = '^:';
-						this.part.value = value.substring(0, len-1);
+						this.part.value = value.substring(0, len - 1);
 					}
 				}
 			}
@@ -236,15 +237,12 @@ NS.Filter.Parser = {
 			this.part = {
 				key: key,
 				operator: operator,
-				value: value
+				value: value,
+				compare: null
 			};
 
-			if( operator == ':' ){
-				this.part.operator = operator = this.parseOperator(operator);
-			}
-			if( value != '*' ){
-				this.part.compare = this.comparers[operator];
-			}
+			if( operator == ':' ) this.part.operator = this.parseOperator(operator);
+			if( value != '*' ) this.part.compare = this.comparers[this.part.operator];
 
 			this.parts.push(this.part);
 			this.part = null;

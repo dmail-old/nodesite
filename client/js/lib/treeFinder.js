@@ -1,4 +1,4 @@
-var exports = NS.treeFinder = {
+NS.treeFinder = {
 	matchIterator: function(iterator, match, bind, first){
 		return NS.Filter.matchIterator(iterator, this, match, bind, first);
 	},
@@ -52,7 +52,7 @@ var exports = NS.treeFinder = {
 	}
 };
 
-exports.traversalMethods = {
+NS.treeFinder.traversalMethods = {
 	node: 'crossNode',
 	parent: 'crossParent',
 	child: 'crossChild',
@@ -62,11 +62,11 @@ exports.traversalMethods = {
 	sibling: 'crossSibling'
 };
 
-Object.eachPair(exports.traversalMethods, function(axis, iteratorName){
+Object.eachPair(NS.treeFinder.traversalMethods, function(axis, iteratorName){
 	var maj = axis.capitalize();
 
-	exports['get' + maj] = exports.createFindMethod(NS.treeTraversal[iteratorName]);
-	exports['get' + maj + 's'] = exports.createFindAllMethod(NS.treeTraversal[iteratorName]);
+	NS.treeFinder['get' + maj] = NS.treeFinder.createFindMethod(NS.treeTraversal[iteratorName]);
+	NS.treeFinder['get' + maj + 's'] = NS.treeFinder.createFindAllMethod(NS.treeTraversal[iteratorName]);
 });
 
 /*

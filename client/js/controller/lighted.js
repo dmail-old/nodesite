@@ -13,6 +13,19 @@ a view emit 'mouseout' and no controlled view is the relatedTarget
 an other view get lighted class
 a view emit 'unlight'
 
+
+alors voilà ce que j'avais dit:
+
+ceci devient indépendant des vues, en gros ceci peut se mettre sur nimporte quel élément HTML
+pour les vues je le met sur l'élément HTML de la vue
+
+ce que fait cette classe c'est de lighted les sous éléments et l'élément concerné
+typiquement il écoute des events 'mouseover', 'mouseout' et les éléments pour lequels
+acceptNode retourne true récup la classe lighted
+on modifieras la fonction qui met lighted pour que la vue mette lighted et non l'élément
+
+ce principe seras réutilisé pour sélection,nav etc
+
 */
 
 NS.Controller.define('lighted', {

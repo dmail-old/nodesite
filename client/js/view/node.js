@@ -15,7 +15,7 @@ NS.viewDocument.define('node', NS.viewstate, {
 	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
 	// this function will surely be names hasChildren and transferred in childrenInterface
 	isEmpty: function(){
-		return this.children.length === 0;
+		return !this.hasChildNodes();
 	},
 
 	createElement: function(){

@@ -45,21 +45,23 @@ les events de tous les controlleurs
 NS.View = {
 	// about the view
 	id: null,
-	emitter: null,	
+	emitter: null,
 	controllers: null,
+
 	// about model
 	model: null,
 	listener: null,
 	listeners: {
 		'destroy': 'destructor',
 		'adopt': function(child, index){
-			this.insertBefore(child, this.children[index]);
+			this.insertBefore(child, this.childNodes[index]);
 		},
 
 		'emancipate': function(){
 			this.parentNode.removeChild(this);
 		}
 	},
+
 	// about the element
 	element: null,
 	eventListener: null,
@@ -67,7 +69,7 @@ NS.View = {
 	innerHTML: '',
 	attributes: null,
 	classList: null,
-	className: '',	
+	className: '',
 
 	constructor: function(model){
 		this.controllers = {};
@@ -182,9 +184,9 @@ NS.View = {
 			this.listener.emitter = model;
 			this.listener.listen();
 
-			this.children = this.model.children;
+			this.childNodes = this.model.childNodes;
 			if( this.ownerDocument ){
-				this.ownerDocument.createChildren(this);
+				this.ownerDocument.createChildNodes(this);
 			}
 		}
 	},
@@ -259,7 +261,7 @@ NS.View = {
 
 		insertChildren: function(element){
 			this.setChildrenElement(element);
-			this.children.forEach(function(child){ child.insertElement(element); });
+			this.childNodes.forEach(function(child){ child.insertElement(element); });
 		},
 
 		renderChildren: function(){
@@ -338,18 +340,18 @@ NS.viewstate = {
 		actived: ['active', 'unactive']
 	},
 	toggleState: function(state, e){
-		return this.emit(this.states[state][Number(this.hasClass(state))], [e]);
+		return this.emit(this.states[state][Number(this.hasClass(state))], e);
 	}
 };
 
 Object.eachPair(NS.viewstate.states, function(state, methods){
 	var on = methods[0], off = methods[1];
 
-	NS.viewstate[on] = function(){
-		return this.emit(on, arguments);
+	NS.viewstate[on] = function(e){
+		return this.emit(on, e);
 	};
 	NS.viewstate[off] = function(e){
-		return this.emit(off, arguments);
+		return this.emit(off, e);
 	};
 });
 

@@ -1,7 +1,7 @@
 NS.Model = {
 	cid: 0,
 	emitter: null,
-	properties: null,	
+	properties: null,
 	name: '',
 
 	validationError: null,
@@ -12,7 +12,7 @@ NS.Model = {
 		this.cid = this.cid++;
 
 		if( this.has('name') ) this.name = this.get('name');
-		if( this.has('children') ) this.children = this.get('children');
+		if( this.has('childNodes') ) this.childNodes = this.get('childNodes');
 	},
 
 	parse: function(properties){
@@ -84,7 +84,7 @@ NS.Model = {
 	NS.treeFinder,
 	{
 		oninsertchild: function(child){
-			this.emit('adopt', child, this.children.indexOf(child));
+			this.emit('adopt', child, this.childNodes.indexOf(child));
 			//child.crossNode(function(node){ node.emit('enter'); }, null, true);
 		},
 

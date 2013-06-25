@@ -1,6 +1,9 @@
 String.implement = Object.implement.bind(String);
 String.complement = Object.complement.bind(String);
 
+Function.UPPERCASE = function(a){ return a.toUpperCase(); };
+Function.ESCAPE = function(a){ return '\\' + a; };
+
 String.complement({
 	toInt: function(base){
 		return parseInt(this, base || 10);
@@ -19,25 +22,23 @@ String.complement({
 		return this.indexOf(pattern, index) !== -1;
 	},
 
-	trim: function(){
-		return String(this).replace(/^\s+|\s+$/g, '');
+	capitalize: function(){
+		return String(this).replace(RegExp.WORD_GLOBAL, Function.UPPERCASE);
+	},
+
+	escapeRegExp: function(){
+		return this.replace(RegExp.SPECIAL_GLOBAL, Function.ESCAPE);
 	},
 
 	singleSpace: function(){
-		return String(this).replace(/\s+/g, ' ');
+		return String(this).replace(RegExp.SPACE_GLOBAL, ' ');
+	},
+
+	trim: function(){
+		return String(this).replace(RegExp.SPACE_TRAILING_GLOBAL, '');
 	},
 
 	clean: function(){
 		return String.prototype.singleSpace.call(this).trim();
-	},
-
-	capitalize: function(){
-		return String(this).replace(/\b[a-z]/g, function(match){
-			return match.toUpperCase();
-		});
-	},
-
-	escapeRegExp: function(){
-		return this.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1');
 	}
 });

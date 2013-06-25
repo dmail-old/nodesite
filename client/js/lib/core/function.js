@@ -20,9 +20,22 @@ Function.replacer = function(key, value){
 	return typeof value == 'function' ? '(' + String(value) + ')' : value;
 };
 
+// from prototype library
+Function.argumentNames = function(fn){
+    var names = fn.toString().match(/^[\s\(]*function[^(]*\(([^)]*)\)/)[1]
+      .replace(/\/\/.*?[\r\n]|\/\*(?:.|[\r\n])*?\*\//g, '')
+      .replace(/\s+/g, '').split(',');
+    return names.length == 1 && !names[0] ? [] : names;
+};
+
 Function.complement({
-	toSource: function(){
-		return '(' + this.toString() + ')';
+	// allow to prefill that execution of a function with x arguments
+	curry: function(){
+		var self = this, args = Array.slice(arguments);
+		return function(){
+			// if arguments needs to be added, add them after prefilled arguments, else use directly prefilled arguments
+			return self.apply(this, arguments.length ? [].concat(args).concat(Array.slice(arguments)) : args);
+		};
 	},
 
 	overloadGetter: function(usePlural){
@@ -42,35 +55,18 @@ Function.complement({
 		};
 	},
 
-	// allow to prefill that execution of a function with x arguments
-	curry: function(){
-		var self = this, args = Array.slice(arguments);
-		return function(){
-			// if arguments needs to be added, add them after prefilled arguments, else use directly prefilled arguments
-			return self.apply(this, arguments.length ? [].concat(args).concat(Array.slice(arguments)) : args);
+	overloadSetter: function(usePlural){
+		var self = this;
+		return function(a, b){
+			if( a == null ) return this;
+			if( usePlural || typeof a != 'string' ){
+				for( var k in a ) self.call(this, k, a[k]);
+			}
+			else{
+				self.call(this, a, b);
+			}
+
+			return this;
 		};
 	}
-});
-
-// from prototype library
-Function.argumentNames = function(fn){
-    var names = fn.toString().match(/^[\s\(]*function[^(]*\(([^)]*)\)/)[1]
-      .replace(/\/\/.*?[\r\n]|\/\*(?:.|[\r\n])*?\*\//g, '')
-      .replace(/\s+/g, '').split(',');
-    return names.length == 1 && !names[0] ? [] : names;
-};
-
-Function.implement('overloadSetter', function(usePlural){
-	var self = this;
-	return function(a, b){
-		if( a == null ) return this;
-		if( usePlural || typeof a != 'string' ){
-			for( var k in a ) self.call(this, k, a[k]);
-		}
-		else{
-			self.call(this, a, b);
-		}
-
-		return this;
-	};
 });

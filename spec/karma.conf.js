@@ -5,11 +5,11 @@ files = [
   	JASMINE_ADAPTER,
 	'./adapter.js',
 	'../client/js/lib/core/object.js',
-	'../client/js/lib/core/string.js',
+	'../client/js/lib/core/regexp.js',
 	'../client/js/lib/core/boolean.js',
 	'../client/js/lib/core/number.js',
-	'../client/js/lib/core/regexp.js',
 	'../client/js/lib/core/function.js',
+	'../client/js/lib/core/string.js',
 	'../client/js/lib/core/array.js',
 
 	'../client/js/lib/object.at.js',
