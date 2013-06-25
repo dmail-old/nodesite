@@ -226,7 +226,7 @@ var Table = NS.Table = Object.prototype.extend(require(root + '/client/js/lib/em
 			oncesuccess.call(this);
 		}
 		else{
-			this.reply.apply(this, [null].concat(toArray(arguments)));
+			this.reply.apply(this, [null].concat(Array.slice(arguments)));
 			this.unlock();
 		}
 	},
@@ -251,7 +251,7 @@ var Table = NS.Table = Object.prototype.extend(require(root + '/client/js/lib/em
 		delete this.callback;
 
 		if( args ){
-			args = toArray(args);
+			args = Array.slice(args);
 			var i = args.length;
 			while(i--){
 				if( typeof args[i] == 'function' ){
@@ -280,11 +280,11 @@ var Table = NS.Table = Object.prototype.extend(require(root + '/client/js/lib/em
 
 	exec: function(action){
 		if( this.watching && ['appendLine','removeLine','replaceLine'].indexOf(action) !== -1 ){
-			this.changes.push(toArray(arguments));
+			this.changes.push(Array.slice(arguments));
 			return;
 		}
 
-		var args = toArray(arguments, 1);
+		var args = Array.slice(arguments, 1);
 		this.methods[action].apply(this, args);
 	},
 
@@ -632,7 +632,7 @@ Table.defineActions({
 	},
 
 	eval: function(fn){
-		fn.apply(this, toArray(arguments, 1));
+		fn.apply(this, Array.slice(arguments, 1));
 	},
 
 	read: function(){

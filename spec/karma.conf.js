@@ -4,8 +4,6 @@ files = [
 	JASMINE,
   	JASMINE_ADAPTER,
 	'./adapter.js',
-	'../client/js/',
-	'../client/js/lib/core/util.js',
 	'../client/js/lib/core/object.js',
 	'../client/js/lib/core/string.js',
 	'../client/js/lib/core/boolean.js',

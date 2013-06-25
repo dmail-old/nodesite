@@ -27,7 +27,7 @@ global.config = require('./config.js');
 global.lang = {};
 global.NS = {};
 
-['util', 'object', 'string', 'boolean', 'number', 'regexp', 'function', 'array'].forEach(function(name){
+['object', 'string', 'boolean', 'number', 'regexp', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/lib/core/' + name);
 });
 
@@ -83,7 +83,7 @@ global.applyScript = function(path, bind, args, callback){
 };
 
 global.callScript = function(path, bind){
-	var args = toArray(arguments, 2), callback = args.pop();
+	var args = Array.slice(arguments, 2), callback = args.pop();
 	return this.applyScript(path, bind, args, callback);
 };
 

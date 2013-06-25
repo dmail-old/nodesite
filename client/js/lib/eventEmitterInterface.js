@@ -2,7 +2,7 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 	dispatchEvent: function(event){
 		var target = this, parents = [], i, j = 0;
 
-		while(target = target.parentNode) parents[j++] = target;	
+		while(target = target.parentNode) parents[j++] = target;
 
 		event.target = this;
 
@@ -47,7 +47,7 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 
 		event.inherit = true;
 		event.args = toArray(arguments, 1);
-		
+
 		return this.dispatchEvent(event);
 	},
 	*/
@@ -55,7 +55,7 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 	emit: function(name){
 		var event = NS.Event.new(name, false);
 
-		event.args = toArray(arguments, 1);
+		event.args = Array.slice(arguments, 1);
 
 		return this.dispatchEvent(event);
 	}

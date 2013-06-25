@@ -81,7 +81,7 @@ window.server = {
 	},
 
 	callAction: function(action){
-		var args = toArray(arguments, 1);
+		var args = Array.slice(arguments, 1);
 		var callback = args[args.length-1];
 
 		if( typeof callback == 'function' ) args.pop();

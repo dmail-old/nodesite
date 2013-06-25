@@ -110,7 +110,7 @@ Element.implement({
 	},
 
 	getProperties: function(){
-		return toArray(arguments).map(this.getProperty, this).associate(arguments);
+		return Array.slice(arguments).map(this.getProperty, this).associate(arguments);
 	},
 
 	removeProperty: function(name){

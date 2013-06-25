@@ -69,7 +69,7 @@ Object.mergePair = function(key, value){
 };
 
 Object.merge = function(object){
-	Object.eachObjectIn(toArray(arguments, 1), 'eachOwnPair', Object.mergePair, object);
+	Object.eachObjectIn(Array.slice(arguments, 1), 'eachOwnPair', Object.mergePair, object);
 	return object;
 };
 

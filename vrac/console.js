@@ -29,41 +29,41 @@ var Inspect = new Class({
 	maxDepth: 5,
 	// nombre de caractères pouvant tenir sur une ligne
 	maxChars: 80,
-	
+
 	constructor: function(){
 		this.reset();
 	},
-	
+
 	reset: function(){
 		this.resetLine();
 		this.count = 0;
 		this.items = [];
 	},
-	
+
 	inspect: function(item){
 		var result = this.stringify(item);
 		this.reset();
 		return result;
 	},
-	
+
 	stylize: function(string, type){
 		string = String(string);
-		
+
 		var linelength = String.removeTypes(this.line).length;
 		var strlen = String.removeTypes(string).length;
-		
-		if( linelength + strlen + this.ellipsis.length > this.maxChars ){			
+
+		if( linelength + strlen + this.ellipsis.length > this.maxChars ){
 			string = string.substr(0, this.maxChars - this.ellipsis.length - linelength - 1); // -1 pour la virgule finale
 			string+= String.setType(this.ellipsis, 'ellipsis');
 		}
-		
+
 		if( this.color ){
 			string = String.setType(string, type);
 		}
-		
+
 		return string;
 	},
-	
+
 	isDeep: function(item){
 		return this.count > this.maxDepth;
 	},
@@ -71,18 +71,18 @@ var Inspect = new Class({
 	isCircular: function(item){
 		return this.items.indexOf(item) !== -1;
 	},
-	
+
 	calcLineWidth: function(item){
 		var inspector = new Inspect();
 		inspector.multiline = false;
 		inspector.color = false;
-		
+
 		var length = String.removeTypes(this.line).length;
 		var str = inspector.inspect(item);
-		
+
 		return length + str.length;
-	}, 
-	
+	},
+
 	calcMultiline: function(item){
 		return this.calcLineWidth(item) > this.maxChars;
 	},
@@ -90,7 +90,7 @@ var Inspect = new Class({
 	stringify: function(source){
 		if( source === null ) return this.stylize('null', 'null');
 		if( source === undefined ) return this.stylize('undefined', 'undefined');
-		
+
 		switch(typeof source){
 			case 'boolean': return this.stylize(source, 'boolean');
 			case 'number': return this.stylize(source, 'number');
@@ -99,44 +99,44 @@ var Inspect = new Class({
 				if( source instanceof RegExp ) return this.stylize(source, 'regexp');
 				if( source instanceof Date ) return this.stylize(source, 'date');
 				if( source instanceof Function && !Object.keys(source).length ) return this.stylize('[Function]', 'function');
-				
+
 				return this.stringifyObject(source);
 			break;
 		}
-		
+
 		return '';
 	},
-	
+
 	resetLine: function(){
 		this.line = '';
 	},
-	
+
 	write: function(str){
 		this.line+= str;
 	},
-	
+
 	writeValue: function(value){
 		this.line+= this.stringify(value);
 	},
-	
+
 	writePair: function(key, value){
 		this.line+= this.stylize(key, 'key') + ': ';
 		this.line+= this.stringify(value);
 	},
-	
+
 	writeTab: function(count){
 		this.line+= this.tab.repeat(count);
 	},
-	
+
 	writeLine: function(multiline){
 		var line;
-		
+
 		if( multiline ) line = this.newLine;
 		else line = ' ';
-		
+
 		this.write(line);
 	},
-	
+
 	writeSep: function(multiline){
 		if( multiline ){
 			this.write(',');
@@ -145,7 +145,7 @@ var Inspect = new Class({
 			this.write(', ');
 		}
 	},
-	
+
 	readLine: function(){
 		return this.line;
 	}
@@ -154,21 +154,21 @@ var Inspect = new Class({
 Inspect.prototype.stringifyObject = function(source){
 	if( this.isCircular(source) ) return this.stylize(this.circular, 'circular');
 	this.items.push(source);
-	
+
 	var multiline = this.multiline == 'auto' ? this.calcMultiline(source) : this.multiline;
 	var out = '';
 	var json = '';
 	var braclet = '';
 	var count = this.count;
 	var first = count === 0;
-	
+
 	this.count++;
-	
+
 	if( this.isDeep() ) return this.stylize(this.deep, 'deep');
-	
+
 	if( source instanceof Array ){
 		braclet = '[]';
-		
+
 		var i = 0, j = source.length;
 		for(;i<j;i++){
 			this.resetLine();
@@ -176,23 +176,23 @@ Inspect.prototype.stringifyObject = function(source){
 				this.writeLine(multiline);
 				this.writeTab(count+1);
 			}
-			
+
 			this.writeValue(source[i]);
-			
+
 			if( i+1 !== j ) this.writeSep(multiline);
 			json+= this.readLine();
 		}
 	}
 	else{
 		braclet = '{}';
-		
+
 		// var keys = [];
 		// for(var key in source){
 			// keys.push(key);
 		// }
-		
+
 		var keys = Object.keys(source);
-		
+
 		var i = 0, j = keys.length, key;
 		for(;i<j;i++){
 			this.resetLine();
@@ -200,39 +200,39 @@ Inspect.prototype.stringifyObject = function(source){
 				this.writeLine(multiline);
 				this.writeTab(count+1);
 			}
-			
+
 			key = keys[i];
 			this.writePair(key, source[key]);
-			
+
 			if( i+1 !== j ) this.writeSep(multiline);
 			json+= this.readLine();
 		}
 	}
-	
+
 	this.count = count;
-	
+
 	if( json == '' ) return braclet;
 	if( count && json.length > this.complexLength ){
 		return this.stylize(this.complex, 'complex');
 	}
-	
+
 	if( multiline && first ){
 		out+= this.newLine;
 	}
-	
+
 	if( source instanceof Function ) out+= String.setType('[Function] ', 'function');
 	out+= braclet.charAt(0);
 	out+= json;
-	
+
 	if( multiline ){
 		out+= this.newLine;
 		if( !first ){
 			out+= this.tab.repeat(count);
 		}
 	}
-	
+
 	out+= braclet.charAt(1);
-	
+
 	return out;
 }
 
@@ -280,47 +280,47 @@ Object.defineProperty(global, '__stack', {
 
 Object.append(console, {
 	color: function(){
-		var args = toArray(arguments);
+		var args = Array.slice(arguments);
 		args = args.map(function(item){
 			return util.inspect(item, false, 4, true);
 		});
 		console.log.apply(console, args);
 	},
-	
+
 	colorAll: function(){
-		var args = toArray(arguments);
+		var args = Array.slice(arguments);
 		args = args.map(function(item){
 			return util.inspect(item, true, 4, true);
 		});
 		console.log.apply(console, args);
 	},
-	
+
 	prefix: function(prefix, args, method){
 		prefix = getPrefix(prefix, prefix);
 		args = Array.prototype.slice.call(args);
 		args = [prefix].concat(args);
-		
+
 		return method.apply(this, args);
 	},
-	
+
 	info: function(){
 		return this.prefix('info', arguments, this.log);
 	},
-	
-	help: function(){	
+
+	help: function(){
 		return this.prefix('help', arguments, this.log);
 	},
-	
+
 	warning: console.warn,
 	warn: function(){
 		return this.prefix('warn', arguments, this.warning);
-	},	
-	
+	},
+
 	// https://github.com/visionmedia/better-assert/blob/master/lib/better-assert.js
 	debug: function(data){
 		var result = '';
-		
-		var 
+
+		var
 			call = __stack[1],
 			file = call.getFileName(),
 			lineno = call.getLineNumber(),
@@ -329,18 +329,18 @@ Object.append(console, {
 			src = line
 			//src = line.match(/debug\((.*)\)/)[1]//line.substr(0, line.length-1)
 		;
-		
+
 		var debug = String.setType('debug', 'debug')+': ';
 		var inspector = new Inspect();
 		var value = '';
-	
+
 		inspector.color = true;
 		inspector.newLine = '\n'+debug;
-		
+
 		result = debug + src + ' (' + file + ':' + lineno + ')\n';
-		
+
 		value = inspector.inspect(data);
-		
+
 		if( value.indexOf(inspector.newLine) === 0 ){
 			value = debug + value + '\n' + debug
 		}
@@ -348,7 +348,7 @@ Object.append(console, {
 			value = debug + '\n' + debug + value + '\n' + debug;
 		}
 		result+= value;
-		
+
 		return console.log(result);
-	}	
+	}
 });

@@ -104,7 +104,7 @@ Object.append(Object, {
 	},
 
 	callAt: function(object, path, bind){
-		return Object.applyAt(object, path, bind, toArray(arguments, 3));
+		return Object.applyAt(object, path, bind, Array.slice(arguments, 3));
 	}
 });
 

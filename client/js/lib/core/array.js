@@ -1,6 +1,14 @@
 Array.implement = Object.implement.bind(Array);
 Array.complement = Object.complement.bind(Array);
 
+// arguments to array
+if( !Array.slice ){
+	Array.slice = function(collection, start, end){
+		if( arguments.length == 1 ) return Array.apply(null, collection);
+		return Array.prototype.slice.call(collection, start, end);
+	};
+}
+
 Array.complement({
 	applyEach: function(method, args){
 		var i = 0, j = this.length, item;
@@ -25,7 +33,7 @@ Array.complement({
 	},
 
 	callEach: function(method){
-		return Array.prototype.applyEach.call(this, method, toArray(arguments, 1));
+		return Array.prototype.applyEach.call(this, method, Array.slice(arguments, 1));
 	},
 
 	mapApply: function(method, args){
@@ -34,7 +42,7 @@ Array.complement({
 	},
 
 	mapCall: function(method){
-		return Array.prototype.mapApply.call(this, method, toArray(arguments, 1));
+		return Array.prototype.mapApply.call(this, method, Array.slice(arguments, 1));
 	},
 
 	max: function(){

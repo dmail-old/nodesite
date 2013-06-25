@@ -50,7 +50,7 @@ Element.implement({
 
 			if( typeof method != 'function' ) throw new Error('unknown measurer ' + name);
 
-			return method.apply(this, toArray(arguments, 1));
+			return method.apply(this, Array.slice(arguments, 1));
 		},
 
 		getBorder: function(side){

@@ -68,7 +68,7 @@ else{
 }
 
 Object.append = function(object){
-	Object.eachObjectIn(toArray(arguments, 1), 'eachOwnPair', Object.appendPair, object);
+	Object.eachObjectIn(Array.prototype.slice.call(arguments, 1), 'eachOwnPair', Object.appendPair, object);
 	return object;
 };
 
@@ -78,7 +78,7 @@ Object.completePair = function(key){
 };
 
 Object.complete = function(object){
-	Object.eachObjectIn(toArray(arguments, 1), 'eachOwnPair', Object.completePair, object);
+	Object.eachObjectIn(Array.prototype.slice.call(arguments, 1), 'eachOwnPair', Object.completePair, object);
 	return object;
 };
 

@@ -122,7 +122,7 @@ NS.Emitter = {
 	},
 
 	callListeners: function(name){
-		return this.applyListeners(name, toArray(arguments, 1));
+		return this.applyListeners(name, Array.slice(arguments, 1));
 	},
 
 	/*
@@ -154,7 +154,7 @@ NS.Emitter = {
 			}, this);
 		}
 		else if( typeof name == 'object' ){
-			args = toArray(args, 1);
+			args = Array.slice(args, 1);
 			for(key in name){
 				method.apply(this, [key, name[key]].concat(args));
 			}

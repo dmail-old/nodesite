@@ -80,12 +80,12 @@ module.exports = NS.File = Object.prototype.extend({
 	},
 
 	open: function(){
-		var args = [this.path].concat(toArray(arguments));
+		var args = [this.path].concat(Array.slice(arguments));
 		return FS.open.apply(FS, args);
 	},
 
 	openSync: function(){
-		var args = [this.path].concat(toArray(arguments));
+		var args = [this.path].concat(Array.slice(arguments));
 		return FS.openSync.apply(FS, args);
 	},
 

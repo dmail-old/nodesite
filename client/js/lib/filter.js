@@ -13,6 +13,10 @@ provides: Filter
 */
 
 NS.Filter = {
+	SKIP: 'continue',
+	ACCEPT: true,
+	REJECT: false,
+
 	toFilter: function(expression, reverse){
 		var filter;
 
@@ -40,7 +44,7 @@ NS.Filter = {
 		match = this.toFilter(match);
 		if( match != Function.FALSE ){
 			iterator.call(iteratorBind, function(item){
-				if( match.call(bind, item) === true ){
+				if( match.call(bind, item) === NS.Filter.ACCEPT ){
 					if( first ){
 						found = item;
 						return true;

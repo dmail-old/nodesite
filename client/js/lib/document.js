@@ -11,7 +11,7 @@ NS.Document = {
 	},
 
 	define: function(name){
-		var constructor = this.baseNode.extend.apply(this.baseNode, toArray(arguments, 1));
+		var constructor = this.baseNode.extend.apply(this.baseNode, Array.slice(arguments, 1));
 		this.constructors[name] = constructor;
 	},
 
