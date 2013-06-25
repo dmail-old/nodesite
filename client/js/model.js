@@ -85,11 +85,9 @@ NS.Model = {
 	{
 		oninsertchild: function(child){
 			this.emit('adopt', child, this.childNodes.indexOf(child));
-			//child.crossNode(function(node){ node.emit('enter'); }, null, true);
 		},
 
 		onremovechild: function(child){
-			//child.crossNode(function(node){ node.emit('leave'); }, null, true);
 			child.emit('emancipate');
 		}
 	}

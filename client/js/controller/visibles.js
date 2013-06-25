@@ -83,10 +83,10 @@ NS.Controller.define('visibles', {
 
 		this.view.crossNode(function(view){
 			// view is hidden, ignore all descendant
-			if( !this.isVisible(view) ) return 'continue';
+			if( !this.isVisible(view) ) return NS.Filter.SKIP;
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
-			if( !this.isExpanded(view) ) return 'continue';
+			if( !this.isExpanded(view) ) return NS.Filter.SKIP;
 		}, this);
 
 		return this;

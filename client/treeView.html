@@ -29,6 +29,27 @@ nodeView.childNodes[0].expand();
 nodeView.childNodes[2].expand();
 nodeView.childNodes[3].expand();
 
+// grâce à ceci on devrait pouvoir éviter de conserver le tableau visibles
+NS.View.isVisible = function(){
+	var parent = this;
+
+	if( this.hasClass('hidden') ) return false;
+
+	while(parent = parent.parentNode){
+		if( parent == null || parent.parentNode == null ) return true;
+		if( parent.hasClass('hidden') || !parent.hasClass('expanded') ) return false;
+	}
+
+	return true;
+};
+
+var iterator = NS.NodeIterator.new(rootView, function(view){
+	return view.isVisible() ? NS.Filter.ACCEPT : NS.Filter.REJECT;
+});
+
+console.log('firstvisibleview of root', iterator.firstNode());
+console.log('lastvisibleview of root', iterator.lastNode());
+
 /*
 Comment faire en sorte que ce qui suit soit
 - Réutilisable

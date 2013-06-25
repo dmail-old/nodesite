@@ -67,75 +67,30 @@ NS.treeTraversal = {
 	},
 
 	crossNode: function(fn, bind, includeSelf){
-		var root = this, node = includeSelf ? this : this.firstChild, result, first, next;
+		var root = this, node = includeSelf ? this : this.firstChild, result;
 
 		while( node != null ){
 			result = fn.call(bind, node);
 			if( result == NS.Filter.ACCEPT ) break;
 			if( result != NS.Filter.SKIP ){
-				first = node.firstChild;
-				if( first ){
-					node = first;
+				if( node.firstChild ){
+					node = node.firstChild;
 					continue;
 				}
 			}
 
-			next = node.nextSibling;
-			while(next == null){
-				node = node.parentNode;
-				if( node == root ) break;
-				next = node.nextSibling;
-			}
-			node = next;
-		}
-
-		return node;
-	},
-
-	crossNodeReverse: function(fn, bind, includeSelf){
-		var root = this, node = this, result, prev, last;
-
-		while(node != null){
-
-			prev = node.previousSibling;
-			if( prev && fn.call(bind, prev) == NS.Filter.ACCEPT ){
-				node = prev;
-
-				while( last = node.lastChild){
-					if( fn.call(bind, last) != NS.Filter.ACCEPT ) break;
-					node = last;
+			while(true){
+				if( node.nextSibling ){
+					node = node.nextSibling;
+					break;
 				}
-
-				/*
-				ici node vaut véritablement le noeud qui nous intérêsse
-				cad le précédent noeud qui passe filter
-				pour ça que le système de fonction qui filtre fonctionne pas
-				avec les structures arborescente
-				*/
-			}
-			else{
-				node = node.parentNode;
-				if( node == root ) break;
-				if( !node ) break;
-
-				if( fn.call(bind, node) == NS.Filter.ACCEPT ) break;
+				else{
+					node = node.parentNode;
+					if( node == null || node == root ) return this;
+				}
 			}
 		}
+
+		return this;
 	}
 };
-
-/*
-Object.defineProperties(childrenInterface, {
-	'lastNode': {
-		'get': function(){
-			var node = this, last = null;
-
-			while( node = node.lastChild ){
-				last = node;
-			}
-
-			return last;
-		}
-	}
-});
-*/
