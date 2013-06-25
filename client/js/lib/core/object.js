@@ -82,13 +82,18 @@ Object.complete = function(object){
 	return object;
 };
 
-Object.implementPair = function(key, value){
-	if( typeof value == 'function' ){
-		Object.defineProperty(this, key, {enumerable: false, writable: true, value: value});
+Object.implementPair = function(key, value, object){
+	var descriptor;
+
+	if( object ){
+		descriptor = Object.getOwnPropertyDescriptor(object, key);
+		descriptor.enumerable = false;
 	}
 	else{
-		this[key] = value;
+		descriptor = {enumerable: false, writable: true, value: value};
 	}
+
+	Object.defineProperty(this, key, descriptor);
 };
 
 Object.implement = function(){
