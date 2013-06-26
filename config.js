@@ -39,7 +39,7 @@ config.js = [].concat(
 		"list",
 		"object.util", "options", "chain",
 		"object.at", "filter", "array.iterate", "array.find",
-		"random", "stringList", "memory",// "path",
+		"random", "memory",// "path",
 		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
 		"nodeInterface", "nodeTraversal", "nodeFinder", "document"
 	].prefix('lib/'),
@@ -57,14 +57,13 @@ config.js = [].concat(
 		"node"
 	].prefix('model/'),
 	[
-		"node", "root", "selector"
+		"selector", "tree", "node"
 	].prefix('view/'),
 	[
 		// tree controllers
-		"expanded", "lighted", "focused", "selected", "selection",
-		"indent", "visibles", "nav",
+		"selected", "nav",
 		// selector controllers
-		"opened", "adapt"
+		"opened"
 	].prefix('controller/'),
 	/*[
 		"tree", "tree.list", "tree.sort", "tree.swap",
@@ -84,7 +83,7 @@ config.js = [].concat(
 		"popup",
 		"popup.valid",
 		"selectionRectangle"
-	].prefix('box/'),
+	].prefix('view/box/'),
 	"app"
 	/*[
 		"selector", "multiSelector", "popupSelector"

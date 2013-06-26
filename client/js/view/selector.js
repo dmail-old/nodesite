@@ -10,6 +10,23 @@ NS.viewDocument.define('selector', {
 		minheight: 24
 	},
 
+	constructor: function(){
+		NS.View.constructor.apply(this, arguments);
+
+		this.on({
+			'insertElement': this,
+			'removeElement': this,
+			'open': this
+		});
+
+	},
+
+	handleEvent: function(name, args){
+		if( name == 'insertElement' || name == 'removeElement' || name == 'open' ){
+			this.adapt();
+		}
+	},
+
 	getChildrenElement: function(){
 		return this.getDom('root');
 	},
@@ -29,7 +46,7 @@ NS.viewDocument.define('selector', {
 	},
 
 	getDom: function(className){
-		return this.element.getNode(function(child){
+		return this.element.getNextNode(function(child){
 			return child.hasClass(className);
 		});
 	},
@@ -37,7 +54,7 @@ NS.viewDocument.define('selector', {
 	enable: function(){
 		if( this.hasClass('disabled') ){
 			this.getDom('input').setAttribute('tabIndex', 0);
-			this.element.removeClass('disabled');
+			this.removeClass('disabled');
 			this.emit('enable');
 		}
 	},
@@ -45,7 +62,7 @@ NS.viewDocument.define('selector', {
 	disable: function(){
 		if( !this.hasClass('disabled') ){
 			this.getDom('input').removeAttribute('tabIndex');
-			this.element.addClass('disabled');
+			this.addClass('disabled');
 			this.emit('disable');
 		}
 	},
@@ -103,11 +120,11 @@ NS.viewDocument.define('selector', {
 
 		//if( this.size ) styles['maxHeight'] = this.tree.getLine() * this.size + 1;
 
+		if( isNaN(this.width) ) this.width = root.measure('clientSize', 'x');
+
 		root.setStyles(styles);
-		this.element.setStyles({
-			// au minimum la balise doit faire la largeur de ses choix
-			width: isNaN(this.width) ? root.measure('clientSize', 'x') : this.width,
-			minWidth: this.minwidth
-		});
+		// au minimum la balise doit faire la largeur de ses choix
+		this.setStyle('width', this.width);
+		this.setStyle('minWidth', this.minwidth);
 	}
 });

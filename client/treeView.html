@@ -9,20 +9,13 @@ var data = {
 	]
 };
 var nodeModel = NS.modelDocument.createNode('node', data);
-var rootView = NS.viewDocument.createNode('root');
+var treeView = NS.viewDocument.createNode('tree');
 var nodeView = NS.viewDocument.createNode('node', nodeModel);
 
-rootView.insertElement(document.body);
-rootView.appendChild(nodeView);
+treeView.insertElement(document.body);
+treeView.appendChild(nodeView);
 
-rootView.control('indent');
-rootView.control('visibles');
-rootView.control('lighted');
-rootView.control('focused');
-rootView.control('expanded');
-rootView.control('selection');
-rootView.addClass('unselectable');
-//rootView.control('nav');
+//treeView.control('nav');
 
 nodeView.expand();
 nodeView.childNodes[0].expand();
@@ -47,82 +40,7 @@ function filter(view){
 	return view.isVisible() ? NS.Filter.ACCEPT : NS.Filter.REJECT;
 }
 
-//console.log('firstvisibleview of root', rootView.getFirstNode(filter).element);
-//console.log('lastvisibleview of root', rootView.getLastNode(filter).element);
-
-/*
-Comment faire en sorte que ce qui suit soit
-- Réutilisable
-	-> selection utilisé par treeview et aussi par selectView
-	(qui en fait est un treeview wrapper dans un conteneur)
-- Modulable
-	-> sélection on écoute mousedown mais focus écoute aussi mousedown
-	idéalement faudrais séparer le code qui n'a pas vraiment de point commun
-
-Sachant que le code appartiendras dorénavant aux vues
-
-*/
-
-// lighted
-rootView.eventListener.set('mouseover', function(e){
-	var view = this.cast(e.target);
-
-	// when light only occur on the name element
-	if( view != this && this.hasClass('compact') && e.target != view.getDom('name') ){
-		view = this;
-	}
-
-	if( view == this ){
-		this.emit('unlightAll', e);
-	}
-	else{
-		view.light(e);
-	}
-});
-rootView.eventListener.set('mouseout', function(e){
-	// when the mouse go very fast out of the view mouseover event is'nt fired
-	// on other view (event the parent view)
-	// but we can check the relatedTarget to see if the mouse go out of all view
-	var view = this.cast(e.relatedTarget);
-
-	if( !this.contains(view) ){
-		this.emit('unlightAll', e);
-	}
-});
-
-
-// selected, focused, expanded
-rootView.eventListener.set('mousedown', function(e){
-	var view = this.cast(e);
-
-	view.focus(e);
-	view.select(e);
-	if( e.target.hasClass('tool') ){
-		view.toggleState('expanded');
-	}
-});
-rootView.eventListener.set('click', function(e){
-	var view = this.cast(e);
-
-	if( view == this ){
-		this.emit('unselectAll', e);
-	}
-	else{
-		view.emit('collapse', e);
-	}
-});
-rootView.eventListener.set('dblclick', function(e){
-	// le futur menu contextuel doit prendre le pas sur ce dblclick
-	if( !e.target.hasClass('tool') ){
-		this.cast(e).toggleState('expanded');
-	}
-});
-
-// expanded, nav, selection
-rootView.eventListener.set('keydown', function(e){
-	if( e.control && e.key == 'a' ){
-		this.emit('selectAll', e);
-	}
-});
+console.log('firstvisibleview of root', treeView.getFirstNode(filter).element);
+console.log('lastvisibleview of root', treeView.getLastNode(filter).element);
 
 </script>

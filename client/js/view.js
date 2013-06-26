@@ -43,15 +43,15 @@ les events de tous les controlleurs
 */
 
 NS.View = {
-	// about the view
+	// about view
 	id: null,
 	emitter: null,
 	controllers: null,
 
 	// about model
 	model: null,
-	listener: null,
-	listeners: {
+	modelListener: null,
+	modelListeners: {
 		'destroy': 'destructor',
 		'adopt': function(child, index){
 			this.insertBefore(child, this.childNodes[index]);
@@ -62,112 +62,102 @@ NS.View = {
 		}
 	},
 
-	// about the element
+	// about element
 	element: null,
+	events: null,
 	eventListener: null,
 	tagName: 'div',
 	innerHTML: '',
 	attributes: null,
-	classList: null,
 	className: '',
+	style: null,
 
 	constructor: function(model){
+		this.self.addInstance(this);
+
 		this.controllers = {};
 
 		this.emitter = NS.Emitter.new(this);
-		this.listener = NS.Listener.new(null, this.listeners, this);
+		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
 		this.eventListener = NS.EventListener.new(null, this.events, this);
 
-		this.self.addInstance(this);
-		this.emit('create');
-
 		this.setModel(model);
+		this.createElement();
 
-		this.classList = this.createClassList();
-		this.attributes = this.createAttributes();
+		this.emit('create');
 	},
 
 	destructor: function(){
 		this.emit('destroy');
-		this.unsetElement();
+		this.destroyElement();
 		this.unsetModel();
 		this.self.removeInstance(this);
 	},
 
-	toString: function(){
-		return '<' + this.tagName + Object.toAttrString(this.attributes) +'>' + this.innerHTML + '</' + this.tagName + '>';
-	},
-
-	createClassList: function(){
-		var classList = NS.StringList.new(this.className), self = this;
-
-		classList.update = function(){
-			self.setAttribute('class', this.toString());
-		};
-
-		return classList;
-	},
-
-	createAttributes: function(){
-		var attr = this.attributes ? Object.copy(this.attributes) : {};
-
-		attr['class'] = this.classList.toString();
-		attr[this.self.IDAttribute] = this.id;
-
-		return attr;
-	},
-
 	createElement: function(){
-		var element = new Element(this.tagName);
+		var element = document.createElement(this.tagName), key;
 
-		element.setProperties(this.attributes);
-		if( this.innerHTML ){
-			if( this.model ){
-				this.innerHTML = this.innerHTML.parse(this.model.properties);
-			}
-			element.innerHTML = this.innerHTML;
-		}
-
-		return element;
-	},
-
-	setElement: function(element){
 		this.element = element;
 		this.eventListener.emitter = element;
 		this.eventListener.listen();
-		this.emit('setElement', element);
+
+		if( this.attributes ){
+			for(key in this.attributes){
+				this.setAttribute(key, this.attributes[key]);
+			}
+		}
+		this.setAttribute(this.self.IDAttribute, this.id);
+		if( this.className ){
+			this.element.className = this.className;
+		}
+
+		if( this.style ){
+			for(key in this.style){
+				this.setStyle(key, this.style[key]);
+			}
+		}
+
+		if( this.innerHTML ){
+			if( this.model ){
+				this.element.innerHTML = this.innerHTML.parse(this.model.properties);
+			}
+			else{
+				this.element.innerHTML = this.innerHTML;
+			}
+		}
+
+		this.emit('createElement', element);
 		return this;
 	},
 
-	unsetElement: function(){
+	destroyElement: function(){
 		if( this.element ){
 			this.removeElement();
 
-			this.emit('unsetElement', this.element);
+			this.emit('destroyElement', this.element);
 			this.eventListener.stopListening();
 			this.eventListener.emitter = null;
 			this.element = null;
 		}
+
 		return this;
 	},
 
 	insertElement: function(into, before){
-		if( !this.element ) this.render();
+
+		this.removeElement();
 		into.insertBefore(this.element, before);
 		this.emit('insertElement');
+
 		return this;
 	},
 
 	removeElement: function(){
-		if( this.element ){
+		if( this.element.parentNode ){
 			this.emit('removeElement', this.element);
 			this.element.dispose();
 		}
-		return this;
-	},
 
-	render: function(){
-		this.setElement(this.createElement());
 		return this;
 	},
 
@@ -181,8 +171,8 @@ NS.View = {
 	setModel: function(model){
 		if( model ){
 			this.model = model;
-			this.listener.emitter = model;
-			this.listener.listen();
+			this.modelListener.emitter = model;
+			this.modelListener.listen();
 
 			this.childNodes = this.model.childNodes;
 			if( this.ownerDocument ){
@@ -193,40 +183,46 @@ NS.View = {
 
 	unsetModel: function(){
 		if( this.model ){
-			this.listener.stopListening();
-			this.listener.emitter = null;
+			this.modelListener.stopListening();
+			this.modelListener.emitter = null;
 		}
 	},
 
 	hasClass: function(name){
-		return this.classList.contains(name);
+		return this.element.classList.contains(name);
 	},
 
 	addClass: function(name){
-		this.classList.add(name);
+		this.element.classList.add(name);
+		return this;
 	},
 
 	removeClass: function(name){
-		this.classList.remove(name);
+		this.element.classList.remove(name);
 	},
 
-	toggleClass: function(name){
-		this.classList.toggle(name);
+	toggleClass: function(name, force){
+		this.element.classList.toggle(name, force);
 	},
 
 	hasAttribute: function(name){
-		return name in this.attributes;
+		return this.element.hasAttribute(name);
 	},
 
 	setAttribute: function(name, value){
-		this.attributes[name] = value;
-		if( this.element ){
-			this.element.setProperty(name, value);
-		}
+		this.element.setProperty(name, value);
 	},
 
 	getAttribute: function(name){
-		return this.attributes[name];
+		return this.element.getAttribute(name);
+	},
+
+	setStyle: function(name, value){
+		this.element.setStyle(name, value);
+	},
+
+	getStyle: function(name){
+		return this.element.getStyle(name);
 	}
 }.supplement(
 	NS.EventEmitterInterface,
@@ -322,36 +318,3 @@ NS.viewDocument = NS.Document.new(NS.View);
 Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
-
-Object.toAttrString = function(source){
-	var html = '', key;
-	for(key in source) html+= ' ' + key + '="' + source[key] + '"';
-	return html;
-};
-
-NS.viewstate = {
-	states: {
-		lighted: ['light', 'unlight'],
-		selected: ['select', 'unselect'],
-		expanded: ['expand', 'contract'],
-		focused: ['focus', 'blur'],
-		hidden: ['hide', 'show'],
-		actived: ['active', 'unactive']
-	},
-	toggleState: function(state, e){
-		return this.emit(this.states[state][Number(this.hasClass(state))], e);
-	}
-};
-
-Object.eachPair(NS.viewstate.states, function(state, methods){
-	var on = methods[0], off = methods[1];
-
-	NS.viewstate[on] = function(e){
-		return this.emit(on, e);
-	};
-	NS.viewstate[off] = function(e){
-		return this.emit(off, e);
-	};
-});
-
-

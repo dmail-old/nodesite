@@ -2,28 +2,42 @@ NS.viewDocument.define('node', NS.viewstate, {
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
-	modelEvents: {
+	modelListeners: {
 		'change:name': function(name){
 			this.updateName(name);
 		}
 	},
+	states: {
+		lighted: ['light', 'unlight'],
+		selected: ['select', 'unselect'],
+		expanded: ['expand', 'contract'],
+		focused: ['focus', 'blur'],
+		hidden: ['hide', 'show'],
+		actived: ['active', 'unactive']
+	},
+
+	addState: function(state, e){
+		if( !this.hasClass(state) ){
+			this.addClass(state);
+			this.emit(this.states[state][0], e);
+		}
+		return this;
+	},
+
+	removeState: function(state, e){
+		if( this.hasClass(state) ){
+			this.removeClass(state);
+			this.emit(this.states[state][1], e);
+		}
+	},
+
+	toggleState: function(state, e, force){
+		if( typeof force == 'undefined' ) force = !this.hasClass(state);
+		return force ? this.addState(state, e) : this.removeState(state, e);
+	},
 
 	getChildrenElement: function(){
 		return this.getDom('ul');
-	},
-
-	// NOTE: will be override by FileNodeView -> should not be considered empty until loaded
-	// this function will surely be names hasChildren and transferred in childrenInterface
-	isEmpty: function(){
-		return !this.hasChildNodes();
-	},
-
-	createElement: function(){
-		if( this.isEmpty() ){
-			this.classList.add('empty', 'expanded');
-		}
-
-		return NS.View.createElement.call(this);
 	},
 
 	scrollTo: function(dom){
@@ -56,3 +70,14 @@ NS.viewDocument.define('node', NS.viewstate, {
 		this.getDom('name').innerHTML = name;
 	}
 });
+
+(function(node){
+
+	Object.eachPair(node.states, function(state, methods){
+		var on = methods[0], off = methods[1];
+
+		node[on] = function(e){ return this.addState(state, e); };
+		node[off] = function(e){ return this.removeState(state, e); };
+	});
+
+})(NS.viewDocument.require('node'));
