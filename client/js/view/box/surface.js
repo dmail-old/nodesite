@@ -75,7 +75,7 @@ String.implement('percentOf', function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 });
 
-var exports = {
+var exports = NS.viewDocument.define('surface', {
 	name: 'surface',
 	options: {
 		axis: 'xy',
@@ -216,7 +216,7 @@ var exports = {
 		this.start.height = this.getHeight();
 		// }
 	}
-};
+});
 
 Object.append(exports, {
 	get: function(name){

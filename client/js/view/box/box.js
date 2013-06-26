@@ -14,25 +14,28 @@ FIX:
 ...
 */
 
-var exports = {
-	options: Object.createMerge(NS.Surface.options, {
-		tagName: 'div',
-		properties: {
-			html: 'Hello world',
-			'class': 'box small',
-			'data-scrollReference': 'element',
-			tabindex: 0
-		},
-		draggable: true,
-		resizable: true,
+NS.Box = NS.Surface.extend(NS.options, {
+	tagName: 'div',
+	attributes: {
+		'data-scrollReference': 'element',
+		'data-minwidth': 0,
+		'data-minheight': 0,
+		tabIndex: 0
+	},
+	innerHTML: 'Hello World',
+	className: 'box small',
+	styles: {
 		position: 'absolute',
 		zIndex: 100,
 		width: 'auto',
 		height: 'auto',
-		minwidth: 0,
-		minheight: 0,
 		left: 0,
 		top: 0,
+	},
+
+	options: Object.createMerge(NS.Surface.options, {
+		draggable: true,
+		resizable: true,
 		// on essaye de respecter la position qu'on calcule au départ
 		fixPosition: true,
 		// on recalcule les dimensions à chaque fois (on respecte le pourcentage)
@@ -53,13 +56,13 @@ var exports = {
 		if( this.options.blurclose ) this.on('blur', this.close);
 		if( this.options.closedestroy ) this.on('close', this.destroy);
 
-		this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
-		this.self.instances[this.id = this.self.UID++] = this;
-		NS.Surface.constructor.call(this, this.createElement());
+		//this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
+		//this.self.instances[this.id = this.self.UID++] = this;
+		NS.Surface.constructor.call(this);
 	},
 
 	createElement: function(){
-		var element = new Element(this.options.tagName, this.options.properties);
+		var element = NS.Surface.createElement.call(this);
 
 		// lorsqu'on déplace ou resize manuellement la boîte, cette valeur devient la valeur idéale
 		this.on('change', function(name, value, current, e){
@@ -78,17 +81,9 @@ var exports = {
 			if( e && e.type == 'resize' ) this.setWidth(this.getIdeal('width'), e);
 		});
 
-		if( this.options.resizable ) element.wrapVectors();
-		if( this.options.draggable ) element.on('mousedown', this.mousedown.bind(this));
-		if( this.options.minwidth ) element.setProperty('data-minwidth', this.options.minwidth);
-		if( this.options.minheight ) element.setProperty('data-minheight', this.options.minheight);
+		// if( this.options.resizable ) element.wrapVectors();
+		// if( this.options.draggable ) element.on('mousedown', this.mousedown.bind(this));
 
-		element.on('focus', this.bound.focus, true);
-		element.on('blur', this.bound.blur, true);
-		element.on('keydown', this.bound.keydown);
-		element.setProperty('id', 'box-' + this.id);
-		// element.setStyle('zIndex', this.options.zIndex);
-		element.setStyle('position', this.options.position);
 		element.style.display = 'none';
 
 		this.ideal = {};
@@ -289,9 +284,9 @@ var exports = {
 	keydown: function(e){
 		this.emit('keydown', e);
 	}
-};
+});
 
-exports.self = {
+NS.Box.self = {
 	UID: 0,
 	instances: [],
 	// contient la boite en cours d'utilisation (focused)
@@ -316,6 +311,3 @@ exports.self = {
 Element.defineMeasurer('fixedSpace', function(axis){
 	return this.measure('space', axis) + this.getOffsetParent().measure('scroll', axis);
 });
-
-exports = NS.Surface.extend(NS.options, exports);
-NS.Box = exports;

@@ -13,9 +13,9 @@ provides: Filter
 */
 
 NS.Filter = {
-	SKIP: 'continue',
+	SKIP: false,
 	ACCEPT: true,
-	REJECT: false,
+	REJECT: 2,
 
 	toFilter: function(filter, reverse){
 

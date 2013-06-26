@@ -142,7 +142,7 @@ Element.implement({
 // chrome et safari bug 13343
 if( NS.browser.safari || NS.browser.chrome ){
 	['top', 'left', 'bottom', 'right'].each(function(direction){
-		Element.Styles['margin-'+direction] = {
+		Element.Styles['margin-' + direction] = {
 			get: function(){
 				var margin;
 

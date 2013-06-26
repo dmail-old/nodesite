@@ -1,12 +1,12 @@
 /*
 
-name: StringList
+name: TokenList
 
-description: StringList is used to manipulate a list of string separated by a space (similar to native classList)
+description: TokenList is used to manipulate a list of string separated by a space (similar to native classList)
 
 */
 
-NS.StringList =  NS.List.extend({
+NS.TokenList =  NS.List.extend({
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);
