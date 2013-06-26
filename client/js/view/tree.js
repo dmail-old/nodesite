@@ -291,6 +291,7 @@ NS.Selection = {
 		}
 
 		range.push(from);
+		// get valid nodes between from and to
 		while(from = from.getNextNode(this.filterNode)){
 			if( from === to ) break;
 			range.push(from);

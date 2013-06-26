@@ -1,4 +1,4 @@
-NS.viewDocument.define('node', NS.viewstate, {
+NS.viewDocument.define('node', {
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
@@ -34,6 +34,19 @@ NS.viewDocument.define('node', NS.viewstate, {
 	toggleState: function(state, e, force){
 		if( typeof force == 'undefined' ) force = !this.hasClass(state);
 		return force ? this.addState(state, e) : this.removeState(state, e);
+	},
+
+	isVisible: function(){
+		var parent = this;
+
+		if( this.hasClass('hidden') ) return false;
+
+		while(parent = parent.parentNode){
+			if( parent == null || parent.parentNode == null ) return true;
+			if( parent.hasClass('hidden') || !parent.hasClass('expanded') ) return false;
+		}
+
+		return true;
 	},
 
 	getChildrenElement: function(){

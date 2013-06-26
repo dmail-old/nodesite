@@ -22,22 +22,8 @@ nodeView.childNodes[0].expand();
 nodeView.childNodes[2].expand();
 nodeView.childNodes[3].expand();
 
-// grâce à ceci on devrait pouvoir éviter de conserver le tableau visibles
-NS.View.isVisible = function(){
-	var parent = this;
-
-	if( this.hasClass('hidden') ) return false;
-
-	while(parent = parent.parentNode){
-		if( parent == null || parent.parentNode == null ) return true;
-		if( parent.hasClass('hidden') || !parent.hasClass('expanded') ) return false;
-	}
-
-	return true;
-};
-
 function filter(view){
-	return view.isVisible() ? NS.Filter.ACCEPT : NS.Filter.REJECT;
+	return view.isVisible();
 }
 
 console.log('firstvisibleview of root', treeView.getFirstNode(filter).element);
