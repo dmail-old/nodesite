@@ -231,8 +231,7 @@ NS.View = {
 }.supplement(
 	NS.EventEmitterInterface,
 	NS.NodeInterface,
-	NS.treeTraversal,
-	NS.treeFinder,
+	NS.NodeFinder,
 	{
 		oninsertchild: function(child){
 			var childrenElement = this.getChildrenElement();

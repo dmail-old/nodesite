@@ -6,33 +6,16 @@ NOTE
 
 */
 
-// Element.sorter
-if( document.html.compareDocumentPosition ){
-	Element.sorter = function(a, b){
-		if( !a.compareDocumentPosition || !b.compareDocumentPosition ) return 0;
-		return a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
-	};
+if( !Element.prototype.compareDocumentPosition ){
+	Element.prototype.compareDocumentPosition = NS.NodeInterface.compareDocumentPosition;
 }
-else if( 'sourceIndex' in document.html ){
-	Element.sorter = function(a, b){
-		if( !a.sourceIndex || !b.sourceIndex ) return 0;
-		return a.sourceIndex - b.sourceIndex;
-	};
-}
-else if( document.createRange ){
-	Element.sorter = function(a, b){
-		if( !a.ownerDocument || !b.ownerDocument ) return 0;
-		var aRange = a.ownerDocument.createRange(), bRange = b.ownerDocument.createRange();
-		aRange.setStart(a, 0);
-		aRange.setEnd(a, 0);
-		bRange.setStart(b, 0);
-		bRange.setEnd(b, 0);
-		return aRange.compareBoundaryPoints(window.Range.START_TO_END, bRange);
-	};
-}
-else{
-	Element.sorter = Function.ZERO;
-}
+
+Element.sorter = function(a, b){
+	if( !a.compareDocumentPosition || !b.compareDocumentPosition ) return 0;
+	if( a === b ) return 0;
+	if( a.compareDocumentPosition(b) & NS.NodeInterface.FOLLOWING ) return -1;
+	return 1;
+};
 
 Element.implement('getCommonAncestor', function(element){
 	var parentA = this, parents = [], parentB = element;
@@ -51,8 +34,7 @@ Element.implement('getCommonAncestor', function(element){
 	return null;
 });
 
-Element.implement(NS.treeTraversal);
-Element.implement(NS.treeFinder);
+Element.implement(NS.NodeFinder);
 
-document.getNode = document.html.getNode.bind(document.html);
-document.getNodes = window.$$ = document.html.getNodes.bind(document.html);
+document.getNextNode = document.html.getNextNode.bind(document.html);
+document.getNextNodes = window.$$ = document.html.getNextNodes.bind(document.html);

@@ -43,12 +43,12 @@ NS.View.isVisible = function(){
 	return true;
 };
 
-var iterator = NS.NodeIterator.new(rootView, function(view){
+function filter(view){
 	return view.isVisible() ? NS.Filter.ACCEPT : NS.Filter.REJECT;
-});
+}
 
-console.log('firstvisibleview of root', iterator.firstNode());
-console.log('lastvisibleview of root', iterator.lastNode());
+//console.log('firstvisibleview of root', rootView.getFirstNode(filter).element);
+//console.log('lastvisibleview of root', rootView.getLastNode(filter).element);
 
 /*
 Comment faire en sorte que ce qui suit soit

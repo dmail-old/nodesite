@@ -42,13 +42,13 @@ NS.viewDocument.define('node', NS.viewstate, {
 		case 'ul':
 		case 'div':
 			dom = this.getDom('li');
-			return dom ? dom.getChild(what) : null;
+			return dom ? dom.getFirstChild(what) : null;
 		case 'name':
 			dom = this.getDom('div');
-			return dom ? dom.getChild('span') : null;
+			return dom ? dom.getFirstChild('span') : null;
 		default:
 			dom = this.getDom('div');
-			return dom ? dom.getChild(what) : null;
+			return dom ? dom.getFirstChild(what) : null;
 		}
 	},
 

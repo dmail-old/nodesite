@@ -37,7 +37,7 @@ Function.complement({
 		var self = this, args = Array.slice(arguments);
 		return function(){
 			// if arguments needs to be added, add them after prefilled arguments, else use directly prefilled arguments
-			return self.apply(this, arguments.length ? [].concat(args).concat(Array.slice(arguments)) : args);
+			return self.apply(this, arguments.length ? [].concat(args, Array.slice(arguments)) : args);
 		};
 	},
 

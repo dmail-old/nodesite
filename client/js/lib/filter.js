@@ -17,40 +17,46 @@ NS.Filter = {
 	ACCEPT: true,
 	REJECT: false,
 
-	toFilter: function(expression, reverse){
-		var filter;
+	toFilter: function(filter, reverse){
 
-		if( expression == null ){
+		if( filter == null ){
 			filter = Function.FALSE;
 		}
-		else if( typeof expression == 'object' ){
-			filter = function(item){ return item === expression; };
+		else if( typeof filter == 'object' ){
+			filter = function(item){ return item === filter; };
 		}
-		else if( typeof expression.toFilter == 'function' ){
-			filter = expression.toFilter();
+		else if( typeof filter.toFilter == 'function' ){
+			filter = filter.toFilter();
 		}
 
 		if( typeof filter != 'function' ){
-			throw new TypeError('filter must be a function');
+			throw new TypeError('filter must be a function' + filter);
 		}
 
 		return reverse ? function(item){ return !filter(item); } : filter;
 	},
 
-	// iterator supply items to test, we returns the first or all items passing the test
-	matchIterator: function(iterator, iteratorBind, match, bind, first){
-		var found = first ? null : [];
+	// iterator supply items to test, we returns the first or all items filtered
+	filterIterator: function(iterator, iteratorBind, first, filter, bind){
+		var found = first ? null : [], result;
 
-		match = this.toFilter(match);
-		if( match != Function.FALSE ){
+		filter = this.toFilter(filter);
+		if( filter != Function.FALSE ){
 			iterator.call(iteratorBind, function(item){
-				if( match.call(bind, item) === NS.Filter.ACCEPT ){
+				result = filter.call(bind, item);
+
+				if( result === NS.Filter.ACCEPT ){
 					if( first ){
 						found = item;
-						return true;
 					}
-					found.push(item);
+					else{
+						found.push(item);
+						// simulate that the item isn't accepted to keep looping
+						result = NS.Filter.SKIP;
+					}
 				}
+
+				return result;
 			});
 		}
 
@@ -81,17 +87,17 @@ NS.Filter = {
 };
 
 Boolean.implement('toFilter', function(){
-	return this === true ? Function.TRUE : Function.FALSE;
+	return this.valueOf() === true ? Function.TRUE : Function.FALSE;
 });
 Number.implement('toFilter', function(){
 	var count = this;
 
 	return function(){
 		if( count === 0 ){
-			return true;
+			return NS.Filter.ACCEPT;
 		}
 		count--;
-		return false;
+		return NS.Filter.SKIP;
 	};
 });
 RegExp.implement('toFilter', function(){

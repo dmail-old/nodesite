@@ -1,3 +1,9 @@
+/*
+
+renommer nodeTraversal, seras une interface et non plus un constructeur?
+
+*/
+
 NS.NodeIterator = {
 	root: null,
 	current: null,

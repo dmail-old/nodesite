@@ -54,7 +54,7 @@ NS.Controller.define('visibles', {
 		var prev, next, parent = view.parentNode;
 
 		if( parent ){
-			prev = view.getPrevSibling(this.isVisible);
+			prev = view.getPreviousSibling(this.isVisible);
 			next = view.getNextSibling(this.isVisible);
 
 			if( prev && !next ) prev.toggleClass('last', hidden);
@@ -81,12 +81,14 @@ NS.Controller.define('visibles', {
 		- his parent is expanded
 		*/
 
-		this.view.crossNode(function(view){
+		this.view.getNextNode(function(view){
 			// view is hidden, ignore all descendant
-			if( !this.isVisible(view) ) return NS.Filter.SKIP;
+			if( !this.isVisible(view) ) return NS.Filter.REJECT;
 			this.visibles.push(view);
 			// view cant have visible decendant, ignore all descendant
-			if( !this.isExpanded(view) ) return NS.Filter.SKIP;
+			if( !this.isExpanded(view) ) return NS.Filter.REJECT;
+
+			return NS.Filter.SKIP;
 		}, this);
 
 		return this;

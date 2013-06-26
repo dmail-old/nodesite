@@ -80,8 +80,7 @@ NS.Model = {
 }.supplement(
 	NS.EventEmitterInterface,
 	NS.NodeInterface,
-	NS.treeTraversal,
-	NS.treeFinder,
+	NS.NodeFinder,
 	{
 		oninsertchild: function(child){
 			this.emit('adopt', child, this.childNodes.indexOf(child));
