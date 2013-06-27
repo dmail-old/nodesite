@@ -13,9 +13,9 @@ provides: Filter
 */
 
 NS.Filter = {
-	SKIP: false,
-	ACCEPT: true,
-	REJECT: 2,
+	ACCEPT: true, // a filter return true? what have found what we wanted break the loop
+	REJECT: false, // a filter return reject? we continue the loop
+	SKIP: 2, // only used in netxNode, prevNode, reject a node without invalidating it's descendant	
 
 	toFilter: function(filter, reverse){
 
@@ -97,7 +97,7 @@ Number.implement('toFilter', function(){
 			return NS.Filter.ACCEPT;
 		}
 		count--;
-		return NS.Filter.SKIP;
+		return NS.Filter.REJECT;
 	};
 });
 RegExp.implement('toFilter', function(){
