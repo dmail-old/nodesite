@@ -28,10 +28,14 @@ global.lang = {};
 global.NS = {};
 
 ['object', 'boolean', 'number', 'regexp', 'function', 'string', 'array'].forEach(function(name){
-	require(root + '/client/js/lib/core/' + name);
+	require(root + '/client/js/core/' + name);
 });
 
-['object.at', 'filter', 'random', 'emitter'].forEach(function(name){
+['object.at', 'filter', 'random'].forEach(function(name){
+	require(root + '/client/js/util/' + name);
+});
+
+['emitter'].forEach(function(name){
 	require(root + '/client/js/lib/' + name);
 });
 

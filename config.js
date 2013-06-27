@@ -34,24 +34,29 @@ config.css = [
 config.js = [].concat(
 	[
 		"object", "regexp", "boolean", "number", "function", "string", "array"
-	].prefix('lib/core/'),
+	].prefix('core/'),
 	[
-		"list",
-		"object.util", "options", "chain",
-		"object.at", "filter", "array.iterate", "array.find",
-		"random", "memory",// "path",
+		"object.util", "object.at",
+		"random",
+		"filter",
+		"list",  "array.iterate", "array.find",
+		"options", "chain", "memory", // "path",
+		"fx"
+	].prefix('util/'),
+	[
 		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
-		"nodeInterface", "nodeTraversal", "nodeFinder", "document"
+		"nodeInterface", "nodeTraversal", "nodeFinder", "document",
 	].prefix('lib/'),
 	[
 		"browser", "os",
 		"event", "eventListener",
 		"element", "element.properties",
-		"element.styles", "element.measure", "element.keepIntoView", "element.find",
+		"element.styles", "element.measure",
+		"element.keepIntoView", "element.find",
 		"request"
 	].prefix('browser/'),
 	[
-		"model", "view", "controller", "fx"
+		"model", "view", "controller"
 	],
 	[
 		"node"
@@ -60,21 +65,10 @@ config.js = [].concat(
 		"selector", "tree", "node"
 	].prefix('view/'),
 	[
-		// tree controllers
-		"selected", "nav",
-		// selector controllers
-		"opened"
-	].prefix('controller/'),
-	/*[
-		"tree", "tree.list", "tree.sort", "tree.swap",
-		"tree.demon", "tree.memory", "tree.ajax", "tree.problems", "tree.unique",
-		"tree.proto", "tree.types", "tree.trash", "fileTree",
 
-		"tree.dropfile", "tree.clipboard", "tree.edition", "tree.selectionRectangle", "tree.popup",
-		"treeView", "tree.explorer", "tree.drag",
-		"tree.keynav", "tree.selector", "tree.keyshortcut", "menu", "tree.menu",
-	].prefix('tree/'),
-	*/
+	].prefix('controller/'),
+	/*
+	rewrite needed
 	[
 		"fx.scroll",
 		"surface",
@@ -84,11 +78,8 @@ config.js = [].concat(
 		"popup.valid",
 		"selectionRectangle"
 	].prefix('view/box/'),
-	"app"
-	/*[
-		"selector", "multiSelector", "popupSelector"
-	].prefix('ui/')
 	*/
+	"app"
 );
 
 // ces fonctions sont appelées lorsqu'un client demande à éxécuté un script situé dans le dossier "action"
