@@ -46,7 +46,7 @@ NS.viewDocument.define('selector', {
 	},
 
 	getDom: function(className){
-		return this.element.getNextNode(function(child){
+		return this.element.getFirst(function(child){
 			return child.hasClass(className);
 		});
 	},

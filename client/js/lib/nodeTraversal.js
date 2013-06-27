@@ -2,8 +2,8 @@ NS.NodeTraversal = {
 	nextSibling: function(fn, bind, includeSelf){
 		var node = includeSelf ? this : this.nextSibling;
 
-		while( node != null ){
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+		while( node !== null ){
+			if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 			node = node.nextSibling;
 		}
 
@@ -13,8 +13,8 @@ NS.NodeTraversal = {
 	previousSibling: function(fn, bind, includeSelf){
 		var node = includeSelf ? this : this.previousSibling;
 
-		while( node != null ){
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+		while( node !== null ){
+			if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 			node = node.previousSibling;
 		}
 
@@ -26,11 +26,11 @@ NS.NodeTraversal = {
 
 		node = this;
 		while( node = node.nextSibling ){
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+			if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 		}
 		node = this;
 		while( node = node.previousSibling ){
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+			if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 		}
 
 		return null;
@@ -64,28 +64,28 @@ NS.NodeTraversal = {
 		return null;
 	},
 
-	nextNode: function(fn, bind, root){
+	next: function(fn, bind, root){
 		var node = this, result;
 
 		while(true){
 			while( node.firstChild ){
 				node = node.firstChild;
 				result = fn.call(bind, node);
-				if( result == NS.Filter.ACCEPT ) return node;
-				if( result == NS.Filter.REJECT ) break;
+				if( result === NS.Filter.ACCEPT ) return node;
+				if( result === NS.Filter.REJECT ) break;
 			}
 
 			while( true ){
 				if( node.nextSibling ){
 					node = node.nextSibling;
 					result = fn.call(bind, node);
-					if( result == NS.Filter.ACCEPT ) return node;
-					if( result == NS.Filter.REJECT ) continue;
-					if( result == NS.Filter.SKIP ) break;
+					if( result === NS.Filter.ACCEPT ) return node;
+					if( result === NS.Filter.REJECT ) continue;
+					if( result === NS.Filter.SKIP ) break;
 				}
 				else{
 					node = node.parentNode;
-					if( node == null || node == root ) return null;
+					if( node === null || node === root ) return null;
 				}
 			}
 		}
@@ -93,7 +93,7 @@ NS.NodeTraversal = {
 		return null;
 	},
 
-	previousNode: function(fn, bind, root){
+	previous: function(fn, bind, root){
 		var node = this, result;
 
 		while(true){
@@ -105,34 +105,34 @@ NS.NodeTraversal = {
 					while( node.lastChild ){
 						node = node.lastChild;
 						result = fn.call(bind, node);
-						if( result == NS.Filter.REJECT ) break;
+						if( result === NS.Filter.REJECT ) break;
 					}
 
-					if( result == NS.Filter.ACCEPT ) return node;
+					if( result === NS.Filter.ACCEPT ) return node;
 				}
 			}
 
 			node = node.parentNode;
-			if( node == null || node == root ) return null;
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+			if( node === null || node === root ) return null;
+			if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 		}
 
 		return null;
 	},
 
-	firstNode: function(){
-		return this.getNextNode.apply(this, arguments);
+	first: function(){
+		return NS.NodeTraversal.next.apply(this, arguments);
 	},
 
-	lastNode: function(fn, bind){
-		var node = this, result;
+	last: function(fn, bind){
+		var node = this;
 
 		while( node.lastChild ){
 			node = node.lastChild;
 		}
 
-		if( fn.call(bind, node) == NS.Filter.ACCEPT ) return node;
+		if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 
-		return NS.NodeTraversal.previousNode.call(node, fn, bind, this);
+		return NS.NodeTraversal.previous.call(node, fn, bind, this);
 	}
 };

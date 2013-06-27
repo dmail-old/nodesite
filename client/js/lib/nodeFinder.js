@@ -7,25 +7,14 @@ NS.NodeFinder = {
 		}
 
 		return false;
-	},
-
-	filterIterator: function(iterator, first, filter, bind){
-		if( typeof filter == 'undefined' ){
-			filter = true;
-		}
-
-		return NS.Filter.filterIterator(iterator, this, first, filter, bind);
 	}
 };
 
-Object.eachPair(NS.NodeTraversal, function(name, method){
-	var maj = name.capitalize();
-
-	NS.NodeFinder['get' + maj] = function(filter, bind){
-		return this.filterIterator(method, true, filter, bind);
-	};
-
-	NS.NodeFinder['get' + maj + 's'] = function(filter, bind){
-		return this.filterIterator(method, false, filter, bind);
+Object.eachPair(NS.NodeTraversal, function(name, iterator){
+	NS.NodeFinder['get' + name.capitalize()] = function(filter, bind, all){
+		if( typeof filter == 'undefined' ){
+			filter = true;
+		}
+		return NS.Filter.filterIterator(iterator, this, !all, filter, bind);
 	};
 });

@@ -15,8 +15,6 @@ var nodeView = NS.viewDocument.createNode('node', nodeModel);
 treeView.insertElement(document.body);
 treeView.appendChild(nodeView);
 
-//treeView.control('nav');
-
 nodeView.expand();
 nodeView.childNodes[0].expand();
 nodeView.childNodes[2].expand();
@@ -26,7 +24,7 @@ function filter(view){
 	return view.isVisible();
 }
 
-console.log('firstvisibleview of root', treeView.getFirstNode(filter).element);
-console.log('lastvisibleview of root', treeView.getLastNode(filter).element);
+console.log('firstvisibleview of root', treeView.getFirst(filter).element);
+console.log('lastvisibleview of root', treeView.getLast(filter).element);
 
 </script>
