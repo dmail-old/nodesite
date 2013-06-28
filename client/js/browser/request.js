@@ -38,7 +38,7 @@ NS.Request = {
 		noCache: false
 	},
 
-	constructor: function(options){
+	create: function(options){
 		this.emitter = NS.Emitter.new(this);
 		this.resetXhr();
 		this.setOptions(options);

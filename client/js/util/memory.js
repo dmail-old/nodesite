@@ -14,7 +14,7 @@ memory.restore(action, mode): function you have to define to tell how to cancel 
 */
 
 NS.Memory = {
-	constructor: function(limit){
+	create: function(limit){
 		this.limit = limit || 10;
 		this.reset();
 	},

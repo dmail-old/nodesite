@@ -1,3 +1,3 @@
-NS.viewDocument.define('option', {
+NS.viewDocument.define('option', NS.View.extend({
 
-});
+}));

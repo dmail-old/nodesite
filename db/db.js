@@ -81,7 +81,7 @@ var Table = NS.Table = Object.prototype.extend(require(root + '/client/js/lib/em
 	length: 0,
 	size: 0,
 
-	constructor: function(name){
+	create: function(name){
 		this.pile = [];
 		this.changes = [];
 		this.items = [];

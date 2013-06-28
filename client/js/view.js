@@ -36,7 +36,7 @@ NS.View = {
 	className: '',
 	style: null,
 
-	constructor: function(model){
+	create: function(model){
 		this.self.addInstance(this);
 
 		this.controllers = {};
@@ -51,7 +51,7 @@ NS.View = {
 		this.emit('create');
 	},
 
-	destructor: function(){
+	destroy: function(){
 		this.emit('destroy');
 		this.destroyElement();
 		this.unsetModel();
@@ -277,8 +277,11 @@ NS.View.self =  {
 	}
 };
 
+// show a blank image, useful to have a default src attribute
+Image.EMPTY = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
 Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 
-NS.viewDocument = NS.Document.new(NS.View);
+NS.viewDocument = NS.Document.new();

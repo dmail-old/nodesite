@@ -1,5 +1,5 @@
-module.exports = Object.prototype.extend({
-	constructor: function(path, stat){
+module.exports = {
+	create: function(path, stat){
 		this.path = path;
 		this.stat = stat;
 	},
@@ -19,4 +19,4 @@ module.exports = Object.prototype.extend({
 
 		return data;
 	}
-});
+};

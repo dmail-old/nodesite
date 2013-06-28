@@ -1,5 +1,5 @@
 NS.List = Array.prototype.extend({
-	constructor: function(){
+	create: function(){
 		if( arguments.length > 0 ) this.push.apply(this, arguments);
 	},
 

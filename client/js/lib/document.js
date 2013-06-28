@@ -1,37 +1,34 @@
 NS.Document = {
-	constructors: null,
-	baseNode: null,
+	Nodes: null,
 	emitter: null,
 
-	constructor: function(baseNode){
-		this.constructors = {};
+	create: function(){
+		this.Nodes = {};
 		this.childNodes = [];
 		this.emitter = NS.Emitter.new(this);
-		this.baseNode = baseNode;
 	},
 
-	define: function(name){
-		var constructor = this.baseNode.extend.apply(this.baseNode, Array.slice(arguments, 1));
-		this.constructors[name] = constructor;
-		return constructor;
+	define: function(name, Node){
+		this.Nodes[name] = Node;
+		return Node;
 	},
 
 	require: function(name){
-		return typeof name == 'string' ? this.constructors[name] : name;
+		return typeof name == 'string' ? this.Nodes[name] : name;
 	},
 
 	createNode: function(name, data){
-		var constructor = this.require(name), node;
+		var Node = this.require(name), node;
 
-		if( !constructor ){
+		if( !Node ){
 			throw new Error('undefined node type ' + name);
 		}
 
-		if( constructor.isPrototypeOf(data) ){
+		if( Node.isPrototypeOf(data) ){
 			node = data;
 		}
 		else{
-			node = constructor.new(data);
+			node = Node.new(data);
 		}
 
 		node.ownerDocument = this;

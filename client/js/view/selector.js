@@ -1,4 +1,4 @@
-NS.viewDocument.define('selector', {
+NS.viewDocument.define('selector', NS.View.extend({
 	tagName: 'div',
 	className: 'selector unselectable',
 	value: 'Option1',
@@ -10,8 +10,8 @@ NS.viewDocument.define('selector', {
 		minheight: 24
 	},
 
-	constructor: function(){
-		NS.View.constructor.apply(this, arguments);
+	create: function(){
+		NS.View.create.apply(this, arguments);
 
 		this.on({
 			'insertElement': this,
@@ -127,4 +127,4 @@ NS.viewDocument.define('selector', {
 		this.setStyle('width', this.width);
 		this.setStyle('minWidth', this.minwidth);
 	}
-});
+}));

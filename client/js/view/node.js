@@ -1,4 +1,4 @@
-NS.viewDocument.define('node', {
+NS.viewDocument.define('node', NS.View.extend({
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
@@ -82,7 +82,7 @@ NS.viewDocument.define('node', {
 	updateName: function(name){
 		this.getDom('name').innerHTML = name;
 	}
-});
+}));
 
 (function(node){
 

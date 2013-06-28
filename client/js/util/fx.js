@@ -26,7 +26,7 @@ NS.Fx = Object.prototype.extend(NS.chain, NS.Emitter, NS.options, {
 		link: 'ignore'
 	},
 
-	constructor: function(options){
+	create: function(options){
 		this.resetChain();
 		this.subject = this;
 		this.setOptions(options);

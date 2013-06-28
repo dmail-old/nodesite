@@ -16,14 +16,14 @@ NS.Controller = {
 	modelListeners: null,
 	view: null,
 
-	constructor: function(view){
+	create: function(view){
 		this.viewListener = NS.Listener.new(null, this.viewListeners, this);
 		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
 
 		this.setView(view);
 	},
 
-	destructor: function(){
+	destroy: function(){
 		this.unsetView();
 		this.unsetModel();
 	},

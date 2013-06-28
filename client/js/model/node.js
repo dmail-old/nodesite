@@ -1,3 +1,3 @@
-NS.modelDocument.define('node', {
+NS.modelDocument.define('node', NS.Model.extend({
 
-});
+}));

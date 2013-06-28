@@ -85,8 +85,8 @@ var exports = NS.viewDocument.define('surface', {
 		confine: 'offsetParent'
 	},
 
-	constructor: function(element, autodestroy){
-		NS.Bound.constructor.call(this);
+	create: function(element, autodestroy){
+		NS.Bound.create.call(this);
 
 		var instance = element.storage.get(this.name);
 		if( instance ){

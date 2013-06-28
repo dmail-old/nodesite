@@ -19,7 +19,7 @@ var exports = {
 	//inlineStyleTemplate: '<style type="text/css">{css}</style>',
 	//inlineScriptTemplate: '<script type="text/javascript">{js}</script>',
 
-	constructor: function(request, response){
+	create: function(request, response){
 		var htmlFile = NS.File.new(root + '/client/app.html'), html;
 
 		try{

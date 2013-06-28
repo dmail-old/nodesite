@@ -1,5 +1,5 @@
 var exports = {
-	constructor: function(request, response, e){
+	create: function(request, response, e){
 		if( e ) logger.error(e);
 
 		response.writeHead(500, {'content-type': 'text/plain'});

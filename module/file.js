@@ -2,8 +2,8 @@
 
 var Watcher = require('./watcher.js');
 
-module.exports = NS.File = Object.prototype.extend({
-	constructor: function(path){
+module.exports = NS.File = {
+	create: function(path){
 		this.setPath(path);
 		return this;
 	},
@@ -196,4 +196,4 @@ module.exports = NS.File = Object.prototype.extend({
 	removeSync: function(){
 		return FS.unlinkSync(this.path);
 	}
-});
+};

@@ -1,5 +1,5 @@
 var exports = {
-	constructor: function(request, response){
+	create: function(request, response){
 		this.response = response;
 		this.request = request;
 		this.method = this.request.method || 'GET';

@@ -6,7 +6,7 @@ NS.Model = {
 
 	validationError: null,
 
-	constructor: function(properties){
+	create: function(properties){
 		this.emitter = NS.Emitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
@@ -92,7 +92,7 @@ NS.Model = {
 	}
 );
 
-NS.modelDocument = NS.Document.new(NS.Model);
+NS.modelDocument = NS.Document.new();
 
 /*
 
@@ -156,7 +156,7 @@ NS.servermodel = {
 };
 
 NS.Action = Object.prototype.extend({
-	constructor: function(model, name, args){
+	create: function(model, name, args){
 		this.model = model;
 		this.name = name;
 		this.args = args || [];

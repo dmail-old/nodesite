@@ -15,7 +15,7 @@ provides: Filter
 NS.Filter = {
 	ACCEPT: true, // a filter return true? what have found what we wanted break the loop
 	REJECT: false, // a filter return reject? we continue the loop
-	SKIP: 2, // only used in netxNode, prevNode, reject a node without invalidating it's descendant	
+	SKIP: 2, // only used in netxNode, prevNode, reject a node without invalidating it's descendant
 
 	toFilter: function(filter, reverse){
 
@@ -143,7 +143,7 @@ NS.Filter.Parser = {
 		'~:': function(a, b){ return a && b.test(a); }
 	},
 
-	constructor: function(expression){
+	create: function(expression){
 		this.parts = [];
 		this.raw = expression;
 		this.expression = expression;

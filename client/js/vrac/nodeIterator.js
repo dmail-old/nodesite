@@ -10,7 +10,7 @@ NS.NodeIterator = {
 	filter: null,
 	bind: null,
 
-	constructor: function(root, filter, bind){
+	create: function(root, filter, bind){
 		this.root = root;
 		this.current = root;
 		this.filter = filter;

@@ -1,5 +1,5 @@
 var exports = {
-	constructor: function(request, response){
+	create: function(request, response){
 		response.writeHead(204, "No Content", {
 			"access-control-allow-origin": request.headers.origin || "*",
 			"access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",

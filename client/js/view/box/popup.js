@@ -50,8 +50,8 @@ var exports = {
 		buttons: []
 	}),
 
-	constructor: function(){
-		NS.Box.constructor.apply(this, arguments);
+	create: function(){
+		NS.Box.create.apply(this, arguments);
 
 		if( this.options.submitclose ) this.on('submit', this.close);
 	},

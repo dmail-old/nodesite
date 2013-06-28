@@ -8,8 +8,8 @@ NS.Event = {
 	defaultPrevented: false,
 
 	args: null,
-	
-	constructor: function(name, canBubble){
+
+	create: function(name, canBubble){
 		this.name = name;
 		this.bubbles = Boolean(canBubble);
 	},

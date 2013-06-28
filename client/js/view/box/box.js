@@ -49,7 +49,7 @@ NS.Box = NS.Surface.extend(NS.options, {
 		}
 	}),
 
-	constructor: function(options){
+	create: function(options){
 		this.setOptions(options);
 
 		if( this.options.echapclose ) this.on('keydown', function(e){ if( e.code == 27 ){ e.preventDefault(); this.close(e); } });
@@ -58,7 +58,7 @@ NS.Box = NS.Surface.extend(NS.options, {
 
 		//this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
 		//this.self.instances[this.id = this.self.UID++] = this;
-		NS.Surface.constructor.call(this);
+		NS.Surface.create.call(this);
 	},
 
 	createElement: function(){

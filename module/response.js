@@ -2,7 +2,7 @@
 var exports = {
 	Url: require('url'),
 
-	constructor: function(request, response){
+	create: function(request, response){
 		this.request = request;
 		this.response = response;
 		this.start();

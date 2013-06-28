@@ -8,7 +8,7 @@ NS.Listener = {
 	listener: null,
 	listening: false,
 
-	constructor: function(emitter, handlers, listener){
+	create: function(emitter, handlers, listener){
 		this.emitter = emitter;
 		if( handlers ) this.handlers = handlers;
 		this.listener = listener || this;

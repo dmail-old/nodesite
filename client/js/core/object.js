@@ -194,11 +194,11 @@ Object.implement({
 		return object;
 	},
 
-	// return an instance of this calling it's constructor
+	// return an instance of this calling it's create method
 	new: function(){
-		var instance = Object.create(this), constructor = instance.constructor;
+		var instance = Object.create(this), create = instance.create;
 
-		if( typeof constructor == "function" ) instance.constructor.apply(instance, arguments);
+		if( typeof create == "function" ) instance.create.apply(instance, arguments);
 
 		return instance;
 	},

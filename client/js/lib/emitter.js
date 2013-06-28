@@ -11,7 +11,7 @@ require: Object
 NS.Emitter = {
 	$listeners: {},
 
-	constructor: function(bind){
+	create: function(bind){
 		this.bind = bind;
 	},
 
