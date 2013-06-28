@@ -1,4 +1,4 @@
-var Tree = NS.viewDocument.define('tree', {
+NS.viewDocument.define('tree', NS.View.extend({
 	tagName: 'ul',
 	className: 'tree root unselectable',
 	attributes: {
@@ -65,12 +65,13 @@ var Tree = NS.viewDocument.define('tree', {
 
 		keydown: function(e){
 			if( e.control && e.key == 'a' ){
+				// sélectionne tout ce qui est sélectionnable
 				this.selection.addRange(this.getFirst(this.isSelectable, this, true), e);
 				e.preventDefault();
 			}
 			else{
 				// need String(e.key) because the 0-9 key return numbers
-				var key = String(e.key), method;
+				var key = String(e.key), method, target;
 
 				if( key in this.keys ){
 					method = key;
@@ -80,11 +81,9 @@ var Tree = NS.viewDocument.define('tree', {
 				}
 
 				if( method ){
-					this.target = null;
-
-					this.keys[method].call(this, e);
-					if( this.target ){
-						this.go(this.target, e);
+					target = this.keys[method].call(this, e);
+					if( target ){
+						this.go(target, e);
 						e.preventDefault();
 					}
 				}
@@ -102,26 +101,26 @@ var Tree = NS.viewDocument.define('tree', {
 			this.lighted = null;
 		},
 
-		'expand': function(e){
+		expand: function(e){
 			var view = e.target;
 			if( !view.getChildrenElement() ) view.renderChildren();
 		},
 
-		'focus': function(e){
+		focus: function(e){
 			if( this.focused ) this.focused.blur(e);
 			this.focused = e.target;
 		},
 
-		'blur': function(e){
+		blur: function(e){
 			this.focused = null;
 		},
 
-		'select': function(e){
+		select: function(e){
 			this.selection.removeAll(e.args[0]);
 			this.selection.range.push(e.target);
 		},
 
-		'unselect': function(e){
+		unselect: function(e){
 			this.selection.range.remove(e.target);
 		},
 
@@ -131,7 +130,7 @@ var Tree = NS.viewDocument.define('tree', {
 			if( e.target.hasClass('selected') ) e.target.unselect(e);
 		},
 
-		'insertElement': function(e){
+		insertElement: function(e){
 			var view = e.target, padding;
 
 			this.changeVisibility(e.target, false);
@@ -145,26 +144,25 @@ var Tree = NS.viewDocument.define('tree', {
 			}
 		},
 
-		'removeElement': function(e){
+		removeElement: function(e){
 			this.changeVisibility(e.target, true);
 		},
 
-		'hide': function(e){
+		hide: function(e){
 			this.changeVisibility(e.target, true);
 		},
 
-		'show': function(e){
+		show: function(e){
 			this.changeVisibility(e.target, false);
 		}
 	},
 	lighted: null,
 	focused: null,
 	selection: null,
-	target: null,
 	padding: 18,
 
-	constructor: function(){
-		NS.View.constructor.apply(this, arguments);
+	create: function(){
+		NS.View.create.apply(this, arguments);
 
 		this.listener = NS.Listener.new(this, this.listeners, this);
 		this.listener.listen();
@@ -211,12 +209,10 @@ var Tree = NS.viewDocument.define('tree', {
 		}
 
 		return level;
-	}
-});
+	},
 
-Object.append(Tree, {
+	// keynav
 	loop: false,
-	target: null,
 	keys: {
 		enter: function(e){
 			this.focused.active(e);
@@ -227,13 +223,13 @@ Object.append(Tree, {
 				this.focused.contract(e);
 			}
 			else{
-				this.target = this.focused.getParent(this.isSelectable, this);
+				return this.focused.getParent(this.isSelectable, this);
 			}
 		},
 
 		right: function(e){
 			if( this.focused.hasClass('expanded') ){
-				this.target = this.focused.getFirstChild(this.isSelectable, this);
+				return this.focused.getFirstChild(this.isSelectable, this);
 			}
 			else{
 				this.focused.expand(e);
@@ -241,37 +237,39 @@ Object.append(Tree, {
 		},
 
 		home: function(){
-			this.target = this.getFirst(this.isSelectable, this);
+			return this.getFirst(this.isSelectable, this);
 		},
 
 		end: function(){
-			this.target = this.getLast(this.isSelectable, this);
+			return this.getLast(this.isSelectable, this);
 		},
 
 		up: function(){
-			this.target = this.find(this.focused, this.isSelectable, this, 'prev', this.loop);
+			return this.find(this.focused, this.isSelectable, this, 'prev', this.loop);
 		},
 
 		down: function(){
-			this.target = this.find(this.focused, this.isSelectable, this, 'next', this.loop);
+			return this.find(this.focused, this.isSelectable, this, 'next', this.loop);
 		},
 
 		'*': function(e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
-			if( e.control ) return;
-
-			this.target = this.find(this.focused, function(node){
-				return this.isSelectable(node) && this.matchLetter(node, e.key);
-			}, this, 'next', true);
-
+			if( e.control ){
+				return null;
+			}
+			else{
+				return this.find(this.focused, function(node){
+					return this.isSelectable(node) && this.matchLetter(node, e.key);
+				}, this, 'next', true);
+			}
 		},
 
 		pageup: function(){
-			this.target = this.findAfterCount(this.focused, this.isSelectable, this, 'prev', this.getPageCount(this.current));
+			return this.findAfterCount(this.focused, this.isSelectable, this, 'prev', this.getPageCount(this.current));
 		},
 
 		pagedown: function(){
-			this.target = this.findAfterCount(this.focused, this.isSelectable, this, 'next', this.getPageCount(this.current));
+			return this.findAfterCount(this.focused, this.isSelectable, this, 'next', this.getPageCount(this.current));
 		}
 	},
 
@@ -343,7 +341,7 @@ Object.append(Tree, {
 
 		return count;
 	}
-});
+}));
 
 /*
 
@@ -362,7 +360,7 @@ NS.Selection = {
 	endNode: null,
 	range: null,
 
-	constructor: function(node, single){
+	create: function(node, single){
 		this.node = node;
 		this.startNode = node;
 		this.endNode = node;
@@ -454,10 +452,7 @@ NS.Selection = {
 	getRange: function(){
 		var from = this.startNode, to = this.endNode, range = [];
 
-		if( from === null || to === null ){
-			return range;
-		}
-		if( from == to ){
+		if( from === null || to === null || from === to ){
 			return range;
 		}
 
