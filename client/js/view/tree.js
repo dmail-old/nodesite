@@ -1,96 +1,213 @@
-NS.viewDocument.define('tree', NS.View.extend({
+var Tree = NS.viewDocument.define('tree', NS.View.extend({
 	tagName: 'ul',
 	className: 'tree root unselectable',
-	attributes: {
-		'tabindex': 0,
-	},
-	events: {
-		'mouseover': function(e){
-			var view = this.cast(e.target);
+	attributes: {'tabindex': 0},
+	lighted: null,
+	focused: null,
+	selection: null,
 
-			// when light only occur on the name element
-			if( view != this && this.hasClass('compact') && e.target != view.getDom('name') ){
-				view = this;
+	create: function(){
+		NS.View.create.apply(this, arguments);
+
+		// expand
+		this.emitter.on({
+			expand: function(e){
+				var view = e.target;
+				if( !view.getChildrenElement() ) view.renderChildren();
 			}
+		});
+		this.elementEmitter.on({
+			mousedown: function(e){
+				if( e.target.hasClass('tool') ){
+					this.cast(e).toggleState('expanded', e);
+				}
+			},
 
-			if( view == this ){
-				if( this.lighted ) this.lighted.unlight(e);
+			keydown: function(e){
+				var node = this.focused.focused;
+
+				if( e.key == 'left' && node.hasClass('expanded') ){
+					node.contract(e);
+					// lorsqu'il y a une scrollbar évite que le browser la déplace
+					e.preventDefault();
+				}
+				else if( e.key == 'right' && !node.hasClass('expanded') ){
+					node.expand(e);
+					e.preventDefault();
+				}
 			}
-			else{
-				view.light(e);
+		});
+
+		// cssposition
+		this.cssPosition = this.plugin('cssPosition').new(this);
+		this.emitter.on({
+			insertElement: function(e){ this.cssPosition.changeStructure(e.target); },
+			show: function(e){ this.cssPosition.changeStructure(e.target); },
+			removeElement: function(e){ this.cssPosition.changeStructure(e.target, true); },
+			hide: function(e){ this.cssPosition.changeStructure(e.target, true); },
+		});
+
+		// indent
+		this.indent = this.plugin('indent').new(this);
+		this.indent.root = this;
+		this.emitter.on({
+			insertElement: function(e){
+				this.indent.indentNode(e.target);
 			}
-		},
+		});
 
-		'mouseout': function(e){
-			if( this.lighted ){
-				// when the mouse go very fast out of the view mouseover event is'nt fired
-				// on other view (event the parent view)
-				// but we can check the relatedTarget to see if the mouse go out of all view
-				var view = this.cast(e.relatedTarget);
+		// lighted
+		this.lighted = this.plugin('lighted').new(this);
+		this.elementEmitter.on({
+			mouseover: function(e){
+				var node = this.cast(e.target);
 
-				if( !this.contains(view) ){
+				//this.hasClass('compact') &&  e.target == view.getDom('name')
+
+				if( node === null || node === this ){
 					this.lighted.unlight(e);
 				}
-			}
-		},
-
-		mousedown: function(e){
-			var view = this.cast(e);
-
-			if( e.target.hasClass('tool') ){
-				view.toggleState('expanded', e);
-			}
-
-			this.selection.selectNode(view, e);
-			view.focus(e);
-		},
-
-		click: function(e){
-			var view = this.cast(e);
-
-			if( view == this ){
-				this.selection.removeAll(e);
-			}
-			else{
-				this.selection.collapse(view, e);
-			}
-		},
-
-		dblclick: function(e){
-			// le futur menu contextuel doit prendre le pas sur ce dblclick
-			if( !e.target.hasClass('tool') ){
-				this.cast(e).toggleState('expanded', e);
-			}
-		},
-
-		keydown: function(e){
-			if( e.control && e.key == 'a' ){
-				// sélectionne tout ce qui est sélectionnable
-				this.selection.addRange(this.getFirst(this.isSelectable, this, true), e);
-				e.preventDefault();
-			}
-			else{
-				// need String(e.key) because the 0-9 key return numbers
-				var key = String(e.key), method, target;
-
-				if( key in this.keys ){
-					method = key;
+				else{
+					this.lighted.light(node, e);
 				}
-				else if( key.length == 1 && RegExp.ALPHANUM.test(key) ){
-					method = '*';
-				}
+			},
 
-				if( method ){
-					target = this.keys[method].call(this, e);
-					if( target ){
-						this.go(target, e);
-						e.preventDefault();
+			mouseout: function(e){
+				var node;
+
+				if( this.lighted.lighted != null ){
+					// when the mouse go very fast out of the view mouseover event is'nt fired
+					// on other view (event the parent view)
+					// but we can check the relatedTarget to see if the mouse go out of all view
+					node = this.cast(e.relatedTarget);
+
+					if( !this.contains(node) ){
+						this.lighted.unlight(e);
 					}
 				}
 			}
+		});
+
+		// focused
+		this.focused = this.plugin('focused').new(this);
+		this.elementEmitter.on({
+			mousedown: function(e){
+				var node = this.cast(e);
+				if( node ) node.focus(e);
+			}
+		});
+
+		// selection
+		this.selection = this.plugin('selection').new(this);
+		this.selection.filterNode = this.isSelectable;
+		this.elementEmitter.on({
+			mousedown: function(e){
+				var node = this.cast(e);
+				if( node ) this.selection.selectNode(node, e);
+			},
+
+			click: function(e){
+				var node = this.cast(e);
+
+				if( node == this ){
+					this.selection.removeAll(e);
+				}
+				else{
+					this.selection.collapse(node, e);
+				}
+			},
+
+			dblclick: function(e){
+				// le futur menu contextuel doit prendre le pas sur ce dblclick
+				if( !e.target.hasClass('tool') ){
+					this.cast(e).toggleState('expanded', e);
+				}
+			},
+
+			keydown: function(e){
+				if( e.control && e.key == 'a' ){
+					// sélectionne tout ce qui est sélectionnable
+					this.selection.addRange(this.getFirst(this.isSelectable, this, true), e);
+					e.preventDefault();
+				}
+			}
+		});
+
+		// nav
+		this.keynav = this.plugin('keynav').new(this);
+		this.elementEmitter.on({
+			keydown: function(e){
+				var target = this.keynav.nav(this.focused.focused, e);
+
+				if( target ){
+					this.selection.selectNode(target, e);
+					target.focus(e);
+					e.preventDefault();
+				}
+			}
+		});
+	},
+
+	plugin: function(name){
+		return NS.Plugin.plugins[name];
+	},
+
+	isSelectable: function(view){
+		return view != this && view.isVisible() && !view.hasClass('disabled');
+	},
+
+	getChildrenElement: function(){
+		return this.element;
+	}
+}));
+
+NS.Plugin = {
+	listeners: null,
+	plugins: {},
+
+	create: function(view){
+		this.view = view;
+		this.listener = NS.EventListener.new(view, this.listeners, this);
+		this.listener.listen();
+	},
+
+	define: function(name, object){
+		return this.plugins[name] = this.extend(object);
+	},
+
+	destroy: function(){
+		this.view = null;
+		this.listener.stopListening();
+		this.listener = null;
+	}
+};
+
+NS.Plugin.define('indent', {
+	value: 18,
+	root: null,
+
+	indentNode: function(node){
+		var padding = this.value, level = this.getLevel(node);
+
+		if( level > -1 ){
+			node.getDom('div').style.paddingLeft = (padding * level) + 'px';
 		}
 	},
-	// listening own events
+
+	getLevel: function(node){
+		var level = -1;
+
+		while(node != this.root){
+			level++;
+			node = node.parentNode;
+		}
+
+		return level;
+	}
+});
+
+NS.Plugin.define('lighted', {
+	lighted: null,
 	listeners: {
 		light: function(e){
 			if( this.lighted ) this.lighted.unlight(e.args[0]);
@@ -101,11 +218,23 @@ NS.viewDocument.define('tree', NS.View.extend({
 			this.lighted = null;
 		},
 
-		expand: function(e){
-			var view = e.target;
-			if( !view.getChildrenElement() ) view.renderChildren();
-		},
+		destroy: function(e){
+			if( e.target.hasClass('lighted') ) e.target.unlight(e);
+		}
+	},
 
+	light: function(node, e){
+		node.light(e);
+	},
+
+	unlight: function(e){
+		if( this.lighted ) this.lighted.unlight(e);
+	}
+});
+
+NS.Plugin.define('focused', {
+	focused: null,
+	listeners: {
 		focus: function(e){
 			if( this.focused ) this.focused.blur(e);
 			this.focused = e.target;
@@ -115,162 +244,80 @@ NS.viewDocument.define('tree', NS.View.extend({
 			this.focused = null;
 		},
 
-		select: function(e){
-			this.selection.removeAll(e.args[0]);
-			this.selection.range.push(e.target);
-		},
-
-		unselect: function(e){
-			this.selection.range.remove(e.target);
-		},
-
 		destroy: function(e){
-			if( e.target.hasClass('lighted') ) e.target.unlight(e);
 			if( e.target.hasClass('focused') ) e.target.blur(e);
-			if( e.target.hasClass('selected') ) e.target.unselect(e);
-		},
-
-		insertElement: function(e){
-			var view = e.target, padding;
-
-			this.changeVisibility(e.target, false);
-
-			if( view != this ){
-				padding = this.padding * this.getLevel(view);
-				view.getDom('div').style.paddingLeft = padding + 'px';
-				if( !view.hasChildNodes() ){
-					view.addClass('empty');
-				}
-			}
-		},
-
-		removeElement: function(e){
-			this.changeVisibility(e.target, true);
-		},
-
-		hide: function(e){
-			this.changeVisibility(e.target, true);
-		},
-
-		show: function(e){
-			this.changeVisibility(e.target, false);
 		}
-	},
-	lighted: null,
-	focused: null,
-	selection: null,
-	padding: 18,
+	}
+});
 
-	create: function(){
-		NS.View.create.apply(this, arguments);
-
-		this.listener = NS.Listener.new(this, this.listeners, this);
-		this.listener.listen();
-
-		this.selection = NS.Selection.new(this);
-		this.selection.filterNode = function(view){
-			return view.isVisible();
-		};
-	},
-
-	getChildrenElement: function(){
-		return this.element;
-	},
-
-	isViewVisible: function(view){
-		return !view.hasClass('hidden');
-	},
-
-	changeVisibility: function(view, hidden){
-		var prev, next, parent = view.parentNode;
-
-		if( parent ){
-			prev = view.getPreviousSibling(this.isViewVisible);
-			next = view.getNextSibling(this.isViewVisible);
-
-			if( prev && next === null ) prev.toggleClass('last', hidden);
-			else if( next && prev === null ) next.toggleClass('first', hidden);
-			view.toggleClass('first', Boolean(prev) == Boolean(hidden));
-			view.toggleClass('last', Boolean(next) == Boolean(hidden));
-
-			// ajout d'un enfant visible
-			if( !hidden ) parent.removeClass('empty');
-			// suppression du dernier enfant visible
-			else if( prev === null && next === null ) parent.addClass('empty');
-		}
-	},
-
-	getLevel: function(view){
-		var level = -1;
-
-		while(view != this){
-			level++;
-			view = view.parentNode;
-		}
-
-		return level;
-	},
-
-	// keynav
+NS.Plugin.define('keynav', {
 	loop: false,
 	keys: {
-		enter: function(e){
-			this.focused.active(e);
+		enter: function(node, e){
+			node.active(e);
 		},
 
-		left: function(e){
-			if( this.focused.hasClass('expanded') ){
-				this.focused.contract(e);
-			}
-			else{
-				return this.focused.getParent(this.isSelectable, this);
-			}
+		left: function(node){
+			return node.getParent(this.isSelectable, this);
 		},
 
-		right: function(e){
-			if( this.focused.hasClass('expanded') ){
-				return this.focused.getFirstChild(this.isSelectable, this);
-			}
-			else{
-				this.focused.expand(e);
-			}
+		right: function(node){
+			return node.getFirstChild(this.isSelectable, this);
 		},
 
-		home: function(){
-			return this.getFirst(this.isSelectable, this);
+		home: function(node){
+			return this.view.getFirst(this.isSelectable, this);
 		},
 
-		end: function(){
-			return this.getLast(this.isSelectable, this);
+		end: function(node){
+			return this.view.getLast(this.isSelectable, this);
 		},
 
-		up: function(){
-			return this.find(this.focused, this.isSelectable, this, 'prev', this.loop);
+		up: function(node){
+			return this.find(node, this.isSelectable, this, 'prev', this.loop);
 		},
 
-		down: function(){
-			return this.find(this.focused, this.isSelectable, this, 'next', this.loop);
+		down: function(node){
+			return this.find(node, this.isSelectable, this, 'next', this.loop);
 		},
 
-		'*': function(e){
+		pageup: function(node){
+			return this.findAfterCount(node, this.isSelectable, this, 'prev', this.getPageCount(this.current));
+		},
+
+		pagedown: function(node){
+			return this.findAfterCount(node, this.isSelectable, this, 'next', this.getPageCount(this.current));
+		},
+
+		'*': function(node, e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
 			if( e.control ){
 				return null;
 			}
 			else{
-				return this.find(this.focused, function(node){
+				return this.find(node, function(node){
 					return this.isSelectable(node) && this.matchLetter(node, e.key);
 				}, this, 'next', true);
 			}
-		},
-
-		pageup: function(){
-			return this.findAfterCount(this.focused, this.isSelectable, this, 'prev', this.getPageCount(this.current));
-		},
-
-		pagedown: function(){
-			return this.findAfterCount(this.focused, this.isSelectable, this, 'next', this.getPageCount(this.current));
 		}
+	},
+
+	nav: function(node, e){
+		// need String(e.key) because the 0-9 key return numbers
+		var key = String(e.key), method, target = null;
+
+		if( key in this.keys ){
+			method = key;
+		}
+		else if( key.length == 1 && RegExp.ALPHANUM.test(key) ){
+			method = '*';
+		}
+
+		if( method ){
+			target = this.keys[method].call(this, node, e);
+		}
+
+		return target;
 	},
 
 	find: function(startNode, filter, bind, direction, loop){
@@ -309,39 +356,55 @@ NS.viewDocument.define('tree', NS.View.extend({
 		return lastMatch;
 	},
 
-	isSelectable: function(view){
-		return view != this && view.isVisible() && !view.hasClass('disabled');
-	},
-
-	go: function(view, e){
-		if( view ){
-			this.selection.selectNode(view, e);
-			view.focus(e);
-			return true;
-		}
-		return false;
+	matchLetter: function(view, letter){
+		var name = view.getDom('name');
+		return name && name.innerHTML.startsWith(letter);
 	},
 
 	getLine: function(element){
 		if( !element ) return 0;
 
 		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds
-		return element.getChild('div').measure('size', 'y') - 1;
-	},
-
-	matchLetter: function(view, letter){
-		var name = view.getDom('name');
-		return name && name.innerHTML.startsWith(letter);
+		return element.getFirstChild('div').measure('size', 'y') - 1;
 	},
 
 	getPageCount: function(view){
-		var element = view.element;
-		var total = element.offsetParent.clientHeight;
-		var count = parseInt(total / this.getLine(element), 10) - 1;
+		var element = view.element, total = element.offsetParent.clientHeight;
 
-		return count;
+		return parseInt(total / this.getLine(element), 10) - 1;
 	}
-}));
+});
+
+NS.Plugin.define('cssPosition', {
+	isVisible: function(node){
+		return !node.hasClass('hidden');
+	},
+
+	changeStructure: function(node, hidden){
+		var prev, next, parent = node.parentNode;
+
+		if( parent ){
+			prev = node.getPreviousSibling(this.isVisible);
+			next = node.getNextSibling(this.isVisible);
+
+			if( prev && next === null ) prev.toggleClass('last', hidden);
+			else if( next && prev === null ) next.toggleClass('first', hidden);
+			node.toggleClass('first', Boolean(prev) == Boolean(hidden));
+			node.toggleClass('last', Boolean(next) == Boolean(hidden));
+
+			// ajout d'un enfant visible
+			if( !hidden ){
+				parent.removeClass('empty');
+			}
+			// suppression du dernier enfant visible
+			else if( prev === null && next === null ){
+				parent.addClass('empty');
+			}
+		}
+
+		node.toggleClass('empty', node.firstChild == null);
+	}
+});
 
 /*
 
@@ -354,13 +417,30 @@ pour le moment on simplifie comme suit
 
 */
 
-NS.Selection = {
+NS.Plugin.define('selection', {
+	listeners: {
+		select: function(e){
+			this.removeAll(e.args[0]);
+			this.range.push(e.target);
+		},
+
+		unselect: function(e){
+			this.range.remove(e.target);
+		},
+
+		destroy: function(e){
+			if( e.target.hasClass('selected') ) e.target.unselect(e);
+		}
+	},
+
 	node: null,
 	startNode: null,
 	endNode: null,
 	range: null,
 
-	create: function(node, single){
+	create: function(node){
+		NS.Plugin.create.apply(this, arguments);
+
 		this.node = node;
 		this.startNode = node;
 		this.endNode = node;
@@ -470,4 +550,4 @@ NS.Selection = {
 
 		return range;
 	}
-};
+});

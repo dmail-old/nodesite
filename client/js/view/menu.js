@@ -90,7 +90,7 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 					// relight le parent (il peut avoir été unlight si la souris est sortie du menu)
 					parent.light(e);
 					// et previent l'eventuel contract du parent
-					parent.clearTimeout();
+					this.clearTimeout();
 				}
 			}
 		},
@@ -100,7 +100,7 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 
 			if( node.firstChild ){
 				// unlight d'un noeud amorce sa contraction
-				node.setTimeout('contract', arguments);
+				this.setTimeout(node, 'contract', e);
 			}
 		},
 
@@ -138,7 +138,9 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 					node.focus(e);
 					node.light(e);
 				}
-				if( node.firstChild ) node.setTimeout('expand', arguments);
+				if( node.firstChild ){
+					this.setTimeout(node, 'expand', e);
+				}
 			}
 		},
 
@@ -153,31 +155,29 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 		},
 
 		keydown: function(e){
-			var node = this.focused;
+			var node = this.focused, key = e.key;
 
 			if( this.opened ){
-				switch(e.key){
 				// sers juste à prévenir le blur de l'élément par tabulation
-				case 'tab':
+				if( key == 'tab' ){
 					e.preventDefault();
-					break;
+				}
 				// échap sur un noeud le contract son parent
-				case 'esc':
+				else if( key == 'esc' ){
 					if( node == this ){
 						this.close(e);
 					}
 					else{
 						node.parentNode.contract(e).focus(e);
 					}
-					break;
-				case 'enter':
+				}
+				else if( key == 'enter' ){
 					this.activeNode(e);
-					break;
-				default:
-					if( !this.keyboard.active(e, node) ){
+				}
+				else{
+					if( !this.shortcut.active(e, node) ){
 						Tree.events.keydown.call(this, e);
 					}
-					break;
 				}
 			}
 			else{
@@ -186,7 +186,7 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 				}
 				else{
 					this.updateTarget(e);
-					if( !this.keyboard.active(e, node) ){
+					if( !this.shortcut.active(e, node) ){
 						Tree.events.keydown.call(this, e);
 					}
 				}
@@ -200,12 +200,37 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 	create: function(){
 		Tree.create.call(this);
 
+		this.shortcut = NS.Schortcut.new(this);
+
 		this.mouseclosing = this.mouseclose.bind(this);
 	},
 
 	destroy: function(){
 		this.close();
 		this.detach();
+	},
+
+	setTimeout: function(node, action, e){
+		if( action != this.timerAction ){
+			this.clearTimeout();
+			this.timerAction = action;
+			this.timer = setTimeout(
+				function(){ node[action](e); },
+				this.options[action + 'Delay']
+			);
+		}
+
+		return this;
+	},
+
+	clearTimeout: function(){
+		if( this.timer ){
+			clearTimeout(this.timer);
+			this.timer = null;
+			this.timerAction = null;
+		}
+
+		return this;
 	},
 
 	activeNode: function(e){
@@ -218,7 +243,12 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 				node.expand(e);
 			}
 			else{
-				node.active(e);
+				if( node.hasClass('actived') && node.hasClass('checkbox') ){
+					node.unactive(e);
+				}
+				else{
+					node.active(e);
+				}
 			}
 		}
 	},
@@ -363,10 +393,15 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 	}
 }));
 
+/*
+
+use shortcut to activate node
+
+// faut écouter le insertElement, removeElement pour shortcut
+
 NS.Shortcut = {
-	create: function(bind){
+	create: function(){
 		this.map = {};
-		this.bind = bind;
 	},
 
 	match: function(shortcut, e){
@@ -415,44 +450,19 @@ NS.Shortcut = {
 		delete this.map[shortcut];
 	},
 
-	call: function(e){
+	active: function(e, bind){
 		var fn = this.find(e);
 
 		if( fn ){
 			if( e.preventDefault ) e.preventDefault();
-			fn.call(this.bind, e);
+			fn.call(bind, e);
 			return true;
 		}
 		return false;
 	}
 };
 
-Tree.definePlugin('keyshortcut', {
-	events: {
-		'change:key': function(node, key){
-			if( key ) node.setKey(key);
-			else node.removeKey();
-		},
-
-		enter: function(node){
-			if( node.has('key') ) node.setKey(node.get('key'));
-		},
-
-		leave: function(node){
-			node.removeKey();
-		}
-	},
-
-	node: {
-		setKey: function(key){
-			this.tree.keyboard.on(key, this.active.bind(this));
-		},
-
-		removeKey: function(){
-			if( this.hasProperty('key') ) this.tree.keyboard.removeListener(this.getProperty('key'));
-		}
-	}
-});
+*/
 
 /*
 
