@@ -39,7 +39,7 @@ NS.Emitter = {
 			throw new TypeError('listener should be a function or object');
 		}
 
-		//if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
+		if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
 		this.listeners(name, true).push(listener);
 
 		return this;
@@ -69,7 +69,7 @@ NS.Emitter = {
 				item = list[i];
 
 				if( item === listener || item.__listener === listener ){
-					//if( this.onremovelistener ) this.onremovelistener.apply(this, arguments);
+					if( this.onremovelistener ) this.onremovelistener.apply(this, arguments);
 				}
 				else{
 					retain.push(item);
@@ -97,12 +97,7 @@ NS.Emitter = {
 	},
 
 	applyListener: function(listener, name, args){
-		if( typeof listener == 'object' ) return this.applyHandler(listener, name, args);
-		else return listener.apply(this.bind || this, args);
-	},
-
-	applyHandler: function(handler, name, args){
-		return handler.handleEvent(name, args);
+		return listener.apply(this.bind || this, args);
 	},
 
 	applyListeners: function(name, args){

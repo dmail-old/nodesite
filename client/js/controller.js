@@ -17,8 +17,8 @@ NS.Controller = {
 	view: null,
 
 	create: function(view){
-		this.viewListener = NS.Listener.new(null, this.viewListeners, this);
-		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
+		this.viewListener = NS.EventListener.new(null, this.viewListeners, this);
+		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
 		this.setView(view);
 	},

@@ -1,5 +1,5 @@
 NS.Event = {
-	name: null,
+	type: null,
 	target: null,
 	currentTarget: null,
 	bubbles: false,
@@ -9,8 +9,8 @@ NS.Event = {
 
 	args: null,
 
-	create: function(name, canBubble){
-		this.name = name;
+	create: function(type, canBubble){
+		this.type = type;
 		this.bubbles = Boolean(canBubble);
 	},
 
@@ -25,7 +25,7 @@ NS.Event = {
 	emit: function(target){
 		this.currentTarget = target;
 
-		target.emitter.emit(this.name, this);
+		target.emitter.emit(this.type, this);
 
 		return !this.stopped;
 	}

@@ -24,33 +24,7 @@ NS.EventEmitterInterface = NS.EmitterInterface.extend({
 		}
 
 		return !event.defaultPrevented;
-
-		/*if( event.inherit ){
-			event.target.crossNode(function(target){
-				return !event.emit(target);
-			});
-		}*/
 	},
-
-	/*bubble: function(name){
-		var event = NS.Event.new(name, true);
-
-		event.args = toArray(arguments, 1);
-		//event.arguments = [event].concat(event.args);
-
-		return this.dispatchEvent(event);
-	},*/
-
-	/*
-	inherit: function(name){
-		var event = NS.Event.new(name, false);
-
-		event.inherit = true;
-		event.args = toArray(arguments, 1);
-
-		return this.dispatchEvent(event);
-	},
-	*/
 
 	emit: function(name){
 		var event = NS.Event.new(name, false);

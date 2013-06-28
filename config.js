@@ -44,12 +44,13 @@ config.js = [].concat(
 		"fx"
 	].prefix('util/'),
 	[
-		"emitter", "emitterInterface", "event", "eventEmitterInterface", "listener",
+		"emitter", "emitterInterface",
+		"event", "eventEmitter", "eventEmitterInterface", "eventListener",
 		"nodeInterface", "nodeTraversal", "nodeFinder", "document",
 	].prefix('lib/'),
 	[
 		"browser", "os",
-		"event", "eventListener",
+		"event", "elementEmitter",
 		"element", "element.properties",
 		"element.styles", "element.measure",
 		"element.keepIntoView", "element.find",

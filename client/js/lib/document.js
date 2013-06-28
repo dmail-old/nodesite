@@ -5,7 +5,7 @@ NS.Document = {
 	create: function(){
 		this.Nodes = {};
 		this.childNodes = [];
-		this.emitter = NS.Emitter.new(this);
+		//this.emitter = NS.Emitter.new(this);
 	},
 
 	define: function(name, Node){

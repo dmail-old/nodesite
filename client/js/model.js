@@ -7,7 +7,7 @@ NS.Model = {
 	validationError: null,
 
 	create: function(properties){
-		this.emitter = NS.Emitter.new(this);
+		this.emitter = NS.EventEmitter.new(this);
 		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
 

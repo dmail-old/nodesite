@@ -16,8 +16,10 @@ NS.View = {
 	model: null,
 	modelListener: null,
 	modelListeners: {
-		'destroy': 'destructor',
-		'adopt': function(child, index){
+		'destroy': 'destroy',
+		'adopt': function(e){
+			var child = e.args[0], index = e.args[1];
+
 			this.insertBefore(child, this.childNodes[index]);
 		},
 
@@ -29,7 +31,9 @@ NS.View = {
 	// about element
 	element: null,
 	events: null,
-	eventListener: null,
+	elementEmitter: null,
+	elementListener: null,
+
 	tagName: 'div',
 	innerHTML: '',
 	attributes: null,
@@ -41,9 +45,8 @@ NS.View = {
 
 		this.controllers = {};
 
-		this.emitter = NS.Emitter.new(this);
-		this.modelListener = NS.Listener.new(null, this.modelListeners, this);
-		this.eventListener = NS.EventListener.new(null, this.events, this);
+		this.emitter = NS.EventEmitter.new(this);
+		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
 		this.setModel(model);
 		this.createElement();
@@ -62,8 +65,9 @@ NS.View = {
 		var element = document.createElement(this.tagName), key;
 
 		this.element = element;
-		this.eventListener.emitter = element;
-		this.eventListener.listen();
+		this.elementEmitter = NS.ElementEmitter.new(element, this);
+		this.elementListener = NS.EventListener.new(this.elementEmitter, this.events, this);
+		this.elementListener.listen();
 
 		if( this.attributes ){
 			for(key in this.attributes){
@@ -90,7 +94,7 @@ NS.View = {
 			}
 		}
 
-		this.emit('createElement', element);
+		this.emit('createElement');
 		return this;
 	},
 
@@ -98,9 +102,11 @@ NS.View = {
 		if( this.element ){
 			this.removeElement();
 
-			this.emit('destroyElement', this.element);
-			this.eventListener.stopListening();
-			this.eventListener.emitter = null;
+			this.emit('destroyElement');
+
+			this.elementEmitter = null;
+			this.elementListener.stopListening();
+			this.elementListener = null;
 			this.element = null;
 		}
 
@@ -118,7 +124,7 @@ NS.View = {
 
 	removeElement: function(){
 		if( this.element.parentNode ){
-			this.emit('removeElement', this.element);
+			this.emit('removeElement');
 			this.element.dispose();
 		}
 

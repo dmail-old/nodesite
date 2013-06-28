@@ -2,7 +2,7 @@
 it may be usefull to know if a specific event is being listened
 */
 
-NS.Listener = {
+NS.EventListener = {
 	handlers: null,
 	emitter: null,
 	listener: null,
@@ -14,15 +14,11 @@ NS.Listener = {
 		this.listener = listener || this;
 	},
 
-	applyHandler: function(handler, bind, args){
-		return handler.apply(bind, args);
-	},
-
-	handleEvent: function(name, args){
+	handleEvent: function(e){
 		var listener = this.listener, handlers = this.handlers, handler;
 
 		if( handlers ){
-			handler = this.handlers[name];
+			handler = this.handlers[e.type];
 			if( typeof handler == 'string' ){
 				handler = listener[handler];
 			}
@@ -31,7 +27,7 @@ NS.Listener = {
 				handler = handler.handleEvent;
 			}
 			if( typeof handler == 'function' ){
-				return this.applyHandler(handler, listener, args);
+				return handler.call(listener, e);
 			}
 		}
 	},
@@ -50,7 +46,7 @@ NS.Listener = {
 		return this;
 	},
 
-	set: function(name, listener){
+	add: function(name, listener){
 		var exists = false;
 
 		if( this.handlers ){
@@ -66,7 +62,7 @@ NS.Listener = {
 		if( !exists && this.listening ) this.enable(name);
 	},
 
-	unset: function(name){
+	remove: function(name){
 		if( this.handlers ){
 			if( this.listening ) this.disable(name);
 			delete this.handlers[name];
