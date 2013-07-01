@@ -57,13 +57,14 @@ config.js = [].concat(
 		"request"
 	].prefix('browser/'),
 	[
+		"template",
 		"model", "view", "controller"
 	],
 	[
 		"node"
 	].prefix('model/'),
 	[
-		"selector", "tree", "node"
+		"selector", "node", "rootnode", "tree"
 	].prefix('view/'),
 	[
 
