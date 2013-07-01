@@ -21,10 +21,5 @@ NS.viewDocument.define('node', NS.viewDocument.require('node').extend({
 		if( !key ) key = '';
 		else if( 'key_' + key in lang ) key = lang['key_' + key];
 		return key;
-	},
-
-	drawKey: function(key){
-		var dom = this.getDom('key');
-		if( dom ) dom.innerHTML = this.calcHTMLKey(value);
 	}
 }));

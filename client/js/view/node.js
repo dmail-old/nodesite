@@ -1,12 +1,26 @@
+/*
+un jour les vues seront définies direct dans le HTML genre
+
+<li class="node" data-view="node">
+	<div>
+		<ins class="tool"></ins>
+		<span class="name">{name}</span>
+	</div>
+	<ul>
+		{htmlChildren}
+	</ul>
+</li>
+
+pour les propriétés pour complexes la vue définiras une méthode, genre
+{htmlName}
+View.htmlName = function(){ return lang[this.name]; };
+
+*/
+
 NS.viewDocument.define('node', NS.View.extend({
 	tagName: 'li',
 	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
 	className: 'node',
-	modelListeners: {
-		'change:name': function(name){
-			this.updateName(name);
-		}
-	},
 	states: {
 		lighted: ['light', 'unlight'],
 		selected: ['select', 'unselect'],
@@ -53,9 +67,10 @@ NS.viewDocument.define('node', NS.View.extend({
 		return this.getDom('ul');
 	},
 
-	scrollTo: function(dom){
-		var element = this.getDom(typeof dom == 'string' ? dom : 'li');
-		if( element ) element.keepIntoView();
+	scrollTo: function(element){
+		element = element || this.element;
+
+		element.keepIntoView();
 
 		return this;
 	},
@@ -77,10 +92,6 @@ NS.viewDocument.define('node', NS.View.extend({
 			dom = this.getDom('div');
 			return dom ? dom.getFirstChild(what) : null;
 		}
-	},
-
-	updateName: function(name){
-		this.getDom('name').innerHTML = name;
 	}
 }));
 

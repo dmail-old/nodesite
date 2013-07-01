@@ -1,124 +1,8 @@
-var Tree = NS.viewDocument.require('tree');
-
-var Menu = NS.viewDocument.define('menu', Tree.extend({
-	options: {
-		imageSrc: "./img/tree/",
-		expandDelay: 270,
-		contractDelay: 350,
-		radioClose: true,
-	},
-	types: {
-		radio: {
-			img: 'menuradio.png',
-			'class': 'radio'
-		},
-		checkbox: {
-			img: 'menucheckbox.png',
-			'class': 'checkbox'
-		}
-	},
-	loop: true,
-	className: 'tree line menu',
-
+var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
+	className: 'menu root line',
 	modelListeners: {
 		'change:key': function(node, key){
 			node.drawKey(key);
-		}
-	},
-	listeners: {
-		insertElement: function(e){
-			var node = e.target;
-
-			if( this.opened ){
-				this.resetNode(node);
-			}
-		},
-
-		active: function(e){
-			var node = e.target, action, target, model, type;
-
-			if( !this.isActivable(node) ) return;
-
-			model = node.model;
-			action = model.get('action');
-			target = this.getTarget();
-			type = model.get('type');
-
-			if( typeof action != 'function' ) action = target[model.get('name')];
-			if( typeof action == 'function' ) action.call(node, target, e);
-
-			if( type == 'radio' ){
-				// désactive tout les radios avant celui-ci
-				node.getPreviousSibling(function(node){
-					if( node.hasClass('sep') || node.model.get('type') != 'radio' ) return true;
-					node.unactive(e);
-				});
-				// désactive tout les radios après celui-ci (tant qu'on trouve pas une séparation)
-				if( !node.hasClass('sep') ){
-					node.getNextSibling(function(node){
-						if( node.model.get('type') != 'radio' ) return true;
-						node.unactive(e);
-						if( node.hasClass('sep') ) return true;
-					});
-				}
-				if( this.options.radioClose ){
-					this.close(e);
-				}
-			}
-			else if( type == 'checkbox' ){
-
-			}
-			else{
-				this.close(e);
-			}
-		},
-
-		light: function(e){
-			var node = e.target, parent = node.parentNode, lightedSibling;
-
-			if( parent ){
-				lightedSibling = parent.getFirstChild(function(child){
-					return child !== node && child.hasClass('lighted');
-				});
-
-				if( lightedSibling ){
-					// si un frère est lighted, unlight le
-					lightedSibling.unlight(e);
-				}
-
-				if( parent != this ){
-					// relight le parent (il peut avoir été unlight si la souris est sortie du menu)
-					parent.light(e);
-					// et previent l'eventuel contract du parent
-					this.clearTimeout();
-				}
-			}
-		},
-
-		unlight: function(e){
-			var node = e.target;
-
-			if( node.firstChild ){
-				// unlight d'un noeud amorce sa contraction
-				this.setTimeout(node, 'contract', e);
-			}
-		},
-
-		expand: function(e){
-			var node = e.target, sibling;
-
-			sibling = node.getSibling(function(node){ return node.hasState('expanded'); });
-
-			if( sibling ){
-				sibling.contract(e);
-			}
-			if( node.isVisible() ){
-				node.childNodes.forEach(this.resetNode, this);
-			}
-
-			if( e && e.key == 'right' ){
-				this.go(node.getFirstChild(this.isSelectable, this), e);
-			}
 		}
 	},
 	events: {
@@ -126,7 +10,6 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 			var node = this.cast(e);
 
 			e.preventDefault();
-
 			if( node && node.firstChild ) node.expand(e);
 		},
 
@@ -144,14 +27,17 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 			}
 		},
 
-		mouseout: Tree.events.mouseout,
+		// comment unlight le noeud lighted ici?
+		//mouseout: Tree.events.mouseout,
 
 		contextmenu: function(e){
-			this.activeNode(e);
+			e.preventDefault();
+			this.activeNode(this.cast(e), e);
 		},
 
 		click: function(e){
-			this.activeNode(e);
+			e.preventDefault();
+			this.activeNode(this.cast(e), e);
 		},
 
 		keydown: function(e){
@@ -162,7 +48,7 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 				if( key == 'tab' ){
 					e.preventDefault();
 				}
-				// échap sur un noeud le contract son parent
+				// échap sur un noeud contract son parent
 				else if( key == 'esc' ){
 					if( node == this ){
 						this.close(e);
@@ -172,12 +58,10 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 					}
 				}
 				else if( key == 'enter' ){
-					this.activeNode(e);
+					this.activeNode(node, e);
 				}
 				else{
-					if( !this.shortcut.active(e, node) ){
-						Tree.events.keydown.call(this, e);
-					}
+					this.nav(node, e);
 				}
 			}
 			else{
@@ -186,19 +70,146 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 				}
 				else{
 					this.updateTarget(e);
-					if( !this.shortcut.active(e, node) ){
-						Tree.events.keydown.call(this, e);
-					}
+					this.nav(node, e);
 				}
 			}
 		}
 	},
 
+	// we nav only trough child and we loop
+	loop: true,
+	findNext: 'getNextSibling',
+	findPrev: 'getPreviousSibling',
+	findFirst: 'getFirstChild',
+	findLast: 'getLastChild',
+	nav: function(node, e){
+		if( !this.shortcut.active(e, node) ){
+			NS.viewDocument.require('rootnode').nav.call(this, node, e);
+		}
+	},
+	go: function(node, e){
+		node.light(e);
+		node.focus(e);
+	},
+
 	opened: false,
 	target: null,
+	options: {
+		imageSrc: "./img/tree/",
+		expandDelay: 270,
+		contractDelay: 350,
+		radioClose: true,
+	},
+	types: {
+		radio: {
+			img: 'menuradio.png',
+			'class': 'radio'
+		},
+		checkbox: {
+			img: 'menucheckbox.png',
+			'class': 'checkbox'
+		}
+	},
 
 	create: function(){
-		Tree.create.call(this);
+		NS.viewDocument.require('rootnode').create.call(this);
+
+		this.on({
+			insertElement: function(e){
+				var node = e.target;
+
+				if( this.opened ){
+					this.resetNode(node);
+				}
+			},
+
+			active: function(e){
+				var node = e.target, action, target, model, type;
+
+				if( !this.isActivable(node) ) return;
+
+				model = node.model;
+				action = model.get('action');
+				target = this.getTarget();
+				type = model.get('type');
+
+				if( typeof action != 'function' ) action = target[model.get('name')];
+				if( typeof action == 'function' ) action.call(node, target, e);
+
+				if( type == 'radio' ){
+					// désactive tout les radios avant celui-ci
+					node.getPreviousSibling(function(node){
+						if( node.hasClass('sep') || node.model.get('type') != 'radio' ) return true;
+						node.unactive(e);
+					});
+					// désactive tout les radios après celui-ci (tant qu'on trouve pas une séparation)
+					if( !node.hasClass('sep') ){
+						node.getNextSibling(function(node){
+							if( node.model.get('type') != 'radio' ) return true;
+							node.unactive(e);
+							if( node.hasClass('sep') ) return true;
+						});
+					}
+					if( this.options.radioClose ){
+						this.close(e);
+					}
+				}
+				else if( type == 'checkbox' ){
+
+				}
+				else{
+					this.close(e);
+				}
+			},
+
+			light: function(e){
+				var node = e.target, parent = node.parentNode, lightedSibling;
+
+				if( parent ){
+					lightedSibling = parent.getFirstChild(function(child){
+						return child !== node && child.hasClass('lighted');
+					});
+
+					if( lightedSibling ){
+						// si un frère est lighted, unlight le
+						lightedSibling.unlight(e);
+					}
+
+					if( parent != this ){
+						// relight le parent (il peut avoir été unlight si la souris est sortie du menu)
+						parent.light(e);
+						// et previent l'eventuel contract du parent
+						this.clearTimeout();
+					}
+				}
+			},
+
+			unlight: function(e){
+				var node = e.target;
+
+				if( node.firstChild ){
+					// unlight d'un noeud amorce sa contraction
+					this.setTimeout(node, 'contract', e);
+				}
+			},
+
+			expand: function(e){
+				var node = e.target, sibling;
+
+				sibling = node.getSibling(function(node){ return node.hasState('expanded'); });
+
+				if( sibling ){
+					sibling.contract(e);
+				}
+				if( node.isVisible() ){
+					node.childNodes.forEach(this.resetNode, this);
+				}
+
+				if( e && e.key == 'right' ){
+					this.go(node.getFirstChild(this.isSelectable, this), e);
+				}
+			}
+		});
 
 		this.shortcut = NS.Schortcut.new(this);
 
@@ -233,11 +244,7 @@ var Menu = NS.viewDocument.define('menu', Tree.extend({
 		return this;
 	},
 
-	activeNode: function(e){
-		var node = this.cast(e);
-
-		e.preventDefault();
-
+	activeNode: function(node, e){
 		if( node ){
 			if( node.firstChild ){
 				node.expand(e);

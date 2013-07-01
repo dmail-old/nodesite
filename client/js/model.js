@@ -3,8 +3,8 @@ NS.Model = {
 	emitter: null,
 	properties: null,
 	name: '',
-
 	validationError: null,
+	getters: {},
 
 	create: function(properties){
 		this.emitter = NS.EventEmitter.new(this);
@@ -39,6 +39,17 @@ NS.Model = {
 	},
 
 	get: function(key){
+		if( key in this.getters ){
+			var getter = this.getters[key];
+
+			if( 'argumentNames' in getter ){
+				return getter.apply(this, getter.argumentNames.map(this.get, this));
+			}
+			else{
+				return getter.call(this);
+			}
+		}
+
 		return this.properties[key];
 	},
 

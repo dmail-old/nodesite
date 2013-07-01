@@ -20,7 +20,7 @@ NodeView.prototype.modelEvents.send = function(){
 	// on n'affiche pas le loader tout de suite, uniquement si l'action dure
 	this.timeout = setTimeout(function(){
 		delete this.timeout;
-		this.getDom('li').addItem('loading');
+		this.addClass('loading');
 	}.bind(this), 300);
 };
 
@@ -29,7 +29,7 @@ NodeView.prototype.modelEvents.complete = function(){
 		clearTimeout(this.timeout);
 		delete this.timeout;
 	}
-	this.getDom('li').removeItem('loading');
+	this.removeClass('loading');
 };
 
 var imgA = new FileModel('/img/aa');

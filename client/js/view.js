@@ -16,14 +16,20 @@ NS.View = {
 	model: null,
 	modelListener: null,
 	modelListeners: {
-		'destroy': 'destroy',
-		'adopt': function(e){
+		destroy: 'destroy',
+
+		change: function(e){
+			var property = e.args[0], value = e.args[1];
+			this.emit('change:' + property, value);
+		},
+
+		adopt: function(e){
 			var child = e.args[0], index = e.args[1];
 
 			this.insertBefore(child, this.childNodes[index]);
 		},
 
-		'emancipate': function(){
+		emancipate: function(){
 			this.parentNode.removeChild(this);
 		}
 	},
@@ -39,6 +45,12 @@ NS.View = {
 	attributes: null,
 	className: '',
 	style: null,
+
+	updaters: {
+		content: function(value){
+			this.nodeValue = value;
+		}
+	},
 
 	create: function(model){
 		this.self.addInstance(this);
@@ -86,15 +98,13 @@ NS.View = {
 		}
 
 		if( this.innerHTML ){
-			if( this.model ){
-				this.element.innerHTML = this.innerHTML.parse(this.model.properties);
-			}
-			else{
-				this.element.innerHTML = this.innerHTML;
-			}
+			this.element.innerHTML = this.innerHTML;
 		}
 
 		this.emit('createElement');
+
+		this.parseElement(element);
+
 		return this;
 	},
 
@@ -111,6 +121,56 @@ NS.View = {
 		}
 
 		return this;
+	},
+
+	watch: function(property, fn, bind){
+		if( property in this.model.getters ){
+			Function.argumentNames(this.getters[property]).forEach(function(property){
+				this.on('change:' + property, function(){
+					fn.call(bind, this.model.get(property));
+				});
+			});
+		}
+		else{
+			this.on('change:' + property, fn.bind(bind));
+		}
+	},
+
+	parseNode: function(node){
+		var list = [];
+
+		switch( node.nodeType ){
+		case 1: /* Element */
+			var attributes = node.attributes, i = 0, j = attributes.length, attr;
+			for(;i<j;i++){
+				attr = attributes[i];
+			}
+
+			// use class as directive
+			var className = node.className;
+			if( typeof className == 'string' && className !== '' ){
+
+			}
+
+			break;
+		case 3: /* Text Node */
+			var value = node.nodeValue;
+
+			if( value.startsWith('{') ){
+				var property = value.substring(1, value.length - 1);
+
+				this.updaters.content.call(node, this.model.get(property));
+				this.watch(property, this.updaters.content, node);
+			}
+			break;
+		case 8: /* Comment */
+			//this.element.nodeValue;
+			break;
+		}
+	},
+
+	parseElement: function(element){
+		element.getFirst(this.parseNode, this);
 	},
 
 	insertElement: function(into, before){
@@ -214,26 +274,7 @@ NS.View = {
 			child.removeElement();
 		},
 
-		getChildrenElement: Function.IMPLEMENT,
-
-		setChildrenElement: function(element){
-			this.childrenElement = element;
-		},
-
-		createChildrenElement: function(element){
-			return document.createElement('ul');
-		},
-
-		insertChildren: function(element){
-			this.setChildrenElement(element);
-			this.childNodes.forEach(function(child){ child.insertElement(element); });
-		},
-
-		renderChildren: function(){
-			var childrenElement = this.createChildrenElement();
-			this.element.appendChild(childrenElement);
-			this.insertChildren(childrenElement);
-		}
+		getChildrenElement: Function.IMPLEMENT
 	}
 );
 

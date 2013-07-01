@@ -81,7 +81,7 @@ NS.NodeTraversal = {
 					result = fn.call(bind, node);
 					if( result === NS.Filter.ACCEPT ) return node;
 					if( result === NS.Filter.REJECT ) continue;
-					if( result === NS.Filter.SKIP ) break;
+					break;
 				}
 				else{
 					node = node.parentNode;

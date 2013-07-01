@@ -23,12 +23,41 @@ Function.replacer = function(key, value){
 	return typeof value == 'function' ? '(' + String(value) + ')' : value;
 };
 
-// from prototype library
+// from http://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically-from-javascript
+RegExp.ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
+RegExp.COMMA = /,/;
+RegExp.ARG = /^\s*(_?)(.+?)\1\s*$/;
+RegExp.COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+
 Function.argumentNames = function(fn){
-    var names = fn.toString().match(/^[\s\(]*function[^(]*\(([^)]*)\)/)[1]
-      .replace(/\/\/.*?[\r\n]|\/\*(?:.|[\r\n])*?\*\//g, '')
-      .replace(/\s+/g, '').split(',');
-    return names.length == 1 && !names[0] ? [] : names;
+
+	var source, declaration, args, i, j, names;
+
+	if( 'argumentNames' in fn ){
+		names = fn.argumentNames;
+	}
+	else{
+		names = [];
+		source = fn.toString().replace(RegExp.COMMENTS, String.EMPTY);
+		declaration = source.match(RegExp.ARGS);
+
+		args = declaration[1];
+		if( args ){
+			args = args.split(RegExp.COMMA);
+			i = 0;
+			j = args.length;
+
+			for(;i<j;i++){
+				args[i].replace(RegExp.ARG, function(all, underscore, name){
+					names.push(name);
+				});
+			}
+		}
+
+		fn.argumentNames = names;
+	}
+
+	return names;
 };
 
 Function.complement({
