@@ -1,0 +1,51 @@
+<!-- simple rendering -->
+<div id="user_template">
+	<b>{name}</b>
+	<br />
+	<ul>
+		<li>{nameLabel}: {name}</li>
+		<li>{ageLabel}: {age}</li>
+	</ul>
+</div>
+
+<script>
+
+var userTemplate = NS.Template.new($('user_template'));
+
+// render attendras un object de type model pour pouvoir s'abonner à ses modifications
+// on peut essayer de voir le truc dans le genre de new Proxy(object, handler)
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+userTemplate.render({
+	nameLabel: 'name',
+	ageLabel: 'age',
+	name: 'Damien',
+	age: 18
+});
+
+</script>
+
+<!-- iteration -->
+<div id="iteration">
+	<h3>{title}</h3>
+	<ul>
+		<li data-repeat="users">{name}</li>
+	</ul>
+</div>
+
+<script>
+
+var userListTemplate = NS.Template.new($('iteration'));
+var data = {
+	title: 'Liste des utilisateurs',
+	users:[
+		{name:'damien'},
+		{name:'sandra'},
+		{name:'seb'}
+	]
+};
+
+</script>
+
+<!-- nested iteration -->
+<!-- include template -->
+<!-- nested include -->
