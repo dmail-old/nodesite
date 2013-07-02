@@ -1,6 +1,8 @@
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
-	className: 'tree root unselectable',
-	attributes: {'tabindex': 0},
+	template: '\
+		<ul class="root unselectable" tabindex="0">\
+		</ul>\
+	'.toElement(),
 	events: {
 		mouseover: function(e){
 			var node = this.cast(e.target);

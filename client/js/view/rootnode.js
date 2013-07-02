@@ -1,6 +1,4 @@
 NS.viewDocument.define('rootnode', NS.View.extend({
-	tagName: 'ul',
-	className: 'root unselectable',
 	focused: null,
 	selection: null,
 

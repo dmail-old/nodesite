@@ -18,9 +18,14 @@ View.htmlName = function(){ return lang[this.name]; };
 */
 
 NS.viewDocument.define('node', NS.View.extend({
-	tagName: 'li',
-	innerHTML: '<div><ins class="tool"></ins><span class="name">{name}</span></div>',
-	className: 'node',
+	template: '\
+		<li class="node">\
+			<div>\
+				<ins class="tool"></ins>\
+				<span class="name">{name}</span>\
+			</div>\
+		</li>\
+	'.toElement(),
 	states: {
 		lighted: ['light', 'unlight'],
 		selected: ['select', 'unselect'],

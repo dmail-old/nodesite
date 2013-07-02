@@ -35,22 +35,11 @@ NS.View = {
 	},
 
 	// about element
+	template: null,
 	element: null,
 	events: null,
 	elementEmitter: null,
 	elementListener: null,
-
-	tagName: 'div',
-	innerHTML: '',
-	attributes: null,
-	className: '',
-	style: null,
-
-	updaters: {
-		content: function(value){
-			this.nodeValue = value;
-		}
-	},
 
 	create: function(model){
 		this.self.addInstance(this);
@@ -61,7 +50,7 @@ NS.View = {
 		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
 		this.setModel(model);
-		this.createElement();
+		if( this.template ) this.setElement(this.template.cloneNode(true));
 
 		this.emit('create');
 	},
@@ -73,42 +62,21 @@ NS.View = {
 		this.self.removeInstance(this);
 	},
 
-	createElement: function(){
-		var element = document.createElement(this.tagName), key;
-
+	setElement: function(element){
 		this.element = element;
-		this.elementEmitter = NS.ElementEmitter.new(element, this);
+
+		this.elementEmitter = NS.ElementEmitter.new(this.element, this);
 		this.elementListener = NS.EventListener.new(this.elementEmitter, this.events, this);
 		this.elementListener.listen();
 
-		if( this.attributes ){
-			for(key in this.attributes){
-				this.setAttribute(key, this.attributes[key]);
-			}
-		}
-		this.setAttribute(this.self.IDAttribute, this.id);
-		if( this.className ){
-			this.element.className = this.className;
-		}
+		this.element.setAttribute('data-view', this.id);
 
-		if( this.style ){
-			for(key in this.style){
-				this.setStyle(key, this.style[key]);
-			}
-		}
-
-		if( this.innerHTML ){
-			this.element.innerHTML = this.innerHTML;
-		}
-
-		this.emit('createElement');
-
-		this.parseElement(element);
+		this.parseNode(this.element);
 
 		return this;
 	},
 
-	destroyElement: function(){
+	unsetElement: function(){
 		if( this.element ){
 			this.removeElement();
 
@@ -139,38 +107,23 @@ NS.View = {
 	parseNode: function(node){
 		var list = [];
 
-		switch( node.nodeType ){
-		case 1: /* Element */
-			var attributes = node.attributes, i = 0, j = attributes.length, attr;
-			for(;i<j;i++){
-				attr = attributes[i];
-			}
-
-			// use class as directive
-			var className = node.className;
-			if( typeof className == 'string' && className !== '' ){
-
-			}
-
-			break;
-		case 3: /* Text Node */
+		// Element
+		if( node.nodeType == 1 ){
+			Array.prototype.forEach.call(node.attributes, this.parseNode, this);
+			Array.prototype.forEach.call(node.childNodes, this.parseNode, this);
+		}
+		// AttributeNode or TextNode
+		else if( node.nodeType == 2 || node.nodeType == 3 ){
 			var value = node.nodeValue;
 
-			if( value.startsWith('{') ){
-				var property = value.substring(1, value.length - 1);
-
-				this.updaters.content.call(node, this.model.get(property));
-				this.watch(property, this.updaters.content, node);
+			if( value.startsWith('{') && value.endsWith('}') ){
+				var path = value.substring(1, value.length - 1);
+				this.watch(path, function(value){
+					node.nodeValue = value;
+				});
+				node.nodeValue = this.model.get(path);
 			}
-			break;
-		case 8: /* Comment */
-			//this.element.nodeValue;
-			break;
 		}
-	},
-
-	parseElement: function(element){
-		element.getFirst(this.parseNode, this);
 	},
 
 	insertElement: function(into, before){
