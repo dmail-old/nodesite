@@ -10,7 +10,7 @@ var config = {
 		"config.js",
 		"server.js",
 		"module",
-		"db",
+		//"db",
 		"client/js/lib",
 		"lang/fr"
 	],
@@ -40,7 +40,7 @@ config.js = [].concat(
 		"random",
 		"filter",
 		"list",  "array.iterate", "array.find",
-		"options", "chain", "memory", // "path",
+		"options", "chain", "memory", "path",
 		"fx"
 	].prefix('util/'),
 	[
@@ -57,7 +57,6 @@ config.js = [].concat(
 		"request"
 	].prefix('browser/'),
 	[
-		"template",
 		"model", "view", "controller"
 	],
 	[
@@ -91,8 +90,11 @@ config.actions = {
 		return true;
 	},
 	"filesystem": function(action, args){
-		// lorsque le client demande à effectué une action sur le filesystem, il agit toujours dans le dossier client/
-		args[0] = 'client/' + args[0];
+		// lorsque le client demande à effectué une action sur le filesystem
+		// il agit toujours dans le dossier client/
+		// faux, c'est juste quelque chose à vérifier mais pas à imposer
+
+		//args[0] = 'client/' + args[0];
 		return true;
 	}
 };

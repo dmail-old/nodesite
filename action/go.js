@@ -1,4 +1,6 @@
-var redirects = {'/': '/index'};
+var redirects = {
+	'/': '/index'
+};
 
 function calcPath(path){
 	var redirect = redirects[path];
@@ -10,18 +12,14 @@ module.exports = function(pagePath, callback){
 
 	var path = calcPath(pagePath);
 	path = path.substr(1);
-	var parts = path.split('/');
-	var name = parts.shift();
 
-	if( name.endsWith('.html') ){
-		console.log('sendfile', name);
-		this.request.parsedUrl.pathname = name;
+	if( path.endsWith('.html') ){
+		console.log('sendfile', path);
+		this.request.parsedUrl.pathname = path;
 		require(root + '/module/responses/file').new(this.request, this.response);
 	}
 	else{
-		name = name.replace(/\.js$/, '');
-		parts = parts;
-
-		this.sendScriptResponse(root + '/client/' + name + '.js');
+		path = path.replace(/\.js$/, '');
+		this.sendScriptResponse(root + '/client/' + path + '.js');
 	}
 };

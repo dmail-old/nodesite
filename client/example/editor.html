@@ -1,7 +1,7 @@
 <div class="editor unselectable">
-	
+
 	<div id="test" class="left">
-	
+
 		<div class="tile">
 			<div class="container">
 				<img src="./img/tile/Arbre.png" />
@@ -13,16 +13,16 @@
 			</div>
 			<div class="tabs"></div>
 		</div>
-		
+
 		<div class="explorer">
-			
+
 		</div>
-	
+
 	</div>
-		
+
 	<div id="right_bloc">
 		<ul class="control">
-			
+
 		</ul>
 		<div id="map_container">
 			<div id="map">
@@ -62,23 +62,23 @@
 // échap lorsqu'on renomme un noeud ferme la popup
 
 var Editor = {
-	
+
 };
 Object.append(Editor, Emitter);
 
 var popupSelector = new PopupSelector();
 
-server.callAction('filesystem/fileinfo', 'img/tile', function(error, fileinfo){
+server.exec('filesystem/fileinfo', 'img/tile', function(error, fileinfo){
 	if( error ) throw error;
-	
+
 	fileinfo.name = 'img/tile';
 	fileinfo.expanded = true;
 	popupSelector.tree.setRoot(fileinfo, !true);
 	popupSelector.tree.active(0);
 	popupSelector.append($('test'), $('test').firstChild);
-	
+
 	/*
-	server.callAction('filesystem/fileinfo', 'upload/admin/tile', function(error, fileinfo){
+	server.exec('filesystem/fileinfo', 'upload/admin/tile', function(error, fileinfo){
 		fileinfo.name = '../../upload/admin/tile';
 		fileinfo.htmlName = 'Mes tiles';
 		fileinfo.expanded = true;
@@ -90,26 +90,26 @@ server.callAction('filesystem/fileinfo', 'img/tile', function(error, fileinfo){
 Editor.tabs = {
 	initialize: function(){
 		this.actived = null;
-		this.names = Array.range('A', 'E');	
+		this.names = Array.range('A', 'E');
 		this.element = new Element('ul');
-		
+
 		//this.element.className = 'unselectable';
 		document.getElement(function(el){ return el.hasClass('tabs'); }).appendChild(this.element);
-		
+
 		this.names.forEach(function(name, i){
 			var tab = new Element('li');
 			tab.innerHTML = name;
-		
+
 			this.element.appendChild(tab);
 		}, this);
-		
+
 		this.element.on('mousedown', this.mousedown.bind(this));
 	},
-	
+
 	destroy: function(){
 		this.element.destroy();
 	},
-	
+
 	getTab: function(tab){
 		switch(typeof tab){
 			case 'string': tab = this.names.indexOf(tab);
@@ -117,13 +117,13 @@ Editor.tabs = {
 			case 'object': break;
 			default: tab = null;
 		}
-		
+
 		return tab;
 	},
-	
+
 	active: function(tab){
 		tab = this.getTab(tab);
-		
+
 		if( tab ){
 			Editor.emit('changeTab', tab, this.actived);
 			if( this.actived ) this.unactive(this.actived);
@@ -131,10 +131,10 @@ Editor.tabs = {
 			this.actived = tab;
 		}
 	},
-	
+
 	unactive: function(tab){
 		tab = this.getTab(tab);
-		
+
 		if( tab ){
 			tab.removeClass('on');
 			delete this.actived;
@@ -143,13 +143,13 @@ Editor.tabs = {
 
 	go: function(num){
 		var current = this.actived, index;
-		
+
 		if( !current ) return false;
-		
+
 		index = this.names.indexOf(current.innerHTML);
-		
+
 		if( index == -1 ) return false;
-		
+
 		if( num > 0 ){
 			if( index == this.names.length - 1 ) index = 0;
 			else index++;
@@ -158,15 +158,15 @@ Editor.tabs = {
 			if( index == 0 ) index = this.names.length - 1;
 			else index--;
 		}
-		
-		this.active(index);		
+
+		this.active(index);
 	},
-	
+
 	mousedown: function(e){
 		if( e.target.tagName.toLowerCase() == 'li' ){
 			this.active(e.target);
 		}
-	}	
+	}
 };
 
 Editor.tile = {
@@ -176,7 +176,7 @@ Editor.tile = {
 			step: 32
 		});
 		this.selector.element.addClass('vx');
-		
+
 		this.selector.toMinimalSize = function(e){ this.resize(this.options.step, this.options.step); };
 		this.selector.on('keydrag', this.selector.toMinimalSize);
 		this.selector.toMinimalSize();
@@ -186,19 +186,19 @@ Editor.tile = {
 Editor.explorer = {
 	initialize: function(){
 		this.tree = new Tree();
-		
+
 		this.tree.addPlugin('draw', 'keyboard', 'file', 'menu', 'dropfile');
 		// pas d'effet lighted
 		this.tree.eventList.remove('mouseover', 'mouseout');
 		this.tree.options.treeclass = 'tree line vx unselectable';
 		this.tree.options.multiselection = false;
-				
-		server.callAction('filesystem/fileinfo', 'upload/admin/map', function(error, fileinfo){
+
+		server.exec('filesystem/fileinfo', 'upload/admin/map', function(error, fileinfo){
 			fileinfo.name = 'upload/admin/map';
 			fileinfo.expanded = true;
 			this.tree.setRoot(fileinfo, true);
 			this.tree.append(document.getElement(function(el){ return el.hasClass('explorer'); }));
-		}.bind(this));	
+		}.bind(this));
 	}
 };
 

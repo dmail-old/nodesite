@@ -60,6 +60,55 @@ Function.argumentNames = function(fn){
 	return names;
 };
 
+/*
+lets say an object have a method expecting that type of signature:
+
+var a = {
+	applyAction: function(action, args, callback, bind)
+};
+
+createApplyAlias will create a function allowing to write args with a call signature
+
+a.callAction = Function.createApplyAlias('applyAction', 1);
+
+a.callAction('test', 'arg1', 'arg2', function(){});
+<->
+a.applyAction('test', ['arg1', 'arg2'], function(){});
+
+*/
+Function.createApplyAlias = function(alias, index){
+
+	return function(){
+		var args, i, j = arguments.length, realArgs, arg;
+
+		args = Array.slice(arguments, 0, index);
+
+		if( index < j ){
+			realArgs = [];
+			i = index;
+			j = j - 2;
+			for(;i<j;i++){
+				arg = arguments[i];
+				realArgs.push(arg);
+			}
+
+			// the two last arguments are special
+			// maybe we can found the callback and the bind
+			arg = arguments[i];
+			if( typeof arg == 'function' ){
+				args.push(realArgs, arg, arguments[i+1]);
+			}
+			else{
+				realArgs.push(arg);
+				args.push(realArgs, arguments[i+1]);
+			}
+		}
+
+		return this[alias].apply(this, args);
+	};
+
+};
+
 Function.complement({
 	// allow to prefill that execution of a function with x arguments
 	curry: function(){

@@ -1,2 +1,19 @@
-<a href="treeView.html">TreeView</a><br>
+<div id="links"></div>
+
+<script>
+
+window.server.exec('filesystem/readdir', 'client/example/', function(error, filenames){
+	filenames.forEach(function(filename){
+		var a = document.createElement('a');
+		a.href = 'example/' + filename;
+		a.innerHTML = filename;
+
+		$('links').appendChild(a);
+		$('links').appendChild(document.createElement('br'));
+	});
+
+	console.log(filenames);
+});
+
+</script>
 

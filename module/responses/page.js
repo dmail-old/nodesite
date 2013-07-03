@@ -15,10 +15,6 @@ var exports = {
 	styleTemplate: '<link type="text/css" rel="stylesheet" href="#" />',
 	scriptTemplate: '<script type="text/javascript" src="#"></script>',
 
-	// TODO, to avoid http request we serve the file directly
-	//inlineStyleTemplate: '<style type="text/css">{css}</style>',
-	//inlineScriptTemplate: '<script type="text/javascript">{js}</script>',
-
 	create: function(request, response){
 		var htmlFile = NS.File.new(root + '/client/app.html'), html;
 

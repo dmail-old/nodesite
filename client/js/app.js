@@ -1,5 +1,3 @@
-/* global browser */
-
 window.server = {
 	link: null,
 	handlers: {
@@ -53,50 +51,90 @@ window.server = {
 			}
 		};
 		request.on('request', function(options){
-			if( options && options.callback ) this.once('handle', options.callback);
+			if( options && options.callback ){
+				this.once('handle', options.callback);
+			}
 		});
 
 		this.link = request;
 	},
 
-	init: function(callback){
-		var data = {
-			page: document.location.pathname
-		};
-
-		if( localStorage.userId ){
-			data.userId = localStorage.userId;
-		}
-
-		this.callAction('init', data, callback);
-	},
-
 	applyAction: function(action, args, callback){
 		this.link.send({
 			callback: callback,
-			data:{
+			data: {
 				json: JSON.stringify([action].concat(args))
 			}
 		});
 	},
 
-	callAction: function(action){
-		var args = Array.slice(arguments, 1);
-		var callback = args[args.length-1];
+	exec: Function.createApplyAlias('applyAction', 1)
+};
 
-		if( typeof callback == 'function' ) args.pop();
+window.route = {
+	location: document.location.href,
+	routes: [],
 
-		return this.applyAction(action, args, callback);
+	when: function(route, fn, bind){
+		var test;
+
+		if( typeof route == 'string' ){
+			route = route.escapeRegExp();
+
+			if( route.startsWith('\\/') ){
+				route = '.+' + route.substring(2);
+			}
+			route = route.replace(/\\\*/g, '(.*)+');
+			route = new RegExp(route);
+		}
+		if( route instanceof RegExp ){
+			test = function(path){
+				var match = path.match(this.route);
+
+				if( match ){
+					if( match.length > 1 ) return match.slice(1);
+					return true;
+				}
+				return false;
+			};
+		}
+		if( typeof route == 'function' ){
+			test = route;
+		}
+
+		this.routes.push({
+			route: route,
+			test: test,
+			listener: fn,
+			bind: bind || this
+		});
+	},
+
+	resolve: function(route, path){
+		var result = route.test(path);
+
+		if( result === true ){
+			route.listener.call(route.bind);
+			return true;
+		}
+		if( result instanceof Array ){
+			route.listener.apply(route.bind, result);
+			return true;
+		}
+
+		return false;
+	},
+
+	change: function(path){
+		var i = this.routes.length;
+
+		while(i--){
+			if( this.resolve(this.routes[i], path) ) break;
+		}
 	}
 };
 
 window.app = {
-	setters: {
-		title: function(title){
-			document.title = title;
-		}
-	},
-
 	init: function(){
 		String.implement('stripScripts', function(exec){
 			var scripts = '';
@@ -123,26 +161,16 @@ window.app = {
 			'popstate': this.popstate
 		});
 
-		window.app.go();
+		window.route.when('*', function(where){
+			this.go(where);
+		}, this);
+
+		window.route.change(document.location.href);
 	},
 
-	showProgress: function(){
-		var progress = this.progress = document.createElement('progress');
-
-		progress.max = 100;
-		this.setProgress(0);
-		document.body.appendChild(progress);
-	},
-
-	setProgress: function(percent){
-		this.progress.value = percent;
-		this.progress.innerHTML = percent + '%';
-	},
-
-	setPage: function(page){
-		for(var key in page){
-			if( this.setters[key] ) this.setters[key].call(this, page[key]);
-		}
+	setPage: function(html){
+		document.body.innerHTML = html;
+		html.stripScripts(true); // évalue le javascript se trouvant dans le html
 	},
 
 	// demande au serveur la page se trouvant à url
@@ -157,24 +185,25 @@ window.app = {
 		// prevent browser caching document
 		// if( filename.endsWith('.html') ) filename+= '?rand=' + new Date().getTime();
 
-		window.server.callAction('go', filename, function(error, response){
+		var self = this;
+
+		window.server.exec('go', filename, function(error, response){
 			if( error ) return console.error(error);
 
 			var type = this.getHeader('content-type');
 
 			if( type == 'text/html' ){
-				document.body.innerHTML = response;
-				response.stripScripts(true); // évalue le javascript se trouvant dans le html
+				self.setPage(response);
 			}
-			else{
-				if( response.html ) document.body.innerHTML = response.html;
+			else if( response.html ){
+				self.setPage(response.html);
 			}
 		});
 	},
 
 	// bouton back ou next activé
 	popstate: function(e){
-		window.app.go(document.location.href, e.state);
+		window.route.change(document.location.href, e.state);
 	},
 
 	// lorsqu'on click sur un élément de la page
@@ -193,7 +222,7 @@ window.app = {
 
 			// les URL internes entrainent une requête AJAX et history.pushState
 			history.pushState(null, null, element.href);
-			window.app.go(element.href);
+			window.route.change(element.href);
 			e.preventDefault();
 			return false;
 		}

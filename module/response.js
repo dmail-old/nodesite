@@ -75,6 +75,9 @@ var exports = {
 			return this.handle('file');
 		}
 
+		// traite tous les fichier HTML comme des pages
+		if( pathname.endsWith('.html') ) return this.handle('page');
+
 		// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
 		dirname = pathname.substr(0, slash);
 		file = NS.File.new(root + '/client/' + dirname);
