@@ -4,23 +4,26 @@
 $('file').addEventListener('drop', function(e){
 	var reader = new FileReader();
 
-	// Closure to capture the file information.
 	reader.onload = function(e){
 		var content = e.target.result;
-
 		var zip = new JSUnzip(content);
-		console.log(zip.isZipFile());
+
 		zip.readEntries();
-		console.log(zip.entries);
+		zip.entries;
+
+        console.log(zip.entries);
 	};
 
-	var file = e.dataTransfer.files[0];
-    // Read in the image file as a data URL.
-   	reader.readAsBinaryString(file);
+    // entry.filename
+    // entry.data
 
-   	//reader.readAsText(file);
+	var file = e.dataTransfer.files[0];
+
+   	reader.readAsBinaryString(file);
 });
+
 </script>
+
 
 <script>
 (function (GLOBAL) {

@@ -57,56 +57,25 @@ NS.View = {
 
 	destroy: function(){
 		this.emit('destroy');
-		this.destroyElement();
+		this.unsetElement();
 		this.unsetModel();
 		this.self.removeInstance(this);
 	},
 
-	setElement: function(element){
-		this.element = element;
-
-		this.elementEmitter = NS.ElementEmitter.new(this.element, this);
-		this.elementListener = NS.EventListener.new(this.elementEmitter, this.events, this);
-		this.elementListener.listen();
-
-		this.element.setAttribute('data-view', this.id);
-
-		this.parseNode(this.element);
-
-		return this;
-	},
-
-	unsetElement: function(){
-		if( this.element ){
-			this.removeElement();
-
-			this.emit('destroyElement');
-
-			this.elementEmitter = null;
-			this.elementListener.stopListening();
-			this.elementListener = null;
-			this.element = null;
-		}
-
-		return this;
-	},
-
-	watch: function(property, fn, bind){
+	watch: function(property, fn){
 		if( property in this.model.getters ){
 			Function.argumentNames(this.getters[property]).forEach(function(property){
 				this.on('change:' + property, function(){
-					fn.call(bind, this.model.get(property));
+					fn(this.model.get(property));
 				});
 			});
 		}
 		else{
-			this.on('change:' + property, fn.bind(bind));
+			this.on('change:' + property, fn);
 		}
 	},
 
 	parseNode: function(node){
-		var list = [];
-
 		// Element
 		if( node.nodeType == 1 ){
 			Array.prototype.forEach.call(node.attributes, this.parseNode, this);
@@ -118,12 +87,37 @@ NS.View = {
 
 			if( value.startsWith('{') && value.endsWith('}') ){
 				var path = value.substring(1, value.length - 1);
-				this.watch(path, function(value){
-					node.nodeValue = value;
-				});
+				this.watch(path, function(value){ node.nodeValue = value; });
 				node.nodeValue = this.model.get(path);
 			}
 		}
+	},
+
+	setElement: function(element){
+		this.element = element;
+
+		this.elementEmitter = NS.ElementEmitter.new(this.element, this);
+		this.elementListener = NS.EventListener.new(this.elementEmitter, this.events, this);
+		this.elementListener.listen();
+
+		this.setAttribute('data-view', this.id);
+
+		this.parseNode(this.element);
+
+		return this;
+	},
+
+	unsetElement: function(){
+		if( this.element ){
+			this.removeElement();
+
+			this.elementEmitter = null;
+			this.elementListener.stopListening();
+			this.elementListener = null;
+			this.element = null;
+		}
+
+		return this;
 	},
 
 	insertElement: function(into, before){
@@ -138,7 +132,7 @@ NS.View = {
 	removeElement: function(){
 		if( this.element.parentNode ){
 			this.emit('removeElement');
-			this.element.dispose();
+			this.element.parentNode.removeChild(this.element);
 		}
 
 		return this;
