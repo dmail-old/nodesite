@@ -1,10 +1,5 @@
 var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
-	className: 'menu root line',
-	modelListeners: {
-		'change:key': function(node, key){
-			node.drawKey(key);
-		}
-	},
+	template: '<div class="root menu line unselectable"></div>'.toElement(),
 	events: {
 		mousedown: function(e){
 			var node = this.cast(e);
@@ -27,8 +22,12 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 			}
 		},
 
-		// comment unlight le noeud lighted ici?
-		//mouseout: Tree.events.mouseout,
+		mouseout: function(e){
+			if( !this.expandNode.element.contains(e.relatedTarget) ){
+				var lighted = this.expandNode.getFirstChild(function(child){ return child.hasClass('lighted'); });
+				if( lighted ) lighted.unlight(e);
+			}
+		},
 
 		contextmenu: function(e){
 			e.preventDefault();
@@ -93,36 +92,39 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 	},
 
 	opened: false,
+	expandNode: null,
 	target: null,
+	shortcut: null,
+
 	options: {
 		imageSrc: "./img/tree/",
 		expandDelay: 270,
 		contractDelay: 350,
 		radioClose: true,
-	},
-	types: {
-		radio: {
-			img: 'menuradio.png',
-			'class': 'radio'
-		},
-		checkbox: {
-			img: 'menucheckbox.png',
-			'class': 'checkbox'
+		types: {
+			radio: {
+				img: 'menuradio.png',
+				'class': 'radio'
+			},
+			checkbox: {
+				img: 'menucheckbox.png',
+				'class': 'checkbox'
+			}
 		}
 	},
 
 	create: function(){
 		NS.viewDocument.require('rootnode').create.call(this);
 
+		this.on('insertElement', function(e){
+			var node = e.target;
+
+			if( this.opened ){
+				this.resetNode(node);
+			}
+		});
+
 		this.on({
-			insertElement: function(e){
-				var node = e.target;
-
-				if( this.opened ){
-					this.resetNode(node);
-				}
-			},
-
 			active: function(e){
 				var node = e.target, action, target, model, type;
 
@@ -208,6 +210,14 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 				if( e && e.key == 'right' ){
 					this.go(node.getFirstChild(this.isSelectable, this), e);
 				}
+
+				this.expandNode = node;
+			},
+
+			contract: function(e){
+				var node = e.target;
+
+				this.expandNode = node.parentNode;
 			}
 		});
 

@@ -4,6 +4,14 @@ String.complement = Object.complement.bind(String);
 String.SPACE = ' ';
 String.EMPTY = '';
 
+Function.UPPERCASE = function(a){ return a.toUpperCase(); };
+Function.ESCAPE = function(a){ return '\\' + a; };
+
+RegExp.WORD_GLOBAL = /\b[a-z]/g;
+RegExp.SPECIAL_GLOBAL = /([-.*+?^${}()|[\]\/\\])/g;
+RegExp.BLANK_GLOBAL = /\s+/g;
+RegExp.BLANK_TRAILING_GLOBAL = /^\s+|\s+$/g;
+
 String.complement({
 	toInt: function(base){
 		return parseInt(this, base || 10);
@@ -31,11 +39,11 @@ String.complement({
 	},
 
 	singleSpace: function(){
-		return String(this).replace(RegExp.SPACE_GLOBAL, String.SPACE);
+		return String(this).replace(RegExp.BLANK_GLOBAL, String.SPACE);
 	},
 
 	trim: function(){
-		return String(this).replace(RegExp.SPACE_TRAILING_GLOBAL, String.EMPTY);
+		return String(this).replace(RegExp.BLANK_TRAILING_GLOBAL, String.EMPTY);
 	},
 
 	clean: function(){

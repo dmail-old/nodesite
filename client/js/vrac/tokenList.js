@@ -17,7 +17,7 @@ NS.TokenList =  NS.List.extend({
 
 	indexOf: function(token, index){
 		if( token === '' ) throw new Error('SYNTAX_ERR', 'An invalid or illegal string was specified');
-		if( RegExp.SPACE.test(token) ) throw new Error('INVALID_CHARACTER_ERR', 'String contains an invalid character');
+		if( RegExp.BLANK.test(token) ) throw new Error('INVALID_CHARACTER_ERR', 'String contains an invalid character');
 
 		return Array.prototype.indexOf.call(this, token, index);
 	},

@@ -131,8 +131,8 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		}
 	},
 
-	isSelectable: function(view){
-		return view != this && view.isVisible() && !view.hasClass('disabled');
+	isSelectable: function(node){
+		return node != this && node.isVisible() && !node.hasClass('disabled');
 	},
 
 	find: function(startNode, filter, bind, direction, loop){
@@ -186,14 +186,7 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		return parseInt(node.element.offsetParent.clientHeight / this.getLine(node), 10);
 	},
 
-	nav: function(node, e){
-		var target = this.getKeyTarget(this.focused, e);
-		if( target ){
-			this.go(target, e);
-		}
-	},
-
-	getKeyTarget: function(node, e){
+	getTarget: function(node, e){
 		// need String(e.key) because the 0-9 key return numbers
 		var key = String(e.key);
 
@@ -205,5 +198,22 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 			return this.keys[key].call(this, node, e);
 		}
 		return null;
+	},
+
+	go: function(node, e){
+		this.selection.selectNode(node, e);
+		node.focus(e);
+		e.preventDefault();
+	},
+
+	nav: function(node, e){
+		var current = this.focused, target;
+
+		if( current ){
+			target = this.getTarget(current, e);
+			if( target ){
+				this.go(target, e);
+			}
+		}
 	}
 }));

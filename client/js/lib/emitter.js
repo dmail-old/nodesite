@@ -136,8 +136,8 @@ NS.Emitter = {
 			method.call(this);
 		}
 		else if( typeof name == 'string' ){
-			if( RegExp.SPACE.test(name) ){
-				args[0] = name.split(RegExp.SPACE);
+			if( RegExp.BLANK.test(name) ){
+				args[0] = name.split(RegExp.BLANK);
 				return this.eachEvent(method, args);
 			}
 			else{

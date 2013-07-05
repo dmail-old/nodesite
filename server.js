@@ -27,7 +27,7 @@ global.config = require('./config.js');
 global.lang = {};
 global.NS = {};
 
-['object', 'boolean', 'number', 'regexp', 'function', 'string', 'array'].forEach(function(name){
+['object', 'boolean', 'number', 'regexp', 'string', 'function', 'array'].forEach(function(name){
 	require(root + '/client/js/core/' + name);
 });
 

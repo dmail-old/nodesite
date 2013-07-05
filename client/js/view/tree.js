@@ -1,8 +1,5 @@
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
-	template: '\
-		<ul class="root unselectable" tabindex="0">\
-		</ul>\
-	'.toElement(),
+	template: '<ul class="root unselectable" tabindex="0"></ul>'.toElement(),
 	events: {
 		mouseover: function(e){
 			var node = this.cast(e.target);
@@ -18,22 +15,17 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		},
 
 		mouseout: function(e){
-			//var node;
-
-			if( this.lighted ){
-				// when the mouse go very fast out of the view mouseover event is'nt fired
-				// on other view (event the parent view)
-				// but we can check the relatedTarget to see if the mouse go out of all view
-				//node = this.cast();
-
-				if( !this.element.contains(e.relatedTarget) ){
-					this.lighted.unlight(e);
-				}
+			if( this.lighted && !this.element.contains(e.relatedTarget) ){
+				this.lighted.unlight(e);
 			}
 		},
 
 		mousedown: function(e){
 			var node = this.cast(e);
+
+			if( node == this ){
+				return;
+			}
 
 			if( e.target.hasClass('tool') ){
 				node.toggleState('expanded', e);
@@ -59,7 +51,9 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		dblclick: function(e){
 			// le futur menu contextuel doit prendre le pas sur ce dblclick
 			if( !e.target.hasClass('tool') ){
-				this.cast(e).toggleState('expanded', e);
+				var node = this.cast(e);
+
+				if( node != this ) node.toggleState('expanded', e);
 			}
 		},
 
@@ -77,6 +71,7 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 	padding: 18,
 	lighted: null,
 	focused: null,
+	selection: null,
 
 	create: function(){
 		NS.viewDocument.require('rootnode').create.apply(this, arguments);
@@ -140,16 +135,7 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 				if( node.hasClass('selected') ) node.unselect(e);
 			}
 		});
-	},
 
-	go: function(node, e){
-		this.selection.selectNode(node, e);
-		node.focus(e);
-		e.preventDefault();
-	},
-
-	isSelectable: function(view){
-		return view != this && view.isVisible() && !view.hasClass('disabled');
 	},
 
 	getChildrenElement: function(){
