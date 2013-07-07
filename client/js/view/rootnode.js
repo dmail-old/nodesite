@@ -91,14 +91,14 @@ NS.Keynav = {
 
 		up: function(){
 			return this.prev();
-		},	
+		},
 
 		pageup: function(){
-			return this.findAfterCount(this.current, this.filter, this, 'prev', this.getPageCount(this.current));
+			return this.findAfterCount(this.current, this.filter, this, this.findPrev, this.getPageCount(this.current));
 		},
 
 		pagedown: function(){
-			return this.findAfterCount(this.current, this.filter, this, 'next', this.getPageCount(this.current));
+			return this.findAfterCount(this.current, this.filter, this, this.findNext, this.getPageCount(this.current));
 		},
 
 		'*': function(e){
@@ -136,10 +136,10 @@ NS.Keynav = {
 	find: function(startNode, filter, bind, direction, loop){
 		var result = null;
 
-		result = startNode[direction == 'next' ? this.findNext : this.findPrev](filter, bind);
+		result = startNode[direction](filter, bind);
 
 		if( result === null && loop === true ){
-			this[direction == 'next' ? this.findFirst : this.findLast](function(node){
+			this[direction == this.findNext ? this.findFirst : this.findLast](function(node){
 				if( node == startNode ) return true;
 				if( filter.call(this, node) === true ){
 					result = node;
@@ -169,26 +169,26 @@ NS.Keynav = {
 		return lastMatch;
 	},
 
-	first: function(){
-		return this.root.getFirst(this.filter, this);
-	},
-
-	last: function(){
-		return this.view.getLast(this.filter, this);
-	},
-
-	next: function(){
-		return this.find(this.current, this.filter, this, 'next', this.loop);
-	},
-
-	prev: function(){
-		return this.find(this.current, this.filter, this, 'prev', this.loop);
-	},
-
 	findLetter: function(letter){
 		return this.find(this.current, function(node){
 			return this.filter(node) && this.startBy(node, letter);
-		}, this, 'next', true);
+		}, this, this.findNext, true);
+	},
+
+	first: function(){
+		return this.find(this.root, this.filter, this, this.findFirst);
+	},
+
+	last: function(){
+		return this.find(this.root, this.filter, this, this.findLast);
+	},
+
+	next: function(){
+		return this.find(this.current, this.filter, this, this.findNext, this.loop);
+	},
+
+	prev: function(){
+		return this.find(this.current, this.filter, this, this.findPrev, this.loop);
 	},
 
 	startBy: function(node, letter){
@@ -217,6 +217,7 @@ NS.Keynav = {
 		return null;
 	},
 
+	filter: Function.TRUE,
 	onnav: Function.EMPTY,
 
 	go: function(node, e){
