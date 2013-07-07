@@ -1,6 +1,5 @@
 NS.viewDocument.define('rootnode', NS.View.extend({
-	focused: null,
-	selection: null,
+	keynav: null,
 
 	create: function(){
 		NS.View.create.apply(this, arguments);
@@ -13,6 +12,8 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 
 		// cssposition
 		this.emitter.on('insertElement show removeElement hide', this.changeStructure);
+
+		this.keynav = NS.RootKeynav.new(this);
 	},
 
 	getChildrenElement: function(){
@@ -60,7 +61,13 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		}
 
 		node.toggleClass('empty', node.firstChild == null);
-	},
+	}
+}));
+
+NS.Keynav = {
+	root: null,
+	// currentNode from wich we nav
+	current: null,
 
 	// keynav
 	loop: false,
@@ -68,71 +75,62 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 	findPrev: 'getPrevious',
 	findFirst: 'getFirst',
 	findLast: 'getLast',
+
 	keys: {
-		enter: function(node, e){
-			node.active(e);
+		home: function(){
+			return this.first();
 		},
 
-		left: function(node, e){
-			if( node.hasClass('expanded') ){
-				node.contract(e);
-				// lorsqu'il y a une scrollbar évite que le browser la déplace
-				e.preventDefault();
-				return null;
-			}
-
-			return node.getParent(this.isSelectable, this);
+		end: function(){
+			return this.last();
 		},
 
-		right: function(node, e){
-			if( !node.hasClass('expanded') ){
-				node.expand(e);
-				e.preventDefault();
-				return null;
-			}
-
-			return node.getFirstChild(this.isSelectable, this);
+		down: function(){
+			return this.next();
 		},
 
-		home: function(node){
-			return this.view.getFirst(this.isSelectable, this);
+		up: function(){
+			return this.prev();
+		},	
+
+		pageup: function(){
+			return this.findAfterCount(this.current, this.filter, this, 'prev', this.getPageCount(this.current));
 		},
 
-		end: function(node){
-			return this.view.getLast(this.isSelectable, this);
+		pagedown: function(){
+			return this.findAfterCount(this.current, this.filter, this, 'next', this.getPageCount(this.current));
 		},
 
-		up: function(node){
-			return this.find(node, this.isSelectable, this, 'prev', this.loop);
-		},
-
-		down: function(node){
-			return this.find(node, this.isSelectable, this, 'next', this.loop);
-		},
-
-		pageup: function(node){
-			return this.findAfterCount(node, this.isSelectable, this, 'prev', this.getPageCount(node));
-		},
-
-		pagedown: function(node){
-			return this.findAfterCount(node, this.isSelectable, this, 'next', this.getPageCount(node));
-		},
-
-		'*': function(node, e){
+		'*': function(e){
 			// avoid conflict with shortcut like ctrl+a, ctrl+c
 			if( e.control ){
 				return null;
 			}
 			else{
-				return this.find(node, function(node){
-					return this.isSelectable(node) && this.startBy(node, e.key);
-				}, this, 'next', true);
+				return this.findLetter(e.key);
 			}
 		}
 	},
 
-	isSelectable: function(node){
-		return node != this && node.isVisible() && !node.hasClass('disabled');
+	create: function(root){
+		this.root = root;
+		this.current = root;
+	},
+
+	// naviguation allowed on child or on descendant
+	setChildOnly: function(bool){
+		if( bool ){
+			this.findNext = 'getNextSibling';
+			this.findPrev = 'getPreviousSibling';
+			this.findFirst = 'getFirstChild';
+			this.findLast = 'getLastChild';
+		}
+		else{
+			this.findNext = 'getNext';
+			this.findPrev = 'getPrevious';
+			this.findFirst = 'getFirst';
+			this.findLast = 'getLast';
+		}
 	},
 
 	find: function(startNode, filter, bind, direction, loop){
@@ -153,10 +151,10 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		return result;
 	},
 
-	findAfterCount: function(node, filter, bind, direction, count){
+	findAfterCount: function(startNode, filter, bind, direction, count){
 		var lastMatch = null;
 
-		this.find(node, function(node){
+		this.find(startNode, function(node){
 			if( filter.call(this, node) === true ){
 				lastMatch = node;
 				count--;
@@ -171,19 +169,38 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		return lastMatch;
 	},
 
-	startBy: function(node, letter){
-		return node.model.get('name').startsWith(letter);
+	first: function(){
+		return this.root.getFirst(this.filter, this);
 	},
 
-	getLine: function(node){
-		if( !node ) return 0;
+	last: function(){
+		return this.view.getLast(this.filter, this);
+	},
 
-		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds
-		return node.element.getFirstChild('div').measure('size', 'y') - 1;
+	next: function(){
+		return this.find(this.current, this.filter, this, 'next', this.loop);
+	},
+
+	prev: function(){
+		return this.find(this.current, this.filter, this, 'prev', this.loop);
+	},
+
+	findLetter: function(letter){
+		return this.find(this.current, function(node){
+			return this.filter(node) && this.startBy(node, letter);
+		}, this, 'next', true);
+	},
+
+	startBy: function(node, letter){
+		return this.getName(node).charAt(0) == letter;
+	},
+
+	getName: function(node){
+		return node.nodeName;
 	},
 
 	getPageCount: function(node){
-		return parseInt(node.element.offsetParent.clientHeight / this.getLine(node), 10);
+		return parseInt(node.element.offsetParent.clientHeight / this.getHeight(), 10);
 	},
 
 	getTarget: function(node, e){
@@ -195,19 +212,21 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		}
 
 		if( key in this.keys ){
-			return this.keys[key].call(this, node, e);
+			return this.keys[key].call(this, e);
 		}
 		return null;
 	},
 
+	onnav: Function.EMPTY,
+
 	go: function(node, e){
-		this.selection.selectNode(node, e);
-		node.focus(e);
+		this.current = node;
 		e.preventDefault();
+		this.onnav(node, e);
 	},
 
-	nav: function(node, e){
-		var current = this.focused, target;
+	keydown: function(e){
+		var current = this.current, target;
 
 		if( current ){
 			target = this.getTarget(current, e);
@@ -216,4 +235,57 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 			}
 		}
 	}
-}));
+};
+
+NS.RootKeynav = NS.Keynav.extend({
+	keys: NS.Keynav.keys.extend({
+		enter: function(e){
+			this.current.active(e);
+		},
+
+		left: function(e){
+			if( this.current.hasClass('expanded') ){
+				this.current.contract(e);
+				// lorsqu'il y a une scrollbar évite que le browser la déplace
+				e.preventDefault();
+				return null;
+			}
+
+			return this.current.getParent(this.filter, this);
+		},
+
+		right: function(e){
+			if( !this.current.hasClass('expanded') ){
+				this.current.expand(e);
+				e.preventDefault();
+				return null;
+			}
+
+			return this.current.getFirstChild(this.filter, this);
+		}
+	}),
+
+	getName: function(node, name){
+		return node.model.get('name');
+	},
+
+	getHeight: function(){
+		var node = this.root.firstChild, height = 0;
+
+		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds
+		if( node ){
+			height = node.element.getFirstChild('div').measure('size', 'y') - 1;
+		}
+
+		return height;
+	},
+
+	filter: function(node){
+		return node != this.root && node.isVisible() && !node.hasClass('disabled');
+	},
+
+	onnav: function(node, e){
+		this.root.selection.selectNode(node, e);
+		node.focus(e);
+	}
+});

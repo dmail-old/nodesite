@@ -1,5 +1,5 @@
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
-	template: '<ul class="root unselectable" tabindex="0"></ul>'.toElement(),
+	template: '<ul class="root unselectable" tabindex="0"></ul>',
 	events: {
 		mouseover: function(e){
 			var node = this.cast(e.target);
@@ -64,14 +64,14 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 				e.preventDefault();
 			}
 			else{
-				this.nav(this.focused, e);
+				this.keynav.current = this.focused;
+				this.keynav.keydown(e);
 			}
 		}
 	},
 	padding: 18,
 	lighted: null,
 	focused: null,
-	selection: null,
 
 	create: function(){
 		NS.viewDocument.require('rootnode').create.apply(this, arguments);

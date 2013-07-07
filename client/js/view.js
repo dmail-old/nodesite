@@ -50,7 +50,10 @@ NS.View = {
 		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
 		this.setModel(model);
-		if( this.template ) this.setElement(this.template.cloneNode(true));
+		if( this.template ){
+			if( typeof this.template == 'string' ) this.template = this.template.toElement();
+			this.setElement(this.template.cloneNode(true));
+		}
 
 		this.emit('create');
 	},

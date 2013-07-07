@@ -1,5 +1,5 @@
 var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
-	template: '<div class="root menu line unselectable"></div>'.toElement(),
+	template: '<div class="root menu line unselectable"></div>',
 	events: {
 		mousedown: function(e){
 			var node = this.cast(e);
@@ -75,22 +75,6 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 		}
 	},
 
-	// we nav only trough child and we loop
-	loop: true,
-	findNext: 'getNextSibling',
-	findPrev: 'getPreviousSibling',
-	findFirst: 'getFirstChild',
-	findLast: 'getLastChild',
-	nav: function(node, e){
-		if( !this.shortcut.active(e, node) ){
-			NS.viewDocument.require('rootnode').nav.call(this, node, e);
-		}
-	},
-	go: function(node, e){
-		node.light(e);
-		node.focus(e);
-	},
-
 	opened: false,
 	expandNode: null,
 	target: null,
@@ -115,6 +99,13 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 
 	create: function(){
 		NS.viewDocument.require('rootnode').create.call(this);
+
+		this.keynav.loop = true;
+		this.keynav.setChildOnly(true);
+		this.keynav.onnav = function(node, e){
+			node.light(e);
+			node.focus(e);
+		};
 
 		this.on('insertElement', function(e){
 			var node = e.target;
@@ -229,6 +220,13 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 	destroy: function(){
 		this.close();
 		this.detach();
+	},
+
+	nav: function(node, e){
+		if( !this.shortcut.active(e, node) ){
+			this.keynav.current = this.focused;
+			this.keynav.keydown(e);
+		}
 	},
 
 	setTimeout: function(node, action, e){
