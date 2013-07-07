@@ -1,5 +1,7 @@
+// mettre maxlen: 130 dans sublielinter pref
+
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
-	template: '<ul class="root unselectable" tabindex="0"></ul>',
+	template: '<ul class="root unselectable" tabindex="0" data-indent="18"></ul>',
 	events: {
 		mouseover: function(e){
 			var node = this.cast(e.target);
@@ -69,7 +71,6 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 			}
 		}
 	},
-	padding: 18,
 	lighted: null,
 	focused: null,
 
@@ -143,7 +144,7 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 	},
 
 	indentNode: function(node){
-		var padding = this.padding, level = this.getLevel(node);
+		var padding = this.getAttribute('data-indent'), level = this.getLevel(node);
 
 		if( level > -1 ){
 			node.getDom('div').style.paddingLeft = (padding * level) + 'px';

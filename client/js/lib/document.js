@@ -8,8 +8,15 @@ NS.Document = {
 		//this.emitter = NS.Emitter.new(this);
 	},
 
-	define: function(name, Node){
+	define: function(name, Node, trace){
 		this.Nodes[name] = Node;
+
+		// j'aimerais tracer la création de certains noeud
+		// et disposer d'un liste des noeud de ce type comme document.images ou document.anchors
+		/*if( trace ){
+			this[name + 's'] = [];
+		}*/
+
 		return Node;
 	},
 

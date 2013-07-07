@@ -76,7 +76,6 @@ String.implement('percentOf', function(number){
 });
 
 var exports = NS.viewDocument.define('surface', {
-	name: 'surface',
 	options: {
 		axis: 'xy',
 		'step-x': 0,
@@ -84,31 +83,137 @@ var exports = NS.viewDocument.define('surface', {
 		free: false,
 		confine: 'offsetParent'
 	},
+	events: {
+		mousedown: function(e){
+			if( this.holded ) return;
+			this.holded = true;
 
-	create: function(element, autodestroy){
-		NS.Bound.create.call(this);
+			this.emit('beforeStart');
 
-		var instance = element.storage.get(this.name);
-		if( instance ){
-			if( !autodestroy ) delete instance.autodestroy;
-			return instance;
+			this.handle = e.target;
+			this.reset();
+			this.mousedownEvent = e;
+			this.mode = this.getMode();
+			this.space = this.calcSpace();
+
+			//this.bind('mouseup', 'mousemove', 'scrollWhileHolded');
+
+			this.offsetParent.on('scroll', this.bound.scrollWhileHolded);
+			document.on({
+				mouseup: this.bound.mouseup,
+				mousemove: this.bound.mousemove
+			});
+
+			if( this.checkPrevent() ){
+				if( this.element.isFocusable() ) this.element.focus();
+				// évite la selection
+				e.preventDefault();
+			}
+
+			this.emit('start', e);
+		},
+
+		mouseup: function(e){
+			if( !this.holded ) return;
+			this.holded = false;
+			this.handle = null;
+			this.reseted = false;
+			this.space = null;
+
+			this.offsetParent.off('scroll', this.bound.scrollWhileHolded);
+			document.off({
+				mouseup: this.bound.mouseup,
+				mousemove: this.bound.mousemove
+			});
+
+			this.stopScroll();
+
+			this.emit('end', e);
+		},
+
+		mousemove: function(e){
+			this.mousemoveEvent = e;
+			this.drag(e);
+			this.emit('drag', e);
+		},
+
+		focus: function(e){
+			if( this.focused === false ){
+				this.focused = true;
+
+				if( !this.holded ){
+					this.handle = e.target;
+				}
+			}			
+		},
+
+		blur: function(){
+			this.focused = false;
+		},
+
+		keydown: function(e){
+			switch(e.key){
+			// cancel: annule le drag par la souris
+			case 'esc':
+				this.mouseup();
+				break;
+			// left, right, up, down: on fait comme si on le déplacait avec la souris
+			case 'left':
+			case 'right':
+			case 'up':
+			case 'down':
+				var name, direction, coef;
+
+				if( e.key == 'left' || e.key == 'right' ){
+					name = 'left';
+					direction = e.key == 'right' ? 1 : -1;
+				}
+				else if( e.key == 'up' || e.key == 'down' ){
+					name = 'top';
+					direction = e.key == 'down' ? 1 : -1;
+				}
+
+				coef = this.getStep(name == 'left' ? 'x' : 'y') || 1;
+				if( e.shift ){
+					e.preventDefault(); // évite la sélection par e.shift + flèche
+					coef*= 10;
+				}
+				direction*= coef;
+
+				this.emit('keydrag', e);
+				if( this.set(name, this.get(name) + direction, e) ){
+					e.preventDefault();
+				}
+				break;
+			}
 		}
+	},
 
-		this.element = element;
-		if( autodestroy ) this.autodestroy = autodestroy;
-		// else this.reset();
+	holded: false,
+	focused: false,
+	reseted: false,
+	start: null,
+	space: null,
 
-		this.element.storage.set(this.name, this);
+	widthchanged: false,
+	heightchanged: false,
+	leftchanged: false,
+	topchanged: false,
 
-		this.scroller = NS['Fx.Scroll'].new({
-			link: 'ignore',
-			transition: 'linear',
-			wheelStops: true,
-			step: this.getOption('scrollStep'),
-			duration: this.getOption('scrollDuration')
-		});
-		// le scroller relanceras le scroll tant qu'il y a besoin
-		this.scroller.on('complete', this.startScroll.bind(this));
+	// TODO
+	top: 0,
+	left: 0,
+	right: 0,
+	bottom: 0,
+	width: 0,
+	height: 0,
+
+	// sera implementé hors du coeur du code
+	resizeList: null,
+	minsize: null,
+	diffsize: null,
+
+	create: function(){
 
 		this.on('change:width', function(value, now){ this.resizeAlso('x', value - now); });
 		this.on('change:height', function(value, now){ this.resizeAlso('y', value - now); });
@@ -120,19 +225,6 @@ var exports = NS.viewDocument.define('surface', {
 		if( this.holded ) this.mouseup();
 		if( this.focused ) this.blur();
 
-		this.element.storage.unset(this.name);
-
-		return true;
-	},
-
-	checkDestroy: function(e){
-		// mouseup ou blur appelle destroy mais l'instance ne se détruit que par detroy() sans arguments
-		if( e && !this.autodestroy ) return false;
-		// mouseup ou blur appelle destroy mais l'element est toujours focused ou holded
-		if( e && (this.holded || this.focused) ) return false;
-
-		this.destroy();
-
 		return true;
 	},
 
@@ -141,22 +233,24 @@ var exports = NS.viewDocument.define('surface', {
 	},
 
 	getOption: function(name){
-		return this.element.hasProperty('data-' + name) ? this.element.getProperty('data-' + name) : this.getDefaultOption(name);
+		return this.hasAttribute('data-' + name) ? this.getAttribute('data-' + name) : this.getDefaultOption(name);
 	},
 
 	checkPosition: function(){
-		if( this.element.getStyle('left') == 'auto' ) this.setValue('left', this.element.measure('position', 'x'));
-		if( this.element.getStyle('top') == 'auto' ) this.setValue('top', this.element.measure('position', 'y'));
-		if( this.element.getStyle('position') == 'static' ) this.element.setStyle('position', 'absolute');
+		if( this.getStyle('left') == 'auto' ) this.setValue('left', this.element.measure('position', 'x'));
+		if( this.getStyle('top') == 'auto' ) this.setValue('top', this.element.measure('position', 'y'));
+		if( this.getStyle('position') == 'static' ) this.setStyle('position', 'absolute');
 	},
 
 	checkDimension: function(){
-		var position = this.element.getStyle('position'), absolute = position == 'absolute';
+		var position = this.getStyle('position'), absolute = position == 'absolute';
 
 		// avoid width: 100% on display block element
-		if( !absolute ) this.element.setStyle('position', 'absolute');
+		if( !absolute ) this.setStyle('position', 'absolute');
 
-		this.resizeList = this.element.getElements(function(descendant){ return descendant.hasProperty('data-autoresize'); });
+		this.resizeList = this.element.getFirst(function(descendant){
+			return descendant.hasProperty('data-autoresize');
+		}, null, true);
 
 		var elements = [this.element].concat(this.resizeList), styles = [], i = 0, j = elements.length, element;
 
@@ -170,7 +264,10 @@ var exports = NS.viewDocument.define('surface', {
 
 		// on peut ainsi connaitre la taille naturelle du contenu
 		this.minsize = this.element.measure('computedSize');
-		this.diffsize = {x: this.element.measure('size', 'x') - this.minsize.x, y: this.element.measure('size', 'y') - this.minsize.y};
+		this.diffsize = {
+			x: this.element.measure('size', 'x') - this.minsize.x,
+			y: this.element.measure('size', 'y') - this.minsize.y
+		};
 
 		// remet les dimensions normales, ceci permet aussi de fixer les dimensions des éléments qu'on resize
 		i = 0;
@@ -180,7 +277,7 @@ var exports = NS.viewDocument.define('surface', {
 			element.style.height = styles[i*2 + 1] + 'px';
 		}
 
-		if( !absolute ) this.element.setStyle('position', position);
+		if( !absolute ) this.setStyle('position', position);
 	},
 
 	resizeAlso: function(axis, add){
@@ -220,7 +317,7 @@ var exports = NS.viewDocument.define('surface', {
 
 Object.append(exports, {
 	get: function(name){
-		return this.element.getStyle(name).toInt() || 0;
+		return this.getStyle(name).toInt() || 0;
 	},
 
 	setValue: function(name, value){
@@ -241,9 +338,14 @@ Object.append(exports, {
 	toValue: function(name, value){
 		if( typeof value == 'function' ) value = value.call(this);
 		if( typeof value == 'string' ){
-			if( value.contains('%') ) value = value.percentOf(this.element.measure('space', name == 'width' || name == 'left' ? 'x' : 'y'));
-			else value = parseInt(value, 10) || 0;
+			if( value.contains('%') ){
+				value = value.percentOf(this.element.measure('space', name == 'width' || name == 'left' ? 'x' : 'y'));
+			}
+			else{
+				value = parseInt(value, 10) || 0;
+			}
 		}
+
 		if( typeof value != 'number' ) value = null;
 		else value = this.toStep(name == 'width' || name == 'left' ? 'x' : 'y', value);
 
@@ -272,9 +374,7 @@ Object.append(exports, {
 
 		this.setValue(name, value);
 
-		if( !ignoreOverflow ){
-			this.updateOverflow(name == 'width' || name == 'left' ? 'x' : 'y', value > now ? 1 : -1, e);
-		}
+		this[name + 'changed'] = value;
 
 		this.emit('change:' + name, value, now, e);
 		this.emit('change', name, value, now, e);
@@ -282,9 +382,15 @@ Object.append(exports, {
 		// emit change event only one time
 		if( this.updateOnce ) window.clearImmediate(this.updateOnce);
 		this.updateOnce = window.setImmediate(function(){
-			delete this.updateOnce;
-			this.checkScroll();
-			this.emit('update');
+
+			this.updateOnce = null;			
+			
+			this.emit('update', e);
+			this.widthchanged = false;
+			this.heightchanged = false;
+			this.leftchanged = false;
+			this.topchanged = false;
+
 		}.bind(this));
 
 		return true;
@@ -317,7 +423,6 @@ Object.append(exports, {
 		now = this.get(propertyA);
 		if( this.set(propertyA, now + move, e, true) ){
 			this.set(propertyB, this.get(propertyB) - (this.get(propertyA) - now), e, true);
-			this.updateOverflow(axis, -1, e);
 			return true;
 		}
 		return false;
@@ -459,118 +564,8 @@ Object.append(exports, {
 
 	checkPrevent: Function.TRUE,
 
-	mousedown: function(e){
-		if( this.holded ) return;
-		this.holded = true;
-
-		this.emit('beforeStart');
-
-		this.handle = e.target;
-		this.reset();
-		this.mousedownEvent = e;
-		this.mode = this.getMode();
-		this.space = this.calcSpace();
-
-		this.bind('mouseup', 'mousemove', 'scrollWhileHolded');
-
-		this.offsetParent.on('scroll', this.bound.scrollWhileHolded);
-		document.on({
-			mouseup: this.bound.mouseup,
-			mousemove: this.bound.mousemove
-		});
-
-		if( this.checkPrevent() ){
-			if( this.element.isFocusable() ) this.element.focus();
-			// évite la selection
-			e.preventDefault();
-		}
-
-		this.emit('start', e);
-	},
-
-	mouseup: function(e){
-		if( !this.holded ) return;
-		delete this.holded;
-		delete this.handle;
-		delete this.reseted;
-		delete this.space;
-
-		this.offsetParent.off('scroll', this.bound.scrollWhileHolded);
-		document.off({
-			mouseup: this.bound.mouseup,
-			mousemove: this.bound.mousemove
-		});
-
-		this.stopScroll();
-		this.checkDestroy(e);
-
-		this.emit('end', e);
-	},
-
-	mousemove: function(e){
-		this.mousemoveEvent = e;
-		this.drag(e);
-		this.emit('drag', e);
-	},
-
 	scrollWhileHolded: function(e){
 		this.drag(e);
-	},
-
-	focus: function(e){
-		if( this.focused ) return;
-		this.focused = true;
-
-		this.element.on('blur', this.bind('blur'));
-
-		if( !this.holded ){
-			this.handle = e.target;
-		}
-	},
-
-	blur: function(e){
-		if( !this.focused ) return;
-		delete this.focused;
-
-		this.element.off('blur', this.bound.blur);
-		this.checkDestroy(e);
-	},
-
-	keydown: function(e){
-		switch(e.key){
-		// cancel: annule le drag par la souris
-		case 'esc':
-			this.mouseup();
-			break;
-		// left, right, up, down: on fait comme si on le déplacait avec la souris
-		case 'left':
-		case 'right':
-		case 'up':
-		case 'down':
-			var name, direction, coef;
-
-			if( e.key == 'left' || e.key == 'right' ){
-				name = 'left';
-				direction = e.key == 'right' ? 1 : -1;
-			}
-			else if( e.key == 'up' || e.key == 'down' ){
-				name = 'top';
-				direction = e.key == 'down' ? 1 : -1;
-			}
-
-			coef = this.getStep(name == 'left' ? 'x' : 'y') || 1;
-			if( e.shift ){
-				e.preventDefault(); // évite la sélection par e.shift + flèche
-				coef*= 10;
-			}
-			direction*= coef;
-
-			this.emit('keydrag', e);
-			if( this.set(name, this.get(name) + direction, e) ){
-				e.preventDefault();
-			}
-			break;
-		}
 	}
 });
 
@@ -601,11 +596,6 @@ exports.retrieveInstance = function(e){
 	return instance;
 };
 
-exports.startInstanceFromEvent = function(e){
-	var instance = this.retrieveInstance(e);
-	if( instance ) instance[e.type](e);
-};
-
 //document.on('mousedown focus keydown', exports.startInstanceFromEvent, true);
 
 ['left', 'top', 'width', 'height'].forEach(function(name){
@@ -617,20 +607,53 @@ exports.startInstanceFromEvent = function(e){
 
 // scroll handling
 Object.append(exports, {
-	options: {
+	options: Object.append(exports.options, {
 		scrollAuto: true,
 		scrollDelay: 100,
 		scrollDuration: 100,
 		scrollOffset: 0,
 		scrollReference: 'element',
 		scrollStep: 30
+	}),
+	scrollTimeout: null,
+	scroller: null,
+	overflow: null,	
+	prevright: 0,
+	prevbottom: 0,
+
+	create: function(){
+		this.scroller = NS['Fx.Scroll'].new({
+			link: 'ignore',
+			transition: 'linear',
+			wheelStops: true,
+			step: this.getOption('scrollStep'),
+			duration: this.getOption('scrollDuration')
+		});
+		// le scroller relanceras le scroll tant qu'il y a besoin
+		this.scroller.on('complete', this.startScroll.bind(this));
+
+		this.on('update', function(e){
+			
+			if( this.widthchanged || this.leftchanged ){
+				this.updateOverflow('x', this.prevright > this.right ? 1 : -1, e);
+				this.prevright = this.right;
+			}
+
+			if( this.heightchanged || this.topchanged ){
+				this.updateOverflow('y', this.prevbottom > this.bottom ? 1 : -1, e);
+				this.prevbottom = this.bottom;
+			}
+
+			this.checkScroll();
+		});
 	},
 
 	// on essaye de conserver l'élément visible à chaque fois qu'il se déplace
 	updateOverflow: function(axis, direction, e){
-		// on autoscroll pas sur un changement induit par un scroll
-		if( e && e.type == 'scroll' ) return;
 		if( !this.getOption('scrollAuto') ) return;
+
+		// on autoscroll pas sur un changement induit par un scroll
+		if( e && e.type == 'scroll' ) return;		
 
 		var
 			reference = this.holded ? this.getOption('scrollReference') : 'element',
@@ -680,7 +703,8 @@ Object.append(exports, {
 		}
 		else if( this.holded ){
 			// si on est pas en train de scroller on lance le scroll maintenant ou le scroll retardé
-			// si aucun scroll en attente, ou démarre le scroll (soit dès qu'on a fini les actions en cours scrollDelay = 0, soit avec scrollDelay
+			// si aucun scroll en attente, ou démarre le scroll
+			// (soit dès qu'on a fini les actions en cours scrollDelay = 0, soit avec scrollDelay
 			if( !this.scrollTimeout && !this.scroller.isRunning() ){
 				var delay = this.getOption('scrollDelay');
 				if( delay ){
@@ -697,7 +721,7 @@ Object.append(exports, {
 	},
 
 	startScroll: function(){
-		delete this.scrollTimeout;
+		this.scrollTimeout = null;
 		this.scroller.startAdd(this.overflow.x || 0, this.overflow.y || 0);
 	},
 
@@ -705,7 +729,7 @@ Object.append(exports, {
 		if( this.scroller ){
 			if( this.scrollTimeout ){
 				clearTimeout(this.scrollTimeout);
-				delete this.scrollTimeout;
+				this.scrollTimeout = null;
 			}
 			this.scroller.cancel();
 		}

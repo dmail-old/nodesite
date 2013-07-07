@@ -3,7 +3,7 @@
 
 name: Box
 
-description: Iteme qui crée une boîte manipulable
+description: Crée un élément HTML manipulable
 
 NOTE:
 
@@ -15,25 +15,12 @@ FIX:
 */
 
 NS.Box = NS.Surface.extend(NS.options, {
-	tagName: 'div',
-	attributes: {
-		'data-scrollReference': 'element',
-		'data-minwidth': 0,
-		'data-minheight': 0,
-		tabIndex: 0
-	},
-	innerHTML: 'Hello World',
-	className: 'box small',
-	styles: {
-		position: 'absolute',
-		zIndex: 100,
-		width: 'auto',
-		height: 'auto',
-		left: 0,
-		top: 0,
-	},
+	template: '<div class="box small" tabindex="0">Hello World</div>',
+	options: Object.extendMerge(NS.Surface.options, {
+		scrollReference: 'element',
+		minwidth: 0,
+		minheight: 0,
 
-	options: Object.createMerge(NS.Surface.options, {
 		draggable: true,
 		resizable: true,
 		// on essaye de respecter la position qu'on calcule au départ
@@ -48,21 +35,34 @@ NS.Box = NS.Surface.extend(NS.options, {
 			close: false
 		}
 	}),
-
-	create: function(options){
-		this.setOptions(options);
-
-		if( this.options.echapclose ) this.on('keydown', function(e){ if( e.code == 27 ){ e.preventDefault(); this.close(e); } });
-		if( this.options.blurclose ) this.on('blur', this.close);
-		if( this.options.closedestroy ) this.on('close', this.destroy);
-
-		//this.bind('open', 'close', 'respect', 'focus', 'blur', 'keydown');
-		//this.self.instances[this.id = this.self.UID++] = this;
-		NS.Surface.create.call(this);
+	styles: {
+		position: 'absolute',
+		zIndex: 100,
+		width: 'auto',
+		height: 'auto',
+		left: 0,
+		top: 0,
 	},
 
-	createElement: function(){
-		var element = NS.Surface.createElement.call(this);
+	ideal: null,
+	empty: false,
+
+	create: function(){
+
+		NS.Surface.create.apply(this, arguments);
+
+		if( this.options.echapclose ){
+			this.elementEmitter('keydown', function(e){
+				if( e.code == 27 ){
+					e.preventDefault();
+					this.close(e);
+				}
+			});
+		}
+		if( this.options.blurclose ) this.elementEmitter.on('blur', this.close);
+		if( this.options.closedestroy ) this.on('close', this.destroy);
+
+		this.ideal = {};
 
 		// lorsqu'on déplace ou resize manuellement la boîte, cette valeur devient la valeur idéale
 		this.on('change', function(name, value, current, e){
@@ -84,17 +84,8 @@ NS.Box = NS.Surface.extend(NS.options, {
 		// if( this.options.resizable ) element.wrapVectors();
 		// if( this.options.draggable ) element.on('mousedown', this.mousedown.bind(this));
 
-		element.style.display = 'none';
-
-		this.ideal = {};
-
-		return element;
-	},
-
-	destroy: function(){
-		this.element.destroy();
-		delete this.self.instances[this.id];
-		NS.Surface.destroy.call(this);
+		this.element.style.display = 'none';	
+		
 	},
 
 	removeAll: function(){
@@ -168,9 +159,9 @@ NS.Box = NS.Surface.extend(NS.options, {
 
 		// focus uniquement après respect pour ne pas que le focus lance un scroll si la popup est hors champ
 		this.beforeOpenActiveElement = document.activeElement;
-		(this.element.getElement(function(element){ return element.hasProperty('data-autofocus'); }) || this.element).focus();
+		(this.element.getFirst(function(element){ return element.hasProperty('data-autofocus'); }) || this.element).focus();
 
-		window.on('resize', this.bound.respect);
+		this.windowEmitter.on('resize', this.respect);
 
 		return this.effect('open', noeffect, this.emit.bind(this, 'open'));
 	},
@@ -185,7 +176,7 @@ NS.Box = NS.Surface.extend(NS.options, {
 			delete this.beforeOpenActiveElement;
 		}
 
-		window.off('resize', this.bound.respect);
+		this.windowEmitter.off('resize', this.respect);
 
 		return this.effect('close', noeffect, function(){
 			this.element.style.display = 'none';
@@ -253,8 +244,8 @@ NS.Box = NS.Surface.extend(NS.options, {
 	focus: function(e){
 		if( !this.focused ){
 			this.focused = true;
-			this.element.addClass('focus');
-			this.element.setStyle('zIndex', 100);
+			this.addClass('focus');
+			this.setStyle('zIndex', 100);
 			this.constructor.active = this;
 			this.emit('focus', e);
 		}
@@ -264,14 +255,14 @@ NS.Box = NS.Surface.extend(NS.options, {
 
 	blur: function(e){
 		if( this.focused ){
-			delete this.focused;
+			this.focused = false;
 
 			// évite que le focus d'un élément de la boite ne déclenche blur
 			window.setImmediate(function(){
 				if( !this.focused ){
-					this.element.removeClass('focus');
-					this.element.setStyle('zIndex', 99);
-					delete this.constructor.active;
+					this.removeClass('focus');
+					this.setStyle('zIndex', 99);
+					this.constructor.active = null;
 
 					this.emit('blur', e);
 				}
@@ -285,27 +276,6 @@ NS.Box = NS.Surface.extend(NS.options, {
 		this.emit('keydown', e);
 	}
 });
-
-NS.Box.self = {
-	UID: 0,
-	instances: [],
-	// contient la boite en cours d'utilisation (focused)
-	active: null,
-
-	getInstanceFromElement: function(element){
-		var id;
-
-		while(element){
-			id = element.getProperty('id');
-			if( id && id.startsWith('box-') ){
-				return this.instances[id.substr(4)];
-			}
-			element = element.parentNode;
-		}
-
-		return null;
-	}
-};
 
 // retourne la taille de l'espace visible disponible pour cet élément (dimension + scroll du parent)
 Element.defineMeasurer('fixedSpace', function(axis){

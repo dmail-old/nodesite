@@ -13,23 +13,22 @@ FIX
 ...
 */
 
-var exports = {
-	options: Object.createMerge(NS.Box.options, {
-		properties: {
-			'html': '\
-				<div class="body">\
-					<div class="header">\
-						<img src="../favicon.png" />\
-						<h1>{title}</h1>\
-						<button tabindex="-1"></button>\
-					</div>\
-					<form>\
-						<div class="content" data-autoresize="true">{content}</div>\
-					</form>\
-				</div>\
-			',
-			'class': 'box popup big'
-		},
+NS.Popup = NS.Box.extend({
+	template: '<div class="box popup big" tabindex="0">\
+		<div class="body">\
+			<div class="header">\
+				<img src="../favicon.png" />\
+				<h1>{title}</h1>\
+				<button tabindex="-1"></button>\
+			</div>\
+			<form>\
+				<div class="content" data-autoresize="true">{content}</div>\
+			</form>\
+		</div>\
+	</div>\
+	',
+
+	options: Object.extendMerge(NS.Box.options, {
 		draggable: false,
 		resizable: true,
 		title: 'Titre',
@@ -58,8 +57,6 @@ var exports = {
 
 	createElement: function(){
 		this.dom = {};
-
-		this.options.properties.html = this.options.properties.html.parse({title: this.options.title, content: this.options.content});
 
 		var
 			element = NS.Box.createElement.call(this),
@@ -117,13 +114,13 @@ var exports = {
 	},
 
 	seturl: function(url){
-		this.element.addClass('loading');
+		this.addClass('loading');
 		this.dom.iframe.src = url || 'about:blank';
 		return this;
 	},
 
 	loaded: function(){
-		this.element.removeClass('loading');
+		this.removeClass('loading');
 		this.emit('load');
 	},
 
@@ -160,16 +157,13 @@ var exports = {
 		button.setProperty('disabled', true);
 		return this.dial(msg,true);
 	}
-};
+});
 
 Element.Properties.onclick = {
 	set: function(listener){
 		this.on('click', listener);
 	}
 };
-
-exports = NS.Box.extend(exports);
-NS.Popup = exports;
 
 // autres classes qui se serviront de Popup
 

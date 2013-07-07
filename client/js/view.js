@@ -207,25 +207,7 @@ NS.View = {
 }.supplement(
 	NS.EventEmitterInterface,
 	NS.NodeInterface,
-	NS.NodeFinder,
-	{
-		oninsertchild: function(child){
-			var childrenElement = this.getChildrenElement();
-			// si cette vue possède l'élément qui contient les enfants on insère l'enfant
-			if( childrenElement ){
-				child.insertElement(
-					childrenElement,
-					child.nextSibling ? child.nextSibling.element : null
-				);
-			}
-		},
-
-		onremovechild: function(child){
-			child.removeElement();
-		},
-
-		getChildrenElement: Function.IMPLEMENT
-	}
+	NS.NodeFinder
 );
 
 NS.View.self =  {
@@ -282,3 +264,16 @@ Event.prototype.toView = function(){ return Element.prototype.toView.call(this.t
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
 
 NS.viewDocument = NS.Document.new();
+NS.viewDocument.oninsert = function(node, child){
+	var childrenElement = node.getChildrenElement();
+	// si cette vue possède l'élément qui contient les enfants on insère l'enfant
+	if( childrenElement ){
+		child.insertElement(
+			childrenElement,
+			child.nextSibling ? child.nextSibling.element : null
+		);
+	}
+};
+NS.viewDocument.onremove = function(node){
+	node.removeElement();
+};

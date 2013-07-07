@@ -91,19 +91,16 @@ NS.Model = {
 }.supplement(
 	NS.EventEmitterInterface,
 	NS.NodeInterface,
-	NS.NodeFinder,
-	{
-		oninsertchild: function(child){
-			this.emit('adopt', child, this.childNodes.indexOf(child));
-		},
-
-		onremovechild: function(child){
-			child.emit('emancipate');
-		}
-	}
+	NS.NodeFinder
 );
 
 NS.modelDocument = NS.Document.new();
+NS.modelDocument.oninsert = function(node, child){
+	node.emit('adopt', child, node.childNodes.indexOf(child));
+};
+NS.modelDocument.onremove = function(node){
+	node.emit('emancipate');
+};
 
 /*
 

@@ -78,19 +78,27 @@ NS.Keynav = {
 
 	keys: {
 		home: function(){
-			return this.first();
+			return this.find(this.root, this.filter, this, this.findFirst);
 		},
 
 		end: function(){
-			return this.last();
+			return this.find(this.root, this.filter, this, this.findLast);
 		},
 
 		down: function(){
-			return this.next();
+			return this.find(this.current, this.filter, this, this.findNext, this.loop);
 		},
 
 		up: function(){
-			return this.prev();
+			return this.find(this.current, this.filter, this, this.findPrev, this.loop);
+		},
+
+		left: function(){
+			return this.current.getParent(this.filter, this);
+		},
+
+		right: function(){
+			return this.current.getFirstChild(this.filter, this);
 		},
 
 		pageup: function(){
@@ -107,7 +115,9 @@ NS.Keynav = {
 				return null;
 			}
 			else{
-				return this.findLetter(e.key);
+				return this.find(this.current, function(node){
+					return this.filter(node) && this.startBy(node, e.key);
+				}, this, this.findNext, true);
 			}
 		}
 	},
@@ -169,28 +179,6 @@ NS.Keynav = {
 		return lastMatch;
 	},
 
-	findLetter: function(letter){
-		return this.find(this.current, function(node){
-			return this.filter(node) && this.startBy(node, letter);
-		}, this, this.findNext, true);
-	},
-
-	first: function(){
-		return this.find(this.root, this.filter, this, this.findFirst);
-	},
-
-	last: function(){
-		return this.find(this.root, this.filter, this, this.findLast);
-	},
-
-	next: function(){
-		return this.find(this.current, this.filter, this, this.findNext, this.loop);
-	},
-
-	prev: function(){
-		return this.find(this.current, this.filter, this, this.findPrev, this.loop);
-	},
-
 	startBy: function(node, letter){
 		return this.getName(node).charAt(0) == letter;
 	},
@@ -245,24 +233,24 @@ NS.RootKeynav = NS.Keynav.extend({
 		},
 
 		left: function(e){
-			if( this.current.hasClass('expanded') ){
+			if( this.current.firstChild && this.current.hasClass('expanded') ){
 				this.current.contract(e);
 				// lorsqu'il y a une scrollbar évite que le browser la déplace
 				e.preventDefault();
 				return null;
 			}
 
-			return this.current.getParent(this.filter, this);
+			return NS.Keynav.keys.left.call(this, e);
 		},
 
 		right: function(e){
-			if( !this.current.hasClass('expanded') ){
+			if( this.current.firstChild && !this.current.hasClass('expanded') ){
 				this.current.expand(e);
 				e.preventDefault();
 				return null;
 			}
 
-			return this.current.getFirstChild(this.filter, this);
+			return NS.Keynav.keys.right.call(this, e);
 		}
 	}),
 
