@@ -25,7 +25,7 @@ NS.viewDocument.define('node', NS.View.extend({
 				<span class="name">{name}</span>\
 			</div>\
 		</li>\
-	'.toElement(),
+	',
 	states: {
 		lighted: ['light', 'unlight'],
 		selected: ['select', 'unselect'],
@@ -33,6 +33,10 @@ NS.viewDocument.define('node', NS.View.extend({
 		focused: ['focus', 'blur'],
 		hidden: ['hide', 'show'],
 		actived: ['active', 'unactive']
+	},
+
+	hasState: function(state){
+		return this.hasClass(state);
 	},
 
 	addState: function(state, e){

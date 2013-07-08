@@ -1,36 +1,51 @@
 <div style="width:40px;height:40px;background:grey" id="menu_activable"></div>
 
 <script>
-var menu = new Menu(
-	{
-		name: 'console.log',
-		action: function(){ console.log(this, arguments); }
-	},
-	{
-		name: 'testAction',
-		sep: true
-	},
-	{
-		type: 'checkbox',
-		name: 'Checkbox1'
-	},
-	{
-		type: 'checkbox',
-		name: 'Checkbox2',
-		sep: true
-	},
-	{
-		type: 'radio',
-		name: 'radio1'
-	},
-	{
-		type: 'radio',
-		name: 'radio2'
-	}	
-);
 
+var menuView = NS.viewDocument.createNode('menu');
+
+menuView.add({
+	name: 'console.log',
+	type: 'radio',
+	action: function(){ console.log(this, arguments); }
+});
+
+menuView.add({
+	name: 'testAction',
+	sep: true
+});
+
+menuView.insertElement(document.body);
+
+/*
+
+menuView.add({
+	name: 'Checkbox1',
+	type: 'checkbox'
+});
+
+menuView.add({
+	type: 'checkbox',
+	name: 'Checkbox2',
+	sep: true
+});
+
+menuView.add({
+	type: 'radio',
+	name: 'radio1'
+});
+
+menuView.add({
+	type: 'radio',
+	name: 'radio2'
+});
+
+*/
+
+/*
 menu.attach($('menu_activable'));
 $('menu_activable').testAction = function(){
 	alert('testAction');
 }
+*/
 </script>

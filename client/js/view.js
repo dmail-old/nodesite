@@ -4,6 +4,9 @@ name: View
 
 description: Element wrapper
 
+FIX: si je modifie une vue enfant, la vue parent recoit aussi l'event
+change et croit qu'elle est modifiée, watch est merdé en rgos
+
 */
 
 NS.View = {
@@ -11,6 +14,7 @@ NS.View = {
 	id: null,
 	emitter: null,
 	controllers: null,
+	getters: {},
 
 	// about model
 	model: null,
@@ -18,9 +22,13 @@ NS.View = {
 	modelListeners: {
 		destroy: 'destroy',
 
+		data: function(e){
+			this.emit('data');
+		},
+
 		change: function(e){
-			var property = e.args[0], value = e.args[1];
-			this.emit('change:' + property, value);
+			var property = e.args[0], value = e.args[1], current = e.args[2];
+			this.emit('change:' + property, value, current);
 		},
 
 		adopt: function(e){
@@ -49,13 +57,16 @@ NS.View = {
 		this.emitter = NS.EventEmitter.new(this);
 		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
-		this.setModel(model);
 		if( this.template ){
 			if( typeof this.template == 'string' ) this.template = this.template.toElement();
 			this.setElement(this.template.cloneNode(true));
 		}
 
 		this.emit('create');
+
+		if( model ){
+			this.setModel(model);
+		}
 	},
 
 	destroy: function(){
@@ -65,17 +76,56 @@ NS.View = {
 		this.self.removeInstance(this);
 	},
 
+	get: function(key){
+		if( key in this.getters ){
+			var getter = this.getters[key];
+
+			if( 'argumentNames' in getter ){
+				var names = getter.argumentNames, i = 0, j = names.length, name, values = [];
+				for(;i<j;i++){
+					name = names[i];
+					values[i] = name == key ? this.model.get(name) : this.get(name);
+				}
+
+				return getter.apply(this, values);
+			}
+			else{
+				return getter.call(this);
+			}
+		}
+
+		return this.model.get(key);
+	},
+
 	watch: function(property, fn){
-		if( property in this.model.getters ){
-			Function.argumentNames(this.getters[property]).forEach(function(property){
-				this.on('change:' + property, function(){
-					fn(this.model.get(property));
+		if( property in this.getters ){
+			Function.argumentNames(this.getters[property]).forEach(function(name){
+
+				this.on('change:' + name, function(){
+					fn.call(this, this.get(property));
 				});
-			});
+
+			}, this);
 		}
 		else{
-			this.on('change:' + property, fn);
+			this.on('change:' + property, function(e){
+				fn.call(this, e.args[0], e.args[1]);
+			});
 		}
+
+		this.once('setModel', function(e){
+			var model = e.args[0];
+
+			if( model.data ){
+				fn.call(this, this.get(property), undefined);
+			}
+			else{
+				// lorsque le model recoit des données pour la première fois
+				this.once('data', function(){
+					fn.call(this, this.get(property), undefined);
+				});
+			}
+		});
 	},
 
 	parseNode: function(node){
@@ -90,8 +140,9 @@ NS.View = {
 
 			if( value.startsWith('{') && value.endsWith('}') ){
 				var path = value.substring(1, value.length - 1);
-				this.watch(path, function(value){ node.nodeValue = value; });
-				node.nodeValue = this.model.get(path);
+				this.watch(path, function(value){
+					node.nodeValue = value;
+				});
 			}
 		}
 	},
@@ -158,6 +209,8 @@ NS.View = {
 			if( this.ownerDocument ){
 				this.ownerDocument.createChildNodes(this);
 			}
+
+			this.emit('setModel', model);
 		}
 	},
 

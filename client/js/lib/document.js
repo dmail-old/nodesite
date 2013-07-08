@@ -11,6 +11,8 @@ NS.Document = {
 	define: function(name, Node, trace){
 		this.Nodes[name] = Node;
 
+		Node.nodeName = name;
+
 		// j'aimerais tracer la création de certains noeud
 		// et disposer d'un liste des noeud de ce type comme document.images ou document.anchors
 		/*if( trace ){

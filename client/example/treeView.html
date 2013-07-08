@@ -9,6 +9,7 @@ var data = {
 		{name: 'node3', childNodes: [{name: 'node3.1'}]}
 	]
 };
+
 var nodeModel = NS.modelDocument.createNode('node', data);
 var treeView = NS.viewDocument.createNode('tree');
 var nodeView = NS.viewDocument.createNode('node', nodeModel);
@@ -20,12 +21,5 @@ nodeView.expand();
 nodeView.childNodes[0].expand();
 nodeView.childNodes[2].expand();
 nodeView.childNodes[3].expand();
-
-function filter(view){
-	return view.isVisible();
-}
-
-console.log('firstvisibleview of root', treeView.getFirst(filter).element);
-console.log('lastvisibleview of root', treeView.getLast(filter).element);
 
 </script>

@@ -1,22 +1,33 @@
 NS.Model = {
 	cid: 0,
 	emitter: null,
-	properties: null,
+	data: {},
 	name: '',
 	validationError: null,
-	getters: {},
+	//getters: {},
 
-	create: function(properties){
+	create: function(data){
 		this.emitter = NS.EventEmitter.new(this);
-		this.properties = properties ? this.parse(properties) : {};
 		this.cid = this.cid++;
+
+		if( data ) this.setData(data);
+	},
+
+	toJSON: function(){
+		return this.data;
+	},
+
+	setData: function(data){
+		this.data = this.parse(data);
 
 		if( this.has('name') ) this.name = this.get('name');
 		if( this.has('childNodes') ) this.childNodes = this.get('childNodes');
+
+		this.emit('data', data);
 	},
 
-	parse: function(properties){
-		return properties;
+	parse: function(data){
+		return data;
 	},
 
 	encode: function(key, value){
@@ -35,11 +46,11 @@ NS.Model = {
 	},
 
 	has: function(key){
-		return key in this.properties;
+		return key in this.data;
 	},
 
 	get: function(key){
-		if( key in this.getters ){
+		/*if( key in this.getters ){
 			var getter = this.getters[key];
 
 			if( 'argumentNames' in getter ){
@@ -49,8 +60,9 @@ NS.Model = {
 				return getter.call(this);
 			}
 		}
+		*/
 
-		return this.properties[key];
+		return this.data[key];
 	},
 
 	change: function(key, value, current){
@@ -69,7 +81,7 @@ NS.Model = {
 		else{
 			current = this.get(key);
 			if( !this.compare(key, current, value) ){
-				this.properties[key] = value;
+				this.data[key] = value;
 				this.change(key, value, current);
 			}
 		}
@@ -82,7 +94,7 @@ NS.Model = {
 
 		if( this.has(name) ){
 			current = this.get(name);
-			delete this.properties[name];
+			delete this.data[name];
 			this.change(key, undefined, current);
 		}
 

@@ -1,4 +1,4 @@
-var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
+NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
 	template: '<div class="root menu line unselectable"></div>',
 	events: {
 		mousedown: function(e){
@@ -11,7 +11,7 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 		mousemove: function(e){
 			var node = this.cast(e);
 
-			if( node ){
+			if( node && node != this ){
 				if( !node.hasState('lighted') ){
 					node.focus(e);
 					node.light(e);
@@ -81,24 +81,15 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 	shortcut: null,
 
 	options: {
-		imageSrc: "./img/tree/",
 		expandDelay: 270,
 		contractDelay: 350,
-		radioClose: true,
-		types: {
-			radio: {
-				img: 'menuradio.png',
-				'class': 'radio'
-			},
-			checkbox: {
-				img: 'menucheckbox.png',
-				'class': 'checkbox'
-			}
-		}
+		radioClose: true
 	},
 
 	create: function(){
-		NS.viewDocument.require('rootnode').create.call(this);
+		NS.viewDocument.require('rootnode').create.apply(this, arguments);
+
+		this.expandNode = this;
 
 		this.keynav.loop = true;
 		this.keynav.setChildOnly(true);
@@ -212,9 +203,54 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 			}
 		});
 
-		this.shortcut = NS.Schortcut.new(this);
+		this.shortcut = NS.Shortcut.new(function(node, e){
+			e.preventDefault();
+			node.active(e);
+		});
 
-		this.mouseclosing = this.mouseclose.bind(this);
+		this.trace('key', function(node, value, previous){
+			if( value ){
+				this.shortcut.set(value, node);
+			}
+			if( previous ){
+				this.shortcut.unset(previous);
+			}
+		});
+
+		this.documentEmitter = NS.ElementEmitter.new(document, this);
+	},
+
+	add: function(data){
+		var model = NS.modelDocument.createNode('menuoption', data);
+		var view = NS.viewDocument.createNode('menuoption', model);
+
+		this.appendChild(view);
+	},
+
+	// call fn on property init/change/remove on a node
+	trace: function(property, fn){
+		this.on('insertElement', function(e){
+			var node = e.target;
+
+			if( node != this ){
+				fn.call(this, node, node.model.get(property), undefined);
+			}
+
+		});
+
+		this.on('removeElement', function(e){
+			var node = e.target;
+
+			if( node != this ){
+				fn.call(this, node, undefined, node.model.get(property));
+			}
+		});
+
+		this.on('change:' + property, function(e){
+			var node = e.target, value = e.args[0], previous = e.args[1];
+
+			fn.call(this, node, value, previous);
+		});
 	},
 
 	destroy: function(){
@@ -223,7 +259,7 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 	},
 
 	nav: function(node, e){
-		if( !this.shortcut.active(e, node) ){
+		if( !this.shortcut.active(e) ){
 			this.keynav.current = this.focused;
 			this.keynav.keydown(e);
 		}
@@ -303,8 +339,7 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 		this.target.focus();
 		this.childNodes.forEach(this.resetNode, this);
 
-		document.on('mousedown mouseup', this.mouseclosing);
-
+		this.documentEmitter.on('mousedown mouseup', this.mouseclose);
 		this.setStyle('display', 'block');
 		this.moveAtEvent(e);
 		this.emit('open', e);
@@ -317,8 +352,7 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 		if( this.opened ){
 			this.opened = false;
 			this.setStyle('display', 'none');
-
-			document.off('mousedown mouseup', this.mouseclosing);
+			this.documentEmitter.off('mousedown mouseup', this.mouseclose);
 			this.emit('close', e);
 		}
 
@@ -405,127 +439,53 @@ var Menu = NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').ex
 		else{
 			this.close(e);
 		}
+	},
+
+	targetEmitter: null,
+	attach: function(element, options){
+
+		this.targetEmitter = NS.ElementEmitter.new(element, this);
+
+		this.targetEmitter.on({
+			keydown: function(e){
+				this.keydown(e);
+			},
+
+			focus: function(e){
+				this.updateTarget(e);
+			},
+
+			blur: function(e){
+				this.close(e);
+			},
+
+			dblclick: function(e){
+				this.updateTarget(e);
+				if( this.target ) this.activeFirst(e);
+			},
+
+			// open the menu when contextmenu on that element
+			// other possibility: open by mousedown
+			contextmenu: function(e){
+				this.open(e);
+			}
+		});
+
+		this.insertElement(document.body);
+
+		this.once('destroy', this.detach);
+
+		return this;
+	},
+
+	detach: function(){
+		this.targetEmitter.off();
+		this.targetEmitter = null;
+		this.removeElement();
+
+		return this;
 	}
 }));
-
-/*
-
-use shortcut to activate node
-
-// faut écouter le insertElement, removeElement pour shortcut
-
-NS.Shortcut = {
-	create: function(){
-		this.map = {};
-	},
-
-	match: function(shortcut, e){
-		var parts = shortcut.split('+'), i = parts.length, part;
-
-		while(i--){
-			part = parts[i];
-
-			if( part == e.key ){
-				continue;
-			}
-			if( part == 'alt' ){
-				if( e.alt ) continue;
-				return false;
-			}
-			if( part == 'ctrl' ){
-				if( e.control ) continue;
-				return false;
-			}
-			if( part == 'shift' ){
-				if( e.shift ) continue;
-				return false;
-			}
-		}
-
-		return false;
-	},
-
-	find: function(e){
-		var shortcut, shortcuts = this.map;
-
-		for(shortcut in shortcuts){
-			if( this.match(shortcut, e) ){
-				return shortcuts[shortcut];
-			}
-		}
-
-		return null;
-	},
-
-	add: function(shortcut, fn){
-		this.map[shortcut] = fn;
-	},
-
-	remove: function(shortcut){
-		delete this.map[shortcut];
-	},
-
-	active: function(e, bind){
-		var fn = this.find(e);
-
-		if( fn ){
-			if( e.preventDefault ) e.preventDefault();
-			fn.call(bind, e);
-			return true;
-		}
-		return false;
-	}
-};
-
-*/
-
-/*
-
-// attach menu to an element
-
-Menu.attach = function(element, options){
-
-	this.targetListener = NS.EventListener.new(element, {
-		keydown: function(e){
-			this.keydown(e);
-		},
-
-		focus: function(e){
-			this.updateTarget(e);
-		},
-
-		blur: function(e){
-			this.close(e);
-		},
-
-		dblclick: function(e){
-			this.updateTarget(e);
-			if( this.target ) this.activeFirst(e);
-		},
-
-		// open the menu when contextmenu on that element
-		// other possibility: open by mousedown
-		contextmenu: function(e){
-			this.open(e);
-		}
-	}, this);
-	this.targetListener.listen();
-
-	this.insertElement(document.body);
-
-	this.once('destroy', this.detach);
-
-	return this;
-};
-
-Menu.detach = function(){
-	this.targetListeners.destroy();
-	this.removeElement();
-
-	return this;
-};
-
-*/
 
 /*
 

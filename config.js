@@ -57,13 +57,16 @@ config.js = [].concat(
 		"request"
 	].prefix('browser/'),
 	[
+		"selection", "keynav", "rootkeynav", "shortcut"
+	].prefix('ui/'),
+	[
 		"model", "view", "controller"
 	],
 	[
-		"node"
+		"node", "menuoption", "menu",
 	].prefix('model/'),
 	[
-		"selector", "node", "rootnode", "tree"
+		"selector", "node", "rootnode", "tree", "menuoption", "menu"
 	].prefix('view/'),
 	[
 
