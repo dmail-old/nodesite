@@ -35,18 +35,17 @@ NS.viewDocument.define('menuoption', NS.viewDocument.require('node').extend({
 		},
 
 		name: function(name){
-			if( 'langName' in this ) name = this.langName;
-			else{
-				//name = NodeView.prototype.calcHTMLName.call(this, name);
-				if( name in lang.menu ) name = lang.menu[name];
+			if( name && name in lang.menu ){
+				return lang.menu[name];
 			}
 
 			return name;
 		},
 
 		key: function(key){
-			if( !key ) key = '';
-			else if( 'key_' + key in lang ) key = lang['key_' + key];
+			if( key && 'key_' + key in lang ){
+				return lang['key_' + key];
+			}
 
 			return key;
 		}

@@ -44,6 +44,7 @@ NS.View = {
 
 	// about element
 	template: null,
+	directives: null,
 	element: null,
 	events: null,
 	elementEmitter: null,
@@ -128,23 +129,14 @@ NS.View = {
 		});
 	},
 
-	parseNode: function(node){
-		// Element
-		if( node.nodeType == 1 ){
-			Array.prototype.forEach.call(node.attributes, this.parseNode, this);
-			Array.prototype.forEach.call(node.childNodes, this.parseNode, this);
-		}
-		// AttributeNode or TextNode
-		else if( node.nodeType == 2 || node.nodeType == 3 ){
-			var value = node.nodeValue;
+	link: function(element){
+		var proto = this.getPrototype();
 
-			if( value.startsWith('{') && value.endsWith('}') ){
-				var path = value.substring(1, value.length - 1);
-				this.watch(path, function(value){
-					node.nodeValue = value;
-				});
-			}
+		if( !proto.directives ){
+			proto.directives = Compiler.compile(element);
 		}
+
+		Compiler.link(element, this, proto.directives);
 	},
 
 	setElement: function(element){
@@ -156,7 +148,7 @@ NS.View = {
 
 		this.setAttribute('data-view', this.id);
 
-		this.parseNode(this.element);
+		this.link(element);
 
 		return this;
 	},
@@ -262,6 +254,97 @@ NS.View = {
 	NS.NodeInterface,
 	NS.NodeFinder
 );
+
+var Compiler = {
+	checkDirective: function(path, node, directives){
+		// AttributeNode or TextNode
+		if( node.nodeType == 2 || node.nodeType == 3 ){
+			var value = node.nodeValue;
+
+			if( value.startsWith('{') && value.endsWith('}') ){
+
+				directives.push({
+					path: path,
+
+					link: function(node){
+						var value = node.nodeValue;
+						var property = value.substring(1, value.length - 1);
+
+						this.watch(property, function(value){
+							node.nodeValue = value;
+						});
+					}
+				});
+
+			}
+		}
+	},
+
+	collectDirectives: function(path, node, directives){
+		var list, i, j, attr, subpath, child;
+
+		// Element
+		if( node.nodeType == 1 ){
+
+			list = node.attributes;
+			i = 0;
+			j = list.length;
+			for(;i<j;i++){
+				attr = list[i];
+				subpath = [].concat(path, 'attribute', attr.name);
+				this.checkDirective(subpath, attr, directives);
+			}
+
+			list = node.childNodes;
+			i = 0;
+			j = list.length;
+			for(;i<j;i++){
+				child = list[i];
+				subpath = [].concat(path, 'childNode', i);
+				this.checkDirective(subpath, child, directives);
+				this.collectDirectives(subpath, child, directives);
+			}
+
+		}
+
+		return directives;
+	},
+
+	compile: function(element){
+		return this.collectDirectives([], element, []);
+	},
+
+	followers: {
+		attribute: function(node, name){
+			return node.attributes.getNamedItem(name);
+		},
+
+		childNode: function(node, index){
+			return node.childNodes[index];
+		}
+	},
+
+	follow: function(node, path){
+		var i = 0, j = path.length;
+
+		for(;i<j;i+=2){
+			node = this.followers[path[i]].call(this, node, path[i+1]);
+			if( !node ) break;
+		}
+
+		return node;
+	},
+
+	link: function(element, view, directives){
+		var i = 0, j = directives.length, directive, node;
+
+		for(;i<j;i++){
+			directive = directives[i];
+			node = this.follow(element, directive.path);
+			directive.link.call(view, node);
+		}
+	}
+};
 
 NS.View.self =  {
 	instances: {},
