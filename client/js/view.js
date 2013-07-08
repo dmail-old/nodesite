@@ -283,6 +283,8 @@ var Compiler = {
 	collectDirectives: function(path, node, directives){
 		var list, i, j, attr, subpath, child;
 
+		if( path !== '' ) path+= '.';
+
 		// Element
 		if( node.nodeType == 1 ){
 
@@ -291,7 +293,7 @@ var Compiler = {
 			j = list.length;
 			for(;i<j;i++){
 				attr = list[i];
-				subpath = [].concat(path, 'attribute', attr.name);
+				subpath = path + 'attributes.' + attr.name;
 				this.checkDirective(subpath, attr, directives);
 			}
 
@@ -300,7 +302,7 @@ var Compiler = {
 			j = list.length;
 			for(;i<j;i++){
 				child = list[i];
-				subpath = [].concat(path, 'childNode', i);
+				subpath = path + 'childNodes.' + i;
 				this.checkDirective(subpath, child, directives);
 				this.collectDirectives(subpath, child, directives);
 			}
@@ -311,24 +313,24 @@ var Compiler = {
 	},
 
 	compile: function(element){
-		return this.collectDirectives([], element, []);
+		return this.collectDirectives('', element, []);
 	},
 
 	followers: {
-		attribute: function(node, name){
+		attributes: function(node, name){
 			return node.attributes.getNamedItem(name);
 		},
 
-		childNode: function(node, index){
+		childNodes: function(node, index){
 			return node.childNodes[index];
 		}
 	},
 
 	follow: function(node, path){
-		var i = 0, j = path.length;
+		var parts = path.split('.'), i = 0, j = parts.length;
 
 		for(;i<j;i+=2){
-			node = this.followers[path[i]].call(this, node, path[i+1]);
+			node = this.followers[parts[i]].call(this, node, parts[i+1]);
 			if( !node ) break;
 		}
 
