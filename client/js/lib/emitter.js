@@ -12,20 +12,12 @@ NS.Emitter = {
 	$listeners: {},
 
 	create: function(bind){
-		this.bind = bind;
-	},
-
-	getListeners: function(){
-		if( this.hasOwnProperty('$listeners') ){
-			return this.$listeners;
-		}
-		else{
-			return this.$listeners = Object.clone(this.$listeners);
-		}
+		this.bind = bind || this;
+		this.$listeners = Object.create(this.$listeners);
 	},
 
 	listeners: function(name, create){
-		var listeners = this.getListeners(), list = false;
+		var listeners = this.$listeners, list = false;
 
 		if( name in listeners ) list = listeners[name];
 		else if( create ) list = listeners[name] = [];
@@ -46,7 +38,7 @@ NS.Emitter = {
 	},
 
 	removeListener: function(name, listener){
-		var listeners = this.getListeners(), list, retain, i, j, item;
+		var listeners = this.$listeners, list, retain, i, j, item;
 
 		if( name == null ){
 			for(name in listeners) this.removeListener(name, listener);

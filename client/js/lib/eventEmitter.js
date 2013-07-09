@@ -1,8 +1,4 @@
 NS.EventEmitter = NS.Emitter.extend({
-	create: function(bind){
-		this.bind = bind || this;
-	},
-
 	handleEvent: function(e){
 		this.emit(e.type, e);
 	},
