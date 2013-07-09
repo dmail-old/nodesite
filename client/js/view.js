@@ -256,57 +256,76 @@ NS.View = {
 );
 
 var Compiler = {
-	checkDirective: function(path, node, directives){
-		// AttributeNode or TextNode
-		if( node.nodeType == 2 || node.nodeType == 3 ){
-			var value = node.nodeValue;
+	linkers: {
+		attribute: function(node, view){
+			view.watch(this.property, function(value){
+				node.setAttribute(this.name, value);
+			});
+		},
 
-			if( value.startsWith('{') && value.endsWith('}') ){
-
-				directives.push({
-					path: path,
-
-					link: function(node){
-						var value = node.nodeValue;
-						var property = value.substring(1, value.length - 1);
-
-						this.watch(property, function(value){
-							node.nodeValue = value;
-						});
-					}
-				});
-
-			}
+		textnode: function(node, view){
+			view.watch(this.property, function(value){
+				node.nodeValue = value;
+			});
 		}
 	},
 
-	collectDirectives: function(path, node, directives){
-		var list, i, j, attr, subpath, child;
+	iterate: function(path, node, directives){
+		var childNodes, i, j, attr, child;
 
 		if( path !== '' ) path+= '.';
 
 		// Element
 		if( node.nodeType == 1 ){
 
-			list = node.attributes;
+			childNodes = node.childNodes;
 			i = 0;
-			j = list.length;
+			j = childNodes.length;
 			for(;i<j;i++){
-				attr = list[i];
-				subpath = path + 'attributes.' + attr.name;
-				this.checkDirective(subpath, attr, directives);
+				child = childNodes[i];
+				this.collectDirectives(path + i, child, directives);
+			}
+		}
+	},
+
+	collectDirectives: function(path, node, directives){
+		var attributes, i, j, attr, value;
+
+		// element
+		if( node.nodeType == 1 ){
+			attributes = node.attributes;
+			i = 0;
+			j = attributes.length;
+			for(;i<j;i++){
+				attr = attributes[i];
+				value = attr.value;
+
+				if( value.startsWith('{') && value.endsWith('}') ){
+					directives.push({
+						type: 'attribute',
+						path: path,
+						name: attr.name,
+						property: value.substring(1, value.length - 1),
+						link: this.linkers.attribute
+					});
+				}
 			}
 
-			list = node.childNodes;
-			i = 0;
-			j = list.length;
-			for(;i<j;i++){
-				child = list[i];
-				subpath = path + 'childNodes.' + i;
-				this.checkDirective(subpath, child, directives);
-				this.collectDirectives(subpath, child, directives);
-			}
+			this.iterate(path, node, directives);
+		}
 
+		// textnode
+		if( node.nodeType == 3 ){
+			value = node.nodeValue;
+
+			if( value.startsWith('{') && value.endsWith('}') ){
+				directives.push({
+					type: 'textnode',
+					path: path,
+					property: value.substring(1, value.length - 1),
+					link: this.linkers.textnode
+				});
+			}
 		}
 
 		return directives;
@@ -316,21 +335,11 @@ var Compiler = {
 		return this.collectDirectives('', element, []);
 	},
 
-	followers: {
-		attributes: function(node, name){
-			return node.attributes.getNamedItem(name);
-		},
-
-		childNodes: function(node, index){
-			return node.childNodes[index];
-		}
-	},
-
 	follow: function(node, path){
 		var parts = path.split('.'), i = 0, j = parts.length;
 
-		for(;i<j;i+=2){
-			node = this.followers[parts[i]].call(this, node, parts[i+1]);
+		for(;i<j;i++){
+			node = node.childNodes[parts[i]];
 			if( !node ) break;
 		}
 
@@ -343,7 +352,8 @@ var Compiler = {
 		for(;i<j;i++){
 			directive = directives[i];
 			node = this.follow(element, directive.path);
-			directive.link.call(view, node);
+			if( !node ) throw new Error('node not found');
+			directive.link(node, view);
 		}
 	}
 };
