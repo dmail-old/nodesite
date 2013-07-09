@@ -33,6 +33,7 @@
 	min-width: 250px; width: auto; height: auto;
 	overflow: visible;
 	/*display: none;*/
+	list-style: none;
 	position: absolute; z-index: 1000;
 }
 .root.menu .node{ position: relative; }

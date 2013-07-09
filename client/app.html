@@ -29,7 +29,7 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 				return typeof value == 'string' && value.indexOf('(function (') === 0 ? eval(value) : value;
 			});
 
-			window.root = '.';//config.protocol + '://' + config.host + (config.port ? ':' + config.port : '');
+			window.root = document.location.protocol + '//' + document.location.host;
 
 			window.onerror = function(msg, url, line){
 				//console.log('window error', arguments);

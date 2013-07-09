@@ -1,5 +1,4 @@
 NS.viewDocument.define('menuoption', NS.viewDocument.require('node').extend({
-	// FIX: le navigateur cherche à charger {img} et ne trouve pas forcément
 	template: '\
 		<li class="node">\
 			<div>\
@@ -10,7 +9,7 @@ NS.viewDocument.define('menuoption', NS.viewDocument.require('node').extend({
 			</div>\
 		</li>\
 	',
-	imageSrc: './img/tree/',
+	imageSrc: root + '/img/tree/',
 	types: {
 		radio: {
 			img: 'menuradio.png',
