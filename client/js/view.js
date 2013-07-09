@@ -4,9 +4,6 @@ name: View
 
 description: Element wrapper
 
-FIX: si je modifie une vue enfant, la vue parent recoit aussi l'event
-change et croit qu'elle est modifiée, watch est merdé en rgos
-
 */
 
 NS.View = {
@@ -14,26 +11,16 @@ NS.View = {
 	id: null,
 	emitter: null,
 	controllers: null,
-	getters: {},
 
 	// about model
 	model: null,
 	modelListener: null,
 	modelListeners: {
-		destroy: 'destroy',
-
-		data: function(e){
-			this.emit('data');
+		destroy: function(){
+			this.destroy();
 		},
 
-		change: function(e){
-			var property = e.args[0], value = e.args[1], current = e.args[2];
-			this.emit('change:' + property, value, current);
-		},
-
-		adopt: function(e){
-			var child = e.args[0], index = e.args[1];
-
+		adopt: function(child, index){
 			this.insertBefore(child, this.childNodes[index]);
 		},
 
@@ -43,8 +30,7 @@ NS.View = {
 	},
 
 	// about element
-	template: null,
-	directives: null,
+	template: '',
 	element: null,
 	events: null,
 	elementEmitter: null,
@@ -58,16 +44,17 @@ NS.View = {
 		this.emitter = NS.EventEmitter.new(this);
 		this.modelListener = NS.EventListener.new(null, this.modelListeners, this);
 
-		if( this.template ){
-			if( typeof this.template == 'string' ) this.template = this.template.toElement();
-			this.setElement(this.template.cloneNode(true));
+		if( this.nodeName in NS.Template.cache ){
+			this.template = NS.Template.cache[this.nodeName];
 		}
+		else{
+			this.template = NS.Template.new(this.template, this.nodeName);
+		}
+
+		this.setModel(model);
+		this.setElement(this.template.link(this));
 
 		this.emit('create');
-
-		if( model ){
-			this.setModel(model);
-		}
 	},
 
 	destroy: function(){
@@ -77,14 +64,37 @@ NS.View = {
 		this.self.removeInstance(this);
 	},
 
+	setModel: function(model){
+		if( model ){
+			this.model = model;
+			this.modelListener.emitter = model;
+			this.modelListener.listen();
+
+			this.childNodes = model.childNodes;
+			if( this.ownerDocument ){
+				this.ownerDocument.createChildNodes(this);
+			}
+		}
+	},
+
+	unsetModel: function(){
+		if( this.model ){
+			this.model = null;
+			this.modelListener.stopListening();
+			this.modelListener.emitter = null;
+		}
+	},
+
+	getters: {},
 	get: function(key){
 		if( key in this.getters ){
 			var getter = this.getters[key];
 
-			if( 'argumentNames' in getter ){
-				var names = getter.argumentNames, i = 0, j = names.length, name, values = [];
+			if( getter.length ){
+				var names = Function.argumentNames(getter), i = 0, j = names.length, name, values = [];
 				for(;i<j;i++){
 					name = names[i];
+					// avoid infinite loop
 					values[i] = name == key ? this.model.get(name) : this.get(name);
 				}
 
@@ -98,45 +108,62 @@ NS.View = {
 		return this.model.get(key);
 	},
 
-	watch: function(property, fn){
-		if( property in this.getters ){
-			Function.argumentNames(this.getters[property]).forEach(function(name){
+	watch: function(key, fn, bind){
+		var getters = this.getters;
 
-				this.on('change:' + name, function(){
-					fn.call(this, this.get(property));
-				});
+		// when view.get(key) === view.model.get(key) not always true
+		if( key in getters ){
+			// the getter is purely virtual and don't depends on any properties
+			if( getters[key].length === 0 ){
+				this.model.watch(key, function(value, oldvalue){
+					// restore oldvalue
+					this.model.data[key] = oldvalue;
+					// get the value at that moment
+					oldvalue = this.get(key);
+					// put back value
+					this.model.data[key] = value;
+					// get the value
+					value = this.get(key);
 
-			}, this);
+					fn.call(bind, value, oldvalue);
+				}, this);
+			}
+			// the getter depends on one or more properties
+			else{
+				var dependencies = Function.argumentNames(getters[key]);
+
+				dependencies.forEach(function(dependency){
+					this.model.watch(dependency, function(value, oldvalue){
+
+						// restore oldvalue
+						this.model.data[dependency] = oldvalue;
+						// get the value at that moment
+						oldvalue = this.get(key);
+						// put back value
+						this.model.data[dependency] = value;
+						// get the value
+						value = this.get(key);
+
+						fn.call(bind, value, oldvalue);
+					}, this);
+				}, this);
+
+			}
+		}
+		// when view.get(key) alwas === view.model.get(key) always true
+		else{
+			this.model.watch(fn, bind);
+		}
+
+		// lorsque le model recoit des données pour la première fois (initialization)
+		if( this.model.hasData() ){
+			fn.call(bind, this.get(key), undefined);
 		}
 		else{
-			this.on('change:' + property, function(e){
-				fn.call(this, e.args[0], e.args[1]);
-			});
+			this.model.once('data', function(){
+				fn.call(bind, this.get(key), undefined);
+			}.bind(this));
 		}
-
-		this.once('setModel', function(e){
-			var model = e.args[0];
-
-			if( model.data ){
-				fn.call(this, this.get(property), undefined);
-			}
-			else{
-				// lorsque le model recoit des données pour la première fois
-				this.once('data', function(){
-					fn.call(this, this.get(property), undefined);
-				});
-			}
-		});
-	},
-
-	link: function(element){
-		var proto = this.getPrototype();
-
-		if( !proto.directives ){
-			proto.directives = Compiler.compile(element);
-		}
-
-		Compiler.link(element, this, proto.directives);
 	},
 
 	setElement: function(element){
@@ -147,8 +174,6 @@ NS.View = {
 		this.elementListener.listen();
 
 		this.setAttribute('data-view', this.id);
-
-		this.link(element);
 
 		return this;
 	},
@@ -191,28 +216,6 @@ NS.View = {
 
 	toView: Function.THIS,
 
-	setModel: function(model){
-		if( model ){
-			this.model = model;
-			this.modelListener.emitter = model;
-			this.modelListener.listen();
-
-			this.childNodes = this.model.childNodes;
-			if( this.ownerDocument ){
-				this.ownerDocument.createChildNodes(this);
-			}
-
-			this.emit('setModel', model);
-		}
-	},
-
-	unsetModel: function(){
-		if( this.model ){
-			this.modelListener.stopListening();
-			this.modelListener.emitter = null;
-		}
-	},
-
 	hasClass: function(name){
 		return this.element.classList.contains(name);
 	},
@@ -254,109 +257,6 @@ NS.View = {
 	NS.NodeInterface,
 	NS.NodeFinder
 );
-
-var Compiler = {
-	linkers: {
-		attribute: function(node, view){
-			view.watch(this.property, function(value){
-				node.setAttribute(this.name, value);
-			});
-		},
-
-		textnode: function(node, view){
-			view.watch(this.property, function(value){
-				node.nodeValue = value;
-			});
-		}
-	},
-
-	iterate: function(path, node, directives){
-		var childNodes, i, j, attr, child;
-
-		if( path !== '' ) path+= '.';
-
-		// Element
-		if( node.nodeType == 1 ){
-
-			childNodes = node.childNodes;
-			i = 0;
-			j = childNodes.length;
-			for(;i<j;i++){
-				child = childNodes[i];
-				this.collectDirectives(path + i, child, directives);
-			}
-		}
-	},
-
-	collectDirectives: function(path, node, directives){
-		var attributes, i, j, attr, value;
-
-		// element
-		if( node.nodeType == 1 ){
-			attributes = node.attributes;
-			i = 0;
-			j = attributes.length;
-			for(;i<j;i++){
-				attr = attributes[i];
-				value = attr.value;
-
-				if( value.startsWith('{') && value.endsWith('}') ){
-					directives.push({
-						type: 'attribute',
-						path: path,
-						name: attr.name,
-						property: value.substring(1, value.length - 1),
-						link: this.linkers.attribute
-					});
-				}
-			}
-
-			this.iterate(path, node, directives);
-		}
-
-		// textnode
-		if( node.nodeType == 3 ){
-			value = node.nodeValue;
-
-			if( value.startsWith('{') && value.endsWith('}') ){
-				directives.push({
-					type: 'textnode',
-					path: path,
-					property: value.substring(1, value.length - 1),
-					link: this.linkers.textnode
-				});
-			}
-		}
-
-		return directives;
-	},
-
-	compile: function(element){
-		return this.collectDirectives('', element, []);
-	},
-
-	follow: function(node, path){
-		var parts = path.split('.'), i = 0, j = parts.length;
-
-		for(;i<j;i++){
-			node = node.childNodes[parts[i]];
-			if( !node ) break;
-		}
-
-		return node;
-	},
-
-	link: function(element, view, directives){
-		var i = 0, j = directives.length, directive, node;
-
-		for(;i<j;i++){
-			directive = directives[i];
-			node = this.follow(element, directive.path);
-			if( !node ) throw new Error('node not found');
-			directive.link(node, view);
-		}
-	}
-};
 
 NS.View.self =  {
 	instances: {},
@@ -404,9 +304,6 @@ NS.View.self =  {
 	}
 };
 
-// show a blank image, useful to have a default src attribute
-Image.EMPTY = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-
 Element.prototype.toView = function(){ return NS.View.self.findElementView(this); };
 Event.prototype.toView = function(){ return Element.prototype.toView.call(this.target); };
 CustomEvent.prototype.toView = function(){ return this.detail.view; };
@@ -424,4 +321,165 @@ NS.viewDocument.oninsert = function(node, child){
 };
 NS.viewDocument.onremove = function(node){
 	node.removeElement();
+};
+
+var TextNodeDirective = {
+	path: null,
+	node: null,
+
+	create: function(path, node){
+		this.path = path;
+		this.node = node;
+	},
+
+	findClone: function(cloneNode){
+		var parts = this.path.split('.'), i = 0, j = parts.length;
+
+		for(;i<j;i++){
+			cloneNode = cloneNode.childNodes[parts[i]];
+			if( cloneNode == null ){
+				throw new Error('node not found');
+			}
+		}
+
+		return cloneNode;
+	},
+
+	getValue: function(){
+		return this.node.nodeValue;
+	},
+
+	getProperty: function(){
+		var value = this.getValue();
+		return value.substring(1, value.length - 1);
+	},
+
+	update: function(value, oldvalue){
+		this.nodeValue = value;
+	},
+
+	link: function(node, view){
+		view.watch(this.getProperty(), this.update, node);
+	},
+
+	linkClone: function(cloneNode, view){
+		this.link(this.findClone(cloneNode), view);
+	}
+};
+
+var AttributeDirective = TextNodeDirective.extend({
+	create: function(){
+		TextNodeDirective.create.apply(this, arguments);
+
+		// avoid browser to request a wrong src
+		if( this.node.name == 'src' ){
+			var value = this.node.value;
+			this.getValue = function(){
+				return value;
+			};
+			this.update = function(value){
+				this.value = value || Image.EMPTY;
+			};
+
+			this.update.call(this.node, Image.EMPTY);
+		}
+	},
+
+	getValue: function(){
+		return this.node.value;
+	},
+
+	update: function(value, oldvalue){
+		this.value = value;
+	},
+
+	findClone: function(cloneNode){
+		cloneNode = TextNodeDirective.findClone.call(this, cloneNode);
+		cloneNode = cloneNode.attributes.getNamedItem(this.node.name);
+		return cloneNode;
+	}
+});
+
+// show a blank image, useful to have a default src attribute
+Image.EMPTY = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+NS.Template = {
+	cache: {},
+	element: null,
+
+	create: function(element, id){
+		if( id ) this.cache[id] = this;
+		if( typeof element == 'string' ) element = element.toElement();
+		this.element = element;
+	},
+
+	iterate: function(path, node, directives){
+		var childNodes, i, j, attr, child;
+
+		if( path !== '' ) path+= '.';
+
+		childNodes = node.childNodes;
+		i = 0;
+		j = childNodes.length;
+		for(;i<j;i++){
+			child = childNodes[i];
+			this.collectDirectives(path + i, child, directives);
+		}
+	},
+
+	collectDirectives: function(path, node, directives){
+		var attributes, i, j, attr, value, directive;
+
+		if( node.nodeType == 1 ){ // element
+			attributes = node.attributes;
+			i = 0;
+			j = attributes.length;
+			for(;i<j;i++){
+				attr = attributes[i];
+				value = attr.value;
+
+				if( value.startsWith('{') && value.endsWith('}') ){
+					directive = AttributeDirective.new(path, attr);
+					directives.push(directive);
+				}
+			}
+
+			this.iterate(path, node, directives);
+		}
+		else if( node.nodeType == 3 ){ // textnode
+			value = node.nodeValue;
+
+			if( value.startsWith('{') && value.endsWith('}') ){
+				directive = TextNodeDirective.new(path, node);
+				directives.push(directive);
+			}
+		}
+
+		return directives;
+	},
+
+	compile: function(){
+		if( this.directives ){
+			return this.directives;
+		}
+		else{
+			this.directives = [];
+			this.collectDirectives('', this.element, this.directives);
+			return this.directives;
+		}
+	},
+
+	clone: function(){
+		return this.element.cloneNode(true);
+	},
+
+	link: function(view){
+		var clone = this.clone(), directives = this.compile(), i = directives.length;
+
+		while(i--){
+			directives[i].linkClone(clone, view);
+		}
+
+		return clone;
+	}
 };

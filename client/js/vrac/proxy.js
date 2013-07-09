@@ -7,32 +7,32 @@ var Proxy = new Class({
 		apply: function(target, name, bind, args){ return target[name].apply(bind, args); },
 		call: function(target, name, bind){ return this.codes.apply.apply(name, bind, toArray(arguments, 3)); }
 	},
-	
+
 	initialize: function(target, handler){
 		this.target = target;
-		this.handler = handler;	
+		this.handler = handler;
 	},
-	
+
 	hasTrap: function(operation){
 		return this.handler && typeof this.handler[operation] == 'function';
 	},
-	
+
 	getTrap: function(operation){
 		return this.handler[operation];
 	},
-	
+
 	trap: function(operation, args){
 		this.applyTrap(this.getTrap(operation), args);
 	},
-	
+
 	applyMethod: function(method, bind, args){
 		return fn.apply(this, [this.target].concat(args));
 	},
-	
+
 	applyTrap: function(method, args){
 		return this.applyMethod(method, this, args);
 	},
-	
+
 	applyCode: function(method, args){
 		return this.applyMethod(method, this, args);
 	}
@@ -52,20 +52,20 @@ Object.eachPair(Proxy.prototype.codes, function(operation, method){
 
 var AssocProxy = new Class({
 	Extends: Proxy,
-	
+
 	initialize: function(target, handler){
 		this.target = target;
 		this.handler = handler;
 	},
-	
+
 	has: function(name){
 		return name in this.target;
 	},
-	
+
 	set: function(name, value){
 		this.target[name] = new Proxy(value, this.handler);
 	},
-	
+
 	remove: function(key){
 		if( this.has(name) ){
 			var proxy = this.get(name);
@@ -73,27 +73,27 @@ var AssocProxy = new Class({
 			delete this.target[name];
 		}
 	},
-	
+
 	applyTrap: function(method, args){
 		args.splice(1, 1); // pas besoin de part
 		return method.apply(this, args);
 	},
-	
+
 	hasTrap: function(operation, part){
 		return this.handler && part in this.handler && typeof this.handler[part][operation] == 'function';
 	},
-	
+
 	getTrap: function(operation, part){
 		return this.handler[part][operation];
 	},
-			
+
 	hasPart: function(name, part){
 		if( this.has(name) ){
 			return this.hasTrap('has', part) ? this.trap('has', arguments) : part in this.get(name);
 		}
 		return false;
 	},
-	
+
 	getPart: function(name, part){
 		if( this.has(name) ){
 			if( this.hasTrap('get', part) ){
@@ -101,9 +101,9 @@ var AssocProxy = new Class({
 			}
 			return this.get(name)[part];
 		}
-		return undefined;		
+		return undefined;
 	},
-	
+
 	setPart: function(name, part, value){
 		if( !this.has(name) ) this.set(name, {});
 		if( this.hasTrap('set', part) ){
@@ -113,7 +113,7 @@ var AssocProxy = new Class({
 			this.get(name)[part] = value;
 		}
 	},
-	
+
 	removePart: function(name, part){
 		if( this.has(name) ){
 			if( this.hasTrap('remove', part) ){
@@ -124,7 +124,7 @@ var AssocProxy = new Class({
 			}
 		}
 	},
-	
+
 	applyPart: function(name, part, bind, args){
 		if( this.hasPart(name, part) ){
 			var value = this.getPart(name, part);
@@ -132,8 +132,46 @@ var AssocProxy = new Class({
 		}
 		return undefined;
 	},
-	
+
 	callPart: function(name, part, bind){
 		return this.applySchemaPart(name, part, bind, toArray(arguments, 3));
 	}
 });
+
+NS.Proxy = {
+	target: null,
+	handler: {},
+
+	create: function(target, handler){
+		this.target = target;
+		this.handler = handler;
+	},
+
+	has: function(name){
+		if( this.handler.has ){
+			return this.handler.has(this.target, name);
+		}
+		return this.target.has(name);
+	},
+
+	get: function(name){
+		if( this.handler.get ){
+			return this.handler.get(this.target, name);
+		}
+		return this.target.get(name);
+	},
+
+	set: function(name, value){
+		if( this.handler.get ){
+			return this.handler.set(this.target, name, value);
+		}
+		return this.target.set(name, value);
+	},
+
+	unset: function(name){
+		if( this.handler.unset ){
+			return this.handler.unset(this.target, name);
+		}
+		return this.target.unset(name);
+	}
+};

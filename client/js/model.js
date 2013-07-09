@@ -1,14 +1,12 @@
 NS.Model = {
-	cid: 0,
+	id: 0,
 	emitter: null,
 	data: {},
 	name: '',
-	validationError: null,
-	//getters: {},
 
 	create: function(data){
-		this.emitter = NS.EventEmitter.new(this);
-		this.cid = this.cid++;
+		this.emitter = NS.Emitter.new(this);
+		this.id = this.id++;
 
 		if( data ) this.setData(data);
 	},
@@ -17,8 +15,12 @@ NS.Model = {
 		return this.data;
 	},
 
+	hasData: function(){
+		return this.hasOwnProperty('data');
+	},
+
 	setData: function(data){
-		this.data = this.parse(data);
+		this.data = data;
 
 		if( this.has('name') ) this.name = this.get('name');
 		if( this.has('childNodes') ) this.childNodes = this.get('childNodes');
@@ -26,43 +28,11 @@ NS.Model = {
 		this.emit('data', data);
 	},
 
-	parse: function(data){
-		return data;
-	},
-
-	encode: function(key, value){
-		return value;
-	},
-
-	valid: function(key, value){
-		this.validationError = this.validate(key, value) || null;
-		return !this.validationError;
-	},
-
-	validate: Function.EMPTY,
-
-	compare: function(key, a, b){
-		return a === b;
-	},
-
-	has: function(key){
-		return key in this.data;
-	},
-
-	get: function(key){
-		/*if( key in this.getters ){
-			var getter = this.getters[key];
-
-			if( 'argumentNames' in getter ){
-				return getter.apply(this, getter.argumentNames.map(this.get, this));
-			}
-			else{
-				return getter.call(this);
-			}
-		}
-		*/
-
-		return this.data[key];
+	watch: function(key, listener, bind){
+		bind = bind || this;
+		this.on('change:' + key, function(value, oldvalue){
+			listener.call(bind, value, oldvalue);
+		});
 	},
 
 	change: function(key, value, current){
@@ -70,38 +40,43 @@ NS.Model = {
 		this.emit('change:' + key, value, current);
 	},
 
+	has: function(key){
+		return key in this.data;
+	},
+
+	get: function(key){
+		return this.data[key];
+	},
+
 	set: function(key, value){
 		var current;
 
-		value = this.encode(key, value);
+		current = this.get(key);
+		if( current !== value ){
+			this.change(key, value, current);
+			this.data[key] = value;
 
-		if( !this.valid(key, value) ){
-			this.emit('invalid', key, value, this.validationError);
-		}
-		else{
-			current = this.get(key);
-			if( !this.compare(key, current, value) ){
-				this.data[key] = value;
-				this.change(key, value, current);
-			}
+			return true;
 		}
 
-		return this;
+		return false;
 	},
 
 	unset: function(key){
 		var current;
 
-		if( this.has(name) ){
-			current = this.get(name);
-			delete this.data[name];
+		if( this.has(key) ){
+			current = this.get(key);
+			delete this.data[key];
 			this.change(key, undefined, current);
+
+			return true;
 		}
 
-		return this;
+		return false;
 	}
 }.supplement(
-	NS.EventEmitterInterface,
+	NS.EmitterInterface,
 	NS.NodeInterface,
 	NS.NodeFinder
 );

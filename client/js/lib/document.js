@@ -26,6 +26,10 @@ NS.Document = {
 		return typeof name == 'string' ? this.Nodes[name] : name;
 	},
 
+	oncreate: Function.EMPTY,
+	oninsert: Function.EMPTY,
+	onremove: Function.EMPTY,
+
 	createNode: function(name, data){
 		var Node = this.require(name), node;
 
@@ -42,6 +46,7 @@ NS.Document = {
 
 		node.ownerDocument = this;
 		this.createChildNodes(node);
+		this.oncreate(node);
 
 		return node;
 	},
@@ -57,4 +62,4 @@ NS.Document = {
 			}, this);
 		}
 	}
-}.supplement(NS.NodeInterface, NS.EmitterInterface);
+}.supplement(NS.NodeInterface/*, NS.EmitterInterface*/);
