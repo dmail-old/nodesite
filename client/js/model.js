@@ -85,8 +85,8 @@ NS.modelDocument = NS.Document.new();
 NS.modelDocument.oninsert = function(node, child){
 	node.emit('adopt', child, node.childNodes.indexOf(child));
 };
-NS.modelDocument.onremove = function(node){
-	node.emit('emancipate');
+NS.modelDocument.onremove = function(node, child){
+	child.emit('emancipate');
 };
 
 /*

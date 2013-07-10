@@ -3,10 +3,8 @@ NS.Event = {
 	target: null,
 	currentTarget: null,
 	bubbles: false,
-	//inherit: false,
 	stopped: false,
 	defaultPrevented: false,
-
 	args: null,
 
 	create: function(type, canBubble){

@@ -8,7 +8,7 @@ NS.EventEmitter = NS.Emitter.extend({
 			return listener.handleEvent(args[0]);
 		}
 		else{
-			return listener.call(this.bind || this, args[0]);
+			return listener.call(this.bind, args[0]);
 		}
 	}
 });

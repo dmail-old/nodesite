@@ -319,8 +319,8 @@ NS.viewDocument.oninsert = function(node, child){
 		);
 	}
 };
-NS.viewDocument.onremove = function(node){
-	node.removeElement();
+NS.viewDocument.onremove = function(node, child){
+	child.removeElement();
 };
 
 var TextNodeDirective = {
