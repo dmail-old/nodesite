@@ -1,6 +1,7 @@
 NS.Keynav = {
+	// rootElement
 	root: null,
-	// currentNode from wich we nav
+	// currentElement from wich we nav
 	current: null,
 
 	// keynav
@@ -59,6 +60,11 @@ NS.Keynav = {
 	create: function(root){
 		this.root = root;
 		this.current = root;
+		this.attach();
+	},
+
+	destroy: function(){
+		this.detach();
 	},
 
 	// naviguation allowed on child or on descendant
@@ -155,6 +161,19 @@ NS.Keynav = {
 		this.onnav(node, e);
 	},
 
+	handleEvent: function(e){
+		//this.current = this.focused;
+		this.keydown(e);
+	},
+
+	attach: function(){
+		this.root.addEventListener('keydown', this);
+	},
+
+	detach: function(){
+		this.root.removeEventListener('keydown', this);
+	},
+
 	keydown: function(e){
 		var current = this.current, target;
 
@@ -164,5 +183,5 @@ NS.Keynav = {
 				this.go(target, e);
 			}
 		}
-	}
+	}	
 };

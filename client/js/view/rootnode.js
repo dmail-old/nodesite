@@ -14,6 +14,7 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		this.emitter.on('insertElement show removeElement hide', this.changeStructure);
 
 		this.keynav = NS.RootKeynav.new(this);
+		this.keynav.filter = this.isSelectable;
 	},
 
 	getChildrenElement: function(){

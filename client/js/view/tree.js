@@ -10,7 +10,7 @@ restaurer memory
 */
 
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
-	template: '<ul class="root unselectable" tabindex="0" data-indent="18"></ul>',
+	template: '<ul class="root" tabindex="0" data-indent="18"></ul>',
 	events: {
 		mouseover: function(e){
 			var node = this.cast(e.target);
@@ -34,29 +34,13 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		mousedown: function(e){
 			var node = this.cast(e);
 
-			if( node == this ){
-				return;
-			}
+			if( node == null || node == this ) return;
 
 			if( e.target.hasClass('tool') ){
 				node.toggleState('expanded', e);
 			}
 
-			if( node ){
-				this.selection.selectNode(node, e);
-				node.focus(e);
-			}
-		},
-
-		click: function(e){
-			var node = this.cast(e);
-
-			if( node == this ){
-				this.selection.removeAll(e);
-			}
-			else{
-				this.selection.collapse(node, e);
-			}
+			node.focus(e);			
 		},
 
 		dblclick: function(e){
@@ -65,18 +49,6 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 				var node = this.cast(e);
 
 				if( node != this ) node.toggleState('expanded', e);
-			}
-		},
-
-		keydown: function(e){
-			if( e.control && e.key == 'a' ){
-				// sélectionne tout ce qui est sélectionnable
-				this.selection.addRange(this.getFirst(this.isSelectable, this, true), e);
-				e.preventDefault();
-			}
-			else{
-				this.keynav.current = this.focused;
-				this.keynav.keydown(e);
 			}
 		}
 	},
@@ -92,6 +64,10 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		});
 
 		// lighted
+		// ne peut t-on pas s'inspirer de ça: 
+
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+		// section manipulating DOM Node
 		this.on({
 			light: function(e){
 				if( this.lighted ) this.lighted.unlight(e.args[0]);
@@ -114,6 +90,7 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 			focus: function(e){
 				if( this.focused ) this.focused.blur(e);
 				this.focused = e.target;
+				this.keynav.current = this.focused;
 			},
 
 			blur: function(e){
@@ -128,7 +105,11 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 
 		// selection
 		this.selection = NS.Selection.new(this);
-		this.selection.filterNode = this.isSelectable;
+		this.selection.filter = this.isSelectable;
+		this.selection.getTarget = function(e){
+			return this.root.cast(e);
+		};
+
 		this.on({
 			select: function(e){
 				this.selection.removeAll(e.args[0]);

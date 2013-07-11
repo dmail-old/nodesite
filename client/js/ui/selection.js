@@ -10,17 +10,74 @@ pour le moment on simplifie comme suit
 */
 
 NS.Selection = {
+	root: null,
 	startNode: null,
 	endNode: null,
 	range: null,
+	events: ['mousedown', 'click', 'keydown'],
 
 	create: function(node){
+		this.root = node;
 		this.startNode = node;
 		this.endNode = node;
 		this.range = [];
+
+		this.attach();
 	},
 
-	filterNode: Function.TRUE,
+	destroy: function(){
+		this.detach();
+	},
+
+	attach: function(){
+		this.root.addClass('unselectable');
+		this.events.forEach(function(name){ this.root.addEventListener(name, this); }, this);
+	},
+
+	detach: function(){
+		this.root.removeClass('unselectable');
+		this.events.forEach(function(name){ this.root.removeEventListener(name, this); }, this);
+	},
+
+	mousedown: function(e){
+		var node = this.getTarget(e);
+
+		if( node == this.root ){
+
+		}
+		else{
+			this.selectNode(node, e);
+		}
+	},
+
+	click: function(e){
+		var node = this.getTarget(e);
+
+		if( node == this.root ){
+			this.removeAll(e);
+		}
+		else{
+			this.collapse(node, e);
+		}
+	},
+
+	keydown: function(e){
+		if( e.control && e.key == 'a' ){
+			// sélectionne tout ce qui est sélectionnable
+			this.addRange(this.root.getFirst(this.filter, this, true), e);
+			e.preventDefault();
+		}
+	},
+
+	handleEvent: function(e){
+		this[e.type](e);
+	},
+
+	getTarget: function(e){
+		return e.target;
+	},
+
+	filter: Function.TRUE,
 
 	selectNode: function(node, e){
 		if( e.control ){
@@ -116,7 +173,7 @@ NS.Selection = {
 		}
 
 		// get valid nodes between from and to
-		while(from = from.getNext(this.filterNode)){
+		while(from = from.getNext(this.filter)){
 			if( from === to ) break;
 			range.push(from);
 		}

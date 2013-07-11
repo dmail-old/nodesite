@@ -251,6 +251,14 @@ NS.View = {
 
 	getStyle: function(name){
 		return this.element.getStyle(name);
+	},
+
+	addEventListener: function(name, listener){
+		return this.element.addEventListener(name, listener);
+	},
+
+	removeEventListener: function(name, listener){
+		return this.element.removeEventListener(name, listener);
 	}
 }.supplement(
 	NS.EventEmitterInterface,
