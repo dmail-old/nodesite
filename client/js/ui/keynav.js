@@ -123,10 +123,6 @@ NS.Keynav = {
 		return node.nodeName;
 	},
 
-	startBy: function(node, letter){
-		return this.getName(node).charAt(0) == letter;
-	},
-
 	getHeight: function(){
 		if( this.root.firstChild ){
 			return this.root.firstChild.measure('size', 'y');
@@ -134,8 +130,16 @@ NS.Keynav = {
 		return 0;
 	},
 
+	getAvailableHeight: function(node){
+		return node.element.offsetParent.clientHeight;
+	},	
+
+	startBy: function(node, letter){
+		return this.getName(node).charAt(0) == letter;
+	},
+
 	getPageCount: function(node){
-		return parseInt(node.element.offsetParent.clientHeight / this.getHeight(), 10);
+		return parseInt(this.getAvailableHeight(node) / this.getHeight(), 10);
 	},
 
 	getTarget: function(node, e){
@@ -161,17 +165,17 @@ NS.Keynav = {
 		this.onnav(node, e);
 	},
 
-	handleEvent: function(e){
-		//this.current = this.focused;
-		this.keydown(e);
-	},
-
 	attach: function(){
 		this.root.addEventListener('keydown', this);
 	},
 
 	detach: function(){
 		this.root.removeEventListener('keydown', this);
+	},
+
+	handleEvent: function(e){
+		//this.current = this.focused;
+		this.keydown(e);
 	},
 
 	keydown: function(e){
