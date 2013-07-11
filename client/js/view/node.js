@@ -1,22 +1,3 @@
-/*
-un jour les vues seront définies direct dans le HTML genre
-
-<li class="node" data-view="node">
-	<div>
-		<ins class="tool"></ins>
-		<span class="name">{name}</span>
-	</div>
-	<ul>
-		{htmlChildren}
-	</ul>
-</li>
-
-pour les propriétés pour complexes la vue définiras une méthode, genre
-{htmlName}
-View.htmlName = function(){ return lang[this.name]; };
-
-*/
-
 NS.viewDocument.define('node', NS.View.extend({
 	template: '\
 		<li class="node">\
@@ -35,12 +16,10 @@ NS.viewDocument.define('node', NS.View.extend({
 		actived: ['active', 'unactive']
 	},
 
-	hasState: function(state){
-		return this.hasClass(state);
-	},
+	hasState: NS.View.hasClass,
 
 	addState: function(state, e){
-		if( !this.hasClass(state) ){
+		if( !this.hasState(state) ){
 			this.addClass(state);
 			this.emit(this.states[state][0], e);
 		}
@@ -48,25 +27,25 @@ NS.viewDocument.define('node', NS.View.extend({
 	},
 
 	removeState: function(state, e){
-		if( this.hasClass(state) ){
+		if( this.hasState(state) ){
 			this.removeClass(state);
 			this.emit(this.states[state][1], e);
 		}
 	},
 
 	toggleState: function(state, e, force){
-		if( typeof force == 'undefined' ) force = !this.hasClass(state);
+		if( typeof force == 'undefined' ) force = !this.hasState(state);
 		return force ? this.addState(state, e) : this.removeState(state, e);
 	},
 
 	isVisible: function(){
 		var parent = this;
 
-		if( this.hasClass('hidden') ) return false;
+		if( this.hasState('hidden') ) return false;
 
 		while(parent = parent.parentNode){
 			if( parent == null || parent.parentNode == null ) return true;
-			if( parent.hasClass('hidden') || !parent.hasClass('expanded') ) return false;
+			if( parent.hasState('hidden') || !parent.hasState('expanded') ) return false;
 		}
 
 		return true;

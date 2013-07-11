@@ -5,7 +5,6 @@ var exports = {
 	create: function(request, response){
 		this.request = request;
 		this.response = response;
-		this.start();
 	},
 
 	error: function(e){

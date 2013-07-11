@@ -60,7 +60,7 @@ config.js = [].concat(
 		"selection", "keynav", "rootkeynav", "shortcut"
 	].prefix('ui/'),
 	[
-		"model", "view", "controller"
+		"model", "view", "template", "controller"
 	],
 	[
 		"node", "menuoption", "menu",

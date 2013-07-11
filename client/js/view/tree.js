@@ -1,3 +1,14 @@
+/*
+
+prochaines étapes:
+
+restaurer sort (possibilité de trier les enfants d'un noeud)
+restaurer le drag&drop
+restaurer le rename par f2
+restaurer memory
+
+*/
+
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 	template: '<ul class="root unselectable" tabindex="0" data-indent="18"></ul>',
 	events: {

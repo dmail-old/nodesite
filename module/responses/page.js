@@ -12,8 +12,11 @@ var exports = {
 		'cache'
 	],
 	metaTemplate: '<meta {attr}="{name}" content="{value}" />',
-	styleTemplate: '<link type="text/css" rel="stylesheet" href="#" />',
-	scriptTemplate: '<script type="text/javascript" src="#"></script>',
+	tags: {
+		style: '<link href="#" type="text/css" rel="stylesheet" />',
+		script: '<script src="#" type="text/javascript"></script>',
+		favicon: '<link href="#" type="image/x-icon" rel="shortcut icon"/>'
+	},
 
 	create: function(request, response){
 		var htmlFile = NS.File.new(root + '/client/app.html'), html;
@@ -21,7 +24,7 @@ var exports = {
 		try{
 			html = String(htmlFile.readSync());
 		}catch(e){
-			return NS.errorResponse.new(response, e);
+			return require('./error.js').new(request, response, e);
 		}
 
 		var metas = {
@@ -44,7 +47,7 @@ var exports = {
 		var data = {
 			'metas': this.parseMetas(metas),
 			'title': lang.metas.title,
-			'favicon': this.setTagUrl('<link href="#" type="image/x-icon" rel="shortcut icon"/>', 'favicon.png'),
+			'favicon': this.setTagUrl(this.tags.favicon, 'favicon.png'),
 			'styles': this.parseStyles(config.css),
 			'scripts': this.parseScripts(config.js),
 			'lang': JSON.stringify(lang, Function.replacer),
@@ -62,7 +65,7 @@ var exports = {
 	},
 
 	parseStyle: function(name){
-		return this.setTagUrl(this.styleTemplate, 'css/' + name + '.css');
+		return this.setTagUrl(this.tags.style, 'css/' + name + '.css');
 	},
 
 	parseStyles: function(names){
@@ -76,7 +79,7 @@ var exports = {
 	},
 
 	parseScript: function(name){
-		return this.setTagUrl(this.scriptTemplate, 'js/' + name + '.js');
+		return this.setTagUrl(this.tags.script, 'js/' + name + '.js');
 	},
 
 	parseScripts: function(names){

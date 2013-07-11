@@ -1,11 +1,13 @@
-/* global Emitter, Bound, Fx, $ */
-
 /*
 ---
 
 name: Surface
 
-description: Donne la possibilité d'attraper un élément avec la souris
+description: Donne la possibilité de redimensionner et déplacer un élément
+
+le fait de pouvoir le déplacer à la souris passeras ailleurs
+box,selectionReactanle n'hériteront plus de surface mais instantieront surface sur leur élément
+sera surement renommer transform
 
 NOTE
 - le scroll du conteneur (scollWidth, scrollHeight) ne doit pas changer pendant le drag/resize/select
@@ -75,6 +77,8 @@ String.implement('percentOf', function(number){
 	return typeof number == 'number' && this.contains('%') ? Math.round(percent * number / 100) : percent;
 });
 
+// ça c'est pas vraiment une vue, plus un truc qu'on met sur un élement HTML
+// quel qu'il soit mais bon
 var exports = NS.viewDocument.define('surface', {
 	options: {
 		axis: 'xy',
@@ -144,7 +148,7 @@ var exports = NS.viewDocument.define('surface', {
 				if( !this.holded ){
 					this.handle = e.target;
 				}
-			}			
+			}
 		},
 
 		blur: function(){
@@ -383,8 +387,8 @@ Object.append(exports, {
 		if( this.updateOnce ) window.clearImmediate(this.updateOnce);
 		this.updateOnce = window.setImmediate(function(){
 
-			this.updateOnce = null;			
-			
+			this.updateOnce = null;
+
 			this.emit('update', e);
 			this.widthchanged = false;
 			this.heightchanged = false;
@@ -617,7 +621,7 @@ Object.append(exports, {
 	}),
 	scrollTimeout: null,
 	scroller: null,
-	overflow: null,	
+	overflow: null,
 	prevright: 0,
 	prevbottom: 0,
 
@@ -633,7 +637,7 @@ Object.append(exports, {
 		this.scroller.on('complete', this.startScroll.bind(this));
 
 		this.on('update', function(e){
-			
+
 			if( this.widthchanged || this.leftchanged ){
 				this.updateOverflow('x', this.prevright > this.right ? 1 : -1, e);
 				this.prevright = this.right;
@@ -653,7 +657,7 @@ Object.append(exports, {
 		if( !this.getOption('scrollAuto') ) return;
 
 		// on autoscroll pas sur un changement induit par un scroll
-		if( e && e.type == 'scroll' ) return;		
+		if( e && e.type == 'scroll' ) return;
 
 		var
 			reference = this.holded ? this.getOption('scrollReference') : 'element',
@@ -736,8 +740,7 @@ Object.append(exports, {
 	}
 });
 
-exports = Object.prototype.extend(NS.Emitter, exports);
-NS.Surface = exports;
+NS.Surface = exports.supplement(NS.EmitterInterface);
 
 // TODO: distance handling
 // var drag = Surface.prototype.drag;

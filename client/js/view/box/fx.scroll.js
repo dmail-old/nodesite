@@ -1,4 +1,4 @@
-var exports = {
+NS.Fx.Scroll = NS.Fx.extend({
 	options: {
 		step: 30,
 		wheelStops: true
@@ -62,7 +62,4 @@ var exports = {
 
 		return value;
 	}
-};
-
-exports = NS.Fx.extend(exports);
-NS.Fx.Scroll = exports;
+});

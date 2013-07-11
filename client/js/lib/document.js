@@ -1,15 +1,15 @@
 NS.Document = {
-	Nodes: null,
-	emitter: null,
+	prototypes: null,
+	//emitter: null,
 
 	create: function(){
-		this.Nodes = {};
+		this.prototypes = {};
 		this.childNodes = [];
 		//this.emitter = NS.Emitter.new(this);
 	},
 
 	define: function(name, Node, trace){
-		this.Nodes[name] = Node;
+		this.prototypes[name] = Node;
 
 		Node.nodeName = name;
 
@@ -23,7 +23,7 @@ NS.Document = {
 	},
 
 	require: function(name){
-		return typeof name == 'string' ? this.Nodes[name] : name;
+		return typeof name == 'string' ? this.prototypes[name] : name;
 	},
 
 	oncreate: Function.EMPTY,

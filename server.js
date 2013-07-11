@@ -106,7 +106,7 @@ String.defineType('path', {color: 'magenta', font: 'bold'});
 
 var server = {
 	onrequest: function(request, response){
-		require(root + '/module/response.js').new(request, response);
+		require(root + '/module/response.js').new(request, response).start();
 	},
 
 	onclientError: function(e){

@@ -1,9 +1,18 @@
 NS.viewDocument.define('selector', NS.View.extend({
-	tagName: 'div',
-	className: 'selector unselectable',
-	value: 'Option1',
+	template: '\
+		<div class="selector unselectable">\
+			<div class="input" tabindex="0">\
+				<span class="value">{value}</span>\
+				<div class="tool">\
+					<span class="arrow"></span>\
+				</div>\
+			</div>\
+			<ul class="root vx"></ul>\
+		</div>\
+	',
+
 	size: 4,
-	attributes: {
+	options: {
 		width: 'auto',
 		height: 'auto',
 		minwidth: 200,
@@ -29,20 +38,6 @@ NS.viewDocument.define('selector', NS.View.extend({
 
 	getChildrenElement: function(){
 		return this.getDom('root');
-	},
-
-	getHTML: function(){
-		var html = '\
-			<div class="input" tabindex="0">\
-				<span class="value">'+ this.value +'</span>\
-				<div class="tool">\
-					<span class="arrow"></span>\
-				</div>\
-			</div>\
-			<ul class="root vx"></ul>\
-		';
-
-		return html;
 	},
 
 	getDom: function(className){

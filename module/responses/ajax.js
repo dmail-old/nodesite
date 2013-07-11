@@ -6,7 +6,6 @@ var exports = {
 		this.url = this.request.parsedUrl;
 		this.headers = {};
 
-		this.headers["access-control-allow-origin"] = this.request.headers.origin || "*";
 		this.headers["content-type"] = 'application/json';
 
 		/*

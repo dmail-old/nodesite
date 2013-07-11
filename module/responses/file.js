@@ -1,10 +1,14 @@
 var exports = {
+	status: 404,
+	headers: null,
+	url: null,
+	method: null,
+
 	create: function(request, response){
 		this.response = response;
 		this.request = request;
 		this.method = this.request.method || 'GET';
 		this.url = this.request.parsedUrl;
-		this.status = 404;
 		this.headers = {};
 
 		this.start(this.url.pathname);
