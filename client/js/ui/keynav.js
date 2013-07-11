@@ -1,7 +1,6 @@
 NS.Keynav = {
 	// rootElement
 	root: null,
-	// currentElement from wich we nav
 	current: null,
 
 	// keynav
@@ -13,35 +12,37 @@ NS.Keynav = {
 
 	keys: {
 		home: function(){
-			return this.root[this.findFirst](this.filter, this);
+			this.iterator.current = this.root;
+			return this.iterate(this.findFirst);
 		},
 
 		end: function(){
-			return this.root[this.findLast](this.filter, this);
+			this.iterator.current = this.root;
+			return this.iterate(this.findLast);
 		},
 
 		left: function(){
-			return this.current.getParent(this.filter, this);
+			return this.iterate('getParent');
 		},
 
 		right: function(){
-			return this.current.getFirstChild(this.filter, this);
+			return this.iterate('getFirstChild');
 		},
 
 		down: function(){
-			return this.find(this.current, this.filter, this, this.findNext, this.loop);
+			return this.find(this.findNext, this.loop);
 		},
 
 		up: function(){
-			return this.find(this.current, this.filter, this, this.findPrev, this.loop);
+			return this.find(this.findPrev, this.loop);
 		},
 
 		pageup: function(){
-			return this.findAfterCount(this.current, this.filter, this, this.findPrev, this.getPageCount(this.current));
+			return this.findAfterCount(this.findPrev, this.getPageCount(this.iterator.current));
 		},
 
 		pagedown: function(){
-			return this.findAfterCount(this.current, this.filter, this, this.findNext, this.getPageCount(this.current));
+			return this.findAfterCount(this.findNext, this.getPageCount(this.iterator.current));
 		},
 
 		'*': function(e){
@@ -50,9 +51,9 @@ NS.Keynav = {
 				return null;
 			}
 			else{
-				return this.find(this.current, function(node){
+				return this.find(this.findNext, true, function(node){
 					return this.filter(node) && this.startBy(node, e.key);
-				}, this, this.findNext, true);
+				});
 			}
 		}
 	},
@@ -83,40 +84,38 @@ NS.Keynav = {
 		}
 	},
 
-	find: function(startNode, filter, bind, direction, loop){
-		var result = null;
-
-		result = startNode[direction](filter, bind);
-
-		if( result === null && loop === true ){
-			this[direction == this.findNext ? this.findFirst : this.findLast](function(node){
-				if( node == startNode ) return true;
-				if( filter.call(this, node) === true ){
-					result = node;
-					return true;
-				}
-			}, bind);
-		}
-
-		return result;
+	iterate: function(direction, filter, bind){
+		var node = this.current[direction](filter, bind);
+		if( node ) this.current = node;
+		return node;
 	},
 
-	findAfterCount: function(startNode, filter, bind, direction, count){
-		var lastMatch = null;
+	find: function(direction, loop, filter){
 
-		this.find(startNode, function(node){
-			if( filter.call(this, node) === true ){
-				lastMatch = node;
-				count--;
-				// on est arrivé au bout du compteur, stoppe la boucle
-				if( count < 1 ) return true;
-			}
-			else{
-				return false;
-			}
-		}, bind, direction);
+		var node = this.iterate(direction, filter || this.filter, this), current;
 
-		return lastMatch;
+		if( node == null && loop ){
+			current = this.current;
+			direction = this.findNext ? this.findFirst : this.findLast;
+			node = this.iterate(direction, function(node){
+				if( node == current ) return true;
+				return filter.call(this, node);
+			}, this);
+			if( node == current ) node = null;
+		}
+
+		return node;
+	},
+
+	findAfterCount: function(direction, count){
+		var node = null;
+
+		while( node = this.iterate(direction) ){
+			count--;
+			if( count < 1 ) break;
+		}
+
+		return node;
 	},
 
 	getName: function(node){
@@ -142,7 +141,7 @@ NS.Keynav = {
 		return parseInt(this.getAvailableHeight(node) / this.getHeight(), 10);
 	},
 
-	getTarget: function(node, e){
+	getTarget: function(e){
 		// need String(e.key) because the 0-9 key return numbers
 		var key = String(e.key);
 
@@ -160,7 +159,6 @@ NS.Keynav = {
 	onnav: Function.EMPTY,
 
 	go: function(node, e){
-		this.current = node;
 		e.preventDefault();
 		this.onnav(node, e);
 	},
@@ -174,18 +172,14 @@ NS.Keynav = {
 	},
 
 	handleEvent: function(e){
-		//this.current = this.focused;
 		this.keydown(e);
 	},
 
 	keydown: function(e){
-		var current = this.current, target;
+		var target = this.getTarget(e);
 
-		if( current ){
-			target = this.getTarget(current, e);
-			if( target ){
-				this.go(target, e);
-			}
+		if( target ){
+			this.go(target, e);
 		}
 	}	
 };
