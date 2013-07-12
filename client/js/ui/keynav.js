@@ -1,32 +1,31 @@
 NS.Keynav = {
 	// rootElement
 	root: null,
-	current: null,
+	//current: null,
 
 	// keynav
 	loop: false,
-	findNext: 'getNext',
-	findPrev: 'getPrevious',
-	findFirst: 'getFirst',
-	findLast: 'getLast',
+	findNext: 'next',
+	findPrev: 'previous',
+	findFirst: 'first',
+	findLast: 'last',
+	findLoop: 'node',
 
 	keys: {
 		home: function(){
-			this.iterator.current = this.root;
-			return this.iterate(this.findFirst);
+			return this.find(this.findFirst);
 		},
 
 		end: function(){
-			this.iterator.current = this.root;
-			return this.iterate(this.findLast);
+			return this.find(this.findLast);
 		},
 
 		left: function(){
-			return this.iterate('getParent');
+			return this.find('parent');
 		},
 
 		right: function(){
-			return this.iterate('getFirstChild');
+			return this.find('firstChild');
 		},
 
 		down: function(){
@@ -38,11 +37,11 @@ NS.Keynav = {
 		},
 
 		pageup: function(){
-			return this.findAfterCount(this.findPrev, this.getPageCount(this.iterator.current));
+			return this.findCount(this.findPrev);
 		},
 
 		pagedown: function(){
-			return this.findAfterCount(this.findNext, this.getPageCount(this.iterator.current));
+			return this.findCount(this.findNext);
 		},
 
 		'*': function(e){
@@ -52,7 +51,7 @@ NS.Keynav = {
 			}
 			else{
 				return this.find(this.findNext, true, function(node){
-					return this.filter(node) && this.startBy(node, e.key);
+					return this.startBy(node, e.key);
 				});
 			}
 		}
@@ -60,7 +59,7 @@ NS.Keynav = {
 
 	create: function(root){
 		this.root = root;
-		this.current = root;
+		this.iterator = this.createIterator();
 		this.attach();
 	},
 
@@ -68,49 +67,51 @@ NS.Keynav = {
 		this.detach();
 	},
 
+	createIterator: function(){
+		return NS.NodeIterator.new(this.root, this);
+	},
+
 	// naviguation allowed on child or on descendant
 	setChildOnly: function(bool){
 		if( bool ){
-			this.findNext = 'getNextSibling';
-			this.findPrev = 'getPreviousSibling';
-			this.findFirst = 'getFirstChild';
-			this.findLast = 'getLastChild';
+			this.findNext = 'nextSibling';
+			this.findPrev = 'previousSibling';
+			this.findFirst = 'firstChild';
+			this.findLast = 'lastChild';
+			this.findLoop = 'sibling';
 		}
 		else{
-			this.findNext = 'getNext';
-			this.findPrev = 'getPrevious';
-			this.findFirst = 'getFirst';
-			this.findLast = 'getLast';
+			this.findNext = 'next';
+			this.findPrev = 'previous';
+			this.findFirst = 'first';
+			this.findLast = 'last';
+			this.findLoop = 'node';
 		}
-	},
-
-	iterate: function(direction, filter, bind){
-		var node = this.current[direction](filter, bind);
-		if( node ) this.current = node;
-		return node;
 	},
 
 	find: function(direction, loop, filter){
+		if( !loop && !filter ){
+			if( direction == this.findFirst || direction == this.findLast ){
+				this.iterator.current = this.iterator.root;
+			}
 
-		var node = this.iterate(direction, filter || this.filter, this), current;
-
-		if( node == null && loop ){
-			current = this.current;
-			direction = this.findNext ? this.findFirst : this.findLast;
-			node = this.iterate(direction, function(node){
-				if( node == current ) return true;
-				return filter.call(this, node);
-			}, this);
-			if( node == current ) node = null;
+			return this.iterator[direction]();
 		}
 
-		return node;
+		if( loop ){
+			filter = filter || Function.TRUE;
+
+			return this.iterator.iterate(filter, this, direction, loop);
+		}
+
+		return null;
 	},
 
-	findAfterCount: function(direction, count){
-		var node = null;
+	findCount: function(direction){
+		var node = null, count = this.getPageCount(this.iterator.current);
 
-		while( node = this.iterate(direction) ){
+		while( this.find(direction) ){
+			node = this.iterator.current;
 			count--;
 			if( count < 1 ) break;
 		}
@@ -131,7 +132,7 @@ NS.Keynav = {
 
 	getAvailableHeight: function(node){
 		return node.element.offsetParent.clientHeight;
-	},	
+	},
 
 	startBy: function(node, letter){
 		return this.getName(node).charAt(0) == letter;
@@ -155,7 +156,10 @@ NS.Keynav = {
 		return null;
 	},
 
-	filter: Function.TRUE,
+	acceptNode: function(node){
+		return node != this.root;
+	},
+
 	onnav: Function.EMPTY,
 
 	go: function(node, e){
@@ -181,5 +185,5 @@ NS.Keynav = {
 		if( target ){
 			this.go(target, e);
 		}
-	}	
+	}
 };

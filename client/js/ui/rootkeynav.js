@@ -41,7 +41,7 @@ NS.RootKeynav = NS.Keynav.extend({
 		return height;
 	},
 
-	filter: function(node){
+	acceptNode: function(node){
 		return node != this.root && node.isVisible() && !node.hasClass('disabled');
 	},
 
