@@ -68,7 +68,7 @@ Object.append(Editor, Emitter);
 
 var popupSelector = new PopupSelector();
 
-server.exec('filesystem/fileinfo', 'img/tile', function(error, fileinfo){
+server.callAction('filesystem/fileinfo', 'img/tile', function(error, fileinfo){
 	if( error ) throw error;
 
 	fileinfo.name = 'img/tile';

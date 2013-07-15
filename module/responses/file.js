@@ -27,10 +27,12 @@ var exports = {
 
 		var level = 'info';
 		if( status == 404 ) level = 'warn';
-		if( 'x-requested-with' in this.request.headers && this.request.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest' ){
-			this.method = 'AJAX';
+		var method = this.method;
+		if( this.request.AJAX ){
+			method = 'AJAX';
 		}
-		logger.log(level, String.setType(this.method, 'function') +' '+ status +' '+ String.setType(this.file.path, 'path'));
+
+		logger.log(level, String.setType(method, 'function') +' '+ status +' '+ String.setType(this.file.path, 'path'));
 	},
 
 	write: function(data){

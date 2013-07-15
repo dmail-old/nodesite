@@ -1,77 +1,112 @@
 var exports = {
+	response: null,
+	request: null,
+	method: null,
+	url: null,
+	headers: null,
+	params: null,
+	action: null,
+
 	create: function(request, response){
 		this.response = response;
 		this.request = request;
 		this.method = this.request.method || 'GET';
 		this.url = this.request.parsedUrl;
+		this.action = this.url.pathname;
 		this.headers = {};
 
-		this.headers["content-type"] = 'application/json';
+		this.headers['content-type'] = 'application/json';
 
 		/*
-		on considéère que je recoit toujours du JSON
+		on considère que je recoit toujours du JSON
 		que ce soit en GET ou en POST
 		*/
 
-		if( this.method == 'GET' ){
-			var contentType = this.request.headers['content-type'];
-			var query = this.url.query;
-
-			query = require('querystring').parse(query);
-
-			try{
-				this.data = JSON.parse(query.json);
-			}
-			catch(e){
-				return this.error(e);
+		this.getParameters(function(error, params){
+			if( error ){
+				return this.sendError(error);
 			}
 
-			this.start(this.data);
+			this.params = params;
+			this.start();
+
+		}.bind(this));
+	},
+
+	getRequestEncoding: function(request){
+		var contentType, charsetIndex, charset, search;
+
+		search = 'charset=';
+		contentType = request.headers['content-type'];
+		charsetIndex = contentType.indexOf(search);
+
+		if( charsetIndex === -1 ){
+			charset = 'utf8';
 		}
-		else if( this.method == 'POST' ){
-			var post = '';
+		else{
+			charset = contentType.slice(charsetIndex + search.length);
+			if( charset == 'utf-8' ) charset = 'utf8';
+		}
 
-			this.request.setEncoding('utf8');
-			this.request.on('data', function(postData){
-				post+= postData;
-				logger.info('Paquet POST reçu "'+ postData + '"');
-				if( post.length > 1e6 ){
-					post = "";
-					this.sendError(new Error("Request Entity Too Large"));
-					this.request.connection.destroy();
-				}
-			}.bind(this));
-			this.request.on('end', function(){
-				// var contentType = this.request.headers['content-type'];
-				// if( contentType && contentType.startsWith('application/x-www-form-urlencoded') )
+		return charset;
+	},
 
-				post = require('querystring').parse(post);
+	parseQueryString: function(queryString, callback){
+		var params = require('querystring').parse(queryString);
 
+		if( params.format == 'json' ){
+			if( params.json ){
 				try{
-					this.data = JSON.parse(post.json);
+					params = JSON.parse(params.json);
 				}
 				catch(e){
-					return this.error(e);
+					return callback(e);
+				}
+			}
+			else{
+				params = null;
+			}
+		}
+
+		return callback(null, params);
+	},
+
+	getParameters: function(callback){
+		var queryString;
+
+		if( this.method == 'GET' ){
+			queryString = this.url.query;
+			return this.parseQueryString(queryString, callback);
+		}
+
+		if( this.method == 'POST' ){
+			queryString = '';
+			this.request.setEncoding(this.getRequestEncoding(this.request));
+			this.request.on('data', function(data){
+
+				queryString+= data;
+
+				if( queryString.length > 1e6 ){
+					callback(new Error('Request Entity Too Large'));
+					this.request.connection.destroy();
 				}
 
-				this.start(this.data);
+			}.bind(this));
+			this.request.on('end', function(){
+				return this.parseQueryString(queryString, callback);
 			}.bind(this));
 		}
 	},
 
-	start: function(data){
-		if( Array.isArray(data) ){
-			data = {
-				action: data[0],
-				args: data.slice(1)
-			};
-		}
+	start: function(){
+		var action = this.action;
+		var params = this.params;
 
-		if( typeof data == 'object' ){
-			if( data.action ){
-				logger.info('AJAX ' + String.setType(data.action, 'path') + ' ' + String.setType(data.args, 'b'));
-				return this.sendScriptResponse(root + '/action/' + data.action + '.js', data.args);
-			}
+		if( !action.endsWith('.js') ) action+= '.js';
+
+		if( typeof params == 'object' ){
+			logger.info('ACTION ' + String.setType(action, 'path') + ' ' + String.setType(params, 'b'));
+			return this.sendScriptResponse(root + '/' +  action, params);
 		}
 
 		this.error(new Error('server unable to understand the request'));
@@ -94,7 +129,8 @@ var exports = {
 			stack: error.stack
 		};
 
-		// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
+		// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas
+		// top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
 		// possible lorsque qu'on fait callScript
 		if( error instanceof SyntaxError ){
 			message.type = 'syntax';
@@ -128,8 +164,11 @@ var exports = {
 		}
 
 		global.applyScript(path, this, args, function(error, response){
-			if( error ) this.sendError(error);
-			else this.send(response);
+
+			if( error ) return this.sendError(error);
+
+			this.send(response);
+
 		}.bind(this));
 	},
 

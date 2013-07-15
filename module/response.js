@@ -54,7 +54,7 @@ var exports = {
 		request.parsedUrl = url;
 
 		if( 'x-requested-with' in request.headers && request.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest' ){
-			return this.handle('ajax');
+			request.AJAX = true;
 		}
 
 		pathname = url.pathname;
@@ -63,6 +63,9 @@ var exports = {
 
 		// page d'index demandée
 		if( pathname === '' || pathname === '/app.html' ) return this.handle('page');
+
+		// traite tous les fichier HTML comme des pages
+		if( pathname.endsWith('.html') ) return this.handle('page');
 
 		slash = pathname.indexOf('/');
 		// on demande quelque chose à la racine
@@ -74,11 +77,13 @@ var exports = {
 			return this.handle('file');
 		}
 
-		// traite tous les fichier HTML comme des pages
-		if( pathname.endsWith('.html') ) return this.handle('page');
+		dirname = pathname.substr(0, slash);
+
+		if( dirname == 'action' ){
+			return this.handle('action');
+		}
 
 		// pour le pathname "css/admin/file.css" on regarde si "client/css" est un dossier
-		dirname = pathname.substr(0, slash);
 		file = NS.File.new(root + '/client/' + dirname);
 		file.isDir(function(isdir){ return this.handle(isdir ? 'file' : 'page'); }.bind(this));
 	}

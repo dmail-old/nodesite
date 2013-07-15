@@ -25,7 +25,8 @@ window.server = {
 	createLink: function(){
 		var request = NS.Request.new({
 			link: 'chain',
-			method: 'post'
+			method: 'post',
+			format: 'json'
 		});
 
 		request.setHeader('Accept', 'application/json');
@@ -61,14 +62,14 @@ window.server = {
 
 	applyAction: function(action, args, callback){
 		this.link.send({
-			callback: callback,
-			data: {
-				json: JSON.stringify([action].concat(args))
-			}
+			url: location.origin + '/action/' + action,
+			format: 'json',
+			data: { json: JSON.stringify(args) },
+			callback: callback
 		});
 	},
 
-	exec: Function.createApplyAlias('applyAction', 1)
+	callAction: Function.createApplyAlias('applyAction', 1)
 };
 
 window.route = {
@@ -187,7 +188,7 @@ window.app = {
 
 		var self = this;
 
-		window.server.exec('go', filename, function(error, response){
+		window.server.callAction('go', filename, function(error, response){
 			if( error ) return console.error(error);
 
 			var type = this.getHeader('content-type');

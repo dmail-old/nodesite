@@ -2,7 +2,7 @@
 
 <script>
 
-window.server.exec('filesystem/readdir', 'client/example/', function(error, filenames){
+window.server.callAction('filesystem/readdir', 'client/example/', function(error, filenames){
 	filenames.forEach(function(filename){
 		var a = document.createElement('a');
 		a.href = 'example/' + filename;
