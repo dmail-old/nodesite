@@ -1,12 +1,14 @@
 NS.RootKeynav = NS.Keynav.extend({
 	keys: NS.Keynav.keys.extend({
 		enter: function(e){
-			this.current.active(e);
+			this.iterator.current.active(e);
 		},
 
 		left: function(e){
-			if( this.current.firstChild && this.current.hasClass('expanded') ){
-				this.current.contract(e);
+			var node = this.iterator.current;
+
+			if( node.firstChild && node.hasClass('expanded') ){
+				node.contract(e);
 				// lorsqu'il y a une scrollbar évite que le browser la déplace
 				e.preventDefault();
 				return null;
@@ -16,8 +18,10 @@ NS.RootKeynav = NS.Keynav.extend({
 		},
 
 		right: function(e){
-			if( this.current.firstChild && !this.current.hasClass('expanded') ){
-				this.current.expand(e);
+			var node = this.iterator.current;		
+
+			if( node.firstChild && !node.hasClass('expanded') ){
+				node.expand(e);
 				e.preventDefault();
 				return null;
 			}

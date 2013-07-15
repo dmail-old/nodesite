@@ -42,11 +42,11 @@ NS.Shortcut = {
 	},
 
 	find: function(e){
-		var shortcut, shortcuts = this.map;
+		var shortcut;
 
-		for(shortcut in shortcuts){
+		for( shortcut in this.map ){
 			if( this.match(shortcut, e) ){
-				return shortcuts[shortcut];
+				return shortcut;
 			}
 		}
 
@@ -54,12 +54,12 @@ NS.Shortcut = {
 	},
 
 	active: function(e){
-		var node = this.find(e);
+		var shortcut = this.find(e);
 
-		if( node ){
-			this.handler(node, e);
+		if( shortcut ){
+			this.handler(this.map[shortcut], e, shortcut);
 			return true;
-		}
+		}		
 		return false;
 	}
 };

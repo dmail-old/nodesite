@@ -1,7 +1,3 @@
-// faudras séparer cet API de l'API publique
-// car l'API publique pourras appeler NodeTraversal.nextSibling()
-// sans arguments ce qui par défaut feras console.log
-
 NS.NodeTraversal = {
 	nextSibling: function(fn, bind, includeSelf){
 		var node = includeSelf ? this : this.nextSibling;
@@ -36,7 +32,7 @@ NS.NodeTraversal = {
 		if( this.parentNode ){
 			node = this.parentNode[direction == 'nextSibling' ? 'firstChild' : 'lastChild'];
 
-			while(node != null && node != this){
+			while( node != null && node != this ){
 				if( fn.call(bind, node) === NS.Filter.ACCEPT ) return node;
 				node = node[direction];
 			}
@@ -145,3 +141,14 @@ NS.NodeTraversal = {
 		return NS.NodeTraversal.previous.call(node, fn, bind, this);
 	}
 };
+
+/*
+// public API
+NS.NodeTraversal = {};
+Object.eachPair(NS.TraversalMethods, function(name, method){
+	NS.NodeTraversal[name] = function(){
+		if( arguments.length === 0 ) return method.call(this, console.log, console);
+		else return method.apply(this, arguments);
+	};
+});
+*/

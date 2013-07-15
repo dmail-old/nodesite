@@ -1,7 +1,6 @@
 NS.Keynav = {
 	// rootElement
 	root: null,
-	//current: null,
 
 	// keynav
 	loop: false,
@@ -9,7 +8,6 @@ NS.Keynav = {
 	findPrev: 'previous',
 	findFirst: 'first',
 	findLast: 'last',
-	findLoop: 'node',
 
 	keys: {
 		home: function(){
@@ -78,14 +76,12 @@ NS.Keynav = {
 			this.findPrev = 'previousSibling';
 			this.findFirst = 'firstChild';
 			this.findLast = 'lastChild';
-			this.findLoop = 'sibling';
 		}
 		else{
 			this.findNext = 'next';
 			this.findPrev = 'previous';
 			this.findFirst = 'first';
 			this.findLast = 'last';
-			this.findLoop = 'node';
 		}
 	},
 

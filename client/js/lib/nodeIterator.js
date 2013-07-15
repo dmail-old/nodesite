@@ -9,6 +9,10 @@ NS.NodeIterator = {
 		this.filter = filter;
 	},
 
+	/*
+	allow to iterate in a direction (next, prev, nextSibling, prevSibling)
+	and loop from the beggining/end to get the first node for wich fn returns true
+	*/
 	iterate: function(fn, bind, direction, loop){
 		var node = null, start = this.current;
 
