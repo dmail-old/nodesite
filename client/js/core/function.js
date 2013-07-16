@@ -33,6 +33,9 @@ Function.argumentNames = function(fn){
 	if( 'argumentNames' in fn ){
 		names = fn.argumentNames;
 	}
+	else if( fn.length === 0 ){
+		names = fn.argumentNames = [];
+	}
 	else{
 		names = [];
 		source = fn.toString().replace(RegExp.COMMENTS, String.EMPTY);

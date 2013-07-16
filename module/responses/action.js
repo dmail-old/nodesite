@@ -13,103 +13,47 @@ var exports = {
 		this.method = this.request.method || 'GET';
 		this.url = this.request.parsedUrl;
 		this.action = this.url.pathname;
+		this.params = this.request.params;
 		this.headers = {};
 
 		this.headers['content-type'] = 'application/json';
 
-		/*
-		on considère que je recoit toujours du JSON
-		que ce soit en GET ou en POST
-		*/
-
-		this.getParameters(function(error, params){
-			if( error ){
-				return this.sendError(error);
-			}
-
-			this.params = params;
-			this.start();
-
-		}.bind(this));
-	},
-
-	getRequestEncoding: function(request){
-		var contentType, charsetIndex, charset, search;
-
-		search = 'charset=';
-		contentType = request.headers['content-type'];
-		charsetIndex = contentType.indexOf(search);
-
-		if( charsetIndex === -1 ){
-			charset = 'utf8';
-		}
-		else{
-			charset = contentType.slice(charsetIndex + search.length);
-			if( charset == 'utf-8' ) charset = 'utf8';
-		}
-
-		return charset;
-	},
-
-	parseQueryString: function(queryString, callback){
-		var params = require('querystring').parse(queryString);
-
-		if( params.format == 'json' ){
-			if( params.json ){
-				try{
-					params = JSON.parse(params.json);
-				}
-				catch(e){
-					return callback(e);
-				}
-			}
-			else{
-				params = null;
-			}
-		}
-
-		return callback(null, params);
-	},
-
-	getParameters: function(callback){
-		var queryString;
-
-		if( this.method == 'GET' ){
-			queryString = this.url.query;
-			return this.parseQueryString(queryString, callback);
-		}
-
-		if( this.method == 'POST' ){
-			queryString = '';
-			this.request.setEncoding(this.getRequestEncoding(this.request));
-			this.request.on('data', function(data){
-
-				queryString+= data;
-
-				if( queryString.length > 1e6 ){
-					callback(new Error('Request Entity Too Large'));
-					this.request.connection.destroy();
-				}
-
-			}.bind(this));
-			this.request.on('end', function(){
-				return this.parseQueryString(queryString, callback);
-			}.bind(this));
-		}
+		this.start();
 	},
 
 	start: function(){
 		var action = this.action;
 		var params = this.params;
+		var args;
+		var path = root + '/' + action;
 
 		if( !action.endsWith('.js') ) action+= '.js';
+		if( params instanceof Array ){
+			args = params;
+		}
+		else if( typeof params == 'object' ){
+			args = [];
+			try{
+				var module = require(path);
+				var names = Function.argumentNames(module);
+				var i = 0, j = names.length, name;
 
-		if( typeof params == 'object' ){
-			logger.info('ACTION ' + String.setType(action, 'path') + ' ' + String.setType(params, 'b'));
-			return this.sendScriptResponse(root + '/' +  action, params);
+				for(;i<j;i++){
+					name = names[i];
+					args.push(params[name]);
+				}
+			}
+			catch(e){
+
+			}
+		}
+		else{
+			args = [];
 		}
 
-		this.error(new Error('server unable to understand the request'));
+		logger.info('ACTION ' + String.setType(action, 'path') + ' ' + String.setType(args, 'b'));
+
+		return this.sendScriptResponse(path, args);
 	},
 
 	send: function(message){

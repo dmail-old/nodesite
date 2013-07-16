@@ -1,3 +1,4 @@
+
 module.exports = function(path, content, encoding, callback){
 
 	if( !['ascii', 'utf8', 'utf16le', 'ucs2', 'base64', 'binary', 'hex'].contains(encoding) ){
