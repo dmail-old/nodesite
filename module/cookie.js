@@ -16,13 +16,27 @@ module.exports = {
 	},
 
 	parse: function(str, name){
-		var match;
+		if( arguments.length == 1 ){
+			var cookies = str.split(';'), i = 0, j = cookies.length, pair;
+			var map = {};
 
-		if( str ){
-			match = str.match(this.getRegexp(name));
-			return match ? match[1] : null;
+			for(;i<j;i++){
+				pair = cookies[i].split('=');
+				map[pair[0].trim()] = (pair[1] || '').trim();
+			}
+
+			return map;
 		}
-		return null;
+		else{
+			var match;
+
+			if( str ){
+				match = str.match(this.getRegexp(name));
+				return match ? match[1] : null;
+			}
+
+			return null;
+		}
 	},
 
 	stringify: function(cookie){

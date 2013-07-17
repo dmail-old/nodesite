@@ -19,12 +19,13 @@ var exports = {
 	},
 
 	create: function(demand){
-		var htmlFile = NS.File.new(root + '/client/app.html'), html;
+		this.demand = demand;
+		require('fs').readFile(root + '/client/app.html', this.onread.bind(this));
+	},
 
-		try{
-			html = String(htmlFile.readSync());
-		}catch(e){
-			return require('./error.js').new(demand, e);
+	onread: function(error, html){
+		if( error ){
+			return require('./error.js').new(this.demand, error);
 		}
 
 		var metas = {
@@ -58,14 +59,11 @@ var exports = {
 			})
 		};
 
-		logger.info('Send app.html');
-
-		demand.writeHead(200, {
+		this.demand.writeHead(200, {
 			'content-type': 'text/html'
 		});
-		demand.write(html.parse(data));
-		demand.end();
-
+		this.demand.write(html.toString().parse(data));
+		this.demand.end();
 	},
 
 	parseStyle: function(name){

@@ -51,7 +51,6 @@ global.logger = require(root + '/module/logger.js');
 //global.DB = require(root + '/db/db.js');
 var http = require('http');
 var Crypto = require('crypto');
-var Cookie = require('./module/cookie.js');
 
 global.applyScript = function(path, bind, args, callback){
 	if( typeof callback != 'function' ) throw new Error('callback expected');
