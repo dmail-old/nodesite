@@ -18,13 +18,13 @@ var exports = {
 		favicon: '<link href="#" type="image/x-icon" rel="shortcut icon"/>'
 	},
 
-	create: function(request, response){
+	create: function(demand){
 		var htmlFile = NS.File.new(root + '/client/app.html'), html;
 
 		try{
 			html = String(htmlFile.readSync());
 		}catch(e){
-			return require('./error.js').new(request, response, e);
+			return require('./error.js').new(demand, e);
 		}
 
 		var metas = {
@@ -59,9 +59,13 @@ var exports = {
 		};
 
 		logger.info('Send app.html');
-		response.writeHead(200, {'content-type': 'text/html'});
-		response.write(html.parse(data));
-		response.end();
+
+		demand.writeHead(200, {
+			'content-type': 'text/html'
+		});
+		demand.write(html.parse(data));
+		demand.end();
+
 	},
 
 	parseStyle: function(name){

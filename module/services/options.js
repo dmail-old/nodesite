@@ -1,5 +1,5 @@
 var exports = {
-	create: function(request, response){
+	create: function(demand){
 		var methodAllowed = [], headerAllowed = [];
 
 		// methods
@@ -24,15 +24,15 @@ var exports = {
 		headerAllowed.push('connection');
 		*/
 
-		response.writeHead(204, 'No Content', {
-			"access-control-allow-origin": request.headers.origin || '*',
+		demand.writeHead(204, {
+			"access-control-allow-origin": demand.request.headers.origin || '*',
 			"access-control-allow-methods": methodAllowed.join(', '),
 			"access-control-allow-headers": headerAllowed.join(', '),
 			"access-control-max-age": 10, // Seconds
 			"content-length": 0
 		});
 
-		response.end();
+		demand.end();
 	}
 };
 

@@ -1,51 +1,8 @@
 var exports = {
-	status: 404,
-	headers: null,
-	url: null,
-	method: null,
 
-	create: function(request, response){
-		this.response = response;
-		this.request = request;
-		this.method = this.request.method || 'GET';
-		this.url = this.request.parsedUrl;
-		this.headers = {};
-
-		this.start(this.url.pathname);
-	},
-
-	writeHead: function(status, headers){
-		if( status != 200 ){
-			var codes = require('http').STATUS_CODES;
-			if( !(status in codes) ) status = 500;
-			var desc = codes[status];
-			this.response.writeHead(status, desc, headers);
-		}
-		else{
-			this.response.writeHead(status, headers);
-		}
-
-		var level = 'info';
-		if( status == 404 ) level = 'warn';
-		var method = this.method;
-		if( this.request.AJAX ){
-			method = 'AJAX';
-		}
-
-		logger.log(level, String.setType(method, 'function') +' '+ status +' '+ String.setType(this.file.path, 'path'));
-	},
-
-	write: function(data){
-		this.response.write(data);
-	},
-
-	writeEnd: function(status){
-		this.writeHead(status || this.status);
-		this.end();
-	},
-
-	end: function(){
-		this.response.end();
+	create: function(demand){
+		this.demand = demand;
+		this.start(demand.url.pathname);
 	},
 
 	start: function(path){
@@ -57,10 +14,10 @@ var exports = {
 
 		if( extension.charAt(0) == '.' ) extension = extension.substr(1);
 
-		this.headers['content-type'] = config.getMimetype(file.path);
+		this.demand.setHeader('content-type', config.getMimetype(file.path));
 
 		if( extension == 'js' || extension == 'css' ){
-			acceptEncoding = this.request.headers['accept-encoding'];
+			acceptEncoding = this.demand.request.headers['accept-encoding'];
 
 			/* Note: this is not a conformant accept-encoding parser.
 			See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
@@ -68,7 +25,7 @@ var exports = {
 			if( acceptEncoding && acceptEncoding.match(/\bgzip\b/) ){
 				// essaye de délivrer le fichier en version compréssé
 				file.setPath(file.path + '.gz');
-				this.headers['content-encoding'] = 'gzip';
+				this.demand.setHeader('content-encoding', 'gzip');
 				this.gz = true;
 			}
 		}
@@ -82,37 +39,37 @@ var exports = {
 			// si la version gz existe pas, tente de délivrer la version normale
 			if( this.gz ){
 				delete this.gz;
-				delete this.headers['content-encoding'];
+				this.demand.removeHeader('content-encoding');
 				this.file.setPathPart('extension', '');
 				this.file.exists(this.exists.bind(this));
 				return;
 			}
-			return this.writeEnd(404);
+			return this.demand.writeEnd(404);
 		}
 		this.file.stat(this.stat.bind(this));
 	},
 
 	stat: function(error, stats){
 		// erreur pendant la récupération de infos du fichier
-		if( error ) return this.writeEnd(500);
+		if( error ) return this.demand.error(error);
 		// seul les fichiers sont autorisé
-		if( !stats.isFile() ) return this.writeEnd(403);
+		if( !stats.isFile() ) return this.demand.writeEnd(403);
 
 		var modified = true;
 		try{
-			var mtime = new Date(this.request.headers['if-modified-since']);
+			var mtime = new Date(this.demand.request.headers['if-modified-since']);
 			if( mtime >= stats.mtime ) modified = false;
 		}
 		catch(e){
 			console.warn(e);
 		}
 		// dit au navigateur que le fichier n'a pas changé
-		if( !modified ) return this.writeEnd(304);
+		if( !modified ) return this.demand.writeEnd(304);
 
-		this.headers['last-modified'] = stats.mtime;
-		this.headers['content-length'] = stats.size;
+		this.demand.setHeader('last-modified', stats.mtime);
+		this.demand.setHeader('content-length', stats.size);
 		// évite que chrome mette en cache et réutilise sans redemander au serveur les fichier HTML qu'on lui envoit
-		this.headers['cache-control'] = 'no-cache';
+		this.demand.setHeader('cache-control', 'no-cache');
 
 		if( ['.gz', '.zip', '.mp3'].contains(this.file.getExtension()) ){
 			this.stream();
@@ -123,10 +80,10 @@ var exports = {
 	},
 
 	stream: function(){
-		this.writeHead(200, this.headers);
+		this.demand.writeHead(200);
 
 		function ondata(data){
-			var flushed = this.write(data);
+			var flushed = this.demand.write(data);
 			// Stoppe la lecture du flux lorsque la réponse est saturé
 			if( !flushed ) this.streaming.pause();
 		}
@@ -135,7 +92,9 @@ var exports = {
 			this.streaming.resume();
 		}
 
-		var end = this.end;
+		function end(){
+			this.demand.end();
+		}
 
 		this.streaming = this.file.readStream();
 		this.streaming.on('data', ondata.bind(this));
@@ -146,11 +105,9 @@ var exports = {
 
 	serve: function(){
 		function read(error, data){
-			if( error ) return this.writeEnd(500);
+			if( error ) return this.demand.error(error);
 
-			this.writeHead(200, this.headers);
-			this.write(data);
-			this.end();
+			this.demand.writeEnd(200, data);
 		}
 
 		this.file.read(read.bind(this));

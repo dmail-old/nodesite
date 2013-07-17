@@ -1,5 +1,4 @@
 module.exports = function(){
-	this.send({
-		html: String(FS.readFileSync('./client/html/index.html'))
-	});
+	this.setHeader('content-type', 'text/html');
+	this.send(String(FS.readFileSync('./client/html/index.html')));
 };

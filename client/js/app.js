@@ -11,9 +11,16 @@ window.server = {
 				return this.emit('handle', e);
 			}
 
-			if( json == null ) return this.emit('handle', new Error('empty json'));
-			if( json.error ) return this.emit('handle', new Error('SERVER : ' + json.message));
-			this.emit('handle', null, json);
+			if( json == null ){
+				return this.emit('handle', new Error('empty json'));
+			}
+			if( json.status != 200 ){
+				return this.emit('handle', new Error('SERVER : ' + json.data));
+			}
+
+			this.json = json;
+
+			this.emit('handle', null, json.data);
 		},
 
 		'text/html': function(){
@@ -193,11 +200,12 @@ window.app = {
 
 			var type = this.getHeader('content-type');
 
+			if( type == 'application/json' ){
+				type = this.json.headers['content-type'];
+			}
+
 			if( type == 'text/html' ){
 				self.setPage(response);
-			}
-			else if( response.html ){
-				self.setPage(response.html);
 			}
 		});
 	},

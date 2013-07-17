@@ -3,6 +3,7 @@
 <script>
 
 window.server.callAction('filesystem/readdir', 'client/example/', function(error, filenames){
+
 	filenames.forEach(function(filename){
 		var a = document.createElement('a');
 		a.href = 'example/' + filename;
@@ -12,7 +13,6 @@ window.server.callAction('filesystem/readdir', 'client/example/', function(error
 		$('links').appendChild(document.createElement('br'));
 	});
 
-	console.log(filenames);
 });
 
 </script>
