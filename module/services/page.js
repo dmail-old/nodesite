@@ -23,6 +23,16 @@ var exports = FileService.extend({
 		this.start('app.html');
 	},
 
+	// always modified as we parse the content
+	isModified: function(){
+		return true;
+	},
+
+	// not supported because we need to read whole content in order to parse it
+	useStream: function(){
+		return false;
+	},
+
 	onread: function(error, html){
 		if( error ) return this.demand.error(error);
 
@@ -57,8 +67,16 @@ var exports = FileService.extend({
 			})
 		};
 
+		html = html.toString(config.encoding);
+		html = html.parse(data);
+
+		// this kind of header must be set for all textfile containing utf8 character?
+		this.demand.setHeader('content-type', 'text/html; charset=' + config.encoding);
+		// size is different of the filesize because im parsing content
+		this.demand.setHeader('content-length', Buffer.byteLength(html, config.encoding));
+
 		this.demand.writeHead(200);
-		this.demand.write(html.toString().parse(data));
+		this.demand.write(html);
 		this.demand.end();
 	},
 

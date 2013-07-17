@@ -19,26 +19,26 @@ Object.append(String, {
 	},
 	types: {},
 	setters: {},
-	
+
 	defineType: function(type, properties){
 		if( typeof properties == 'string' ) properties = {color: properties};
-		
+
 		this.types[type] = properties;
 		// this.setters[type] = function(str){ return String.setType(str, type); };
 	},
-	
+
 	setType: function(str, type){
 		var key, properties = this.types[type], style, tag;
-		
+
 		for(key in properties){
 			style = properties[key];
 			tag = this.tags[style];
 			if( tag ) str = tag[0] + str + tag[1];
 		}
-		
+
 		return str;
 	},
-	
+
 	removeTypes: function(str){
 		return String(str).replace(/\u001b\[\d+m/g, '');
 	}

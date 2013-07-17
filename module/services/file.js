@@ -49,33 +49,50 @@ var exports = {
 		this.file.stat(this.stat.bind(this));
 	},
 
+	isModified: function(mtime){
+		var date, modified = this.demand.request.headers['if-modified-since'];
+
+		if( typeof modified == 'string' ){
+			try{
+				date = new Date(modified);
+			}
+			catch(e){
+				return true;
+			}
+
+			return mtime > date;
+		}
+		else{
+			return true;
+		}
+	},
+
+	useStream: function(){
+		return true;
+	},
+
 	stat: function(error, stats){
 		// erreur pendant la récupération de infos du fichier
 		if( error ) return this.demand.error(error);
 		// seul les fichiers sont autorisé
 		if( !stats.isFile() ) return this.demand.writeEnd(403);
 
-		var modified = true;
-		try{
-			var mtime = new Date(this.demand.request.headers['if-modified-since']);
-			if( mtime >= stats.mtime ) modified = false;
-		}
-		catch(e){
-			console.warn(e);
+		if( this.isModified(stats.mtime) ){
+			this.demand.setHeader('last-modified', stats.mtime);
+			this.demand.setHeader('content-length', stats.size);
+			// évite que chrome mette en cache et réutilise sans redemander au serveur les fichier HTML qu'on lui envoit
+			this.demand.setHeader('cache-control', 'no-cache');
+
+			if( this.useStream() ){
+				this.stream();
+			}
+			else{
+				this.serve();
+			}
 		}
 		// dit au navigateur que le fichier n'a pas changé
-		if( !modified ) return this.demand.writeEnd(304);
-
-		this.demand.setHeader('last-modified', stats.mtime);
-		this.demand.setHeader('content-length', stats.size);
-		// évite que chrome mette en cache et réutilise sans redemander au serveur les fichier HTML qu'on lui envoit
-		this.demand.setHeader('cache-control', 'no-cache');
-
-		if( ['.gz', '.zip', '.mp3'].contains(this.file.getExtension()) ){
-			this.stream();
-		}
 		else{
-			this.serve();
+			return this.demand.writeEnd(304);
 		}
 	},
 
