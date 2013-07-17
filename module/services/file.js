@@ -117,7 +117,7 @@ var exports = {
 		this.streaming.on('data', ondata.bind(this));
 		this.streaming.on('end', end.bind(this));
 		// redémarre le streaming quand la réponse est de nouveau prète
-		this.response.on('drain', ondrain.bind(this));
+		this.demand.response.on('drain', ondrain.bind(this));
 	},
 
 	onread: function(error, data){
