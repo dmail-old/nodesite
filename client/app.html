@@ -48,14 +48,17 @@ Une fois tout ceci fait on appele app.init pour afficher la page correspondante
 	</head>
 
 	<body>
-		{scripts}
 		<script>
+
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){
 				// setTimeout is to avoid initial popstate event
 				setTimeout(function(){ window.app.init.call(window.app); }, 0);
 			};
+
 		</script>
+
+		{scripts}
 	</body>
 
 </html>

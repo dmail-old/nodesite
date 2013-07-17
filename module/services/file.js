@@ -103,14 +103,13 @@ var exports = {
 		this.response.on('drain', ondrain.bind(this));
 	},
 
+	onread: function(error, data){
+		if( error ) return this.demand.error(error);
+		this.demand.writeEnd(200, data);
+	},
+
 	serve: function(){
-		function read(error, data){
-			if( error ) return this.demand.error(error);
-
-			this.demand.writeEnd(200, data);
-		}
-
-		this.file.read(read.bind(this));
+		this.file.read(this.onread.bind(this));
 	}
 };
 

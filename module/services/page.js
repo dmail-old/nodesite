@@ -1,6 +1,6 @@
-var exports = {
-	Url: require('url'),
-	Cookie: require(root + '/module/cookie.js'),
+var FileService = require('./file');
+
+var exports = FileService.extend({
 	// metas utilisant l'attribut "http-equiv"
 	http_equiv: [
 		'content-language',
@@ -20,13 +20,11 @@ var exports = {
 
 	create: function(demand){
 		this.demand = demand;
-		require('fs').readFile(root + '/client/app.html', this.onread.bind(this));
+		this.start('app.html');
 	},
 
 	onread: function(error, html){
-		if( error ){
-			return require('./error.js').new(this.demand, error);
-		}
+		if( error ) return this.demand.error(error);
 
 		var metas = {
 			'charset': config.encoding,
@@ -59,9 +57,7 @@ var exports = {
 			})
 		};
 
-		this.demand.writeHead(200, {
-			'content-type': 'text/html'
-		});
+		this.demand.writeHead(200);
 		this.demand.write(html.toString().parse(data));
 		this.demand.end();
 	},
@@ -125,7 +121,7 @@ var exports = {
 	},
 
 	setTagUrl: function(tag, path){
-		var url = this.Url.format({
+		var url = require('url').format({
 			protocol: config.protocol,
 			host: config.host + (config.port ? ':' + config.port : ''),
 			pathname: path
@@ -133,6 +129,6 @@ var exports = {
 
 		return tag.replace('#', url);
 	}
-};
+});
 
 module.exports = exports;
