@@ -1,10 +1,6 @@
-/* global DB */
-
 /*
 
 NOTE
-
-
 
 TODO
 
