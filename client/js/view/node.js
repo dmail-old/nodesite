@@ -1,7 +1,7 @@
 NS.viewDocument.define('node', NS.View.extend({
 	template: '\
 		<li class="node">\
-			<div>\
+			<div draggable="true">\
 				<ins class="tool"></ins>\
 				<span class="name">{name}</span>\
 			</div>\

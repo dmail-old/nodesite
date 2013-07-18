@@ -1,7 +1,3 @@
-/*
-
-*/
-
 Element.implement(NS.NodeFinder);
 
 document.getFirst = document.html.getFirst.bind(document.html);

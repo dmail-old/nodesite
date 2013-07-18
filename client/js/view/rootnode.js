@@ -20,6 +20,10 @@ NS.viewDocument.define('rootnode', NS.View.extend({
 		return this.element;
 	},
 
+	getHeight: function(node){
+		return node.element.getFirstChild('div').measure('size', 'y') - 1;
+	},
+
 	//expand
 	insertChildren: function(node, element){
 		node.childNodes.forEach(function(child){ child.insertElement(element); });

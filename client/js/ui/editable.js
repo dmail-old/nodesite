@@ -8,11 +8,22 @@ NS.Editable = {
 		this.element = element;
 		this.listen.apply(this, this.events);
 		this.element.setAttribute('contenteditable', true);
+
+		// draggable incompatible width contenteditable
+		while(element = element.parentNode){
+			if( element.hasAttribute('draggable') ){
+				this.draggableParent = element;
+				element.removeAttribute('draggable');
+				break;
+			}
+		}
+
 		this.element.focus();
 	},
 
 	destroy: function(){
 		this.element.removeAttribute('contenteditable');
+		if( this.draggableParent ) this.draggableParent.setAttribute('draggable', true);
 		this.stopListening.apply(this, this.events);
 	},
 
@@ -74,7 +85,9 @@ NS.Editable = {
 
 	keydown: function(e){
 		if( e.key == 'esc' ){
-			if( this.hasChanged() ) document.execCommand('undo');
+			if( this.hasChanged() ){
+				document.execCommand('undo', false, null);
+			}
 			this.element.blur();
 		}
 		else if( e.key == 'enter' ){

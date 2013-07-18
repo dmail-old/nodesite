@@ -9,7 +9,7 @@ NS.RootKeynav = NS.Keynav.extend({
 		left: function(e){
 			var node = this.iterator.current;
 
-			if( node.firstChild && node.hasClass('expanded') ){
+			if( node != this.root && node.firstChild && node.hasClass('expanded') ){
 				node.contract(e);
 				// lorsqu'il y a une scrollbar évite que le browser la déplace
 				e.preventDefault();
@@ -22,7 +22,7 @@ NS.RootKeynav = NS.Keynav.extend({
 		right: function(e){
 			var node = this.iterator.current;
 
-			if( node.firstChild && !node.hasClass('expanded') ){
+			if( node != this.root && node.firstChild && !node.hasClass('expanded') ){
 				node.expand(e);
 				e.preventDefault();
 				return null;
@@ -36,15 +36,8 @@ NS.RootKeynav = NS.Keynav.extend({
 		return node.model.get('name');
 	},
 
-	getHeight: function(){
-		var node = this.root.firstChild, height = 0;
-
-		// on fait -1 parce que dans le CSS on a mit un margin-top:-1px pour éviter le chevauchement des bords des noeuds
-		if( node ){
-			height = node.element.getFirstChild('div').measure('size', 'y') - 1;
-		}
-
-		return height;
+	getHeight: function(node){
+		return node.element.getFirstChild('div').measure('size', 'y') - 1;
 	},
 
 	acceptNode: function(node){

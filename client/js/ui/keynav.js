@@ -108,7 +108,17 @@ NS.Keynav = {
 	},
 
 	findCount: function(direction){
-		var node = null, count = this.getPageCount(this.iterator.current);
+		var node = null, count, from = this.iterator.current;
+
+		if( from == this.root ){
+			if( this.root.firstChild ){
+				from = this.root.firstChild;
+			}
+			else{
+				return null;
+			}
+		}
+		count = this.getPageCount(from);
 
 		while( this.find(direction) ){
 			node = this.iterator.current;
@@ -123,11 +133,8 @@ NS.Keynav = {
 		return node.nodeName;
 	},
 
-	getHeight: function(){
-		if( this.root.firstChild ){
-			return this.root.firstChild.measure('size', 'y');
-		}
-		return 0;
+	getHeight: function(node){
+		return node.measure('size', 'y');
 	},
 
 	getAvailableHeight: function(node){
@@ -139,7 +146,7 @@ NS.Keynav = {
 	},
 
 	getPageCount: function(node){
-		return parseInt(this.getAvailableHeight(node) / this.getHeight(), 10);
+		return parseInt(this.getAvailableHeight(node) / this.getHeight(node), 10);
 	},
 
 	getTarget: function(e){
