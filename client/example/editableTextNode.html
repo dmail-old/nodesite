@@ -1,0 +1,22 @@
+<style>
+#test[contentEditable]:focus{
+	background-color: white;
+}
+</style>
+
+<span id="test" data-selectonfocus="true">
+	coucou.png
+</span>
+
+<script>
+
+$('test').contentEditable = true;
+NS.Editable.new($('test'));
+
+window.addEventListener('keydown', function(e){
+	if( e.key == 'f2' ){
+		$('test').focus();
+	}
+});
+
+</script>

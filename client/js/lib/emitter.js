@@ -42,7 +42,6 @@ NS.Emitter = {
 
 		if( name == null ){
 			for(name in listeners) this.removeListener(name, listener);
-			if( !listener ) this.deleteEvents();
 		}
 		else if( listener == null ){
 			if( name in listeners ){

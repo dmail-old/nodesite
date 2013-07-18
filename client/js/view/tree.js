@@ -4,7 +4,6 @@ prochaines étapes:
 
 restaurer sort (possibilité de trier les enfants d'un noeud)
 restaurer le drag&drop
-restaurer le rename par f2
 restaurer memory
 
 */
@@ -40,7 +39,9 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 				node.toggleState('expanded', e);
 			}
 
-			node.focus(e);			
+			this.edit(node);
+
+			node.focus(e);
 		},
 
 		dblclick: function(e){
@@ -50,6 +51,14 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 
 				if( node != this ) node.toggleState('expanded', e);
 			}
+		},
+
+		focus: function(e){
+
+		},
+
+		blur: function(e){
+
 		}
 	},
 	lighted: null,
@@ -64,8 +73,8 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		});
 
 		// lighted
-		// ne peut t-on pas s'inspirer de ça: 
 
+		// ne peut t-on pas s'inspirer de ça?
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
 		// section manipulating DOM Node
 		this.on({
@@ -145,5 +154,9 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 		}
 
 		return level;
+	},
+
+	edit: function(node){
+		NS.Editable.new(node.getDom('span'));
 	}
 }));

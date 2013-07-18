@@ -27,7 +27,7 @@ var config = {
 
 // fichier css qu'on donne au client
 config.css = [
-	"site", "resize", "box", "popup", "selectionRectangle", "root", "menu", "tree", "selector", "editor"
+	"site", "resize", "box", "popup", "selectionRectangle", "node", "root", "menu", "tree", "selector", "editor"
 ];
 
 // fichier js qu'on donne au client
@@ -57,7 +57,7 @@ config.js = [].concat(
 		"request"
 	].prefix('browser/'),
 	[
-		"selection", "keynav", "rootkeynav", "shortcut"
+		"selection", "keynav", "rootkeynav", "shortcut", "editable"
 	].prefix('ui/'),
 	[
 		"model", "view", "template", "controller"

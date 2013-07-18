@@ -31,12 +31,16 @@ NS.Selection = {
 
 	attach: function(){
 		this.root.addClass('unselectable');
-		this.events.forEach(function(name){ this.root.addEventListener(name, this); }, this);
+		for( var i in this.events ){
+			this.root.addEventListener(this.events[i], this);
+		}
 	},
 
 	detach: function(){
 		this.root.removeClass('unselectable');
-		this.events.forEach(function(name){ this.root.removeEventListener(name, this); }, this);
+		for( var i in this.events ){
+			this.root.removeEventListener(this.events[i], this);
+		}
 	},
 
 	mousedown: function(e){

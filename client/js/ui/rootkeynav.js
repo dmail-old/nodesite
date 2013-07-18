@@ -1,7 +1,9 @@
 NS.RootKeynav = NS.Keynav.extend({
 	keys: NS.Keynav.keys.extend({
 		enter: function(e){
-			this.iterator.current.active(e);
+			if( this.iterator.current != this.root ){
+				this.iterator.current.active(e);
+			}
 		},
 
 		left: function(e){
@@ -18,7 +20,7 @@ NS.RootKeynav = NS.Keynav.extend({
 		},
 
 		right: function(e){
-			var node = this.iterator.current;		
+			var node = this.iterator.current;
 
 			if( node.firstChild && !node.hasClass('expanded') ){
 				node.expand(e);

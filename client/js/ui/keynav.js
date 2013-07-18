@@ -65,6 +65,10 @@ NS.Keynav = {
 		this.detach();
 	},
 
+	acceptNode: function(node){
+		return node != this.root;
+	},
+
 	createIterator: function(){
 		return NS.NodeIterator.new(this.root, this);
 	},
@@ -152,27 +156,11 @@ NS.Keynav = {
 		return null;
 	},
 
-	acceptNode: function(node){
-		return node != this.root;
-	},
-
 	onnav: Function.EMPTY,
 
 	go: function(node, e){
 		e.preventDefault();
 		this.onnav(node, e);
-	},
-
-	attach: function(){
-		this.root.addEventListener('keydown', this);
-	},
-
-	detach: function(){
-		this.root.removeEventListener('keydown', this);
-	},
-
-	handleEvent: function(e){
-		this.keydown(e);
 	},
 
 	keydown: function(e){
@@ -181,5 +169,24 @@ NS.Keynav = {
 		if( target ){
 			this.go(target, e);
 		}
+	},
+
+	handleEvent: function(e){
+		if( e.target.tagName.toLowerCase() == 'input' ){
+			return;
+		}
+		if( e.target.hasAttribute('contenteditable') ){
+			return;
+		}
+
+		this.keydown(e);
+	},
+
+	attach: function(){
+		this.root.addEventListener('keydown', this);
+	},
+
+	detach: function(){
+		this.root.removeEventListener('keydown', this);
 	}
 };

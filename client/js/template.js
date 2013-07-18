@@ -1,5 +1,4 @@
-
-var TextNodeDirective = {
+var Directive = {
 	path: null,
 	node: null,
 
@@ -7,6 +6,8 @@ var TextNodeDirective = {
 		this.path = path;
 		this.node = node;
 	},
+
+	link: Function.IMPLEMENT,
 
 	findClone: function(cloneNode){
 		var parts = this.path.split('.'), i = 0, j = parts.length;
@@ -21,12 +22,14 @@ var TextNodeDirective = {
 		return cloneNode;
 	},
 
-	getValue: function(){
-		return this.node.nodeValue;
-	},
+	linkClone: function(cloneNode, view){
+		this.link(this.findClone(cloneNode), view);
+	}
+};
 
+var TextNodeDirective = Directive.extend({
 	getProperty: function(){
-		var value = this.getValue();
+		var value = this.node.nodeValue;
 		return value.substring(1, value.length - 1);
 	},
 
@@ -36,20 +39,18 @@ var TextNodeDirective = {
 
 	link: function(node, view){
 		view.watch(this.getProperty(), this.update, node);
-	},
-
-	linkClone: function(cloneNode, view){
-		this.link(this.findClone(cloneNode), view);
 	}
-};
+});
 
-var AttributeDirective = TextNodeDirective.extend({
-	create: function(){
-		TextNodeDirective.create.apply(this, arguments);
+var AttributeDirective = Directive.extend({
+	attr: null,
+	create: function(path, attr){
+		Directive.create.apply(this, arguments);
+		this.attr = attr;
 
 		// avoid browser to request a wrong src
-		if( this.node.name == 'src' ){
-			var value = this.node.value;
+		if( attr.name == 'src' ){
+			var value = attr.value;
 			this.getValue = function(){
 				return value;
 			};
@@ -57,22 +58,39 @@ var AttributeDirective = TextNodeDirective.extend({
 				this.value = value || Image.EMPTY;
 			};
 
-			this.update.call(this.node, Image.EMPTY);
+			this.update.call(this.attr, Image.EMPTY);
 		}
 	},
 
-	getValue: function(){
-		return this.node.value;
+	findClone: function(cloneNode){
+		cloneNode = Directive.findClone.call(this, cloneNode);
+		cloneNode = cloneNode.attributes.getNamedItem(this.attr.name);
+		return cloneNode;
+	},
+
+	getProperty: function(){
+		var value = this.attr.value;
+		return value.substring(1, value.length - 1);
 	},
 
 	update: function(value, oldvalue){
 		this.value = value;
 	},
 
-	findClone: function(cloneNode){
-		cloneNode = TextNodeDirective.findClone.call(this, cloneNode);
-		cloneNode = cloneNode.attributes.getNamedItem(this.node.name);
-		return cloneNode;
+	link: TextNodeDirective.link
+});
+
+var EventDirective = Directive.extend({
+	getName: function(){
+		return this.node.name.slice('data-'.length);
+	},
+
+	getValue: function(){
+		return this.node.value;
+	},
+
+	link: function(node, view){
+		node.addEventListener(this.getName(), view[this.getValue()].bind(view));
 	}
 });
 
@@ -112,6 +130,13 @@ NS.Template = {
 			j = attributes.length;
 			for(;i<j;i++){
 				attr = attributes[i];
+
+				if( attr.name == 'data-click' ){
+					directive = EventDirective.new(path, attr);
+					directives.push(directive);
+					continue;
+				}
+
 				value = attr.value;
 
 				if( value.startsWith('{') && value.endsWith('}') ){
