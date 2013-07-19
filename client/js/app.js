@@ -177,6 +177,7 @@ window.app = {
 	},
 
 	setPage: function(html){
+		//$('page').innerHTML = html;
 		document.body.innerHTML = html;
 		html.stripScripts(true); // évalue le javascript se trouvant dans le html
 	},

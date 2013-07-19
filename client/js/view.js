@@ -227,10 +227,12 @@ NS.View = {
 
 	removeClass: function(name){
 		this.element.classList.remove(name);
+		return this;
 	},
 
 	toggleClass: function(name, force){
 		this.element.classList.toggle(name, force);
+		return this;
 	},
 
 	hasAttribute: function(name){
@@ -239,6 +241,7 @@ NS.View = {
 
 	setAttribute: function(name, value){
 		this.element.setProperty(name, value);
+		return this;
 	},
 
 	getAttribute: function(name){
@@ -247,6 +250,7 @@ NS.View = {
 
 	setStyle: function(name, value){
 		this.element.setStyle(name, value);
+		return this;
 	},
 
 	getStyle: function(name){
@@ -285,7 +289,7 @@ NS.View.self =  {
 	},
 
 	isElementView: function(element){
-		return element.hasAttribute && element.hasAttribute(this.IDAttribute);
+		return element.nodeType == 1 && element.hasAttribute(this.IDAttribute);
 	},
 
 	getElementView: function(element){

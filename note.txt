@@ -1,89 +1,33 @@
-----
+---
 
-Emitter/Listener
+Que fait-on maintenant? je sens que je sais plus trop quoi faire pour avancer
 
-On va surement supprimer EventEmiter
-On va juste garder EventListener qu'on va modifier pour que toggle
-appelle addeventListener et removeEventListener
-et doérénavant tous les events qu'on veut ajouter ou enlever on doit
-passer par eventListener
+On pourrait ptet chercher à créer un example bateau comme phonegap (liste de telehpone)
+Pour se rendre comptes des forces/faiblesses de mon système actuel de vues
 
-genre NS.EventListener.new(window, {
-	'mousedown': function(){
+déjà ce que j'aimerais c'est pouvoir créer des vues vite fait sans passer par
+les object javascript genre
 
-	}
-});
+// lancons nous dans ce qui suit->
 
-----
+<ul data-controller="phonelist">
+	<li ng-repeat="phone in phones">
+		<p>{phone.name}</p>
+	</li>
+</ul>
 
-Tree Structure
-
-NodeList = {
-	constructor: function(node){
-		this.node = node;
-	},
-
-	item: function(index){
-		var node = this.node.firstChild;
-
-		while(index--){
-			node = node.nextSibling;
-		}
-
-		return node;
-	},
-
-	getLength: function(){
-		var child = this.node.firstChild;
-
-		while(child){
-			this[length] = child;
-			child = child.nextSibling;
-			length++;
-		}
-
-		return length;
-	}
+function phonelist(scope){
+	scope.add('phones', {
+		name: 'coucou'
+	});
 };
 
-Object.defineProperty(NodeList, 'length', NodeList.getLength());
+ce que je veux réussir à faire aussi
 
-Element.prototype = {
-	// principalement:
-	children:
-	firstElementChild: // et autres
-	innerHTML:
-	classList:
-};
+var element = $('phonelist');
 
-Node.prototype = {
-	// properties:
-	previousSibling:
-	firstChild:
-	lastChild:
-	nextSibling:
-	childNodes:
-	parentNode:
-	attributes:
-	// and others
+var view = View.new(element);
+view.link(Model.new());
 
-	//methods
-	removeChild:
-	insertBefore:
-	hasChildNodes:
-	cloneNode:
-	contains:
-	compareDocumentPosition:
-	appendChild:
-	replaceChild:
-	removeChild:
-	// and others
-}
-
-EventTargetPrototype = {
-	// methods
-	addEventListener:
-	removeEventListener:
-	dispatchEvent:
-}
+---
 
