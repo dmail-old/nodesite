@@ -56,7 +56,6 @@ name: node
 }
 
 .node>div>.name[contenteditable]:focus{ border-color: black; }
-.node.dragover>div{ border-color: #292FEF; }
 
 /** Structure **/
 
@@ -69,12 +68,6 @@ name: node
 .node>div>img{ vertical-align: middle; width: 16px; height: 16px; padding-left: 3px; }
 .node>div.cut>img{ opacity: 0.5; }
 .node>div>.name{
-	/* override any ancestor user-select:none; */
-	-moz-user-select:		text;
-	-webkit-user-select:	text;
-	-ms-user-select:		text;
-	user-select:			text;
-
 	cursor: default;
 	padding-left: 3px;
 	padding-right: 3px;
@@ -110,6 +103,7 @@ on peut envisager quelque chose comme au lieu des paddings sur les spans
 
 /* Drag */
 
+/* .node.dragover>div{ border-color: #292FEF; } */
 .node.dragover.before>div:after, .node.dragover.after>div:after{
 	content: "";
 	display: block;
@@ -117,11 +111,15 @@ on peut envisager quelque chose comme au lieu des paddings sur les spans
 	z-index: 10;
 	left: 0;
 	right: 0;
-	border-width: 1px;
+	border-color: black;
+	border-width: 0;
 	border-style: dotted;
-	border-left: none;
-	border-right: none;
 }
-
-.node.dragover.before>div:after{ top: -2px; }
-.node.dragover.before>div:after{ bottom: -2px; }
+.node.dragover.before>div:after{
+	top: -2px;
+	border-top-width: 1px;
+}
+.node.dragover.after>div:after{
+	bottom: -2px;
+	border-bottom-width: 1px;
+}

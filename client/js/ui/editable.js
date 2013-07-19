@@ -1,28 +1,47 @@
+/*
+Un des défaut majeur de cette solution:
+maxlength non supporté, à simuler
+
+en écoutant keydown, ou keypress + e.preventDefault
+*/
+
 NS.Editable = {
 	element: null,
 	value: null,
 	startValue: null,
+	onchange: null,
+	bind: null,
+	draggableParent: null,
 	events: ['focus', 'keydown', 'blur'],
 
-	create: function(element){
-		this.element = element;
-		this.listen.apply(this, this.events);
-		this.element.setAttribute('contenteditable', true);
+	create: function(element, onchange, bind){
+		if( element.hasAttribute('contenteditable') ) return;
 
+		this.element = element;
+		this.onchange = onchange;
+		this.bind = bind || this;
+
+		// need to be selectable (user-select:text)
+		this.element.addClass('selectable');
 		// draggable incompatible width contenteditable
-		while(element = element.parentNode){
+		while(element && element.nodeType == 1){
 			if( element.hasAttribute('draggable') ){
 				this.draggableParent = element;
 				element.removeAttribute('draggable');
 				break;
 			}
+			element = element.parentNode;
 		}
+
+		this.element.setAttribute('contenteditable', true);
+		this.listen.apply(this, this.events);
 
 		this.element.focus();
 	},
 
 	destroy: function(){
 		this.element.removeAttribute('contenteditable');
+		this.element.removeClass('selectable');
 		if( this.draggableParent ) this.draggableParent.setAttribute('draggable', true);
 		this.stopListening.apply(this, this.events);
 	},
@@ -52,13 +71,12 @@ NS.Editable = {
 	},
 
 	selectContent: function(start, end){
-		var selection = window.getSelection(), range = document.createRange();
-
-		selection.removeAllRanges();
+		var range = document.createRange(), selection = window.getSelection();
 
 		range.setStart(this.element.firstChild, start || 0);
 		range.setEnd(this.element.lastChild, end || this.element.lastChild.length);
 
+		selection.removeAllRanges();
 		selection.addRange(range);
 	},
 
@@ -76,10 +94,9 @@ NS.Editable = {
 	},
 
 	blur: function(e){
-		if( this.hasChanged() ){
-			console.log('value changed');
+		if( this.hasChanged() && typeof this.onchange == 'function' ){
+			this.onchange.call(this.bind, this.value, this.startValue);
 		}
-		this.startValue = null;
 		this.destroy();
 	},
 

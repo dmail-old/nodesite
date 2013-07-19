@@ -1,10 +1,5 @@
 /*
 
-prochaines étapes:
-
-restaurer sort (possibilité de trier les enfants d'un noeud)
-restaurer memory
-
 */
 
 NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
@@ -37,8 +32,6 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 			if( e.target.hasClass('tool') ){
 				node.toggleState('expanded', e);
 			}
-
-			this.edit(node);
 
 			node.focus(e);
 		},
@@ -148,7 +141,9 @@ NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
 	},
 
 	edit: function(node){
-		NS.Editable.new(node.getDom('span'));
+		NS.Editable.new(node.getDom('span'), function(value, oldValue){
+			console.log('name changed from', oldValue, 'to', value);
+		});
 	}
 }));
 
@@ -220,11 +215,7 @@ Object.merge(NS.viewDocument.require('tree'), {
 		},
 
 		dragend: function(e){
-			var node = this.cast(e);
-
-			if( node && node != this ){
-				this.removePointer(node);
-			}
+			if( this.overed ) this.removePointer(this.overed);
 		}
 	},
 

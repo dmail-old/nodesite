@@ -23,9 +23,17 @@ a{
 
 .unselectable{
 	-moz-user-select:		none;
-    -webkit-user-select:	none;
-    -ms-user-select:		none;
+	-webkit-user-select:	none;
+	-ms-user-select:		none;
 	user-select:			none;
+}
+
+/* override any ancestor user-select:none; */
+.selectable{
+	-moz-user-select:		text;
+	-webkit-user-select:	text;
+	-ms-user-select:		text;
+	user-select:			text;
 }
 
 a:hover{
