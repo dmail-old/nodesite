@@ -134,7 +134,7 @@ orderBy('name', 'index', -1, function(a){ return a.name.toLowerCase(); }, 'getCo
 
 */
 
-Array.implement('orderBy', function(){
+Array.getComparer = function(){
 	var i, n, j = arguments.length, fns = [], orders = [], arg;
 
 	i = n = 0;
@@ -166,5 +166,31 @@ Array.implement('orderBy', function(){
 		return 0;
 	}
 
-	return this.sort(compare);
+	return compare;
+};
+
+Array.implement('orderBy', function(){
+	return this.sort(Array.getComparer.apply(Array, arguments));
+});
+
+Function.COMPARE_INFERIOR = function(a, b){ return a < b ? -1 : 1; };
+
+Array.implement('getInsertionOrderIndex', function(item, compare){
+	var i = 0, j = this.length;
+
+	if( compare == null ) compare = Function.COMPARE_INFERIOR;
+
+	for(;i<j;i++){
+		if( compare(item, this[i]) === -1 ){
+			return i;
+		}
+    }
+
+    return j;
+});
+
+// permet d'insérer item dans this en respectant l'ordre imposé par compare
+Array.implement('insertSort', function(item, compare){
+	this.splice(this.getInsertionOrderIndex(item, compare), 0, item);
+	return this;
 });
