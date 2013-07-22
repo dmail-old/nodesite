@@ -1,9 +1,4 @@
-// route the couple request/response to services or handler
-
-// when we send accept application/json and we set header to text/html
-// we have to send a 415 Unsupported Media Type to the client
-// when we send accept application/json, no need to specify setHeader application/json
-// it should be done automatically
+// route the couple request/response to handlers
 
 var route = {
 	AJAX_HEADER_NAME: 'x-requested-with',
@@ -22,6 +17,7 @@ var route = {
 	method: null,
 	headers: null,
 	status: null,
+	handlers: [],
 
 	create: function(request, response){
 		this.request = request;
@@ -30,128 +26,16 @@ var route = {
 		this.method = this.request.method;
 	},
 
-	writeHead: function(status, headers){
-		if( !status ) status = this.status || 500;
-		if( !headers ) headers = this.headers;
-
-		var codes = require('http').STATUS_CODES;
-		if( !(status in codes) ) status = 500;
-		var desc = codes[status];
-
-		this.response.writeHead(status, desc, headers);
-
-		var level = 'info';
-		if( status == 404 ) level = 'warn';
-		var method;
-		if( this.isFromAjax() ) method = 'AJAX';
-		else method = this.method;
-
-		logger.log(level, String.setType(method, 'function') +' '+ status +' '+ String.setType(this.url.pathname, 'path'));
-	},
-
-	write: function(data, encoding){
-		this.response.write(data, encoding);
-	},
-
-	end: function(data, encoding){
-		this.response.end(data, encoding);
-	},
-
-	expect: function(contentType){
-		if( contentType == 'json' ) contentType = 'application/json';
-
-		var headerValue = this.request.headers['content-type'];
-
-		return headerValue && headerValue == contentType;
-	},
-
-	format: function(data, encoding){
-		var contentType = this.headers['content-type'];
-
-		// json
-		if( contentType == 'application/json' ){
-
-			var json = {
-				status: this.status,
-				headers: this.headers,
-				data: data
-			};
-
-			this.status = 200;
-
-			if( data instanceof Error ){
-				var type;
-
-				// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas
-				// top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
-				// possible lorsque qu'on fait callScript
-				if( data instanceof SyntaxError ){
-					type = 'syntax';
-				}
-				else if( data instanceof ReferenceError ){
-					type = 'syntax';
-				}
-				else if( data instanceof TypeError ){
-					type = 'type';
-				}
-
-				json.data = data.message;
-				json.stack = data.stack;
-				json.type = type;
-			}
-			else if( Buffer.isBuffer(data) ){
-				data = data.toString(encoding || 'base64');
-			}
-
-			try{
-				data = JSON.stringify(json);
-			}
-			catch(e){
-				return this.error(e);
-			}
-
-			this.setHeader('content-length', Buffer.byteLength(data));
-
-			return data;
+	use: function(filter, handle){
+		if( arguments.length == 1 ){
+			handle = filter;
+			filter = Function.TRUE;
 		}
 
-		// text
-		if( data instanceof Error ){
-			if( data.statusCode ) this.status = data.statusCode;
-			data = data.message;
-		}
-		else if( typeof data === 'object' ){
-			data = JSON.stringify(data);
-		}
-		else{
-			data = data.toString();
-		}
-
-		this.setHeader('content-length', Buffer.byteLength(data));
-
-		return data;
-	},
-
-	send: function(status, data, encoding){
-		this.status = status;
-
-		if( data ){
-			data = this.format(data, encoding);
-		}
-
-		this.writeHead();
-
-		if( data ){
-			this.write(data, encoding);
-		}
-
-		this.end();
-	},
-
-	error: function(error){
-		console.log(error);
-		//logger.log('error', error)
-		this.send(500, error);
+		this.handlers.push({
+			filter: filter,
+			handle: handle
+		});
 	},
 
 	isFromAjax: function(){
@@ -181,17 +65,76 @@ var route = {
 		this.setHeader('Set-Cookie', cookies);
 	},
 
-	handlers: [],
-	use: function(filter, handle){
-		if( arguments.length == 1 ){
-			handle = filter;
-			filter = Function.TRUE;
+	writeHead: function(status, headers){
+		if( !status ) status = this.status || 500;
+		if( !headers ) headers = this.headers;
+
+		var codes = require('http').STATUS_CODES;
+		if( !(status in codes) ) status = 500;
+		var desc = codes[status];
+
+		this.response.writeHead(status, desc, headers);
+
+		var level = 'info';
+		if( status == 404 ) level = 'warn';
+		var method;
+		if( this.isFromAjax() ) method = 'AJAX';
+		else method = this.method;
+
+		logger.log(level, String.setType(method, 'function') +' '+ status +' '+ String.setType(this.url.pathname, 'path'));
+	},
+
+	write: function(data, encoding){
+		this.response.write(data, encoding);
+	},
+
+	end: function(data, encoding){
+		this.response.end(data, encoding);
+	},
+
+	format: function(data, encoding){
+		var contentType = this.headers['content-type'];
+
+		if( !contentType ){
+			var accepts = require('./accept.js').parse(this.request.headers.accept);
+			var i = 0, j = accepts.length;
+			for(;i<j;i++){
+				contentType = accepts[i];
+				if( contentType in this.formats ){
+					this.setHeader('content-type', contentType);
+					break;
+				}
+			}
 		}
 
-		this.handlers.push({
-			filter: filter,
-			handle: handle
-		});
+		if( contentType in this.formats ){
+			return this.formats[contentType].call(this, data, encoding);
+		}
+		else{
+			this.status = 415;
+			return null;
+		}
+	},
+
+	send: function(status, data, encoding){
+		this.status = status;
+
+		if( data ){
+			data = this.format(data, encoding);
+		}
+
+		this.writeHead();
+
+		if( data ){
+			this.write(data, encoding);
+		}
+
+		this.end();
+	},
+
+	error: function(error){
+		logger.log('error', error);
+		this.send(500, error);
 	},
 
 	start: function(){
@@ -223,6 +166,68 @@ var route = {
 
 		nextHandler();
 	}
+};
+
+route.formats = {};
+route.formats['text'] = function(data, encoding){
+	if( data instanceof Error ){
+		if( data.statusCode ) this.status = data.statusCode;
+		data = data.message;
+	}
+	else if( typeof data === 'object' ){
+		data = JSON.stringify(data);
+	}
+	else{
+		data = data.toString();
+	}
+
+	this.setHeader('content-length', Buffer.byteLength(data));
+
+	return data;
+};
+route.formats['application/json'] = function(data, encoding){
+	var json = {
+		status: this.status,
+		headers: this.headers,
+		data: data
+	};
+
+	this.status = 200;
+
+	if( data instanceof Error ){
+		var type;
+
+		// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas
+		// top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
+		// possible lorsque qu'on fait callScript
+		if( data instanceof SyntaxError ){
+			type = 'syntax';
+		}
+		else if( data instanceof ReferenceError ){
+			type = 'syntax';
+		}
+		else if( data instanceof TypeError ){
+			type = 'type';
+		}
+
+		json.data = data.message;
+		json.stack = data.stack;
+		json.type = type;
+	}
+	else if( Buffer.isBuffer(data) ){
+		data = data.toString(encoding || 'base64');
+	}
+
+	try{
+		data = JSON.stringify(json);
+	}
+	catch(e){
+		return this.error(e);
+	}
+
+	this.setHeader('content-length', Buffer.byteLength(data));
+
+	return data;
 };
 
 route.isMethod = function(method){
@@ -423,11 +428,6 @@ Object.append(route, {
 	}
 });
 route.use(route.paramsProvider);
-
-route.use(function(next){
-	console.log('accept:', require('./route/parseAccept.js').parse(this.request.headers.accept));
-	next();
-});
 
 // services
 route.sendService = function(type){

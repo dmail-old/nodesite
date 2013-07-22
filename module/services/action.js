@@ -9,12 +9,10 @@ var exports = {
 	},
 
 	send: function(data){
-		this.demand.setHeader('content-type', 'application/json');
 		this.demand.send(200, data);
 	},
 
 	error: function(error){
-		this.demand.setHeader('content-type', 'application/json');
 		this.demand.error(error);
 	},
 
