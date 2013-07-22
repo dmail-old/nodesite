@@ -1,5 +1,4 @@
 var exports = {
-
 	create: function(demand){
 		this.demand = demand;
 		this.start(demand.url.pathname);
@@ -44,7 +43,7 @@ var exports = {
 				this.file.exists(this.exists.bind(this));
 				return;
 			}
-			return this.demand.writeEnd(404);
+			return this.demand.send(404);
 		}
 		this.file.stat(this.stat.bind(this));
 	},
@@ -75,7 +74,7 @@ var exports = {
 		// erreur pendant la récupération de infos du fichier
 		if( error ) return this.demand.error(error);
 		// seul les fichiers sont autorisé
-		if( !stats.isFile() ) return this.demand.writeEnd(403);
+		if( !stats.isFile() ) return this.demand.send(403);
 
 		if( this.isModified(stats.mtime) ){
 			this.demand.setHeader('last-modified', stats.mtime);
@@ -92,7 +91,7 @@ var exports = {
 		}
 		// dit au navigateur que le fichier n'a pas changé
 		else{
-			return this.demand.writeEnd(304);
+			return this.demand.send(304);
 		}
 	},
 
@@ -122,7 +121,7 @@ var exports = {
 
 	onread: function(error, data){
 		if( error ) return this.demand.error(error);
-		this.demand.writeEnd(200, data);
+		this.demand.send(200, data);
 	},
 
 	serve: function(){

@@ -1,4 +1,4 @@
 module.exports = function(){
-	this.setHeader('content-type', 'text/html');
-	this.send(String(FS.readFileSync('./client/html/index.html')));
+	this.demand.url.pathname = 'html/index.html';
+	require(root + '/module/services/file').new(this.demand);
 };

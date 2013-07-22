@@ -1,69 +1,21 @@
 var exports = {
 	demand: null,
 	action: null,
-	json: null,
-	headers: null,
 
 	create: function(demand){
 		this.demand = demand;
 		this.action = demand.url.pathname;
-		this.headers = {};
 		this.start();
 	},
 
-	setHeader: function(name, value){
-		this.headers[name] = value;
-	},
-
-	writeEnd: function(status, data){
-		this.demand.writeHead(200, {
-			'content-type': 'application/json'
-		});
-
-		var json = {
-			status: status,
-			headers: this.headers,
-			data: data,
-		};
-
-		var body;
-
-		try{
-			body = JSON.stringify(json);
-		}
-		catch(e){
-			return this.error(e);
-		}
-
-		this.demand.write(body);
-		this.demand.end();
+	send: function(data){
+		this.demand.setHeader('content-type', 'application/json');
+		this.demand.send(200, data);
 	},
 
 	error: function(error){
-		var type;
-
-		// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas
-		// top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
-		// possible lorsque qu'on fait callScript
-		if( error instanceof SyntaxError ){
-			type = 'syntax';
-		}
-		else if( error instanceof ReferenceError ){
-			type = 'syntax';
-		}
-		else if( error instanceof TypeError ){
-			type = 'type';
-		}
-
-		this.writeEnd(500, {
-			message: error.message,
-			stack: error.stack,
-			type: type
-		});
-	},
-
-	send: function(data){
-		this.writeEnd(200, data);
+		this.demand.setHeader('content-type', 'application/json');
+		this.demand.error(error);
 	},
 
 	start: function(){
