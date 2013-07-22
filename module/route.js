@@ -92,6 +92,10 @@ var route = {
 		this.response.end(data, encoding);
 	},
 
+	accept: function(contentType){
+		return require('./accept.js').parse(this.request.headers.accept, [contentType]).length > 0;
+	},
+
 	format: function(data, encoding){
 		var contentType = this.headers['content-type'];
 
@@ -106,12 +110,15 @@ var route = {
 				}
 			}
 		}
+		else if( !this.accept(contentType) ){
+			contentType = null;
+		}
 
 		if( contentType in this.formats ){
 			return this.formats[contentType].call(this, data, encoding);
 		}
 		else{
-			this.status = 415;
+			this.status = 415; // unsupported content-type
 			return null;
 		}
 	},
