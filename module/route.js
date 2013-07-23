@@ -50,24 +50,39 @@ var route = {
 		delete this.headers[name];
 	},
 
-	setCookie: function(properties){
-		var cookies = this.headers['Set-Cookie'];
-
-		if( typeof cookies == 'string' ){
-			cookies = [cookies];
-		}
-		else if( !Array.isArray(cookies) ){
-			cookies = [];
+	setContentType: function(contentType, charset){
+		if( contentType.startsWith('text') ){
+			// this kind of header must be set for all textfile containing utf8 character?
+			charset = charset || config.encoding;
+			if( charset ) contentType+= ';charset=' + charset;
 		}
 
-		cookies.push(require('./cookie').stringify(properties));
+		this.setHeader('content-type', contentType);
+	},
 
-		this.setHeader('Set-Cookie', cookies);
+	parseContentType: function(contentType){
+		if( contentType ){
+			var index = contentType.indexOf(';');
+			if( index !== -1 ){
+				contentType = contentType.slice(0, index);
+			}
+		}
+
+		return contentType;
+	},
+
+	getContentType: function(){
+		return this.parseContentType(this.getHeader('content-type'));
 	},
 
 	writeHead: function(status, headers){
 		if( !status ) status = this.status || 500;
 		if( !headers ) headers = this.headers;
+
+		var contentType = this.parseContentType(headers['content-type']);
+		if( contentType && !this.accept(contentType) ){
+			logger.warn(contentType + ' not in accept header');
+		}
 
 		var codes = require('http').STATUS_CODES;
 		if( !(status in codes) ) status = 500;
@@ -96,22 +111,29 @@ var route = {
 		return require('./accept.js').parse(this.request.headers.accept, [contentType]).length > 0;
 	},
 
-	format: function(data, encoding){
-		var contentType = this.headers['content-type'];
+	prefferedContentType: function(){
+		var accepts = require('./accept.js').parse(this.request.headers.accept);
+		var i = 0, j = accepts.length, accept;
 
-		if( !contentType ){
-			var accepts = require('./accept.js').parse(this.request.headers.accept);
-			var i = 0, j = accepts.length;
-			for(;i<j;i++){
-				contentType = accepts[i];
-				if( contentType in this.formats ){
-					this.setHeader('content-type', contentType);
-					break;
-				}
+		for(;i<j;i++){
+			accept = accepts[i];
+			if( accept in this.formats ){
+				return accept;
 			}
 		}
-		else if( !this.accept(contentType) ){
-			contentType = null;
+
+		return 'text';
+	},
+
+	format: function(data, encoding){
+		var contentType;
+
+		if( 'content-type' in this.headers ){
+			contentType = this.getContentType();
+		}
+		else{
+			contentType = this.prefferedContentType();
+			this.setContentType(contentType);
 		}
 
 		if( contentType in this.formats ){
@@ -255,6 +277,21 @@ Object.append(route, {
 	cookieSource: '',
 	cookieParams: {},
 
+	setCookie: function(properties){
+		var cookies = this.headers['Set-Cookie'];
+
+		if( typeof cookies == 'string' ){
+			cookies = [cookies];
+		}
+		else if( !Array.isArray(cookies) ){
+			cookies = [];
+		}
+
+		cookies.push(require('./cookie').stringify(properties));
+
+		this.setHeader('Set-Cookie', cookies);
+	},
+
 	parseCookie: function(cookies){
 		try{
 			return require('./cookie').parse(cookies);
@@ -342,20 +379,17 @@ Object.append(route, {
 	bodyParams: {},
 
 	getRequestContentType: function(request){
-		var index, type = request.headers['content-type'];
+		var contentType = request.headers['content-type'];
 
+		if( contentType ){
+			contentType = this.parseContentType(contentType);
+		}
 		// RFC2616 section 7.2.1
-		if( !type ){
-			type = 'application/octet-stream';
-		}
 		else{
-			index = type.indexOf(';');
-			if( index !== -1 ){
-				type = type.slice(0, index);
-			}
+			contentType = 'application/octet-stream';
 		}
 
-		return type;
+		return contentType;
 	},
 
 	getRequestEncoding: function(request){

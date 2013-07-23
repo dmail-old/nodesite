@@ -13,7 +13,7 @@ var exports = {
 
 		if( extension.charAt(0) == '.' ) extension = extension.substr(1);
 
-		this.demand.setHeader('content-type', config.getMimetype(file.path));
+		this.demand.setContentType(config.getMimetype(file.path));
 
 		if( extension == 'js' || extension == 'css' ){
 			acceptEncoding = this.demand.request.headers['accept-encoding'];
@@ -45,6 +45,7 @@ var exports = {
 			}
 			return this.demand.send(404);
 		}
+
 		this.file.stat(this.stat.bind(this));
 	},
 

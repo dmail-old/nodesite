@@ -36,12 +36,26 @@ window.server = {
 			format: 'json'
 		});
 
+
+		request.parseContentType = function(contentType){
+			if( contentType ){
+				var index = contentType.indexOf(';');
+				if( index !== -1 ){
+					contentType = contentType.slice(0, index);
+				}
+			}
+
+			return contentType;
+		};
+		request.getContentType = function(){
+			return this.parseContentType(this.getHeader('content-type'));
+		};
 		request.setHeader('Accept', 'application/json');
 		request.options.isSuccess = function(){
 			var status = this.status, ok = status >= 200 && status < 300;
 
 			if( ok ){
-				var type = this.getHeader('content-type');
+				var type = this.getContentType();
 
 				if( type in window.server.handlers ){
 					window.server.handlers[type].call(this);
@@ -199,7 +213,7 @@ window.app = {
 		window.server.callAction('go', filename, function(error, response){
 			if( error ) return console.error(error);
 
-			var type = this.getHeader('content-type');
+			var type = this.getContentType();
 
 			if( type == 'application/json' ){
 				type = this.json.headers['content-type'];
