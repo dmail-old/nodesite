@@ -4,7 +4,6 @@ NOTE
 
 TODO
 
-- une erreur 500 on renvoit sur une page d'erreur
 - websocket
 - tester si socket.io permet de passer des erreurs au client
 - session
@@ -71,6 +70,7 @@ global.applyScript = function(path, bind, args, callback){
 		// }
 	}
 
+	args = [].concat(args);
 	args.push(callback);
 
 	try{
@@ -98,6 +98,12 @@ Error.stackTraceLimit = 20;
 
 String.defineType('name', {color: 'magenta', font: 'bold'});
 String.defineType('path', {color: 'magenta', font: 'bold'});
+String.defineType('time', {color: 'grey', font: 'bold'});
+
+String.defineType('green', {color: 'green'});
+String.defineType('blue', {color: 'cyan'});
+String.defineType('yellow', {color: 'yellow'});
+String.defineType('pink', {color: 'magenta'});
 
 var server = {
 	onrequest: function(request, response){

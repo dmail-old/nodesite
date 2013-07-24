@@ -58,7 +58,7 @@ var exports = {
 			args = [];
 		}
 
-		logger.info('ACTION ' + String.setType(action, 'path') + ' ' + String.setType(args, 'b'));
+		this.demand.args = args;
 
 		return this.sendScriptResponse(path, args);
 	},

@@ -25,6 +25,7 @@ var route = {
 		this.response = response;
 		this.headers = {};
 		this.method = this.request.method;
+		this.emitter = NS.Emitter.new(this);
 	},
 
 	use: function(filter, handle){
@@ -45,6 +46,14 @@ var route = {
 
 	setHeader: function(name, value){
 		this.headers[name] = value;
+	},
+
+	hasHeader: function(name){
+		return name in this.headers;
+	},
+
+	getHeader: function(name){
+		return this.headers[name];
 	},
 
 	removeHeader: function(name){
@@ -95,27 +104,20 @@ var route = {
 	},
 
 	writeHead: function(status, headers){
-		if( !status ) status = this.status || 500;
-		if( !headers ) headers = this.headers;
+		if( status ) this.status = status;
+		if( headers ) this.headers = headers;
 
-		var contentType = this.parseContentType(headers['content-type']);
+		var contentType = this.parseContentType(this.getHeader('content-type'));
 		if( contentType && !this.accept(contentType) ){
 			logger.warn(contentType + ' not in accept header');
 		}
 
 		var codes = require('http').STATUS_CODES;
-		if( !(status in codes) ) status = 500;
-		var desc = codes[status];
+		if( !(this.status in codes) ) this.status = 500;
+		var desc = codes[this.status];
 
-		this.response.writeHead(status, desc, headers);
-
-		var level = 'info';
-		if( status == 404 ) level = 'warn';
-		var method;
-		if( this.isFromAjax() ) method = 'AJAX';
-		else method = this.method;
-
-		logger.log(level, String.setType(method, 'function') +' '+ status +' '+ String.setType(this.url.pathname, 'path'));
+		this.emitter.emit('header');
+		this.response.writeHead(this.status, desc, this.headers);
 	},
 
 	write: function(data, encoding){
@@ -275,7 +277,7 @@ route.isMethod = function(method){
 
 [
 	'cookieParser', 'urlParser', 'queryParser', 'bodyParser',
-	'methodOverride', 'params', 'jsonParam'
+	'methodOverride', 'params', 'jsonParam', 'responseTime', 'logger'
 ].forEach(function(name){
 	var component = require('./route/' + name + '.js');
 
