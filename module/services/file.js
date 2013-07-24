@@ -83,11 +83,16 @@ var exports = {
 			// évite que chrome mette en cache et réutilise sans redemander au serveur les fichier HTML qu'on lui envoit
 			this.demand.setHeader('cache-control', 'no-cache');
 
-			if( this.useStream() ){
-				this.stream();
+			if( this.demand.method == this.demand.METHODS.HEAD ){
+				this.demand.send(200);
 			}
 			else{
-				this.serve();
+				if( this.useStream() ){
+					this.stream();
+				}
+				else{
+					this.serve();
+				}
 			}
 		}
 		// dit au navigateur que le fichier n'a pas changé

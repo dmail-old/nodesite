@@ -6,6 +6,7 @@ var route = {
 
 	METHODS: {
 		OPTIONS: 'OPTIONS',
+		HEAD: 'HEAD',
 		GET: 'GET',
 		POST: 'POST',
 		PUT: 'PUT',
@@ -75,6 +76,24 @@ var route = {
 		return this.parseContentType(this.getHeader('content-type'));
 	},
 
+	accept: function(contentType){
+		return require('./accept.js').parse(this.request.headers.accept, [contentType]).length > 0;
+	},
+
+	prefferedContentType: function(){
+		var accepts = require('./accept.js').parse(this.request.headers.accept);
+		var i = 0, j = accepts.length, accept;
+
+		for(;i<j;i++){
+			accept = accepts[i];
+			if( accept in this.formats ){
+				return accept;
+			}
+		}
+
+		return 'text';
+	},
+
 	writeHead: function(status, headers){
 		if( !status ) status = this.status || 500;
 		if( !headers ) headers = this.headers;
@@ -105,24 +124,6 @@ var route = {
 
 	end: function(data, encoding){
 		this.response.end(data, encoding);
-	},
-
-	accept: function(contentType){
-		return require('./accept.js').parse(this.request.headers.accept, [contentType]).length > 0;
-	},
-
-	prefferedContentType: function(){
-		var accepts = require('./accept.js').parse(this.request.headers.accept);
-		var i = 0, j = accepts.length, accept;
-
-		for(;i<j;i++){
-			accept = accepts[i];
-			if( accept in this.formats ){
-				return accept;
-			}
-		}
-
-		return 'text';
 	},
 
 	format: function(data, encoding){
@@ -272,203 +273,18 @@ route.isMethod = function(method){
 	};
 });
 
-// cookieParser
-Object.append(route, {
-	cookieSource: '',
-	cookieParams: {},
+[
+	'cookieParser', 'urlParser', 'queryParser', 'bodyParser',
+	'methodOverride', 'params', 'jsonParam'
+].forEach(function(name){
+	var component = require('./route/' + name + '.js');
 
-	setCookie: function(properties){
-		var cookies = this.headers['Set-Cookie'];
-
-		if( typeof cookies == 'string' ){
-			cookies = [cookies];
-		}
-		else if( !Array.isArray(cookies) ){
-			cookies = [];
-		}
-
-		cookies.push(require('./cookie').stringify(properties));
-
-		this.setHeader('Set-Cookie', cookies);
-	},
-
-	parseCookie: function(cookies){
-		try{
-			return require('./cookie').parse(cookies);
-		}
-		catch(e){
-			return null;
-		}
-	},
-
-	cookieParser: function(next){
-		this.cookieSource = this.request.headers.cookie;
-		if( this.cookieSource ){
-			this.cookieParams = this.parseCookie(this.cookieSource);
-			if( this.cookieParams == null ){
-				next(new Error('invalid cookies format'));
-			}
-		}
-		next();
+	if( typeof component == 'function' ) route.use(component);
+	else{
+		Object.append(route, component.extend);
+		route.use(component.use);
 	}
 });
-route.use(route.cookieParser);
-
-// urlParser
-Object.append(route, {
-	url: null,
-
-	parseUrl: function(url){
-		try{
-			return require('url').parse(url);
-		}
-		catch(e){
-			return null;
-		}
-	},
-
-	urlParser: function(next){
-		this.url = this.parseUrl(this.request.url);
-		// bad request
-		if( this.url == null ) return this.send(400);
-		next();
-	}
-});
-route.use(route.urlParser);
-
-// queryParser
-Object.append(route, {
-	urlParams: {},
-
-	parseQueryString: function(queryString){
-		var result;
-
-		try{
-			result = require('querystring').parse(queryString);
-		}
-		catch(e){
-			return null;
-		}
-
-		var json = result.json;
-		if( typeof json == 'string' ){
-			try{
-				json = JSON.parse(json);
-			}
-			catch(e){
-				json = null;
-			}
-
-			result.json = json;
-		}
-
-		return result;
-	},
-
-	queryParser: function(next){
-		this.urlParams = this.parseQueryString(this.url.query);
-		if( this.urlParams == null ) return next(new Error('invalid query params'));
-		next();
-	}
-});
-route.use(route.queryParser);
-
-// bodyParser
-Object.append(route, {
-	bodySource: '',
-	bodyParams: {},
-
-	getRequestContentType: function(request){
-		var contentType = request.headers['content-type'];
-
-		if( contentType ){
-			contentType = this.parseContentType(contentType);
-		}
-		// RFC2616 section 7.2.1
-		else{
-			contentType = 'application/octet-stream';
-		}
-
-		return contentType;
-	},
-
-	getRequestEncoding: function(request){
-		var index, encoding, charset, search, contentType;
-
-		search = 'charset=';
-		contentType = request.headers['content-type'];
-
-		if( contentType ){
-			index = contentType.indexOf(search);
-
-			if( index === -1 ){
-				charset = 'utf8';
-			}
-			else{
-				charset = contentType.slice(index + search.length);
-				if( charset == 'utf-8' ) charset = 'utf8';
-			}
-		}
-		else{
-			charset = 'utf8';
-		}
-
-		return charset;
-	},
-
-
-	getRequestBody: function(request, callback, bind){
-		var body = '';
-
-		request.setEncoding(this.getRequestEncoding(request));
-		request.on('data', function(data){
-
-			body+= data;
-
-			if( body.length > 1e6 ){
-				callback.call(bind, new Error('Request Entity Too Large'));
-				request.connection.destroy();
-			}
-
-		});
-		request.on('end', function(){
-			callback.call(bind, null, body);
-		});
-	},
-
-
-	bodyParser: function(next){
-		if( this.method == this.METHODS.POST || this.method == this.METHODS.PUT ){
-			this.getRequestBody(this.request, function(error, body){
-
-				if( error ) return next(error);
-				this.bodySource = body;
-				this.bodyParams = this.parseQueryString(body);
-				if( this.bodyParams == null ) return next(new Error('invalid body params'));
-				next();
-
-			}, this);
-		}
-		else{
-			next();
-		}
-	}
-});
-route.use(route.bodyParser);
-
-// paramsProvider (merge of url & body)
-Object.append(route, {
-	params: null,
-
-	paramsProvider: function(next){
-		this.params = Object.append({}, this.urlParams, this.bodyParams);
-		if( '_method' in this.params ){
-			this.method = this.params.method.toUpperCase();
-		}
-		next();
-	}
-});
-route.use(route.paramsProvider);
 
 // services
 route.sendService = function(type){
@@ -525,8 +341,14 @@ route.get(function(){
 });
 
 // file service
-route.get(Function.TRUE, function(){
-	return this.sendService('file');
-});
+route.use(
+	function(){
+		return this.method == 'HEAD' || this.method == 'GET';
+	},
+	function(){
+		return this.sendService('file');
+	}
+);
+
 
 module.exports = route;
