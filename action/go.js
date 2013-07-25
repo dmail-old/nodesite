@@ -15,8 +15,7 @@ module.exports = function(pagePath, callback){
 
 	if( path.endsWith('.html') ){
 		console.log('sendfile', path);
-		this.demand.url.pathname = path;
-		require(root + '/module/services/file').new(this.demand);
+		this.sendFile(path);
 	}
 	else{
 		path = path.replace(/\.js$/, '');

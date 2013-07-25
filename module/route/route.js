@@ -16,8 +16,9 @@ var route = {
 	request: null,
 	response: null,
 	method: null,
-	headers: null,
 	status: null,
+	headers: null,
+	data: null,
 	handlers: [],
 
 	create: function(request, response){
@@ -28,16 +29,13 @@ var route = {
 		this.emitter = NS.Emitter.new(this);
 	},
 
-	use: function(filter, handle){
-		if( arguments.length == 1 ){
-			handle = filter;
-			filter = Function.TRUE;
-		}
+	use: function(handler){
+		this.handlers.push(handler);
+	},
 
-		this.handlers.push({
-			filter: filter,
-			handle: handle
-		});
+	isMethod: function(method){
+		if( method == 'all' || method == '*' ) return true;
+		return this.method.toLowerCase() === method;
 	},
 
 	isFromAjax: function(){
@@ -107,16 +105,19 @@ var route = {
 		if( status ) this.status = status;
 		if( headers ) this.headers = headers;
 
-		var contentType = this.parseContentType(this.getHeader('content-type'));
-		if( contentType && !this.accept(contentType) ){
-			logger.warn(contentType + ' not in accept header');
-		}
+		this.emitter.emit('header');
 
 		var codes = require('http').STATUS_CODES;
 		if( !(this.status in codes) ) this.status = 500;
 		var desc = codes[this.status];
 
-		this.emitter.emit('header');
+		if( this.hasHeader('content-type') ){
+			var contentType = this.parseContentType(this.getHeader('content-type'));
+			if( !this.accept(contentType) ){
+				logger.warn(contentType + ' not in accept header');
+			}
+		}
+
 		this.response.writeHead(this.status, desc, this.headers);
 	},
 
@@ -150,22 +151,23 @@ var route = {
 
 	send: function(status, data, encoding){
 		this.status = status;
+		if( data ) this.data = data;
 
-		if( data ){
-			data = this.format(data, encoding);
+		if( this.data ){
+			this.data = this.format(this.data, encoding);
 		}
 
 		this.writeHead();
 
-		if( data ){
-			this.write(data, encoding);
+		if( this.data ){
+			this.write(this.data, encoding);
 		}
 
 		this.end();
 	},
 
 	error: function(error){
-		logger.log('error', error);
+		logger.log('error', error.stack);
 		this.send(500, error);
 	},
 
@@ -188,11 +190,11 @@ var route = {
 			handler = handlers[i];
 			i++;
 
-			if( handler.filter.call(self) === true ){
-				result = handler.handle.call(self, nextHandler);
+			try{
+				result = handler.call(self, nextHandler);
 			}
-			else{
-				nextHandler();
+			catch(e){
+				return self.error(new Error('handler internal error'));
 			}
 		}
 
@@ -262,24 +264,12 @@ route.formats['application/json'] = function(data, encoding){
 	return data;
 };
 
-route.isMethod = function(method){
-	if( method == 'all' || method == '*' ) return true;
-	return this.method.toLowerCase() === method;
-};
-
-['get', 'post', 'put', 'delete', 'options', 'all'].forEach(function(method){
-	route[method] = function(filter, handle){
-		this.use(function(){
-			return this.isMethod(method) && filter.call(this);
-		}, handle);
-	};
-});
-
 [
 	'cookieParser', 'urlParser', 'queryParser', 'bodyParser',
-	'methodOverride', 'params', 'jsonParam', 'responseTime', 'logger'
+	'methodOverride', 'params', 'jsonParam', 'responseTime', 'logger',
+	'sendOptions', 'sendAction', 'sendPage', 'sendFile'
 ].forEach(function(name){
-	var component = require('./route/' + name + '.js');
+	var component = require('./service/' + name + '.js');
 
 	if( typeof component == 'function' ) route.use(component);
 	else{
@@ -287,70 +277,5 @@ route.isMethod = function(method){
 		route.use(component.use);
 	}
 });
-
-// services
-route.sendService = function(type){
-	var service;
-
-	try{
-		service = require('./services/' + type);
-	}
-	catch(e){
-		this.send(501);
-		return;
-	}
-
-	try{
-		service.new(this);
-	}
-	catch(e){
-		return this.error(e);
-	}
-};
-
-// options service
-route.options(Function.TRUE, function(){
-	return this.sendService('options');
-});
-
-// action service
-route.all(function(){
-	return this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)) == '/action';
-}, function(){
-	return this.sendService('action');
-});
-
-// page service
-route.get(function(){
-	var pathname = this.url.pathname;
-
-	// index page
-	if( pathname === '/' ) return true;
-	if( pathname === '/app.html' ) return true;
-	// html files handled by page service
-	if( pathname.endsWith('.html') ) return true;
-
-	var slash = pathname.indexOf('/', 1);
-
-	// on demande quelque chose à la racine, sans extension ou finissant par .js
-	if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
-		return true;
-	}
-
-	return false;
-}, function(){
-	return this.sendService('page');
-});
-
-// file service
-route.use(
-	function(){
-		return this.method == 'HEAD' || this.method == 'GET';
-	},
-	function(){
-		return this.sendService('file');
-	}
-);
-
 
 module.exports = route;

@@ -107,7 +107,7 @@ String.defineType('pink', {color: 'magenta'});
 
 var server = {
 	onrequest: function(request, response){
-		require(root + '/module/route.js').new(request, response).start();
+		require(root + '/module/route/route.js').new(request, response).start();
 	},
 
 	onclientError: function(e){

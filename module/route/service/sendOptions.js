@@ -1,5 +1,5 @@
-var exports = {
-	create: function(demand){
+exports.use = function useOptions(next){
+	if( this.method == this.METHODS.OPTIONS ){
 		var methodAllowed = [], headerAllowed = [];
 
 		// methods
@@ -24,16 +24,16 @@ var exports = {
 		headerAllowed.push('connection');
 		*/
 
-		demand.writeHead(204, {
-			"access-control-allow-origin": demand.request.headers.origin || '*',
-			"access-control-allow-methods": methodAllowed.join(', '),
-			"access-control-allow-headers": headerAllowed.join(', '),
-			"access-control-max-age": 10, // Seconds
-			"content-length": 0
+		this.writeHead(204, {
+			'access-control-allow-origin': this.request.headers.origin || '*',
+			'access-control-allow-methods': methodAllowed.join(', '),
+			'access-control-allow-headers': headerAllowed.join(', '),
+			'access-control-max-age': 10, // Seconds
+			'content-length': 0
 		});
-
-		demand.end();
+		this.end();
+	}
+	else{
+		next();
 	}
 };
-
-module.exports = exports;

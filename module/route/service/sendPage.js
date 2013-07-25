@@ -1,6 +1,4 @@
-var FileService = require('./file');
-
-var exports = FileService.extend({
+exports.extend = {
 	// metas utilisant l'attribut "http-equiv"
 	http_equiv: [
 		'content-language',
@@ -18,23 +16,15 @@ var exports = FileService.extend({
 		favicon: '<link href="#" type="image/x-icon" rel="shortcut icon"/>'
 	},
 
-	create: function(demand){
-		this.demand = demand;
-		this.start('app.html');
+	sendPage: function(){
+		var filePath = root + '/client/app.html';
+		FS.readFile(filePath, this.parsePage.bind(this));
 	},
 
-	// always modified as we parse the content
-	isModified: function(){
-		return true;
-	},
+	parsePage: function(error, html){
+		console.log(error, html);
 
-	// not supported because we need to read whole content in order to parse it
-	useStream: function(){
-		return false;
-	},
-
-	onread: function(error, html){
-		if( error ) return this.demand.error(error);
+		if( error ) return this.error(error);
 
 		var metas = {
 			'charset': config.encoding,
@@ -70,12 +60,13 @@ var exports = FileService.extend({
 		html = html.toString(config.encoding);
 		html = html.parse(data);
 
+		this.setContentType('text/html');
 		// size is different of the filesize because im parsing content
-		this.demand.setHeader('content-length', Buffer.byteLength(html, config.encoding));
+		this.setHeader('content-length', Buffer.byteLength(html, config.encoding));
 
-		this.demand.writeHead(200);
-		this.demand.write(html, config.encoding);
-		this.demand.end();
+		this.writeHead(200);
+		this.write(html);
+		this.end();
 	},
 
 	parseStyle: function(name){
@@ -145,6 +136,30 @@ var exports = FileService.extend({
 
 		return tag.replace('#', url);
 	}
-});
+};
 
-module.exports = exports;
+function servePage(){
+	var pathname = this.url.pathname;
+
+	// index page
+	if( pathname === '/' ) return true;
+	if( pathname === '/app.html' ) return true;
+	// html files handled by page service
+	if( pathname.endsWith('.html') ) return true;
+
+	var slash = pathname.indexOf('/', 1);
+
+	// on demande quelque chose à la racine, sans extension ou finissant par .js
+	if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
+		return true;
+	}
+}
+
+exports.use = function usePage(next){
+	if( servePage.call(this) ){
+		this.sendPage();
+	}
+	else{
+		next();
+	}
+};
