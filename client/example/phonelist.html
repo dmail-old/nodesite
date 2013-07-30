@@ -33,7 +33,10 @@ var Model = {
 	},
 
 	setData: function(data){
-		this.data = data;
+		this.data = {};
+		for(var key in data){
+			this.set(key, data[key]);
+		}
 	},
 
 	has: function(name){
@@ -45,8 +48,25 @@ var Model = {
 	},
 
 	set: function(name, value){
-		this.data[name] = value;
-		if( name in this.watchers ) this.watchers[name](value);
+		var old = this.get(name);
+
+		if( Array.isArray(old) ){
+			var length = old.length;
+			while(length--){
+				this.remove(name, 0);
+			}
+		}
+
+		if( Array.isArray(value) ){
+			var i = 0, j = value.length;
+			for(;i<j;i++){
+				this.add(name, value[i]);
+			}
+		}
+		else{
+			this.data[name] = value;
+			if( name in this.watchers ) this.watchers[name](value);
+		}
 	},
 
 	add: function(name, data){
@@ -59,13 +79,27 @@ var Model = {
 			list = this.data[name] = [];
 		}
 
-		var model = Model.new(Object.append(Object.create(this.data), data));
+		//data = Object.append(Object.create(this.data), data);
+
+		var model = Model.new(data);
 
 		list.push(model);
 
-		if( name in this.collectionWatchers ) this.collectionWatchers[name](model, false);
+		if( name in this.collectionWatchers ) this.collectionWatchers[name](model, 'add');
 
 		return model;
+	},
+
+	remove: function(name, index){
+		var list, model;
+
+		if( this.has(name) ){
+			list = this.get(name);
+			model = list[index];
+			list.splice(index, 1);
+
+			if( name in this.collectionWatchers ) this.collectionWatchers[name](model, 'remove');
+		}
 	},
 
 	watch: function(name, listener){
@@ -79,7 +113,7 @@ var Model = {
 		if( this.has(name) ){
 			var list = this.get(name), i = 0, j = list.length;
 
-			// simule que on a ajouter l'item à la liste
+			// simule que on a ajouté l'item à la liste
 			for(;i<j;i++){
 				listener(list[i], false);
 			}

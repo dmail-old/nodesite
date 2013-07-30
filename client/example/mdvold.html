@@ -1,0 +1,285 @@
+<!--
+<my-element id="phone-element">
+
+	<style>
+	phone-element{
+		color: red;
+	}
+	</style>
+
+	<my-template>
+		<my-template repeat="users">
+		{name}
+		</my-template>
+		Coucou <span on-click="onclick">{name}</span><br />
+	</my-template>
+
+	<script>
+	viewDocument.register('phone-element', {
+		methods: {
+			onclick: function(){
+				console.log('click', this.model.get('name'));
+			}
+		}
+	});
+	</script>
+
+</my-element>
+-->
+
+
+<script>
+
+// si je réussit à refaire ça:
+// http://www.polymer-project.org/platform/mdv.html#an-explanatory-sample
+// http://www.polymer-project.org/platform/mdv.html#where-to-go-from-here
+
+Parser.register('event', {
+	nodeType: 1,
+
+	test: function(node){
+		return false;
+
+		var attributes = node.attributes, i = 0, j = attributes.length, events = [];
+
+		for(;i<j;i++){
+			attribute = attributes[i];
+			if( attribute.name.startsWith(this.prefix) ){
+				events.push(attribute.name.slice(this.prefix.length));
+			}
+		}
+
+		return events.length ? events : false;
+	},
+
+	link: function(model, node, events){
+		events.forEach(function(name){
+			node.addEventListener(name, Parser.directives.event.eventListener);
+		});
+	},
+
+	prefix: 'on-',
+	eventListener: function(e){
+		var view = Parser.directives.event.getViewFromNode(this);
+		var attrName = 'on-' + e.type;
+		var method = this.getAttribute(attrName);
+
+		view.callDefinition('methods', method, e);
+	},
+
+	getViewFromNode: function(node){
+		while(node){
+			if( 'view' in node ) return node.view;
+			node = node.parentNode;
+		}
+
+		return null;
+	}
+});
+
+// chaque fois que je trouve la balise my-template, qu'est ce que je fait?
+Parser.register('template', {
+	nodeType: 1,
+	terminal: true,
+
+	test: function(node){
+		return node.nodeName.toLowerCase() == 'my-template';
+	},
+
+	link: function(model, node){
+
+	}
+});
+
+Parser.register('repeat', {
+	nodeType: 8, // comment node
+	terminal: true,
+
+	test: function(node){
+		return false;
+
+		var text = node.textContent.trim();
+
+		if( !text.startsWith('FOREACH') ) return false;
+
+		// list des noeuds qui sont concerné par la répétition
+		var nodeList = [];
+		while( node.nextSibling ){
+			node = node.nextSibling;
+			if( node.nodeType == 8 && node.textContent.trim().startsWith('END') ) break;
+			nodeList.push(node);
+		}
+
+		if( nodeList.length === 0 ) return false;
+
+		// sinon ben faut créer un template pour cette portion
+
+		var view = document.createELement('view');
+		var content = document.createElement('content');
+		nodeList.forEach(function(nodeItem){ content.appendChild(nodeItem); });
+		view.appendChild(content);
+
+		var template = Template.new('repeated-element', view);
+
+		return template;
+	},
+
+	link: function(model, node, template){
+		var parent = node.parentNode;
+
+		parent.removeChild(node);
+
+		model.watchCollection(collection, function(submodel, change){
+			if( change == 'remove' ){
+				// faut retrouver element depuis submodel
+				parent.removeChild(submodel);
+			}
+			else if( change == 'add' ){
+				var view = MDV.create(template);
+				view.insert(parent);
+				view.setModel(submodel);
+			}
+		});
+	}
+});
+
+var View = {
+	element: null,
+
+	create: function(element){
+		this.element = element;
+	},
+
+	instantiate: function(){
+		return ViewInstance.new(this, this.element.cloneNode(true));
+	}
+};
+
+var ViewInstance = {
+	view: null,
+	element: null,
+
+	create: function(view, element){
+		this.view = view;
+		this.element = element;
+	}
+};
+
+var viewDocument = {
+	elements: {},
+
+	register: function(element){
+		if( typeof element == 'string' ){
+			element = document.getElementById(element);
+		}
+
+		var tagName = element.id;
+		var view = View.new(element);
+		this.elements[tagName] = view;
+	},
+
+	create: function(tagName){
+		return this.elements[tagName].instantiate();
+	}
+};
+
+var MyElement = {
+	element: null,
+	template: null,
+	definition: {
+		lifecycle: {
+			created: function(){
+
+			},
+
+			inserted: function(){
+
+			},
+
+			removed: function(){
+
+			},
+
+			attributeChanged: function(name, old, value){
+
+			},
+
+			dataChanged: function(name, old, value){
+
+			}
+		},
+		// get/set data, on verras
+		accessors: {},
+		// qu'est ce qu'on met ici??
+		methods: {}
+		//events: {},
+	},
+
+	create: function(element, definition){
+		this.element = element;
+		this.template = Template.new(this.querySelector('template'));
+		if( typeof definition == 'object' ) this.definition = definition;
+	},
+
+	querySelector: function(selector){
+		return this.element.querySelector(selector);
+	},
+
+	instantiate: function(){
+		return ElementInstance.new(this.template.clone(), this.definition);
+	}
+};
+
+var MyElementInstance = {
+	element: null,
+	definition: null,
+
+	create: function(element, definition){
+		this.element = element;
+		this.element.view = this;
+		if( definition ) this.definition = definition;
+		this.callDefinition('lifecycle', 'created');
+	},
+
+	callDefinition: function(type, name, arg1, arg2){
+		var object = this.definition[type], definition;
+
+		if( typeof object == 'object' ){
+			definition = object[name];
+			if( typeof definition == 'function' ){
+				definition.call(this, arg1, arg2);
+			}
+		}
+	},
+
+	insert: function(parent){
+		if( parent instanceof Element ){
+			this.remove();
+			parent.appendChild(this.element);
+			this.callDefinition('lifecycle', 'inserted');
+		}
+	},
+
+	remove: function(){
+		if( this.element.parentNode ){
+			this.element.parentNode.removeChild(this.element);
+			this.callDefinition('lifecycle', 'removed');
+		}
+	}
+};
+
+/*
+var mutation = new MutationObserver(function(mutations){
+	mutations.forEach(function(mutation) {
+	    console.log(mutation);
+	});
+});
+
+mutation.observe(document.html, {
+	subtree: true,
+	childList: true,
+	attributes: true,
+	characterData: true
+});
+*/
+</script>
