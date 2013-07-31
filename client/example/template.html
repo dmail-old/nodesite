@@ -1,51 +1,404 @@
-<!-- simple rendering -->
-<div id="user_template">
-	<b>{name}</b>
-	<br />
-	<ul>
-		<li>{nameLabel}: {name}</li>
-		<li>{ageLabel}: {age}</li>
-	</ul>
-</div>
+<style>
+tpl, template{ display: none; }
+</style>
 
 <script>
+/*
 
-var userTemplate = NS.Template.new($('user_template'));
+TODO:
 
-// render attendras un object de type model pour pouvoir s'abonner à ses modifications
-// on peut essayer de voir le truc dans le genre de new Proxy(object, handler)
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
-userTemplate.render({
-	nameLabel: 'name',
-	ageLabel: 'age',
-	name: 'Damien',
-	age: 18
+- support {user.name} binding style
+- support repeat attribute on <template>
+- support ref attribute on <template>
+- support attribute binding <input checked="{disabled}">
+- support conditional attribute binding <node disabled?="{disabled}">
+- support multiple bindings as 'heelo {firstname} {lastname}' dans nodeValue/attributeValue
+
+*/
+
+// voilà ce qu'on veut pouvoir faire
+/*
+model.watch('name', function(change){
+	// action can be 'updated', 'new', 'deleted'
+
+	// array action
+	if( change.type == 'splice' ){
+		// change.index;
+		// change.added;
+		// changed.removed;
+	}
 });
 
-</script>
+model.watch('firstname', 'lastname', function(){
+	// ici ben on sait rien pour le moment on va dire
+	// idéalement faudrais savoir ce qui a changé
+});
 
-<!-- iteration -->
-<div id="iteration">
-	<h3>{title}</h3>
-	<ul>
-		<li data-repeat="users">{name}</li>
-	</ul>
-</div>
+model.watch('user.name', function(value, old, action, prop, model){
+	// prop == 'name';
+	// model = model.user
+});
 
-<script>
+ObjectPath = {
+	getValue: function(){
+		var object = this.object, path = this.computedPath, value;
+		var i = 0, j = path.length - 1, part;
+		for(;i<j;i++){
+			part = path[i];
+			if( this.has(object, part) ){
+				object = this.getProperty(object, part);
+				if( !this.is(object) ){
+					break;
+				}
+			}
+			else{
+				break;
+			}
+		}
 
-var userListTemplate = NS.Template.new($('iteration'));
-var data = {
-	title: 'Liste des utilisateurs',
-	users:[
-		{name:'damien'},
-		{name:'sandra'},
-		{name:'seb'}
-	]
+		this.getProperty(object, path[j+1], value);
+
+		return value;
+	},
+
+	setValue: function(value){
+		var object = this.object, path = this.computedPath;
+		var i = 0, j = path.length - 1, part;
+		for(;i<j;i++){
+			part = path[i];
+			if( this.hasProperty(object, part) ){
+				object = this.getProperty(object, part);
+				if( this.is(object) ) continue;
+			}
+			object = this.setProperty(object, part, this.createInstance());
+		}
+		this.setProperty(object, path[j], value);
+	}
+};
+
+*/
+
+var observer = PathObserver.new('user.comment.title');
+var firstPart = observer.firstPart;
+
+firstPart.setModel(Model.new({
+	user: 'coucou'
+}));
+firstPart.setModel(Model.new({
+	user: 'beurk'
+}));
+
+console.log(firstPart.lastChange);
+
+/*
+
+tester avec des parties qu'on modifie etc
+
+
+tester le support de ça après
+en gros on doit désenregistrer les listeners lorsque les modèles changents
+
+// unwatchPartAfter: function(object, index){
+// 	var i = index, j = this.parts.length;
+
+// 	for(;i<j;i++){
+// 		this.unwatchPart(object, i);
+// 		object = this.getProperty(object, this.parts[i + 1]);
+// 		if( !this.is(object) ) break;
+// 	}
+// }
+
+var model = Model.new(); model.name = 'model';
+var user = Model.new(); user.name = 'user';
+var comment = Model.new(); comment.name = 'comment';
+var observer = PathObserver.new('user.comment.title');
+
+observer.lastPart.onchange = function(change){
+	console.log(this.property, 'changed', change);
+};
+
+model.set('user', user);
+user.set('comment', comment);
+model.unset('user');
+user.set('comment', Model.new({
+	'title': 'coucou'
+}));
+
+*/
+
+var Parser = {
+	directives: {},
+
+	collectDirectives: function(node, path){
+		if( typeof path != 'string' ) path = '';
+
+		var found = [], name, directive, terminal = false, nodeType = node.nodeType, i, result;
+
+		for( name in this.directives ){
+			directive = this.directives[name];
+
+			if( directive.nodeType == nodeType ){
+				result = directive.test(node)
+				if( result != false ){
+
+					found.push({
+						name: name,
+						path: path,
+						result: result,
+						link: directive.compile ? directive.compile(node) : directive.link
+					});
+
+					if( directive.terminal ) terminal = true;
+				}
+			}
+		}
+
+		// keep searching directives
+		if( terminal === false && (nodeType == 1 || nodeType == 11) ){
+			found = found.concat(this.collectChildNodesDirectives(node, path));
+		}
+
+		return found;
+	},
+
+	collectNodeListDirectives: function(nodeList, path){
+		if( typeof path != 'string' ) path = '';
+		else if( path != '' ) path+= '.';
+
+		var found = [], i = 0, j = nodeList.length;
+
+		for(;i<j;i++){
+			found = found.concat(this.collectDirectives(nodeList[i], path + i));
+		}
+
+		return found;
+	},
+
+	collectChildNodesDirectives: function(node, path){
+		return this.collectNodeListDirectives(node.childNodes, path);
+	},
+
+	parse: function(element, descendantOnly){
+		var found;
+
+		if( descendantOnly ){
+			found = this.collectChildNodesDirectives(element);
+		}
+		else{
+			found = this.collectDirectives(element);
+		}
+
+		return found;
+	},
+
+	register: function(name, directive){
+		this.directives[name] = Directive.extend(directive);
+	}
+};
+
+var Directive = {
+	nodeType: 1,
+	terminal: false,
+	test: Function.TRUE,
+	compile: null,
+	link: Function.EMPTY
+};
+
+Parser.register('textnode', {
+	nodeType: 3,
+
+	test: function(node){
+		var value = node.nodeValue.trim();
+
+		if( value.startsWith('{') && value.endsWith('}') ){
+			return value.substring(1, value.length - 1);
+		}
+
+		return false;
+	},
+
+	link: function(model, node, property){
+		model.watch(property, function(value){
+			node.nodeValue = value;
+		});
+	}
+});
+
+var Template = {
+	element: null,
+	content: null,
+	directives: null,
+	useNative: false,
+
+	create: function(element){
+		this.element = element;
+
+		this.parentNode = this.element.parentNode;
+		// save the current nextSibling as template can be repeated thus nextsibling become
+		// a templateInstance
+		this.nextSibling = this.element.nextSibling;
+
+		var content = 'content' in element ? element.content : element;
+
+		if( 'content' in element ){
+			this.content = content;
+		}
+		else{
+			// any tag can be used as a template, allow support for older browser
+			// that dont have a content attribute on template tag
+
+
+			this.content = document.createDocumentFragment();
+
+			// this loop keep element in the DOM
+			/*
+			var i = 0, j = content.childNodes.length;
+			for(;i<j;i++){
+				this.content.appendChild(content.childNodes[i].cloneNode(true));
+			}
+			*/
+			// this loop remove content from the DOM
+			var i = content.childNodes.length;
+			while(i--){
+				this.content.appendChild(content.childNodes[0]);
+			}
+		}
+	},
+
+	parse: function(){
+		if( this.directives == null ){
+			this.directives = Parser.parse(this.content);
+		}
+		return this.directives;
+	},
+
+	findNode: function(node, path){
+		if( path === '' ){
+			return node;
+		}
+
+		var parts = path.split('.'), i = 0, j = parts.length;
+
+		for(;i<j;i++){
+			node = node.childNodes[parts[i]];
+			if( node == null ){
+				throw new Error('node not found');
+			}
+		}
+
+		return node;
+	},
+
+	link: function(node, model){
+		var directives = this.parse(), i = directives.length, directive;
+
+		while(i--){
+			directive = directives[i];
+			directive.link(model, this.findNode(node, directive.path), directive.result);
+		}
+	},
+
+	cloneContent: function(){
+		return this.content.cloneNode(true);
+	},
+
+	clone: function(){
+		return TemplateInstance.new(this, this.cloneContent());
+	}
+};
+
+var TemplateInstance = {
+	template: null,
+	fragment: null, // documentfragment from template
+	nodeList: null, // list of node in the fragment
+
+	create: function(template, fragment){
+		this.template = template;
+		this.fragment = fragment;
+		this.model = Model.new();
+		this.template.link(this.fragment, this.model);
+
+		this.nodeList = [];
+		var childNodes = this.fragment.childNodes, i = 0, j = childNodes.length, childNode;
+		for(;i<j;i++){
+			childNode = childNodes[i];
+			childNode.templateInstance = this;
+			this.nodeList.push(childNode);
+		}
+	},
+
+	insert: function(parent, before){
+		if( typeof parent == 'undefined' ){
+			parent = this.template.element.parentNode;
+			before = this.template.nextSibling;
+		}
+
+		if( typeof before == 'undefined' ){
+			parent.appendChild(this.fragment);
+		}
+		else{
+			parent.insertBefore(this.fragment, before);
+		}
+	},
+
+	remove: function(){
+		// put back the node in the fragment
+		// -> if insert is called after remove fragment is still filled with the nodeList
+		this.nodeList.forEach(function(node){
+			this.fragment.appendChild(node);
+		}, this);
+	}
 };
 
 </script>
 
-<!-- nested iteration -->
-<!-- include template -->
-<!-- nested include -->
+<!-- SIMPLE Template -->
+
+<tpl id="template">
+	Coucou <span>{name}</span>
+</tpl>
+
+<script>
+
+var template = Template.new($('template'));
+var clone = template.clone();
+
+clone.insert();
+clone.model.set('name', 'damien');
+
+</script>
+
+<!-- NESTED Template -->
+
+<template id="othertemplate">
+	Coucou <span>{name}</span>
+	<template id="nestedtemplate">
+	Gender: <span>{gender}</span>
+	Age: <span>{age}</span>
+	</template>
+</template>
+
+<script>
+
+/*
+var otherTemplate = Template.new($('othertemplate'));
+var clone = otherTemplate.clone();
+
+clone.model.set('name', 'cassandre');
+clone.insert(document.body);
+
+var nestedTemplate = Template.new($('nestedtemplate'));
+
+var nestedClone = nestedTemplate.clone();
+nestedClone.insert(document.body);
+nestedClone.model.setData({
+	gender: 'fille',
+	age: 18
+});
+*/
+
+</script>
+
+<!-- REPEAT directive -->
+
+<!-- REF directive -->
