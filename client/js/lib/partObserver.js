@@ -1,3 +1,81 @@
+// Object.watch polyfill
+Object.complement({
+	watch: function(prop, handler){
+		var oldval = this[prop], newval = oldval
+
+		function getter(){
+			return newval;
+		}
+
+		function setter(val){
+			oldval = newval;
+			return newval = handler.call(this, prop, oldval, val);
+		}
+
+		if( delete this[prop] ){ // can't watch constants
+			Object.defineProperty(this, prop, {
+				get: getter,
+				set: setter,
+				enumerable: true,
+				configurable: true
+			});
+		}
+	},
+
+	unwatch: function(prop){
+		var val = this[prop];
+		delete this[prop]; // remove accessors
+		this[prop] = val;
+	}
+});
+
+var ObjectEmitter = NS.Emitter.extend({
+	instances: [],
+	newSingleton: function(model){
+		var instances = this.instances, i = 0, j = instances.length, instance, exist;
+
+		for(;i<j;i++){
+			instance = instances[i];
+			if( instance.bind === model ){
+				exist = instance;
+				break;
+			}
+		}
+
+		if( exist ){
+			instance = exist;
+		}
+		else{
+			instance = this.new(model);
+			this.instances.push(instance);
+		}
+
+		return instance;
+	},
+
+	onaddfirstlistener: function(name){
+
+		Object.prototype.watch.call(this.bind, name, function(name, oldValue, value){
+			var has = name in this.bind;
+
+			this.emit(name, {
+				type: has ? 'updated' : 'new',
+				name: name,
+				oldValue: oldValue,
+				value: value,
+				model: this.bind
+			});
+
+			return value;
+		}.bind(this));
+
+	},
+
+	onremovelastlistener: function(name){
+		Object.prototype.unwatch.call(this.bind, name);
+	}
+});
+
 var PartObserver = {
 	property: '',
 	nextPart: null,
@@ -6,17 +84,16 @@ var PartObserver = {
 	value: undefined,
 	lastChange: null,
 	listener: null,
+	emitter: null,
 
 	create: function(property){
 		this.property = property;
 	},
 
-	isModel: function(value){
-		return Model.isPrototypeOf(value);
-	},
-
 	// lorsque la valeur associé à cette partie change dans this.model
 	checkChange: function(change){
+		if( !this.nextPart ) return;
+
 		if( change.type == 'new' ){
 			this.nextPart.setModel(change.value);
 		}
@@ -43,7 +120,7 @@ var PartObserver = {
 			if( change.value == lastChange.value ){
 				return;
 			}
-			// not really a new change, the object is different but the value is just updated
+			// not a new change: the value is updated
 			if( lastChange.type == 'new' && change.type == lastChange.type ){
 				change.type = 'updated';
 				change.oldValue = this.lastChange.value;
@@ -55,36 +132,62 @@ var PartObserver = {
 		this.notify(change);
 	},
 
-	setModel: function(model){
-		if( this.isModel(model) ){
-			this.unsetModel(true);
-			this.model = model;
-			this.model.watch(this.property, this.watcher, this);
+	handleEvent: function(name, args){
+		this.watcher(args[0]);
+	},
 
-			if( model.has(this.property) ){
-				this.watcher({
-					type: 'new',
-					name: this.property,
-					oldValue: undefined,
-					value: model.get(this.property),
-					model: model
-				});
+	isPrimitive: function(value){
+		var type = typeof value;
+		return type == 'number' || type == 'boolean' || type == 'string';
+	},
+
+	setModel: function(model){
+		this.unsetModel(true);
+		this.model = model;
+
+		var change = {
+			type: 'new',
+			name: this.property,
+			oldValue: undefined,
+			value: undefined,
+			model: model
+		};
+
+		// null & undefined cant be watched and dont have property
+		if( model === null || model === undefined ){
+			// let change object untouched
+		}
+		// primitive cant be watched but does have native property (valueOf, toString,...)
+		else if( this.isPrimitive(model) ){
+			change.value = model[this.property];
+		}
+		// object, function
+		else{
+			this.emitter = ObjectEmitter.newSingleton(model);
+			this.emitter.on(this.property, this);
+
+			// model have the property
+			if( this.property in model ){
+				change.value = model[this.property];
 			}
+			// model doesn't have the property but the previous model had it
 			else if( this.lastChange ){
-				this.watcher({
-					type: 'deleted',
-					name: this.property,
-					oldValue: this.lastChange.value,
-					value: undefined,
-					model: this.lastChange.model
-				});
+				change.type = 'deleted'; // we lost the pointer on that property
+				change.oldValue = this.lastChange.value;
+				change.model = this.lastChange.model;
+			}
+			else{
+				// let change object untouched
 			}
 		}
+
+		this.watcher(change);
 	},
 
 	unsetModel: function(fromSetModel){
 		if( this.model ){
-			this.model.unwatch(this.property, this.watcher, this);
+			this.emitter.off(this.property);
+			this.emitter = null;
 			this.model = null;
 
 			if( !fromSetModel && this.lastChange ){

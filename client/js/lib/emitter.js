@@ -16,11 +16,11 @@ NS.Emitter = {
 		this.$listeners = Object.create(this.$listeners);
 	},
 
-	listeners: function(name, create){
-		var listeners = this.$listeners, list = false;
+	listeners: function(name){
+		var listeners = this.$listeners;
 
 		if( name in listeners ) list = listeners[name];
-		else if( create ) list = listeners[name] = [];
+		else list = false;
 
 		return list;
 	},
@@ -31,8 +31,17 @@ NS.Emitter = {
 			throw new TypeError('listener should be a function or object');
 		}
 
+		var listeners = this.$listeners;
+
+		if( name in listeners ){
+			listeners[name].push(listener);
+		}
+		else{
+			listeners[name] = [listener];
+			if( this.onaddfirstlistener ) this.onaddfirstlistener.apply(this, arguments);
+		}
+
 		if( this.onaddlistener ) this.onaddlistener.apply(this, arguments);
-		this.listeners(name, true).push(listener);
 
 		return this;
 	},
@@ -66,7 +75,12 @@ NS.Emitter = {
 					retain.push(item);
 				}
 			}
-			if( retain.length === 0 ) delete listeners[name];
+			if( retain.length === 0 ){
+				delete listeners[name];
+				if( this.onremovelastlistener ){
+					this.onremovelastlistener.apply(this, arguments);
+				}
+			}
 		}
 
 		return this;
@@ -87,8 +101,13 @@ NS.Emitter = {
 		return this.addListener.apply(this, args);
 	},
 
-	applyListener: function(listener, name, args){
-		return listener.apply(this.bind || this, args);
+	applyListener: function(listener, args, name){
+		if( typeof listener == 'object' ){
+			return listener.handleEvent(name, args);
+		}
+		else{
+			return listener.apply(this.bind, args);
+		}
 	},
 
 	applyListeners: function(name, args){
@@ -102,7 +121,7 @@ NS.Emitter = {
 			i = 0;
 			j = listeners.length;
 			for(;i<j;i++){
-				this.applyListener(listeners[i], name, args);
+				this.applyListener(listeners[i], args, name);
 			}
 		}
 

@@ -17,7 +17,6 @@ files = [
 	'../client/js/util/random.js',
 
 	'../client/js/lib/emitter.js',
-	'../client/js/lib/model.js',
 	'../client/js/lib/partObserver.js',
 	'../client/js/lib/pathObserver.js',
 

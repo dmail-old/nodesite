@@ -3,7 +3,7 @@ NS.EventEmitter = NS.Emitter.extend({
 		this.emit(e.type, e);
 	},
 
-	applyListener: function(listener, name, args){
+	applyListener: function(listener, args){
 		if( typeof listener == 'object' ){
 			return listener.handleEvent(args[0]);
 		}

@@ -47,7 +47,7 @@ config.js = [].concat(
 		"emitter", "emitterInterface",
 		"event", "eventEmitter", "eventEmitterInterface", "eventListener",
 		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document",
-		"model", "partObserver", "pathObserver"
+		"partObserver", "pathObserver"
 	].prefix('lib/'),
 	[
 		"browser", "os",

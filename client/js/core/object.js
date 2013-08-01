@@ -90,7 +90,7 @@ Object.implementPair = function(key, value, object){
 		descriptor.enumerable = false;
 	}
 	else{
-		descriptor = {enumerable: false, writable: true, value: value};
+		descriptor = {enumerable: false,  configurable: true, writable: true, value: value};
 	}
 
 	Object.defineProperty(this, key, descriptor);
