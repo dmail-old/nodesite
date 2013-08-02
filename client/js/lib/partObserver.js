@@ -53,31 +53,38 @@ var ObjectEmitter = NS.Emitter.extend({
 		return instance;
 	},
 
+	destroySingleton: function(model){
+		// ce model est perdu, mais perdu que pour un model parent spécifique
+	},
+
+	watcher: function(name, oldValue, value){
+		var has = name in this.bind;
+
+		this.emit(name, {
+			type: has ? 'updated' : 'new',
+			name: name,
+			oldValue: oldValue,
+			value: value,
+			model: this.bind
+		});
+
+		return value;
+	},
+
 	onaddfirstlistener: function(name){
-
-		Object.prototype.watch.call(this.bind, name, function(name, oldValue, value){
-			var has = name in this.bind;
-
-			this.emit(name, {
-				type: has ? 'updated' : 'new',
-				name: name,
-				oldValue: oldValue,
-				value: value,
-				model: this.bind
-			});
-
-			return value;
-		}.bind(this));
-
+		Object.prototype.watch.call(this.bind, name, this.watcher.bind(this));
 	},
 
 	onremovelastlistener: function(name){
 		Object.prototype.unwatch.call(this.bind, name);
+		// c'est le dernier listener pour cette propriété, sur cet objet
+		// faudrais supprimer l'instance lorsque l'objet n'a plus aucun listener pour aucune propriétés
+		console.log(this.$listeners);
 	}
 });
 
 var PartObserver = {
-	property: '',
+	property: null, // can be number or string
 	nextPart: null,
 	previousPart: null,
 	model: null,
@@ -86,8 +93,14 @@ var PartObserver = {
 	listener: null,
 	emitter: null,
 
-	create: function(property){
+	create: function(property, model, observer){
 		this.property = property;
+		if( arguments.length > 1 ){
+			this.setModel(model);
+			if( typeof observer == 'function' ){
+				this.onchange = observer;
+			}
+		}
 	},
 
 	// lorsque la valeur associé à cette partie change dans this.model
@@ -185,9 +198,13 @@ var PartObserver = {
 	},
 
 	unsetModel: function(fromSetModel){
-		if( this.model ){
-			this.emitter.off(this.property);
-			this.emitter = null;
+		if( this.model != null ){
+
+			if( this.emitter ){
+				this.emitter.off(this.property);
+				this.emitter = null;
+			}
+
 			this.model = null;
 
 			if( !fromSetModel && this.lastChange ){

@@ -14,7 +14,29 @@ TODO:
 - support conditional attribute binding <node disabled?="{disabled}">
 - support multiple bindings as 'heelo {firstname} {lastname}' dans nodeValue/attributeValue
 
+observable array:
+
+https://github.com/mennovanslooten/Observable-Arrays/blob/master/js/underscore.observable.js
+https://github.com/angular/angular.js/blob/master/src/ng/directive/ngRepeat.js#L267
+https://github.com/angular/angular.js/blob/master/src/ng/rootScope.js#L359
+http://stackoverflow.com/questions/14966207/javascript-sync-two-arrays-of-objects-find-delta
 */
+
+/*
+apparement faudrais plus une sorte de oldValue, newValue: deux tableau un avant un après
+pour quand on modifie le tableau
+*/
+
+var array = [];
+PartObserver.new(0, array, function(change){
+	console.log('[0] = ', change.value);
+});
+PartObserver.new(1, array, function(change){
+	console.log('[1] = ', change.value);
+});
+array[0] = 'hey';
+array[1] = 'ho';
+array.reverse();
 
 var Parser = {
 	directives: {},
@@ -201,27 +223,28 @@ var Template = {
 	setModel: function(model){
 		if( this.element.hasAttribute('repeat') ){
 			this.instances = [];
+			this.model = model;
 
 			var repeat = this.element.getAttribute('repeat');
 			var observer = PathObserver.new(repeat, model, function(change){
-				/*
-				alllllooooors
-				lorsque la nouvelle valeur est un tableau:
-				*/
-
 				// on répète le template pour chaque item
 				if( Array.isArray(change.value) ){
-					change.value.forEach(function(item){
-						var instance = this.clone();
 
-						this.instances.push(instance);
+					change.value.forEach(function(item, index, array){
+
+						var instance = this.clone();
+						this.instances[index] = instance;
 						instance.insert();
-						instance.setModel(item);
+
+						// on écoute toutes les clé de ce tableau
+						PartObserver.new(index, array, function(change){
+							// change.oldValue <-- this is lost
+							//
+							instance.setModel(change.value);
+						});
 
 					}, this);
 
-					// faudrait une sorte de ArrayListener pour écouter les changements
-					// dans ce tableau
 				}
 				else{
 					// supression de toutes les instances
@@ -240,6 +263,7 @@ var TemplateInstance = {
 	template: null,
 	fragment: null, // documentfragment from template
 	nodeList: null, // list of node in the fragment
+	model: null,
 
 	create: function(template, fragment){
 		this.template = template;
@@ -255,6 +279,10 @@ var TemplateInstance = {
 	},
 
 	setModel: function(model){
+		if( this.model != null ){
+			// ce model est perdu, il a ptet des listeners etc, qu'on doit supprimer
+		}
+
 		this.model = model;
 		this.template.link(this.nodeList, model);
 	},

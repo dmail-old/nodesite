@@ -26,7 +26,9 @@ NS.Emitter = {
 	},
 
 	addListener: function(name, listener){
-		if( typeof name != 'string' ) throw new TypeError('string expected for event name');
+		if( typeof name != 'string' && typeof name != 'number' ){
+			throw new TypeError('string expected for event name ' + name + ' given');
+		}
 		if( typeof listener != 'function' && typeof listener != 'object' ){
 			throw new TypeError('listener should be a function or object');
 		}
@@ -142,7 +144,7 @@ NS.Emitter = {
 	eachEvent: function(method, args){
 		var name = args[0], key;
 
-		if( !name ){
+		if( args.length === 0 ){
 			method.call(this);
 		}
 		else if( typeof name == 'string' ){
@@ -153,6 +155,9 @@ NS.Emitter = {
 			else{
 				method.apply(this, args);
 			}
+		}
+		else if( typeof name == 'number' ){
+			method.apply(this, args);
 		}
 		else if( name instanceof Array ){
 			name.forEach(function(name){
