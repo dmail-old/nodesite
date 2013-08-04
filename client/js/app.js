@@ -36,7 +36,6 @@ window.server = {
 			format: 'json'
 		});
 
-
 		request.parseContentType = function(contentType){
 			if( contentType ){
 				var index = contentType.indexOf(';');
@@ -193,6 +192,9 @@ window.app = {
 	setPage: function(html){
 		//$('page').innerHTML = html;
 		document.body.innerHTML = html;
+		if( typeof Template != 'undefined' ){
+			window.Template.bootstrap(document.body);
+		}		
 		html.stripScripts(true); // évalue le javascript se trouvant dans le html
 	},
 

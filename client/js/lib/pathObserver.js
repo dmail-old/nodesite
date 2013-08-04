@@ -2,14 +2,19 @@ var PathObserver = {
 	path: '',
 	firstPart: null,
 	lastPart: null,
+	closed: false,
 
-	create: function(path, model, observer){
+	toString: function(){
+		return 'PathObserver';
+	},
+
+	create: function(path, model, listener, bind){
 		this.path = path;
 
 		var parts = path.split('.'), i = 0, j = parts.length, currentPart, part;
 
 		for(;i<j;i++){
-			currentPart = PartObserver.new(parts[i]);
+			currentPart = window.PartObserver.new(parts[i]);
 
 			if( part ){
 				currentPart.previousPart = part;
@@ -17,7 +22,7 @@ var PathObserver = {
 			}
 			part = currentPart;
 
-			if( i == 0 ){
+			if( i === 0 ){
 				this.firstPart = part;
 			}
 			if( i == j -1 ){
@@ -25,22 +30,16 @@ var PathObserver = {
 			}
 		}
 
-		if( model ){
-			this.firstPart.setModel(model);
-		}
-		if( observer ){
-			this.lastPart.onchange = observer;
-		}
+		this.firstPart.setModel(model);
+		this.lastPart.onChange(listener, bind);
+	},
 
-		// path not resolved, tel that the path value is undefined
-		if( this.lastPart.lastChange == null ){
-			this.lastPart.watcher({
-				type: 'new',
-				name: this.lastPart.property,
-				oldValue: undefined,
-				value: undefined,
-				model: undefined
-			});
+	close: function(){
+		// all part must be closed
+		if( this.closed === false ){
+			// closing firstPart auto close nextParts
+			this.firstPart.close();
+			this.closed = true;
 		}
 	}
 };

@@ -1,7 +1,7 @@
 // Object.watch polyfill
 Object.complement({
 	watch: function(prop, handler){
-		var oldval = this[prop], newval = oldval
+		var oldval = this[prop], newval = oldval;
 
 		function getter(){
 			return newval;
@@ -29,23 +29,26 @@ Object.complement({
 	}
 });
 
-var ObjectEmitter = NS.Emitter.extend({
+var ObjectChangeEmitter = NS.Emitter.extend({
 	instances: [],
-	newSingleton: function(model){
-		var instances = this.instances, i = 0, j = instances.length, instance, exist;
+	
+	getInstanceFor: function(model){
+		var instances = this.instances, i = 0, j = instances.length, instance;
 
 		for(;i<j;i++){
 			instance = instances[i];
 			if( instance.bind === model ){
-				exist = instance;
-				break;
+				return instance;
 			}
 		}
 
-		if( exist ){
-			instance = exist;
-		}
-		else{
+		return null;
+	},
+
+	newSingleton: function(model){
+		var instance = this.getInstanceFor(model);
+
+		if( !instance ){
 			instance = this.new(model);
 			this.instances.push(instance);
 		}
@@ -53,21 +56,8 @@ var ObjectEmitter = NS.Emitter.extend({
 		return instance;
 	},
 
-	destroySingleton: function(model){
-		// ce model est perdu, mais perdu que pour un model parent spécifique
-	},
-
 	watcher: function(name, oldValue, value){
-		var has = name in this.bind;
-
-		this.emit(name, {
-			type: has ? 'updated' : 'new',
-			name: name,
-			oldValue: oldValue,
-			value: value,
-			model: this.bind
-		});
-
+		this.emit(name, name, oldValue, value);
 		return value;
 	},
 
@@ -78,54 +68,41 @@ var ObjectEmitter = NS.Emitter.extend({
 	onremovelastlistener: function(name){
 		Object.prototype.unwatch.call(this.bind, name);
 		// c'est le dernier listener pour cette propriété, sur cet objet
-		// faudrais supprimer l'instance lorsque l'objet n'a plus aucun listener pour aucune propriétés
-		console.log(this.$listeners);
+		// faudrais supprimer l'instance lorsque l'objet n'a plus aucun listener pour aucune propriété
+		if( Object.isEmpty(this.$listeners) ){
+			this.instances.remove(this);
+		}
 	}
 });
 
-var PartObserver = {
-	property: null, // can be number or string
-	nextPart: null,
-	previousPart: null,
+var PropertyObserver = {
+	closed: false,
+	property: null, // Number|String
 	model: null,
-	value: undefined,
 	lastChange: null,
 	listener: null,
 	emitter: null,
 
-	create: function(property, model, observer){
+	toString: function(){
+		return 'PropertyObserver';
+	},
+
+	create: function(property, model, listener, bind){
 		this.property = property;
-		if( arguments.length > 1 ){
-			this.setModel(model);
-			if( typeof observer == 'function' ){
-				this.onchange = observer;
-			}
+		this.setModel(model);
+		if( typeof listener == 'function' ){
+			this.onChange(listener, bind);
 		}
 	},
 
-	// lorsque la valeur associé à cette partie change dans this.model
-	checkChange: function(change){
-		if( !this.nextPart ) return;
-
-		if( change.type == 'new' ){
-			this.nextPart.setModel(change.value);
-		}
-		else if( change.type == 'updated' ){
-			var prevChange = this.lastChange;
-
-			// supprime l'ancien modèle
-			this.nextPart.unsetModel();
-			// définit le nouveau modèle
-			this.nextPart.setModel(change.value);
-		}
-		else if( change.type == 'deleted' ){
-			// un modèle nécéssaire à la résolution du chemin est supprimé
-			// on perds forcément accès à la valeur qui devient undefined
-			this.nextPart.unsetModel();
+	notify: function(change){
+		this.lastChange = change;
+		if( typeof this.listener == 'function' ){
+			this.listener.call(this.bind, change);
 		}
 	},
 
-	watcher: function(change){
+	notifyChange: function(change){
 		var lastChange = this.lastChange;
 
 		if( lastChange ){
@@ -140,13 +117,23 @@ var PartObserver = {
 			}
 		}
 
-		this.lastChange = change;
-		change = this.checkChange(change) || change;
 		this.notify(change);
 	},
 
+	watcher: function(name, oldValue, value){
+		if( oldValue !== value ){
+			this.notifyChange({
+				type: name in this.model ? 'updated' : 'new',
+				name: name,
+				oldValue: oldValue,
+				value: value,
+				model: this.model
+			});
+		}		
+	},
+
 	handleEvent: function(name, args){
-		this.watcher(args[0]);
+		this.watcher.apply(this, args);
 	},
 
 	isPrimitive: function(value){
@@ -176,7 +163,7 @@ var PartObserver = {
 		}
 		// object, function
 		else{
-			this.emitter = ObjectEmitter.newSingleton(model);
+			this.emitter = ObjectChangeEmitter.newSingleton(model);
 			this.emitter.on(this.property, this);
 
 			// model have the property
@@ -194,21 +181,25 @@ var PartObserver = {
 			}
 		}
 
-		this.watcher(change);
+		this.notifyChange(change);
 	},
 
 	unsetModel: function(fromSetModel){
 		if( this.model != null ){
 
 			if( this.emitter ){
-				this.emitter.off(this.property);
+				this.emitter.off(this.property, this);
 				this.emitter = null;
+			}
+			// close the model if model is a CompoundBinding
+			if( typeof this.model.close == 'function' ){
+				this.model.close();
 			}
 
 			this.model = null;
 
 			if( !fromSetModel && this.lastChange ){
-				this.watcher({
+				this.notifyChange({
 					type: 'deleted',
 					name: this.property,
 					oldValue: this.lastChange.value,
@@ -219,16 +210,34 @@ var PartObserver = {
 		}
 	},
 
-	notify: function(change){
-		if( typeof this.listener == 'function' ){
-			this.listener.call(this, change);
-		}
+	onChange: function(listener, bind){
+		this.listener = listener;
+		this.bind = bind || this;
+		this.notify(this.lastChange || {
+			type: 'new',
+			name: this.property,
+			oldValue: undefined,
+			value: undefined,
+			model: this.model
+		});
 	},
 
-	set onchange(callback){
-		this.listener = callback;
-		if( this.lastChange ){
-			this.notify(this.lastChange);
+	close: function(){
+		if( this.closed === false ){
+			this.unsetModel();
+			this.closed = true;
 		}
 	}
 };
+
+var PartObserver = PropertyObserver.extend({
+	nextPart: null,
+	previousPart: null,
+
+	notify: function(change){
+		if( this.nextPart ){
+			this.nextPart.setModel(change.value);
+		}
+		PropertyObserver.notify.call(this, change);
+	}
+});

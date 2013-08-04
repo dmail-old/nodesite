@@ -8,325 +8,51 @@
 TODO:
 
 - support repeat attribute on <template>
-- support nested template withe repeat attribute
+- support nested template with repeat attribute
 - support ref attribute on <template>
-- support attribute binding <input checked="{disabled}">
-- support conditional attribute binding <node disabled?="{disabled}">
-- support multiple bindings as 'heelo {firstname} {lastname}' dans nodeValue/attributeValue
+- support checked and value attribute on input
 
-observable array:
-
-https://github.com/mennovanslooten/Observable-Arrays/blob/master/js/underscore.observable.js
-https://github.com/angular/angular.js/blob/master/src/ng/directive/ngRepeat.js#L267
-https://github.com/angular/angular.js/blob/master/src/ng/rootScope.js#L359
-http://stackoverflow.com/questions/14966207/javascript-sync-two-arrays-of-objects-find-delta
 */
-
-/*
-apparement faudrais plus une sorte de oldValue, newValue: deux tableau un avant un après
-pour quand on modifie le tableau
-*/
-
-var array = [];
-PartObserver.new(0, array, function(change){
-	console.log('[0] = ', change.value);
-});
-PartObserver.new(1, array, function(change){
-	console.log('[1] = ', change.value);
-});
-array[0] = 'hey';
-array[1] = 'ho';
-array.reverse();
-
-var Parser = {
-	directives: {},
-
-	collectDirectives: function(node, path){
-		if( typeof path != 'string' ) path = '';
-
-		var found = [], name, directive, terminal = false, nodeType = node.nodeType, i, result;
-
-		for( name in this.directives ){
-			directive = this.directives[name];
-
-			if( directive.nodeType == nodeType ){
-				result = directive.test(node)
-				if( result != false ){
-
-					found.push({
-						name: name,
-						path: path,
-						result: result,
-						link: directive.compile ? directive.compile(node) : directive.link
-					});
-
-					if( directive.terminal ) terminal = true;
-				}
-			}
-		}
-
-		// keep searching directives
-		if( terminal === false && (nodeType == 1 || nodeType == 11) ){
-			found = found.concat(this.collectChildNodesDirectives(node, path));
-		}
-
-		return found;
-	},
-
-	collectNodeListDirectives: function(nodeList, path){
-		if( typeof path != 'string' ) path = '';
-		else if( path != '' ) path+= '.';
-
-		var found = [], i = 0, j = nodeList.length;
-
-		for(;i<j;i++){
-			found = found.concat(this.collectDirectives(nodeList[i], path + i));
-		}
-
-		return found;
-	},
-
-	collectChildNodesDirectives: function(node, path){
-		return this.collectNodeListDirectives(node.childNodes, path);
-	},
-
-	parse: function(element, descendantOnly){
-		var found;
-
-		if( descendantOnly ){
-			found = this.collectChildNodesDirectives(element);
-		}
-		else{
-			found = this.collectDirectives(element);
-		}
-
-		return found;
-	},
-
-	register: function(name, directive){
-		this.directives[name] = Directive.extend(directive);
-	}
-};
-
-var Directive = {
-	nodeType: 1,
-	terminal: false,
-	test: Function.TRUE,
-	compile: null,
-	link: Function.EMPTY
-};
-
-Parser.register('textnode', {
-	nodeType: 3,
-
-	test: function(node){
-		var value = node.nodeValue.trim();
-
-		if( value.startsWith('{') && value.endsWith('}') ){
-			return value.substring(1, value.length - 1);
-		}
-
-		return false;
-	},
-
-	link: function(model, node, path){
-		var observer = PathObserver.new(path, model, function(change){
-			node.nodeValue = change.value;
-		});
-	}
-});
-
-var Template = {
-	element: null,
-	content: null,
-	directives: null,
-	useNative: false,
-
-	create: function(element){
-		this.element = element;
-
-		this.parentNode = this.element.parentNode;
-		// save the current nextSibling as template can be repeated thus nextsibling become
-		// a templateInstance
-		this.nextSibling = this.element.nextSibling;
-
-		var content = 'content' in element ? element.content : element;
-
-		if( 'content' in element ){
-			this.content = content;
-		}
-		else{
-			// any tag can be used as a template, allow support for older browser
-			// that dont have a content attribute on template tag
-
-			this.content = document.createDocumentFragment();
-
-			// this loop keep element in the DOM
-			/*
-			var i = 0, j = content.childNodes.length;
-			for(;i<j;i++){
-				this.content.appendChild(content.childNodes[i].cloneNode(true));
-			}
-			*/
-			// this loop remove content from the DOM
-			var i = content.childNodes.length;
-			while(i--){
-				this.content.appendChild(content.childNodes[0]);
-			}
-		}
-	},
-
-	parse: function(){
-		if( this.directives == null ){
-			this.directives = Parser.parse(this.content, true);
-		}
-		return this.directives;
-	},
-
-	findNode: function(nodeList, path){
-		if( path === '' ){
-			return node;
-		}
-
-		var parts = path.split('.'), i = 0, j = parts.length;
-
-		for(;i<j;i++){
-			node = nodeList[parts[i]];
-			if( node == null ){
-				throw new Error('node not found');
-			}
-			else{
-				nodeList = node.childNodes;
-			}
-		}
-
-		return node;
-	},
-
-	link: function(nodeList, model){
-		var directives = this.parse(), i = directives.length, directive;
-
-		while(i--){
-			directive = directives[i];
-			directive.link(model, this.findNode(nodeList, directive.path), directive.result);
-		}
-	},
-
-	cloneContent: function(){
-		return this.content.cloneNode(true);
-	},
-
-	clone: function(){
-		return TemplateInstance.new(this, this.cloneContent());
-	},
-
-	setModel: function(model){
-		if( this.element.hasAttribute('repeat') ){
-			this.instances = [];
-			this.model = model;
-
-			var repeat = this.element.getAttribute('repeat');
-			var observer = PathObserver.new(repeat, model, function(change){
-				// on répète le template pour chaque item
-				if( Array.isArray(change.value) ){
-
-					change.value.forEach(function(item, index, array){
-
-						var instance = this.clone();
-						this.instances[index] = instance;
-						instance.insert();
-
-						// on écoute toutes les clé de ce tableau
-						PartObserver.new(index, array, function(change){
-							// change.oldValue <-- this is lost
-							//
-							instance.setModel(change.value);
-						});
-
-					}, this);
-
-				}
-				else{
-					// supression de toutes les instances
-					this.instances.forEach(function(instance){
-						instance.remove();
-					});
-					this.instances = null;
-				}
-
-			}.bind(this));
-		}
-	}
-};
-
-var TemplateInstance = {
-	template: null,
-	fragment: null, // documentfragment from template
-	nodeList: null, // list of node in the fragment
-	model: null,
-
-	create: function(template, fragment){
-		this.template = template;
-		this.fragment = fragment;
-		this.nodeList = [];
-
-		var childNodes = this.fragment.childNodes, i = 0, j = childNodes.length, childNode;
-		for(;i<j;i++){
-			childNode = childNodes[i];
-			childNode.templateInstance = this;
-			this.nodeList.push(childNode);
-		}
-	},
-
-	setModel: function(model){
-		if( this.model != null ){
-			// ce model est perdu, il a ptet des listeners etc, qu'on doit supprimer
-		}
-
-		this.model = model;
-		this.template.link(this.nodeList, model);
-	},
-
-	insert: function(parent, before){
-		if( typeof parent == 'undefined' ){
-			parent = this.template.element.parentNode;
-			before = this.template.nextSibling;
-		}
-
-		if( typeof before == 'undefined' ){
-			parent.appendChild(this.fragment);
-		}
-		else{
-			parent.insertBefore(this.fragment, before);
-		}
-	},
-
-	remove: function(){
-		// put back the node in the fragment
-		// -> if insert is called after remove fragment is still filled with the nodeList
-		this.nodeList.forEach(function(node){
-			this.fragment.appendChild(node);
-		}, this);
-	}
-};
 
 </script>
 
 <!-- SIMPLE Template -->
 
-<div id="template" repeat="users" template>
+<div id="template" template>
+	Coucou {name}
+	<span style="color:{color}">{color}</span>
+</div>
+
+<script>
+var template = $('template').template;
+var model = {
+	name: 'damien',
+	color: 'red'
+};
+
+template.setModel(model);
+//template.unsetModel();
+//console.log(ObjectChangeEmitter.instances.length);
+
+</script>
+
+<!-- REPEAT Template -->
+
+<div id="repeat-template" repeat="users" template>
 	Coucou <span>{name}</span>
 </div>
 
 <script>
-var template = Template.new($('template'));
+//var template = $('repeat-template').template;
 
+/*
 template.setModel({
 	users: [
 		{name: 'damien'},
 		{name: 'idir'}
 	]
 });
+*/
 
 </script>
 
