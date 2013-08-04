@@ -32,6 +32,7 @@ Object.complement({
 var ObjectChangeEmitter = NS.Emitter.extend({
 	instances: [],
 	
+	// on pourrait aussi utiliser un double tableau genre objects: [], instances: [], plus rapide je pense
 	getInstanceFor: function(model){
 		var instances = this.instances, i = 0, j = instances.length, instance;
 
@@ -57,7 +58,9 @@ var ObjectChangeEmitter = NS.Emitter.extend({
 	},
 
 	watcher: function(name, oldValue, value){
-		this.emit(name, name, oldValue, value);
+		if( oldValue != value ){
+			this.emit(name, name, oldValue, value);
+		}		
 		return value;
 	},
 
@@ -121,15 +124,13 @@ var PropertyObserver = {
 	},
 
 	watcher: function(name, oldValue, value){
-		if( oldValue !== value ){
-			this.notifyChange({
-				type: name in this.model ? 'updated' : 'new',
-				name: name,
-				oldValue: oldValue,
-				value: value,
-				model: this.model
-			});
-		}		
+		this.notifyChange({
+			type: name in this.model ? 'updated' : 'new',
+			name: name,
+			oldValue: oldValue,
+			value: value,
+			model: this.model
+		});
 	},
 
 	handleEvent: function(name, args){
@@ -184,21 +185,21 @@ var PropertyObserver = {
 		this.notifyChange(change);
 	},
 
-	unsetModel: function(fromSetModel){
+	unsetModel: function(supressNotify){
 		if( this.model != null ){
 
 			if( this.emitter ){
 				this.emitter.off(this.property, this);
 				this.emitter = null;
 			}
-			// close the model if model is a CompoundBinding
+			// close the model if model is a ComputedBinding
 			if( typeof this.model.close == 'function' ){
 				this.model.close();
 			}
 
 			this.model = null;
 
-			if( !fromSetModel && this.lastChange ){
+			if( !supressNotify && this.lastChange ){
 				this.notifyChange({
 					type: 'deleted',
 					name: this.property,
@@ -224,20 +225,8 @@ var PropertyObserver = {
 
 	close: function(){
 		if( this.closed === false ){
-			this.unsetModel();
+			this.unsetModel(true);
 			this.closed = true;
 		}
 	}
 };
-
-var PartObserver = PropertyObserver.extend({
-	nextPart: null,
-	previousPart: null,
-
-	notify: function(change){
-		if( this.nextPart ){
-			this.nextPart.setModel(change.value);
-		}
-		PropertyObserver.notify.call(this, change);
-	}
-});

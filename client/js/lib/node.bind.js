@@ -10,17 +10,17 @@ var NodeBinding = {
 		this.observer = window.PathObserver.new(path, model, this.onchange, this);
 	},
 
-	onchange: function(change){
-		this.valueChanged(change.value);
+	encodeValue: function(value){
+		return value === undefined ? '' : String(value);
 	},
 
 	valueChanged: function(value){
 		this.node[this.property] = this.encodeValue(value);
 	},
 
-	encodeValue: function(value){
-		return value === undefined ? '' : String(value);
-	},
+	onchange: function(change){
+		this.valueChanged(change.value);
+	},	
 
 	close: function(){
 		if( this.closed === false ){
@@ -96,4 +96,70 @@ var AttributeBinding = NodeBinding.extend({
 Element.prototype.bind = function(name, model, path) {
 	this.unbind(name);
 	return this.bindings[name] = AttributeBinding.new(this, name, model, path);
+};
+
+var ComputedBinding = {
+	observers: null,
+	values: null,
+	value: undefined,
+	size: 0,
+	combinator: null,
+	bind: null,
+	closed: false,
+	delayed: true,
+
+	create: function(combinator, bind){
+		this.observers = {};
+		this.values = {};
+		this.combinator = combinator;
+		this.bind = bind || this;
+	},
+
+	resolve: function() {
+		if( this.closed === false ){
+			if ( !this.combinator ){
+				throw Error('ComputedBinding attempted to resolve without a combinator');
+			}
+			this.value = this.combinator.call(this.bind, this.values);
+			this.delayed = false;
+		}
+	},
+
+	checkResolve: function(force){
+		if( this.delayed === false || force === true ){
+			this.resolve();
+		}
+	},	
+
+	valueChanged: function(change){
+		this.values[change.name] = change.value;
+		this.checkResolve();
+	},
+
+	observe: function(name, model, path, suppressResolve) {
+		this.unobserve(name);
+		this.size++;
+		this.observers[name] = window.PathObserver.new(path, model, this.valueChanged, this);
+		this.checkResolve(!suppressResolve);
+	},
+
+	unobserve: function(name, suppressResolve) {
+		if( this.observers[name] ){
+			this.size--;
+			this.observers[name].close();
+			delete this.observers[name];
+			delete this.values[name];
+			this.checkResolve(!suppressResolve);
+		}      
+	},
+
+	close: function(){
+		if( this.closed === false ){
+			for(var key in this.observers){
+				this.unobserve(key, true);
+			}
+			this.closed = true;
+			this.value = undefined;
+		}
+	}
 };

@@ -1,7 +1,7 @@
 var Parser = {
 	directives: {},
 
-	collectDirectives: function(node, path){
+	collect: function(node, path){
 		if( typeof path != 'string' ) path = '';
 
 		var found = [], name, directive, terminal = false, nodeType = node.nodeType, i, linker;
@@ -11,12 +11,9 @@ var Parser = {
 
 			if( directive.nodeType == nodeType ){
 				linker = directive.compile(node);
-				if( linker !== false ){
-
+				if( Linker.isPrototypeOf(linker) ){
 					linker.path = path;
-
 					found.push(linker);
-
 					if( directive.terminal ) terminal = true;
 				}
 			}
@@ -24,37 +21,37 @@ var Parser = {
 
 		// keep searching directives
 		if( terminal === false && (nodeType == 1 || nodeType == 11) ){
-			found = found.concat(this.collectChildNodesDirectives(node, path));
+			found = found.concat(this.collectChildNodes(node, path));
 		}
 
 		return found;
 	},
 
-	collectNodeListDirectives: function(nodeList, path){
+	collectNodeList: function(nodeList, path){
 		if( typeof path != 'string' ) path = '';
 		else if( path !== '' ) path+= '.';
 
 		var found = [], i = 0, j = nodeList.length;
 
 		for(;i<j;i++){
-			found = found.concat(this.collectDirectives(nodeList[i], path + i));
+			found = found.concat(this.collect(nodeList[i], path + i));
 		}
 
 		return found;
 	},
 
-	collectChildNodesDirectives: function(node, path){
-		return this.collectNodeListDirectives(node.childNodes, path);
+	collectChildNodes: function(node, path){
+		return this.collectNodeList(node.childNodes, path);
 	},
 
 	parse: function(element, descendantOnly){
 		var found;
 
 		if( descendantOnly ){
-			found = this.collectChildNodesDirectives(element);
+			found = this.collectChildNodes(element);
 		}
 		else{
-			found = this.collectDirectives(element);
+			found = this.collect(element);
 		}
 
 		return found;
@@ -71,7 +68,7 @@ var Directive = {
 	compile: Function.FALSE
 };
 
-// a linker is just a compiled directive
+// a linker is a compiled directive
 var Linker = {
 	path: null,
 	toString: function(){
@@ -131,7 +128,7 @@ var TokensLinker = Linker.extend({
 	},
 
 	link: function(node, model){
-		var computedBinding = ComputedBinding.new(this.combine, this);
+		var computedBinding = window.ComputedBinding.new(this.combine, this);
 
 		var tokens = this.tokens, i = 1, j = this.tokens.length;
 		for(;i<j;i+=2){
@@ -170,72 +167,6 @@ var LinkerListLinker = Linker.extend({
 		}
 	}
 });
-
-var ComputedBinding = {
-	observers: null,
-	values: null,
-	value: undefined,
-	size: 0,
-	combinator: null,
-	bind: null,
-	closed: false,
-	delayed: true,
-
-	create: function(combinator, bind){
-		this.observers = {};
-		this.values = {};
-		this.combinator = combinator;
-		this.bind = bind || this;
-	},
-
-	resolve: function() {
-		if( this.closed === false ){
-			if ( !this.combinator ){
-				throw Error('ComputedBinding attempted to resolve without a combinator');
-			}
-			this.value = this.combinator.call(this.bind, this.values);
-			this.delayed = false;
-		}
-	},
-
-	checkResolve: function(force){
-		if( this.delayed === false || force === true ){
-			this.resolve();
-		}
-	},	
-
-	valueChanged: function(change){
-		this.values[change.name] = change.value;
-		this.checkResolve();
-	},
-
-	observe: function(name, model, path, suppressResolve) {
-		this.unobserve(name);
-		this.size++;
-		this.observers[name] = window.PathObserver.new(path, model, this.valueChanged, this);
-		this.checkResolve(!suppressResolve);
-	},
-
-	unobserve: function(name, suppressResolve) {
-		if( this.observers[name] ){
-			this.size--;
-			this.observers[name].close();
-			delete this.observers[name];
-			delete this.values[name];
-			this.checkResolve(!suppressResolve);
-		}      
-	},
-
-	close: function(){
-		if( this.closed === false ){
-			for(var key in this.observers){
-				this.unobserve(key, true);
-			}
-			this.closed = true;
-			this.value = undefined;
-		}
-	}
-};
 
 // https://github.com/Polymer/mdv/blob/master/src/template_element.js#L871
 function parseMustacheTokens(string) {
@@ -357,9 +288,10 @@ var Template = {
 		return this.content.cloneNode(true);
 	},
 
-	createInstance: function(){
+	createInstance: function(model){
 		var instance = TemplateInstance.new(this);
-		this.instances.push(instance);
+		//this.instances.push(instance);
+		instance.setModel(model);
 		instance.insert();
 		return instance;
 	},
@@ -371,19 +303,27 @@ var Template = {
 		if( this.element.hasAttribute('repeat') ){
 
 			var repeat = this.element.getAttribute('repeat');
-			var observer = window.PathObserver.new(repeat, model, function(change){
+			window.PathObserver.new(repeat, model, function(change){
 				// on répète le template pour chaque item
 				if( Array.isArray(change.value) ){
 
-					change.value.forEach(function(item, index, array){
-						var instance = this.createInstance();
-						// on écoute toutes les clé de ce tableau
-						window.PartObserver.new(index, array, function(change){
-							// change.oldValue <-- this is lost
-							//
-							instance.setModel(change.value);
-						});
-
+					window.ArrayObserver.new(change.value, function(change){
+						if( change.type == 'add' ){
+							this.instances[change.index] = this.createInstance(change.value);
+						}
+						else if( change.type == 'update' ){
+							this.instances[change.index].destroy();
+							this.instances[change.index] = this.createInstance(change.value);
+						}
+						else if( change.type == 'move' ){
+							// TODO insertAt
+							this.instances[change.index].insertAt(change.index);
+						}
+						else if( change.type == 'remove' ){
+							var instance = this.instances[change.index];
+							instance.destroy();
+							this.instances.splice(change.index, 1);
+						}
 					}, this);
 
 				}
@@ -399,16 +339,14 @@ var Template = {
 
 		}
 		else{
-			var instance = this.createInstance();
-			instance.setModel(model);
+			this.instances.push(this.createInstance(model));
 		}
 	},
 
 	unsetModel: function(){
 		if( this.model ){
 			this.instances.forEach(function(instance){
-				instance.unsetModel();
-				instance.remove();
+				instance.destroy();
 			}, this);
 			this.instances = [];
 			this.model = null;
@@ -436,6 +374,11 @@ var TemplateInstance = {
 			if( node == last ) break;
 			node = node.nextSibling;
 		}
+	},
+
+	destroy: function(){
+		this.unsetModel();
+		this.remove();
 	},
 
 	getNodeAt: function(path){
