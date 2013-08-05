@@ -41,14 +41,19 @@ config.js = [].concat(
 		"filter",
 		"list",  "array.iterate", "array.find",
 		"options", "chain", "memory", "path",
+		"weakMap",
 		"fx"
 	].prefix('util/'),
 	[
 		"emitter", "emitterInterface",
 		"event", "eventEmitter", "eventEmitterInterface", "eventListener",
-		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document",
-		"propertyObserver", "pathObserver", "node.bind", "template"
+		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"
 	].prefix('lib/'),
+	[
+		"object.watch", "objectChangeEmitter",
+		"propertyObserver", "partObserver", "pathObserver",
+		"arrayObserver"
+	].prefix('observer/'),
 	[
 		"browser", "os",
 		"event", "elementEmitter",
@@ -57,6 +62,9 @@ config.js = [].concat(
 		"element.keepIntoView", "element.find",
 		"request"
 	].prefix('browser/'),
+	[
+		"linker", "parser", "node.bind", "template"
+	].prefix('mdv/'),
 	[
 		"selection", "keynav", "rootkeynav", "shortcut", "editable"
 	].prefix('ui/'),

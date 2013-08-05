@@ -1,83 +1,3 @@
-// Object.watch polyfill
-Object.complement({
-	watch: function(prop, handler){
-		var oldval = this[prop], newval = oldval;
-
-		function getter(){
-			return newval;
-		}
-
-		function setter(val){
-			oldval = newval;
-			return newval = handler.call(this, prop, oldval, val);
-		}
-
-		if( delete this[prop] ){ // can't watch constants
-			Object.defineProperty(this, prop, {
-				get: getter,
-				set: setter,
-				enumerable: true,
-				configurable: true
-			});
-		}
-	},
-
-	unwatch: function(prop){
-		var val = this[prop];
-		delete this[prop]; // remove accessors
-		this[prop] = val;
-	}
-});
-
-var ObjectChangeEmitter = NS.Emitter.extend({
-	instances: [],
-	
-	// on pourrait aussi utiliser un double tableau genre objects: [], instances: [], plus rapide je pense
-	getInstanceFor: function(model){
-		var instances = this.instances, i = 0, j = instances.length, instance;
-
-		for(;i<j;i++){
-			instance = instances[i];
-			if( instance.bind === model ){
-				return instance;
-			}
-		}
-
-		return null;
-	},
-
-	newSingleton: function(model){
-		var instance = this.getInstanceFor(model);
-
-		if( !instance ){
-			instance = this.new(model);
-			this.instances.push(instance);
-		}
-
-		return instance;
-	},
-
-	watcher: function(name, oldValue, value){
-		if( oldValue != value ){
-			this.emit(name, name, oldValue, value);
-		}		
-		return value;
-	},
-
-	onaddfirstlistener: function(name){
-		Object.prototype.watch.call(this.bind, name, this.watcher.bind(this));
-	},
-
-	onremovelastlistener: function(name){
-		Object.prototype.unwatch.call(this.bind, name);
-		// c'est le dernier listener pour cette propriété, sur cet objet
-		// faudrais supprimer l'instance lorsque l'objet n'a plus aucun listener pour aucune propriété
-		if( Object.isEmpty(this.$listeners) ){
-			this.instances.remove(this);
-		}
-	}
-});
-
 var PropertyObserver = {
 	closed: false,
 	property: null, // Number|String
@@ -164,7 +84,7 @@ var PropertyObserver = {
 		}
 		// object, function
 		else{
-			this.emitter = ObjectChangeEmitter.newSingleton(model);
+			this.emitter = window.ObjectChangeEmitter.new(model);
 			this.emitter.on(this.property, this);
 
 			// model have the property

@@ -173,12 +173,12 @@ Array.implement('orderBy', function(){
 	return this.sort(Array.getComparer.apply(Array, arguments));
 });
 
-Function.COMPARE_INFERIOR = function(a, b){ return a < b ? -1 : 1; };
+Function.COMPARE = function(a, b){ return a < b ? -1 : a > b ? 1 : 0; };
 
 Array.implement('getInsertionOrderIndex', function(item, compare){
 	var i = 0, j = this.length;
 
-	if( compare == null ) compare = Function.COMPARE_INFERIOR;
+	if( compare == null ) compare = Function.COMPARE;
 
 	for(;i<j;i++){
 		if( compare(item, this[i]) === -1 ){
@@ -193,4 +193,30 @@ Array.implement('getInsertionOrderIndex', function(item, compare){
 Array.implement('insertSort', function(item, compare){
 	this.splice(this.getInsertionOrderIndex(item, compare), 0, item);
 	return this;
+});
+
+Array.implement('sortWithMoves', function(comparer){
+	var array = this, i = 0, j = array.length, pairs = [], pair, index, moves = [];
+
+	for(;i<j;i++){
+		pairs[i] = [i, array[i]];
+	}
+
+	if( typeof comparer != 'function' ) comparer = Function.COMPARE;
+
+	pairs.sort(function(a, b){
+		return comparer.call(array, a[1], b[1]);
+	});
+
+	i = 0;
+	for(;i<j;i++){
+		pair = pairs[i];
+		index = pair[0];
+		if( index != i ){
+			moves.push(index, i);
+		}
+		array[i] = pair[1];
+	}
+
+	return moves;
 });

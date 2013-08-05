@@ -10,6 +10,7 @@ TODO:
 - support repeat attribute on <template>
 - support nested template with repeat attribute
 - support ref attribute on <template>
+- support if attribute
 - support checked and value attribute on input
 
 */
@@ -43,16 +44,16 @@ template.setModel(model);
 </div>
 
 <script>
-//var template = $('repeat-template').template;
-
-/*
-template.setModel({
+var template = $('repeat-template').template;
+var model = {
 	users: [
 		{name: 'damien'},
-		{name: 'idir'}
+		{name: 'idir'},
+		{name: 'cassandre'}
 	]
-});
-*/
+};
+
+template.setModel(model);
 
 </script>
 
