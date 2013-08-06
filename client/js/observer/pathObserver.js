@@ -31,7 +31,7 @@ var PathObserver = {
 		}
 
 		this.firstPart.setModel(model);
-		this.lastPart.onChange(listener, bind);
+		this.lastPart.onChange(listener, bind || this);
 	},
 
 	close: function(){

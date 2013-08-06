@@ -2,9 +2,9 @@
 
 // this array stay in sync with supplied array
 Array.prototype.sync = function(array){
-	ArrayObserver.new(array, function(change){
-		if( change.type == 'move' ){
-			this[change.index] = change.value;
+	var observer = ArrayObserver.new(array, function(change){
+		if( change.type == 'affectations' ){
+			observer.performAffectations(change.value, this);
 		}
 		else if( change.type == 'add' ){
 			this[change.index] = change.value;
@@ -46,9 +46,71 @@ array.sort();
 
 //array.splice(1, 1, 'coucou');
 
-//var array = ['a', 'b', 'c'];
-//var syncArray = [].sync(array);
+/*
 
+var array = ['a', 'b', 'c'];
+var syncArray = [].sync(array);
+
+array.reverse();
+
+console.log(array, syncArray);
+*/
+
+// will go to spec for tests
+
+function testMoves(array){
+	var sortCopy = [].concat(array);
+	var moveCopy = [].concat(array);
+	//var syncCopy = [].concat(array);
+	var affectations = sortCopy.sortWithAffectations();
+
+	// comment je fais pour mon template js moi maintenant?
+	var moves = transformAffectationsToMoves(affectations);
+	var i = 0, j = moves.length;
+
+	for(;i<j;i+=2){
+		moveCopy.move(moves[i], moves[i+1]);
+	}
+
+	if( sortCopy.join('') === moveCopy.join('') ){
+		return true;
+	}
+	else{
+		console.log(affectations);
+		console.log(array, sortCopy, moveCopy);
+		return false;
+	}
+}
+
+function testAffectations(array){
+	var sortCopy = [].concat(array);
+	var affectCopy = [].concat(array);
+	//var syncCopy = [].concat(array);
+	var affectations = sortCopy.sortWithAffectations();
+
+	ArrayObserver.array = sortCopy;
+	ArrayObserver.performAffectations(affectations, affectCopy);
+
+	if( sortCopy.join('') === affectCopy.join('') ){
+		return true;
+	}
+	else{
+		console.log(affectations);
+		console.log(array, sortCopy, affectCopy);
+		return false;
+	}
+}
+
+// create array filled with a to z letters and suffle them
+
+// returns true if calling sort() then doing resulting affectations are equivalent
+console.log(testAffectations(Array.range('a', 'z').shuffle()));
+console.log(testAffectations(Array.range('a', 'z').shuffle()));
+console.log(testAffectations(Array.range('a', 'z').shuffle()));
+// return true if calling sort() the doing resulting moves() on affectations are equivalent
+console.log(testMoves(Array.range('a', 'z').shuffle()));
+console.log(testMoves(Array.range('a', 'z').shuffle()));
+console.log(testMoves(Array.range('a', 'z').shuffle()));
 
 
 </script>

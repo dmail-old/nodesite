@@ -98,7 +98,7 @@ var route = {
 			}
 		}
 
-		return 'text';
+		return 'text/plain';
 	},
 
 	writeHead: function(status, headers){
@@ -112,7 +112,7 @@ var route = {
 		var desc = codes[this.status];
 
 		if( this.hasHeader('content-type') ){
-			var contentType = this.parseContentType(this.getHeader('content-type'));
+			var contentType = this.getContentType();
 			if( !this.accept(contentType) ){
 				logger.warn(contentType + ' not in accept header');
 			}
@@ -167,7 +167,7 @@ var route = {
 	},
 
 	error: function(error){
-		logger.log('error', error.stack);
+		//logger.log('error', error.stack);
 		this.send(500, error);
 	},
 
@@ -194,7 +194,8 @@ var route = {
 				result = handler.call(self, nextHandler);
 			}
 			catch(e){
-				return self.error(new Error('handler internal error'));
+				console.error('handler internal error', e);
+				return self.error(e);
 			}
 		}
 
@@ -203,7 +204,7 @@ var route = {
 };
 
 route.formats = {};
-route.formats['text'] = function(data, encoding){
+route.formats['text/plain'] = function(data, encoding){
 	if( data instanceof Error ){
 		if( data.statusCode ) this.status = data.statusCode;
 		data = data.message;

@@ -30,6 +30,37 @@ var PropertyLinker = Linker.extend({
 	}
 });
 
+var TokenLinker = Linker.extend({
+	nodeAttribute: null,
+	modelProperty: null,
+	prefix: '',
+	suffix: '',
+
+	create: function(nodeAttribute, modelProperty, prefix, suffix){
+		this.nodeAttribute = nodeAttribute;
+		this.modelProperty = modelProperty;
+		this.prefix = prefix;
+		this.suffix = suffix;
+	},
+
+	toString: function(){
+		return 'TokenLinker';
+	},
+
+	link: function(node, model){
+		var self = this;
+		var observer = window.PathObserver.new(this.modelProperty, model, function(change){
+			this.value = self.prefix + change.value + self.suffix;
+		});
+
+		node.bind(this.nodeAttribute, observer, 'value');
+	},
+
+	unlink: function(node){
+		node.unbind(this.nodeAttribute);
+	}
+});
+
 var TokensLinker = Linker.extend({
 	nodeAttribute: null,
 	tokens: null,

@@ -104,41 +104,31 @@ var ArrayObserver = {
 		reverse: function(){
 			this.applyMethod('reverse', arguments);
 
-			var i = 0, j = this.array.length, index;
+			var i = 0, j = this.array.length, index, affectations = [];
+
 			for(;i<j;i++){
 				index = j - i - 1;
 				if( i != index ){
-					this.notify({
-						type: 'move',
-						oldIndex: i,
-						index: index,
-						value: this.array[index]
-					});
+					affectations.push(index, i);
 				}
 			}
+
+			this.notify({
+				type: 'affectations',
+				value: affectations
+			});
 
 			return this.array;
 		},
 
 		sort: function(comparer){
 			this.delayed = true;
-			var moves = this.array.sortWithMoves(comparer), i = 0, j = moves.length, oldIndex, index;
+			var affectations = this.array.sortWithAffectations(comparer);
 			this.delayed = false;
 
-			for(;i<j;i+=2){
-				oldIndex = moves[i];
-				index = moves[i+1];
-				this.notify({
-					type: 'move',
-					oldIndex: oldIndex,
-					index: index,
-					value: this.array[index]
-				});
-			}
-
 			this.notify({
-				type: 'moves',
-				value: moves
+				type: 'affectations',
+				value: affectations
 			});
 
 			return this.array;
@@ -238,5 +228,24 @@ var ArrayObserver = {
 			oldValue: oldValue,
 			value: value
 		});
+	},
+
+	performAffectations: function(affectations, callback, bind){
+		var i = 0, j = affectations.length, oldIndex, index, value;
+
+		bind = bind || this;
+
+		for(;i<j;i++){
+			oldIndex = affectations[i];
+			index = affectations[i + 1];
+			value = this.array[index];
+
+			if( typeof callback == 'function' ){
+				callback.call(bind, oldIndex, index, value);
+			}
+			else if( Array.isArray(callback) ){
+				callback[index] = value;
+			}
+		}
 	}
 };

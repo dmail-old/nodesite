@@ -78,99 +78,34 @@ var Template = {
 	},
 
 	/*
-	Some explanation on the following:
+	When calling sort or reverse on model, i get a list of affectations
+	[oldIndex, newIndex, ...]
+	The list is used to sync model and this.instances
 
-	When calling sort or reverse on model, i get a list of oldIndex, newIndex
-	That list is used to the model state in this.instances
-
-	When doing this.instances[index] = this.instance[oldIndex]
-	I lost the reference to this.instances[index]
-	That's why i need the memory object to hold thoses references
-
-	Moreover some movements are already performed by moving instance fragment nodes
-	Im testing that case with the noop var
-
-	Example:
-
-	var model = ['b', 'c', 'a'];
-	model.sort();
-	// i've called sort, to reflect the model state, i have to do
-	instances[0] = 'a';
-	instances[1] = 'b';
-	instances[2] = 'c';
-	// on the DOM moving 'a' before 'b' is enough, because the resulting state will be:
-	-> 'a', 'b', 'c'
-
+	As instance represent DOM nodes I have to move DOM nodes accordingly
+	for more information look at transformAffectationsToMoves
 	*/
-	applyMoves: function(moves){
-		var i = 0, j = moves.length, memory = {}, oldIndex, index;
-		var instances = this.instances, instance, currentInstance, prevIndex, noop;
+	performAffectations: function(affectations){
+		var i, j, oldIndex, index, instance, currentInstance, instances = this.instances;
+		var moves = window.transformAffectationsToMoves(affectations);
 
-		var from, to;
-		var length = this.instances.length;
-		var simulatedIndexGap = {};
-
-		// un décalage se crée lorsque j'insère un élément
-		// tout les élément à droite de l'élément nouvellement
-		// inséré voit leur index diminué de 1 automatiquement
-
+		i = 0;
+		j = moves.length;
 		for(;i<j;i+=2){
 			oldIndex = moves[i];
-			index = moves[i+1];
-			instance = oldIndex in memory ? memory[oldIndex] : instances[oldIndex];
+			index = moves[i + 1];
+			instance = instances[oldIndex];
+			currentInstance = instances[index];
 
-			// remember wich instance was there
-			memory[index] = this.instances[index];
-			// putting the right instance at the right index
-			this.instances[index] = instance;
+			/*
+			move is a costfull operation (two splice) but it's the only way i've found
+			to make DOM follow the instances array state
 
-			if( i > 0 ){
-				if( index in simulatedIndexGap ){
-					noop = index + simulatedIndexGap[index] === oldIndex;
-				}
-				else{
-					noop = false;
-				}
-			}
-			else{
-				noop = false;
-			}
-
-			if( noop === false ){
-				currentInstance = index in memory ? memory[index] : instances[index];
-				instance.remove();
-				instance.insert(this.element.parentNode, currentInstance.firstNode);
-
-				if( index < oldIndex ){
-					from = index
-				}
-
-				from = oldIndex + 1;
-				to = length;
-				for(;from<to;from++){
-					if( from in simulatedIndexGap ){
-						simulatedIndexGap[from]--;
-					}
-					else{
-						simulatedIndexGap[from] = -1;
-					}
-				}
-				from = index + 1;
-				to = oldIndex;
-				for(;from<to;from++){
-					if( from in simulatedIndexGap ){
-						simulatedIndexGap[from]++;
-					}
-					else{
-						simulatedIndexGap[from] = 1;
-					}
-				}
-
-				console.log(simulatedIndexGap);
-			}
-			else{
-				console.log('noop', instance.model.name, 'already at', index);
-			}
+			the reason is that array.splice and DOM insertion works the same:
+			the element is removed from it's place then inserted to his new location
+			*/
+			instances.move(oldIndex, index);
+			instance.insert(this.element.parentNode, currentInstance.firstNode);
 		}
 	},
 
@@ -197,8 +132,8 @@ var Template = {
 							this.instances[change.index].destroy();
 							this.instances.splice(change.index, 1);
 						}
-						else if( change.type == 'moves' ){
-							this.applyMoves(change.value);
+						else if( change.type == 'affectations' ){
+							this.performAffectations(change.value);
 						}
 					}, this);
 
@@ -325,6 +260,8 @@ var TemplateInstance = {
 	},
 
 	insert: function(parent, before){
+		this.remove();
+
 		if( !before ){
 			parent.appendChild(this.fragment);
 		}
@@ -334,6 +271,9 @@ var TemplateInstance = {
 	},
 
 	remove: function(){
+		// not inserted
+		if( this.firstNode.parentNode == this.fragment ) return;
+
 		var first = this.firstNode, last = this.lastNode, node = this.firstNode, next;
 
 		// put back the node in the fragment

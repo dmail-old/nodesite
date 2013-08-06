@@ -184,9 +184,9 @@ Array.implement('getInsertionOrderIndex', function(item, compare){
 		if( compare(item, this[i]) === -1 ){
 			return i;
 		}
-    }
+	}
 
-    return j;
+	return j;
 });
 
 // permet d'insérer item dans this en respectant l'ordre imposé par compare
@@ -195,8 +195,8 @@ Array.implement('insertSort', function(item, compare){
 	return this;
 });
 
-Array.implement('sortWithMoves', function(comparer){
-	var array = this, i = 0, j = array.length, pairs = [], pair, index, moves = [];
+Array.implement('sortWithAffectations', function(comparer){
+	var array = this, i = 0, j = array.length, pairs = [], pair, affectations = [];
 
 	for(;i<j;i++){
 		pairs[i] = [i, array[i]];
@@ -211,12 +211,115 @@ Array.implement('sortWithMoves', function(comparer){
 	i = 0;
 	for(;i<j;i++){
 		pair = pairs[i];
-		index = pair[0];
-		if( index != i ){
-			moves.push(index, i);
-		}
+		affectations.push(pair[0], i);
 		array[i] = pair[1];
 	}
 
-	return moves;
+	return affectations;
 });
+
+Array.implement('shuffle', function(){
+	var i = this.length - 1, j, temp;
+
+	while( i > 0 ){
+		j = Math.floor(Math.random() * (i + 1));
+		temp = this[i];
+		this[i] = this[j];
+		this[j] = temp;
+		i--;
+	}
+
+	return this;
+});
+
+Array.implement('move', function(from, to){
+	if( from != to ){
+		var value = this[from];
+		this.splice(from, 1);
+		// put at the new index
+		this.splice(to, 0, value);
+	}
+	return this;
+});
+
+/*
+
+	"affectation" refers to:
+		assigning 0 at 1 in ['a', 'b', 'c'] gives -> ['a', 'a', 'c']
+	"move" refers to:
+		moving 0 at 1 in ['a', 'b', 'c'] gives -> ['b', 'a', 'c']
+
+	Take an array of index affectations
+	[oldIndex, newIndex, ...]
+	and returns a list of moves
+	[oldIndex, newIndex, ...]
+	to perform to get the same result as affectations list
+
+*/
+function transformAffectationsToMoves(affectations){
+	var i = 0, j = affectations.length, oldIndex, index;
+	var from, to, gap, trace = [], traceIndex, loopTrace;
+	var moves = [];
+
+	for(;i<j;i+=2){
+		oldIndex = affectations[i];
+		if( typeof trace[oldIndex] === 'number' ){
+			oldIndex = trace[oldIndex];
+		}
+		index = affectations[i + 1];
+
+		if( oldIndex == index ){
+			// no moved needed affectations made this move useless
+		}
+		else{
+			moves.push(oldIndex, index);
+
+			// the value is moved to the left ir the right of it's current index
+			if( index < oldIndex ){
+				gap = 1;
+			}
+			else{
+				gap = -1;
+			}
+
+			loopTrace = [];
+
+			from = oldIndex;
+			to = index;
+			if( typeof trace[from] == 'number' ){
+				traceIndex = trace.indexOf(from);
+				if( traceIndex > -1 ){
+					from = traceIndex;
+				}
+			}
+			loopTrace.push(from, to);
+			//console.log(oldIndex, 'becomes', index, loopTrace);
+
+			while(index != oldIndex){
+				from = index;
+				to = index + gap;
+				if( typeof trace[from] == 'number' ){
+					traceIndex = trace.indexOf(from);
+					if( traceIndex > -1 ){
+						from = traceIndex;
+					}
+				}
+				loopTrace.push(from, to);
+				//console.log(index, 'becomes', index+gap, loopTrace);
+
+				index+= gap;
+			}
+
+			var k = 0, l = loopTrace.length;
+			for(;k<l;k+=2){
+				trace[loopTrace[k]] = loopTrace[k+1];
+			}
+
+			//console.log('move', value, 'from', oldIndex, 'to', affectations[i + 1]);
+			//console.log('result', array);
+			//console.log('trace', trace);
+		}
+	}
+
+	return moves;
+}

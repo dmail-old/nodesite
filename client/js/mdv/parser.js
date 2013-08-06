@@ -88,9 +88,16 @@ var Parser = {
 		return tokens.length == 3 && tokens[0].length === 0 && tokens[2].length === 0;
 	},
 
+	isSingleTokenBinding: function(tokens){
+		return tokens.length == 3;
+	},
+
 	getTokensLinker: function(name, tokens){
 		if( this.isSingleBinding(tokens) ){
 			return window.PropertyLinker.new(name, tokens[1]);
+		}
+		else if( this.isSingleTokenBinding(tokens) ){
+			return window.TokenLinker.new(name, tokens[1], tokens[0], tokens[2]);
 		}
 		else{
 			return window.TokensLinker.new(name, tokens);

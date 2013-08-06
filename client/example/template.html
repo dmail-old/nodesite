@@ -3,6 +3,7 @@
 </style>
 
 <script>
+
 /*
 
 TODO:
@@ -40,7 +41,7 @@ template.setModel(model);
 <!-- REPEAT Template -->
 
 <div id="repeat-template" repeat="users" template>
-	Coucou <span>{name}</span>
+	{name}
 </div>
 
 <script>
@@ -49,7 +50,8 @@ var model = {
 	users: [
 		{name: 'damien'},
 		{name: 'idir'},
-		{name: 'cassandre'}
+		{name: 'cassandre'},
+		{name: 'alex'}
 	]
 };
 
