@@ -78,6 +78,10 @@ var PropertyObserver = {
 		if( model === null || model === undefined ){
 			// let change object untouched
 		}
+		// '{} or {user.}' means bind to the model, in fact means bind to toString()
+		else if( this.property === '' ){
+			change.value = model;
+		}
 		// primitive cant be watched but does have native property (valueOf, toString,...)
 		else if( this.isPrimitive(model) ){
 			change.value = model[this.property];

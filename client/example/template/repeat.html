@@ -1,0 +1,16 @@
+<div id="repeat-template" repeat="users" template> {} </div>
+
+<script>
+var template = $('repeat-template').template;
+var model = {
+	users: [
+		'damien',
+		'idir',
+		'cassandre',
+		'alex'
+	]
+};
+
+template.setModel(model);
+
+</script>

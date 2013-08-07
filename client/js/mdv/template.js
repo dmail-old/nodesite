@@ -1,3 +1,24 @@
+/*
+
+TODO:
+
+- support nested template (with repeat attribute)
+- support bind attribute
+- support ref attribute on <template>
+- support if attribute
+- support checked and value attribute on input
+
+- support having method on model that can depend on property
+
+as for Attribute binding we could have a sort of this.isMethod in PropertyObserver
+in case it's a method it listen for method affectation
+and also for property named in the arguments of the method then we could write
+
+model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
+<template>{fullName()}</template>
+
+*/
+
 var Template = {
 	element: null,
 	content: null,
@@ -87,7 +108,7 @@ var Template = {
 	*/
 	performAffectations: function(affectations){
 		var i, j, oldIndex, index, instance, currentInstance, instances = this.instances;
-		var moves = window.transformAffectationsToMoves(affectations);
+		var moves = window.ArrayObserver.transformAffectationsToMoves(affectations);
 
 		i = 0;
 		j = moves.length;
@@ -110,6 +131,8 @@ var Template = {
 	},
 
 	setModel: function(model){
+		this.unsetModel();
+
 		this.model = model;
 		this.instances = [];
 

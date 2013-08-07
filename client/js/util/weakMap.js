@@ -1,5 +1,5 @@
 
-if( !('WeakMap' in window) ){
+if( true || !('WeakMap' in window) ){
 
 	window.WeakMap = function(){
 		this.keys = [];

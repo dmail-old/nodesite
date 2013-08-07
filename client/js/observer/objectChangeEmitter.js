@@ -26,7 +26,7 @@ var ObjectChangeEmitter = NS.Emitter.extend({
 	onremovelastlistener: function(name){
 		Object.prototype.unwatch.call(this.bind, name);
 		if( Object.isEmpty(this.$listeners) ){
-			this.modelInstance.delete(this.model);
+			this.modelInstance.delete(this.bind);
 		}
 	}
 });
