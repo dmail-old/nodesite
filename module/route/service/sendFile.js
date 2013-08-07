@@ -130,12 +130,3 @@ exports.extend = {
 		this.file.exists(this.fileExists.bind(this));
 	}
 };
-
-exports.use = function useFile(next){
-	if( this.method == 'HEAD' || this.method == 'GET' ){
-		this.sendFile(this.url.pathname);
-	}
-	else{
-		next();
-	}
-};

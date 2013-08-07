@@ -1,5 +1,5 @@
 var redirects = {
-	'/': '/index'
+
 };
 
 function calcPath(path){
@@ -7,18 +7,35 @@ function calcPath(path){
 	return redirect || path;
 }
 
-module.exports = function(pagePath, callback){
-	pagePath = pagePath.replace(/.html\?.*?$/, '.html');
+module.exports = function(url, callback){
+	var pathname;
 
-	var path = calcPath(pagePath);
-	path = path.substr(1);
+	url = this.parseUrl(url);
+	pathname = calcPath(url.pathname);
 
-	if( path.endsWith('.html') ){
-		console.log('sendfile', path);
-		this.sendFile(path);
+	// pour le moment on va considérer que si y'a pas d'extension c un dossier
+	var isDirectory = pathname.indexOf('.', pathname.lastIndexOf('/')) === - 1;
+
+	// on demande un dossier
+	if( isDirectory ){
+		var JSFileExists = FS.existsSync(root + '/client' + pathname + 'index.js');
+
+		if( JSFileExists ){
+			this.sendScriptResponse(root + '/client' + pathname + 'index.js');
+		}
+		else{
+			this.sendFile(pathname + 'index.html');
+		}
+	}
+	else if( pathname.endsWith('.html') ){
+		console.log('sendfile', pathname);
+		this.sendFile(pathname.slice(1));
+	}
+	else if( pathname.endsWith('.js') ){
+		pathname = pathname.replace(/\.js$/, '');
+		this.sendScriptResponse(root + '/client' + pathname + '.js');
 	}
 	else{
-		path = path.replace(/\.js$/, '');
-		this.sendScriptResponse(root + '/client/' + path + '.js');
+		this.send(404);
 	}
 };

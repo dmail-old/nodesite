@@ -182,8 +182,37 @@ window.app = {
 			'popstate': this.popstate
 		});
 
+		var prefix = 'client';
+
 		window.route.when('*', function(where){
 			this.go(where);
+		}, this);
+
+		window.route.when('/example', function(){
+			var pathname = location.pathname;
+			// pour le moment on va considérer que si y'a pas d'extension c un dossier
+			var isDirectory = pathname.indexOf('.', pathname.lastIndexOf('/')) === - 1;
+
+			if( isDirectory ){
+				window.server.callAction(
+					'filesystem/readdir',
+					'client' + pathname,
+					function(error, filenames){
+						if( error ) return console.warn(error);
+
+						var html = '', i = 0, j = filenames.length, filename;
+						for(;i<j;i++){
+							filename = filenames[i];
+							html+= '<a href="'+ pathname +'/'+ filename +'">'+filename+'</a><br />';
+						}
+
+						window.app.setPage(html);
+					}
+				);
+			}
+			else{
+				this.go(pathname);
+			}
 		}, this);
 
 		window.route.change(document.location.href);
@@ -194,26 +223,21 @@ window.app = {
 		document.body.innerHTML = html;
 		if( typeof Template != 'undefined' ){
 			window.Template.bootstrap(document.body);
-		}		
+		}
 		html.stripScripts(true); // évalue le javascript se trouvant dans le html
 	},
 
 	// demande au serveur la page se trouvant à url
 	go: function(url, state){
-		var filename = document.location.pathname;
-
-		// send the index file instead of the app.html file
-		if( filename == '/app.html' ) filename = '/';
-
-		document.title = filename;
+		document.title = url;
 
 		// prevent browser caching document
 		// if( filename.endsWith('.html') ) filename+= '?rand=' + new Date().getTime();
 
 		var self = this;
 
-		window.server.callAction('go', filename, function(error, response){
-			if( error ) return console.error(error);
+		window.server.callAction('go', url, function(error, response){
+			if( error ) return console.warn(error);
 
 			var type = this.getContentType();
 

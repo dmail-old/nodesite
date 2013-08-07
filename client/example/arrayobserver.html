@@ -2,9 +2,9 @@
 
 // this array stay in sync with supplied array
 Array.prototype.sync = function(array){
-	var observer = ArrayObserver.new(array, function(change){
+	ArrayObserver.new(array, function(change){
 		if( change.type == 'affectations' ){
-			observer.performAffectations(change.value, this);
+			ArrayObserver.performAffectations(change.value, this, array);
 		}
 		else if( change.type == 'add' ){
 			this[change.index] = change.value;
@@ -65,7 +65,7 @@ function testMoves(array){
 	var affectations = sortCopy.sortWithAffectations();
 
 	// comment je fais pour mon template js moi maintenant?
-	var moves = transformAffectationsToMoves(affectations);
+	var moves = ArrayObserver.transformAffectationsToMoves(affectations);
 	var i = 0, j = moves.length;
 
 	for(;i<j;i+=2){

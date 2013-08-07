@@ -17,13 +17,11 @@ exports.extend = {
 	},
 
 	sendPage: function(){
-		var filePath = root + '/client/app.html';
+		var filePath = root + '/module/route/skeleton.html';
 		FS.readFile(filePath, this.parsePage.bind(this));
 	},
 
 	parsePage: function(error, html){
-		console.log(error, html);
-
 		if( error ) return this.error(error);
 
 		var metas = {
@@ -135,31 +133,5 @@ exports.extend = {
 		});
 
 		return tag.replace('#', url);
-	}
-};
-
-function servePage(){
-	var pathname = this.url.pathname;
-
-	// index page
-	if( pathname === '/' ) return true;
-	if( pathname === '/app.html' ) return true;
-	// html files handled by page service
-	if( pathname.endsWith('.html') ) return true;
-
-	var slash = pathname.indexOf('/', 1);
-
-	// on demande quelque chose à la racine, sans extension ou finissant par .js
-	if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
-		return true;
-	}
-}
-
-exports.use = function usePage(next){
-	if( servePage.call(this) ){
-		this.sendPage();
-	}
-	else{
-		next();
 	}
 };

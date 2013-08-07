@@ -30,7 +30,13 @@ var route = {
 	},
 
 	use: function(handler){
-		this.handlers.push(handler);
+		if( typeof handler != 'function' ){
+			var error = new TypeError('route.use expect a function handler '+ handler + ' given');
+			console.error(error.stack);
+		}
+		else{
+			this.handlers.push(handler);
+		}
 	},
 
 	isMethod: function(method){
@@ -168,6 +174,7 @@ var route = {
 
 	error: function(error){
 		//logger.log('error', error.stack);
+		console.log(error.stack);
 		this.send(500, error);
 	},
 
@@ -194,7 +201,7 @@ var route = {
 				result = handler.call(self, nextHandler);
 			}
 			catch(e){
-				console.error('handler internal error', e);
+				console.error('handler internal error', e.stack);
 				return self.error(e);
 			}
 		}
@@ -203,79 +210,70 @@ var route = {
 	}
 };
 
-route.formats = {};
-route.formats['text/plain'] = function(data, encoding){
-	if( data instanceof Error ){
-		if( data.statusCode ) this.status = data.statusCode;
-		data = data.message;
-	}
-	else if( typeof data === 'object' ){
-		data = JSON.stringify(data);
-	}
-	else{
-		data = data.toString();
-	}
-
-	this.setHeader('content-length', Buffer.byteLength(data));
-
-	return data;
-};
-route.formats['application/json'] = function(data, encoding){
-	var json = {
-		status: this.status,
-		headers: this.headers,
-		data: data
-	};
-
-	this.status = 200;
-
-	if( data instanceof Error ){
-		var type;
-
-		// s'il s'agit d'une erreur de syntaxe on throw sinon la trace est pas
-		// top (si une page contient une erreur de syntaxe ca fait donc planter le serveur)
-		// possible lorsque qu'on fait callScript
-		if( data instanceof SyntaxError ){
-			type = 'syntax';
-		}
-		else if( data instanceof ReferenceError ){
-			type = 'syntax';
-		}
-		else if( data instanceof TypeError ){
-			type = 'type';
-		}
-
-		json.data = data.message;
-		json.stack = data.stack;
-		json.type = type;
-	}
-	else if( Buffer.isBuffer(data) ){
-		data = data.toString(encoding || 'base64');
-	}
-
-	try{
-		data = JSON.stringify(json);
-	}
-	catch(e){
-		return this.error(e);
-	}
-
-	this.setHeader('content-length', Buffer.byteLength(data));
-
-	return data;
-};
+route.formats = require('./format.js');
 
 [
 	'cookieParser', 'urlParser', 'queryParser', 'bodyParser',
 	'methodOverride', 'params', 'jsonParam', 'responseTime', 'logger',
-	'sendOptions', 'sendAction', 'sendPage', 'sendFile'
+	'sendCORS', 'sendAction', 'sendPage', 'sendFile'
 ].forEach(function(name){
 	var component = require('./service/' + name + '.js');
 
 	if( typeof component == 'function' ) route.use(component);
 	else{
-		Object.append(route, component.extend);
-		route.use(component.use);
+		if( typeof component.extend == 'object' ) Object.append(route, component.extend);
+		if( typeof component.use == 'function' ) route.use(component.use);
+	}
+});
+
+// sendCORS
+route.use(function useCORS(next){
+	if( this.method == this.METHODS.OPTIONS ){
+		this.sendCORS();
+	}
+	else{
+		next();
+	}
+});
+
+// sendAction
+route.use(function useAction(next){
+	if( this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)) == '/action' ){
+		this.sendAction(this.url.pathname);
+	}
+	else{
+		next();
+	}
+});
+
+// le truc c'est qu'en fait toute les requêtes doivent recevoir sendPage (presque)
+
+// sendPage
+route.use(function usePage(next){
+	var pathname = this.url.pathname;
+	var slash = pathname.indexOf('/', 1);
+
+	// html file géré par index.html
+	if( pathname.endsWith('.html') ){
+		this.sendPage();
+	}
+	// on demande quelque chose à la racine, sans extension ou finissant par .js
+	else if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
+		this.sendPage();
+	}
+	else{
+		next();
+	}
+
+});
+
+// sendFile
+route.use(function useFile(next){
+	if( this.method == 'HEAD' || this.method == 'GET' ){
+		this.sendFile(this.url.pathname);
+	}
+	else{
+		next();
 	}
 });
 

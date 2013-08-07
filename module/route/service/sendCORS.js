@@ -1,5 +1,5 @@
-exports.use = function useOptions(next){
-	if( this.method == this.METHODS.OPTIONS ){
+exports.extend = {
+	sendCORS: function(){
 		var methodAllowed = [], headerAllowed = [];
 
 		// methods
@@ -32,8 +32,5 @@ exports.use = function useOptions(next){
 			'content-length': 0
 		});
 		this.end();
-	}
-	else{
-		next();
 	}
 };

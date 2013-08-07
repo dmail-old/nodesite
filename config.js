@@ -12,7 +12,8 @@ var config = {
 		"module",
 		//"db",
 		"client/js/lib",
-		"lang/fr"
+		"lang/fr",
+		"action",
 	],
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu

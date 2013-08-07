@@ -85,12 +85,3 @@ exports.extend = {
 		}.bind(this));
 	}
 };
-
-exports.use = function useAction(next){
-	if( this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)) == '/action' ){
-		this.sendAction(this.url.pathname);
-	}
-	else{
-		next();
-	}
-};
