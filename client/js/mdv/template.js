@@ -7,6 +7,7 @@ TODO:
 - support ref attribute on <template>
 - support if attribute
 - support checked and value attribute on input
+- support for named scope: 'comment in user.comments' and 'foo as bar'
 
 - support having method on model that can depend on property
 
@@ -17,12 +18,62 @@ and also for property named in the arguments of the method then we could write
 model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
 <template>{fullName()}</template>
 
+HELP:
+
+https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
+
+templateiterator: il s'abonne aux modif sur IF, REPEAT et BIND
+
 */
+
+var TemplateElements = {
+	isTemplateNode: function(node){
+		if( node.nodeType != 1 ) return false;
+		return node.tagName == 'TEMPLATE' || node.hasAttribute('template');
+	},
+
+	checkNode: function(node, found){
+		if( this.isTemplateNode(node) ){
+			found.push(node);
+		}
+		else{
+			return this.checkChildNodes(node, found);
+		}
+	},
+
+	checkNodeList: function(nodeList, found){
+		var i = 0, j = nodeList.length;
+		for(;i<j;i++){
+			this.checkNode(nodeList[i], found);
+		}
+		return found;
+	},
+
+	checkChildNodes: function(node, found){
+		return this.checkNodeList(node.childNodes, found);
+	},
+
+	collect: function(element){
+		return this.checkChildNodes(element, []);
+	},
+
+	createTemplateFromElementList: function(list){
+		var i = 0, j = list.length;
+		for(;i<j;i++){
+			Template.new(list[i]);
+		}
+	},
+
+	bootstrap: function(element){
+		this.createTemplateFromElementList(this.collect(element));
+	}
+};
 
 var Template = {
 	element: null,
 	content: null,
 	linkers: null,
+	hasSubTemplate: false,
 
 	create: function(element){
 
@@ -31,26 +82,37 @@ var Template = {
 
 		if( 'content' in element ){
 			this.content = element.content;
-			// keep search for template element in content
-			this.bootstrap(this.content);
 		}
 		else{
-			// any tag can be used as a template
-			this.content = document.createDocumentFragment();
-			var i = element.childNodes.length;
-			while(i--){
-				this.content.appendChild(element.childNodes[0]);
+			this.content = element.ownerDocument.createDocumentFragment();
+			while( element.firstChild ){
+				this.content.appendChild(element.firstChild);
 			}
+		}
+
+		var subtemplateElements = TemplateElements.collect(this.content);
+
+		if( subtemplateElements.length !== 0 ){
+			this.hasSubTemplate = true;
+			TemplateElements.createTemplateFromElementList(subtemplateElements);
 		}
 	},
 
 	bootstrap: function(element){
-		var templateSelector = 'template, *[template]';
-		var templates = element.querySelectorAll(templateSelector);
-		var i = 0, j = templates.length;
-		for(;i<j;i++){
-			Template.new(templates[i]);
+		TemplateElements.createTemplateFromElementList(TemplateElements.collect(element));
+	},
+
+	collectSubTemplate: function(){
+		var content;
+
+		if( 'content' in this.element ){
+			content = this.content;
 		}
+		else{
+			content = this.element;
+		}
+
+		return TemplateElements.collect(content);
 	},
 
 	parse: function(){
@@ -60,8 +122,63 @@ var Template = {
 		return this.linkers;
 	},
 
+	/*
+	voir pourquoi on clone le template mais pas son contenu, c'est surement important
+
+	<template repeat="users">
+		<h2>User: {name}</h2>
+		<ul>
+			<template repeat="comment">
+			<li>{text}</li>
+			</template>
+		</ul>
+	</template>
+
+	---->
+
+	<template repeat="users">
+		#documentFragment
+	</template>
+	<h2>User: damien</h2>
+	<ul>
+		<template repeat="comment">
+			#documentFragment
+		<template>
+		<li>First comment</li>
+		<li>Second comment</li>
+	</ul>
+
+	donc c'est logique de copier le template à chaque fois quon repète un user
+	puisque le template sers de base pour savoir où insérer les commentaires
+
+	en revanche polymer copie pas le content du coup ne copie pas #documentFragment
+	pour repeat="comment"
+
+	en fait y'a pas de raison de copier le template ou son contenu
+
+	*/
+	cloneWithoutTemplateContent: function(node){
+		var clone = node.cloneNode(false), child;
+
+		// ignore template
+		if( !TemplateElements.isTemplateNode(clone) ){
+			child = node.firstChild;
+			while( child ){
+				clone.appendChild(this.cloneWithoutTemplateContent(child));
+				child = child.nextSibling;
+			}
+		}
+
+		return clone;
+	},
+
 	cloneContent: function(){
-		return this.content.cloneNode(true);
+		if( this.hasSubTemplate ){
+			return this.cloneWithoutTemplateContent(this.content);
+		}
+		else{
+			return this.content.cloneNode(true);
+		}
 	},
 
 	createInstance: function(index, model){
@@ -309,13 +426,3 @@ var TemplateInstance = {
 		}
 	}
 };
-
-/*
-
-help for repeat
-
-https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
-
-templateiterator: il s'abonne aux modif sur IF, REPEAT et BIND
-
-*/

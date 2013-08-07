@@ -1,0 +1,16 @@
+<div id="template" template>
+	Coucou {name}
+	<div id="nestedtemplate" template>
+		<span style="color:{color}">{color}</span>
+	</div>
+</div>
+
+<script>
+var template = $('template').template;
+var model = {
+	name: 'damien',
+	color: 'red'
+};
+
+template.setModel(model);
+</script>

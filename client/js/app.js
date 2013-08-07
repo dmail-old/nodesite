@@ -198,7 +198,11 @@ window.app = {
 					'filesystem/readdir',
 					'client' + pathname,
 					function(error, filenames){
-						if( error ) return console.warn(error);
+						if( error ){
+							console.warn(error);
+							window.app.setPage(error);
+							return;
+						}
 
 						var html = '', i = 0, j = filenames.length, filename;
 						for(;i<j;i++){
@@ -219,6 +223,8 @@ window.app = {
 	},
 
 	setPage: function(html){
+		if( typeof html != 'string' ) html = html.toString();
+
 		//$('page').innerHTML = html;
 		document.body.innerHTML = html;
 		if( typeof Template != 'undefined' ){
