@@ -1,3 +1,29 @@
 Hello world
 
 <a href="./example">Go to examples</a>
+
+<template id="template" native>
+	<div>
+		bouh
+		<template native>coucou</template>
+	</div>
+</template>
+
+<script>
+var tpl = $('template');
+
+var clone = tpl.content.cloneNode(true);
+
+var sublist = clone.querySelectorAll('template'), i = 0, j = sublist.length;
+
+// active les sous templates
+for(;i<j;i++){
+	var subclone = sublist[i].content.cloneNode(true);
+	sublist[i].parentNode.insertBefore(subclone, sublist[i].nextSibling);
+}
+
+document.body.appendChild(clone);
+
+
+
+</script>

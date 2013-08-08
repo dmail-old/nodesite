@@ -11,24 +11,23 @@ TODO:
 
 - support having method on model that can depend on property
 
-as for Attribute binding we could have a sort of this.isMethod in PropertyObserver
+as for AttributBinding with conditional we could have a sort of
+isMethod in PropertyObserver
 in case it's a method it listen for method affectation
 and also for property named in the arguments of the method then we could write
 
 model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
 <template>{fullName()}</template>
 
-HELP:
-
+mainly inspired from polymer:
 https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
-
-templateiterator: il s'abonne aux modif sur IF, REPEAT et BIND
 
 */
 
 var TemplateElements = {
 	isTemplateNode: function(node){
 		if( node.nodeType != 1 ) return false;
+		if( node.hasAttribute('native') ) return false;
 		return node.tagName == 'TEMPLATE' || node.hasAttribute('template');
 	},
 
@@ -74,6 +73,11 @@ var Template = {
 	content: null,
 	linkers: null,
 	hasSubTemplate: false,
+	templateIterator: null,
+
+	toString: function(){
+		return 'Template';
+	},
 
 	create: function(element){
 
@@ -100,19 +104,6 @@ var Template = {
 
 	bootstrap: function(element){
 		TemplateElements.createTemplateFromElementList(TemplateElements.collect(element));
-	},
-
-	collectSubTemplate: function(){
-		var content;
-
-		if( 'content' in this.element ){
-			content = this.content;
-		}
-		else{
-			content = this.element;
-		}
-
-		return TemplateElements.collect(content);
 	},
 
 	parse: function(){
@@ -181,29 +172,214 @@ var Template = {
 		}
 	},
 
-	createInstance: function(index, model){
+	createInstance: function(model){
 		var instance = TemplateInstance.new(this);
-
 		instance.setModel(model);
-		this.instances[index] = instance;
-
-		this.insertInstanceAt(index, instance);
-
 		return instance;
+	},
+
+	setModel: function(model){
+		this.unsetModel();
+		this.model = model;
+		this.templateIterator = TemplateIterator.new(this);
+	},
+
+	unsetModel: function(){
+		if( this.model ){
+			if( this.templateIterator ){
+				this.templateIterator.close();
+				this.templateIterator = null;
+			}
+			this.model = null;
+		}
+	}
+};
+
+Object.defineProperty(Node.prototype, 'templateInstance', {
+	get: function(){
+		var instance = TemplateInstance.map.get(this);
+
+		if( instance ) return instance;
+		if( this.parentNode ) return this.parentNode.templateInstance;
+		return undefined;
+	}
+});
+
+var TemplateInstance = {
+	template: null,
+	fragment: null,
+	firstNode: null,
+	lastNode: null,
+	model: null,
+	map: new WeakMap(),
+
+	toString: function(){
+		return 'TemplateInstance';
+	},
+
+	create: function(template){
+		this.template = template;
+		this.fragment = template.cloneContent();
+		this.firstNode = this.fragment.firstChild;
+		this.lastNode = this.fragment.lastChild;
+		this.linkFragment(this.fragment);
+	},
+
+	toggleFragmentMap: function(fragment, link){
+		var node = fragment.firstChild;
+
+		while( node ){
+			if( link ){
+				this.map.set(node, this);
+			}
+			else{
+				this.map.delete(node);
+			}
+			node = node.nextSibling;
+		}
+	},
+
+	linkFragment: function(fragment){
+		return this.toggleFragmentMap(fragment, true);
+	},
+
+	unlinkFragment: function(fragment){
+		return this.toggleFragmentMap(fragment, false);
+	},
+
+	destroy: function(){
+		this.unsetModel();
+		this.remove();
+		this.unlinkFragment(this.fragment);
+	},
+
+	getNodeAt: function(path){
+		var node = this.firstNode, parts, i, j, part;
+
+		if( path !== '' ){
+			parts = path.split('.');
+			i = 0;
+			j = parts.length;
+
+			for(;i<j;i++){
+				// on utilise nextSibling (car au premier tour on connait pas node.parentNode.childNodes)
+				part = parts[i++];
+				while(part--){
+					node = node.nextSibling;
+					if( node == null ){
+						return null;
+					}
+				}
+				if( i < j ){
+					node = node.firstChild;
+					if( node == null ) break;
+				}
+			}
+		}
+
+		return node;
+	},
+
+	findNode: function(path){
+		var node = this.getNodeAt(path);
+		if( node == null ){
+			console.log(this.firstNode, path);
+			throw new Error('node not found');
+		}
+		return node;
+	},
+
+	link: function(model){
+		var linkers = this.template.parse(), i = linkers.length, linker;
+
+		while(i--){
+			linker = linkers[i];
+			linker.link(this.findNode(linker.path), model);
+		}
+	},
+
+	unlink: function(model){
+		var linkers = this.template.parse(), i = linkers.length, linker;
+
+		while(i--){
+			linker = linkers[i];
+			linker.unlink(this.findNode(linker.path), model);
+		}
+	},
+
+	setModel: function(model){
+		this.unsetModel();
+		this.model = model;
+		this.link(model);
+	},
+
+	unsetModel: function(model){
+		if( this.model != null ){
+			this.unlink(model);
+			this.model = null;
+		}
+	},
+
+	insert: function(parent, before){
+		this.remove();
+
+		if( !before ){
+			parent.appendChild(this.fragment);
+		}
+		else{
+			parent.insertBefore(this.fragment, before);
+		}
+	},
+
+	remove: function(){
+		// not inserted
+		if( this.firstNode.parentNode == this.fragment ) return;
+
+		var first = this.firstNode, last = this.lastNode, node = this.firstNode, next;
+
+		// put back the node in the fragment
+		// -> if insert is called after remove fragment is still filled with the nodeList
+		while( node ){
+			next = node.nextSibling;
+			this.fragment.appendChild(node);
+			if( node == last ) break;
+			node = next;
+		}
+	}
+};
+
+var TemplateIterator = {
+	template: null,
+	element: null,
+	instances: null,
+	observer: null,
+	arrayObserver: null,
+	closed: false,
+
+	toString: function(){
+		return 'TemplateIterator';
+	},
+
+	create: function(template){
+		this.template = template;
+		this.element = template.element;
+		this.instances = [];
+
+		this.checkAttributes();
 	},
 
 	getInsertBeforeNodeAt: function(index){
 		var before;
 
-		// firstNode of the nextInstance
+		// use firstNode of the nextInstance
 		if( this.instances.length > index + 1 ){
 			before = this.instances[index + 1].firstNode;
 		}
-		// lastNode.nextSibling of the previous instance
+		// use lastNode.nextSibling of the previous instance
 		else if( index > 0 ){
 			before = this.instances[index - 1].lastNode.nextSibling;
 		}
-		// nextSibling of the template element
+		// use nextSibling of the template element
 		else{
 			before = this.element.nextSibling;
 		}
@@ -211,7 +387,9 @@ var Template = {
 		return before;
 	},
 
-	insertInstanceAt: function(index, instance){
+	insertInstanceAt: function(index, model){
+		var instance = this.template.createInstance(model);
+		this.instances[index] = instance;
 		instance.insert(this.element.parentNode, this.getInsertBeforeNodeAt(index));
 	},
 
@@ -247,182 +425,97 @@ var Template = {
 		}
 	},
 
-	setModel: function(model){
-		this.unsetModel();
-
-		this.model = model;
-		this.instances = [];
-
-		if( this.element.hasAttribute('repeat') ){
-
-			var repeat = this.element.getAttribute('repeat');
-			window.PathObserver.new(repeat, model, function(change){
-				// on répète le template pour chaque item
-				if( Array.isArray(change.value) ){
-
-					window.ArrayObserver.new(change.value, function(change){
-						if( change.type == 'add' ){
-							this.createInstance(change.index, change.value);
-						}
-						else if( change.type == 'update' ){
-							this.instances[change.index].destroy();
-							this.createInstance(change.index, change.value);
-						}
-						else if( change.type == 'remove' ){
-							this.instances[change.index].destroy();
-							this.instances.splice(change.index, 1);
-						}
-						else if( change.type == 'affectations' ){
-							this.performAffectations(change.value);
-						}
-					}, this);
-
-				}
-				else{
-					// supression de toutes les instances
-					this.instances.forEach(function(instance){
-						instance.remove();
-					});
-					this.instances = null;
-				}
-
-			}.bind(this));
-
+	arrayChanged: function(change){
+		if( change.type == 'add' ){
+			this.insertInstanceAt(change.index, change.value);
 		}
+		else if( change.type == 'update' ){
+			this.instances[change.index].destroy();
+			this.insertInstanceAt(change.index, change.value);
+		}
+		else if( change.type == 'remove' ){
+			this.instances[change.index].destroy();
+			this.instances.splice(change.index, 1);
+		}
+		else if( change.type == 'affectations' ){
+			this.performAffectations(change.value);
+		}
+	},
+
+	observe: function(array){
+		this.unobserve();
+		this.arrayObserver = window.ArrayObserver.new(array, this.arrayChanged, this);
+	},
+
+	unobserve: function(){
+		if( this.arrayObserver ){
+			this.arrayObserver.close();
+			this.arrayObserver = null;
+		}
+	},
+
+	destroyInstances: function(){
+		var instances = this.instances, i = 0, j = instances.length;
+		for(;i<j;i++){
+			instances[i].destroy();
+		}
+		this.instances.length = 0;
+	},
+
+	valueChanged: function(change){
+		// on répète le template pour chaque item
+		if( Array.isArray(change.value) ){
+			this.observe(change.value);
+		}
+		// supression de toutes les instances
 		else{
-			this.createInstance(0, model);
+			this.unobserve();
+			this.destroyInstances();
 		}
 	},
 
-	unsetModel: function(){
-		if( this.model ){
-			this.instances.forEach(function(instance){
-				instance.destroy();
-			}, this);
-			this.instances = [];
-			this.model = null;
-		}
-	}
-};
-
-var TemplateInstance = {
-	template: null,
-	fragment: null,
-	firstNode: null,
-	lastNode: null,
-	model: null,
-
-	create: function(template){
-		this.template = template;
-
-		this.fragment = template.cloneContent();
-		this.firstNode = this.fragment.firstChild;
-		this.lastNode = this.fragment.lastChild;
-
-		var first = this.firstNode, last = this.lastNode, node = this.firstNode;
-		while( node ){
-			node.templateInstance = this;
-			if( node == last ) break;
-			node = node.nextSibling;
-		}
+	bindChanged: function(change){
+		this.instances[0].setModel(change.value);
 	},
 
-	destroy: function(){
-		this.unsetModel();
-		this.remove();
-	},
+	checkAttributes: function(){
+		var model = this.template.model;
 
-	getNodeAt: function(path){
-		var node = this.firstNode, parts, i, j, part;
+		/*
+		polymer: Templateiterator écoute les propriétés bind, if et repeat
+		de cette manière il construit les itérations en fonctions des valeurs
+		de ces trois propriété et pas que de repeat
+		https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1224
+		*/
 
-		if( path !== '' ){
-			parts = path.split('.');
-			i = 0;
-			j = parts.length;
+		// repeat
+		if( this.element.hasAttribute('repeat') ){
+			var repeat = this.element.getAttribute('repeat');
+			this.observer = window.PathObserver.new(repeat, model, this.valueChanged, this);
+		}
+		// bind
+		else{
+			var bind = this.element.getAttribute('bind');
 
-			for(;i<j;i++){
-				// on utilise nextSibling (car au premier tour on connait pas node.parentNode.childNodes)
-				part = parts[i++];
-				while(part--){
-					node = node.nextSibling;
-					if( node == null ){
-						return null;
-					}
-				}
-				if( i < j ){
-					node = node.firstChild;
-					if( node == null ) break;
-				}
+			// on observe une sous partie du modèle
+			if( bind ){
+				this.insertInstanceAt(0);
+				this.observer = window.PathObserver.new(bind, model, this.bindChanged, this);
+			}
+			// on observe le modèle
+			else{
+				this.insertInstanceAt(0, model);
 			}
 		}
-
-		return node;
 	},
 
-	findNode: function(path){
-		var node = this.getNodeAt(path);
-		if( node == null ){
-			console.log(this.firstNode, path);
-
-			throw new Error('node not found');
-		}
-		return node;
-	},
-
-	link: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker;
-
-		while(i--){
-			linker = linkers[i];
-			linker.link(this.findNode(linker.path), model);
-		}
-	},
-
-	unlink: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker;
-
-		while(i--){
-			linker = linkers[i];
-			linker.unlink(this.findNode(linker.path), model);
-		}
-	},
-
-	setModel: function(model){
-		this.model = model;
-		this.link(model);
-	},
-
-	// lorsque je fais unsetModel les listeners sur ce modèle doivents disparaitre
-	// tous les noeuds écoutant doivent donc être supprimé
-	unsetModel: function(model){
-		this.unlink(model);
-		this.model = null;
-	},
-
-	insert: function(parent, before){
-		this.remove();
-
-		if( !before ){
-			parent.appendChild(this.fragment);
-		}
-		else{
-			parent.insertBefore(this.fragment, before);
-		}
-	},
-
-	remove: function(){
-		// not inserted
-		if( this.firstNode.parentNode == this.fragment ) return;
-
-		var first = this.firstNode, last = this.lastNode, node = this.firstNode, next;
-
-		// put back the node in the fragment
-		// -> if insert is called after remove fragment is still filled with the nodeList
-		while( node ){
-			next = node.nextSibling;
-			this.fragment.appendChild(node);
-			if( node == last ) break;
-			node = next;
+	close: function(){
+		if( this.closed === false ){
+			this.unobserve();
+			this.destroyInstances();
+			this.observer.close();
+			this.observer = null;
+			this.closed = true;
 		}
 	}
 };

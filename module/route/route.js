@@ -246,12 +246,14 @@ route.use(function useAction(next){
 	}
 });
 
-// le truc c'est qu'en fait toute les requêtes doivent recevoir sendPage (presque)
+// le truc c'est qu'en fait toute les requêtes doivent recevoir sendPage sauf
+// lorsqu'on demande un fichier js/css/img/etc
 
 // sendPage
 route.use(function usePage(next){
 	var pathname = this.url.pathname;
 	var slash = pathname.indexOf('/', 1);
+	var dirname = this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)).slice(1);
 
 	// html file géré par index.html
 	if( pathname.endsWith('.html') ){
@@ -261,10 +263,12 @@ route.use(function usePage(next){
 	else if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
 		this.sendPage();
 	}
+	else if( dirname == 'example' ){
+		this.sendPage();
+	}
 	else{
 		next();
 	}
-
 });
 
 // sendFile

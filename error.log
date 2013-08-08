@@ -53,3 +53,10 @@ Error: Not running
     at FSWatcher.<anonymous> (/home/damien/nodesite/module/watcher.js:42:5)
     at FSWatcher.EventEmitter.emit (events.js:98:17)
     at FSEvent.FSWatcher._handle.onchange (fs.js:1039:12)
+Error: listen EADDRINUSE
+    at errnoException (net.js:901:11)
+    at Server._listen2 (net.js:1039:14)
+    at listen (net.js:1061:10)
+    at net.js:1135:9
+    at dns.js:72:18
+    at process._tickCallback (node.js:415:13)
