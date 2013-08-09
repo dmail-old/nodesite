@@ -1,9 +1,7 @@
 // a linker is an object returned by a parser
 var Linker = {
 	path: null,
-	toString: function(){
-		return 'Linker';
-	},
+	toString: function(){ return 'Linker'; },
 	link: Function.EMPTY,
 	unlink: Function.EMPTY
 };
@@ -11,14 +9,11 @@ var Linker = {
 var PropertyLinker = Linker.extend({
 	nodeAttribute: null,
 	modelProperty: null,
+	toString: function(){ return 'PropertyLinker'; },
 
 	create: function(nodeAttribute, modelProperty){
 		this.nodeAttribute = nodeAttribute;
 		this.modelProperty = modelProperty;
-	},
-
-	toString: function(){
-		return 'PropertyLinker';
 	},
 
 	link: function(node, model){
@@ -35,6 +30,7 @@ var TokenLinker = Linker.extend({
 	modelProperty: null,
 	prefix: '',
 	suffix: '',
+	toString: function(){ return 'TokenLinker'; },
 
 	create: function(nodeAttribute, modelProperty, prefix, suffix){
 		this.nodeAttribute = nodeAttribute;
@@ -43,9 +39,7 @@ var TokenLinker = Linker.extend({
 		this.suffix = suffix;
 	},
 
-	toString: function(){
-		return 'TokenLinker';
-	},
+
 
 	link: function(node, model){
 		var self = this;
@@ -64,14 +58,11 @@ var TokenLinker = Linker.extend({
 var TokensLinker = Linker.extend({
 	nodeAttribute: null,
 	tokens: null,
+	toString: function(){ return 'TokensLinker'; },
 
 	create: function(nodeAttribute, tokens){
 		this.nodeAttribute = nodeAttribute;
 		this.tokens = tokens;
-	},
-
-	toString: function(){
-		return 'TokensLinker';
 	},
 
 	combine: function(values){
@@ -109,13 +100,10 @@ var TokensLinker = Linker.extend({
 
 var LinkerListLinker = Linker.extend({
 	list: null,
+	toString: function(){ return 'LinkerListLinker'; },
 
 	create: function(list){
 		this.list = list;
-	},
-
-	toString: function(){
-		return 'LinkerListLinker';
 	},
 
 	link: function(node, model){

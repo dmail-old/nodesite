@@ -1,13 +1,22 @@
 /*
 
+https://github.com/Polymer/ObserveJS/tree/master
+
+name: template
+
+description: mainly inspired from polymer:
+
+https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
+
 TODO:
 
-- support nested template (with repeat attribute)
-- support bind attribute
-- support ref attribute on <template>
-- support if attribute
-- support checked and value attribute on input
 - support for named scope: 'comment in user.comments' and 'foo as bar'
+http://www.polymer-project.org/platform/mdv/expression_syntax.html#named-scopes
+
+- support if attribute
+- support ref attribute
+
+MORE:
 
 - support having method on model that can depend on property
 
@@ -19,54 +28,9 @@ and also for property named in the arguments of the method then we could write
 model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
 <template>{fullName()}</template>
 
-mainly inspired from polymer:
-https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
+- support checked and value attribute on input
 
 */
-
-var TemplateElements = {
-	isTemplateNode: function(node){
-		if( node.nodeType != 1 ) return false;
-		if( node.hasAttribute('native') ) return false;
-		return node.tagName == 'TEMPLATE' || node.hasAttribute('template');
-	},
-
-	checkNode: function(node, found){
-		if( this.isTemplateNode(node) ){
-			found.push(node);
-		}
-		else{
-			return this.checkChildNodes(node, found);
-		}
-	},
-
-	checkNodeList: function(nodeList, found){
-		var i = 0, j = nodeList.length;
-		for(;i<j;i++){
-			this.checkNode(nodeList[i], found);
-		}
-		return found;
-	},
-
-	checkChildNodes: function(node, found){
-		return this.checkNodeList(node.childNodes, found);
-	},
-
-	collect: function(element){
-		return this.checkChildNodes(element, []);
-	},
-
-	createTemplateFromElementList: function(list){
-		var i = 0, j = list.length;
-		for(;i<j;i++){
-			Template.new(list[i]);
-		}
-	},
-
-	bootstrap: function(element){
-		this.createTemplateFromElementList(this.collect(element));
-	}
-};
 
 var Template = {
 	element: null,
@@ -74,36 +38,14 @@ var Template = {
 	linkers: null,
 	hasSubTemplate: false,
 	templateIterator: null,
-
-	toString: function(){
-		return 'Template';
-	},
+	toString: function(){ return 'Template'; },
 
 	create: function(element){
+		window.HTMLTemplateElement.decorate(element);
 
 		this.element = element;
 		element.template = this;
-
-		if( 'content' in element ){
-			this.content = element.content;
-		}
-		else{
-			this.content = element.ownerDocument.createDocumentFragment();
-			while( element.firstChild ){
-				this.content.appendChild(element.firstChild);
-			}
-		}
-
-		var subtemplateElements = TemplateElements.collect(this.content);
-
-		if( subtemplateElements.length !== 0 ){
-			this.hasSubTemplate = true;
-			TemplateElements.createTemplateFromElementList(subtemplateElements);
-		}
-	},
-
-	bootstrap: function(element){
-		TemplateElements.createTemplateFromElementList(TemplateElements.collect(element));
+		this.content = element.content;
 	},
 
 	parse: function(){
@@ -113,63 +55,8 @@ var Template = {
 		return this.linkers;
 	},
 
-	/*
-	voir pourquoi on clone le template mais pas son contenu, c'est surement important
-
-	<template repeat="users">
-		<h2>User: {name}</h2>
-		<ul>
-			<template repeat="comment">
-			<li>{text}</li>
-			</template>
-		</ul>
-	</template>
-
-	---->
-
-	<template repeat="users">
-		#documentFragment
-	</template>
-	<h2>User: damien</h2>
-	<ul>
-		<template repeat="comment">
-			#documentFragment
-		<template>
-		<li>First comment</li>
-		<li>Second comment</li>
-	</ul>
-
-	donc c'est logique de copier le template à chaque fois quon repète un user
-	puisque le template sers de base pour savoir où insérer les commentaires
-
-	en revanche polymer copie pas le content du coup ne copie pas #documentFragment
-	pour repeat="comment"
-
-	en fait y'a pas de raison de copier le template ou son contenu
-
-	*/
-	cloneWithoutTemplateContent: function(node){
-		var clone = node.cloneNode(false), child;
-
-		// ignore template
-		if( !TemplateElements.isTemplateNode(clone) ){
-			child = node.firstChild;
-			while( child ){
-				clone.appendChild(this.cloneWithoutTemplateContent(child));
-				child = child.nextSibling;
-			}
-		}
-
-		return clone;
-	},
-
 	cloneContent: function(){
-		if( this.hasSubTemplate ){
-			return this.cloneWithoutTemplateContent(this.content);
-		}
-		else{
-			return this.content.cloneNode(true);
-		}
+		return this.content.cloneNode(true);
 	},
 
 	createInstance: function(model){
@@ -205,6 +92,30 @@ Object.defineProperty(Node.prototype, 'templateInstance', {
 	}
 });
 
+Node.prototype.getNodeAt = function(){
+	var node = this, i = 0, j = arguments.length, arg;
+
+	for(;i<j;i++){
+		arg = Number(arguments[i]);
+		// on utilise nextSibling (car au premier tour on connait pas node.parentNode.childNodes)
+		while( arg-- ){
+			node = node.nextSibling;
+			if( node == null ) return null;
+		}
+
+		if( i + 1 < j ){
+			node = node.firstChild;
+			if( node == null ) return null;
+		}
+	}
+
+	return node;
+};
+
+Node.prototype.getNodeAtPath = function(path){
+	return this.getNodeAt.apply(this, path.split('.'));
+};
+
 var TemplateInstance = {
 	template: null,
 	fragment: null,
@@ -212,10 +123,7 @@ var TemplateInstance = {
 	lastNode: null,
 	model: null,
 	map: new WeakMap(),
-
-	toString: function(){
-		return 'TemplateInstance';
-	},
+	toString: function(){ return 'TemplateInstance'; },
 
 	create: function(template){
 		this.template = template;
@@ -253,57 +161,35 @@ var TemplateInstance = {
 		this.unlinkFragment(this.fragment);
 	},
 
-	getNodeAt: function(path){
-		var node = this.firstNode, parts, i, j, part;
-
-		if( path !== '' ){
-			parts = path.split('.');
-			i = 0;
-			j = parts.length;
-
-			for(;i<j;i++){
-				// on utilise nextSibling (car au premier tour on connait pas node.parentNode.childNodes)
-				part = parts[i++];
-				while(part--){
-					node = node.nextSibling;
-					if( node == null ){
-						return null;
-					}
-				}
-				if( i < j ){
-					node = node.firstChild;
-					if( node == null ) break;
-				}
-			}
-		}
-
-		return node;
+	getNodeAtPath: function(path){
+		return this.firstNode ? this.firstNode.getNodeAtPath(path) : null;
 	},
 
 	findNode: function(path){
-		var node = this.getNodeAt(path);
+		var node = this.getNodeAtPath(path);
 		if( node == null ){
-			console.log(this.firstNode, path);
-			throw new Error('node not found');
+			console.warn('node not found at', path, 'in', this.firstNode, this);
 		}
 		return node;
 	},
 
 	link: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker;
+		var linkers = this.template.parse(), i = linkers.length, linker, node;
 
 		while(i--){
 			linker = linkers[i];
-			linker.link(this.findNode(linker.path), model);
+			node = this.findNode(linker.path);
+			if( node ) linker.link(node, model);
 		}
 	},
 
 	unlink: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker;
+		var linkers = this.template.parse(), i = linkers.length, linker, node;
 
 		while(i--){
 			linker = linkers[i];
-			linker.unlink(this.findNode(linker.path), model);
+			node = this.findNode(linker.path);
+			if( node ) linker.unlink(node, model);
 		}
 	},
 
@@ -333,7 +219,7 @@ var TemplateInstance = {
 
 	remove: function(){
 		// not inserted
-		if( this.firstNode.parentNode == this.fragment ) return;
+		if( !this.firstNode || this.firstNode.parentNode == this.fragment ) return;
 
 		var first = this.firstNode, last = this.lastNode, node = this.firstNode, next;
 
@@ -355,10 +241,7 @@ var TemplateIterator = {
 	observer: null,
 	arrayObserver: null,
 	closed: false,
-
-	toString: function(){
-		return 'TemplateIterator';
-	},
+	toString: function(){ return 'TemplateIterator'; },
 
 	create: function(template){
 		this.template = template;
@@ -391,6 +274,7 @@ var TemplateIterator = {
 		var instance = this.template.createInstance(model);
 		this.instances[index] = instance;
 		instance.insert(this.element.parentNode, this.getInsertBeforeNodeAt(index));
+		return instance;
 	},
 
 	/*

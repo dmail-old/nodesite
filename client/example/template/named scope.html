@@ -1,0 +1,39 @@
+<template bind="foo">
+	<!-- foo.* available -->
+	foo: {name}
+	<template bind="foo.bar as bar">
+		foo: {foo.name}, bar: {bar.name}
+		<!-- foo.* & bar.* available -->
+		<template bind="bar.bat">
+			<!-- only properties of bat are available -->
+			bat: {name}
+			<template bind="boo as bot">
+			<!-- bot.* and properties of bat are available. NOT foo.* or bar.* -->
+			boo: {bot.name}
+			bat: {bat.name}
+			foo: {foo.name} or {name} (both should be undefined)
+			</template>
+		</template>
+	</template>
+</template>
+
+<script>
+var template = $('template').template;
+var model = {
+	foo: {
+		name: 'foo',
+		bar: {
+			name: 'bar',
+			bat: {
+				name: 'bat'
+				boo: {
+					name: 'boo'
+				}
+			}
+		}
+	}
+};
+
+template.setModel(model);
+
+</script>

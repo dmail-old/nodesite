@@ -3,7 +3,9 @@ exports.extend = {
 
 	parseUrl: function(url){
 		try{
-			return require('url').parse(url);
+			url = require('url').parse(url);
+			url.pathname = require('querystring').unescape(url.pathname);
+			return url;
 		}
 		catch(e){
 			return null;

@@ -1,5 +1,8 @@
 function parseJSON(json){
 	if( typeof json == 'string' ){
+		// decode URI component on json URI encoded string
+		json = require('querystring').unescape(json);
+
 		try{
 			json = JSON.parse(json);
 		}

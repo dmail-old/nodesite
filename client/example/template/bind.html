@@ -1,0 +1,17 @@
+<div id="template" template bind="user">
+	Coucou {name}
+	<span style="color:{color}">{color}</span>
+</div>
+
+<script>
+var template = $('template').template;
+var model = {
+	user: {
+		name: 'damien',
+		color: 'red'
+	}
+};
+
+template.setModel(model);
+
+</script>

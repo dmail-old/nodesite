@@ -227,10 +227,10 @@ window.app = {
 
 		//$('page').innerHTML = html;
 		document.body.innerHTML = html;
-		if( typeof Template != 'undefined' ){
-			window.Template.bootstrap(document.body);
-		}
-		html.stripScripts(true); // évalue le javascript se trouvant dans le html
+		// search for <template> in the DOM
+		window.HTMLTemplateElement.bootstrap(document.body);
+		// search for <script> in the string and evals it
+		html.stripScripts(true);
 	},
 
 	// demande au serveur la page se trouvant à url

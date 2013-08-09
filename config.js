@@ -64,7 +64,7 @@ config.js = [].concat(
 		"request"
 	].prefix('browser/'),
 	[
-		"linker", "parser", "node.bind", "template"
+		"linker", "parser", "node.bind", "HTMLTemplateElement", "template"
 	].prefix('mdv/'),
 	[
 		"selection", "keynav", "rootkeynav", "shortcut", "editable"
