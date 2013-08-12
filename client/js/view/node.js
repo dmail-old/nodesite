@@ -93,3 +93,24 @@ NS.viewDocument.define('node', NS.View.extend({
 	});
 
 })(NS.viewDocument.require('node'));
+
+/*
+
+<element name="my-node">
+	<template>
+		<li>
+			<div draggable?="{draggable}">
+				<ins class="tool"></ins>
+				<span class="name">{name}></span>
+			</div>
+			<ul>
+				<template repeat="children"><my-node></my-node></template>
+			</ul>
+		</li>
+	</template>
+</element>
+
+// lorsque j'écris ceci je crée une instance du truc au dessus
+<my-node></my-node>
+
+*/

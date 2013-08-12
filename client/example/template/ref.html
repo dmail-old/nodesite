@@ -1,0 +1,33 @@
+<template id="user">
+	<span>{name}</span>
+</template>
+
+<h2>Usage one: </h2>
+User: <template id="example1" ref="user"></template>
+
+<h2> Usage two: </h2>
+More users:
+<ul>
+	<template id="example2" repeat>
+		<li>
+			<template ref="user"></template>
+		</li>
+	</template>
+</ul>
+
+<script>
+
+var t1 = document.getElementById('example1').template;
+t1.setModel({
+	name: 'Sam'
+});
+
+var t2 = document.getElementById('example2').template;
+var model = [
+	{name: 'Amy'},
+	{name: 'Lin'},
+	{name: 'Peter'}
+];
+t2.setModel(model);
+
+</script>

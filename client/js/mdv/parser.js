@@ -16,7 +16,7 @@ var Parser = {
 			}
 		}
 
-		// keep searching directives
+		// keep searching linkers
 		if( terminal === false && (nodeType == 1 || nodeType == 11) ){
 			found = found.concat(this.collectChildNodes(node, path));
 		}
@@ -141,57 +141,9 @@ Parser.register(function parseAttributes(node){
 	return window.LinkerListLinker.new(linkerlist);
 });
 
-var SubTemplateLinker = window.Linker.extend({
-	terminal: true,
-	template: null,
-	toString: function(){ return 'SubTemplateLinker'; },
-
-	create: function(templateElement){
-		this.template = window.Template.new(templateElement);
-	},
-
-	link: function(node, model){
-		/*
-
-		// trouver pourquoi lorsqu'on répète ce template deux fois node
-		// devient vide
-		// parce que cloneContent clone content mais lorsqu'il trouve un template
-		// en fait il clone le template mais le content a disparu dans un documentfragment
-
-		// dans ce cas pourquoi la première itération fonctionne?
-		// -> parce que le content n'a pas encore été mit dans un fragment
-
-		// solution?? mettre le template dans un fragment lorsqu'on crée un template
-		// autrement dit bootstrapper le template à la création
-
-		// ou alors modifier cloneContent pourqu'il récup template.content sur
-		// les templates non natif
-
-
-		lorsque node n'est pas un template natif
-		le content n'est pas cloné puisque plus dans le DOM mais dans
-		un documentfragment
-		*/
-
-		/*
-		if( !window.HTMLTemplateElement.isNativeTemplate(node) ){
-			node.appendChild(this.template.cloneContent());
-		}
-		*/
-
-		var template = window.Template.new(node);
-		template.linkers = this.template.parse();
-		template.setModel(model);
-	},
-
-	unlink: function(node, model){
-		// faudras détruire le template
-	}
-});
-
 Parser.register(function parseSubTemplate(node){
-	if( node.nodeType != 1 ) return false;
-	if( !window.HTMLTemplateElement.isTemplate(node) ) return false;
-	return SubTemplateLinker.new(node);
+	if( window.HTMLTemplateElement.isTemplate(node) ){
+		return window.SubTemplateLinker.new(node);
+	}
 });
 

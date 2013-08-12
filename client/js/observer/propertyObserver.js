@@ -5,23 +5,25 @@ var PropertyObserver = {
 	lastChange: null,
 	listener: null,
 	emitter: null,
+	token: undefined,
 
 	toString: function(){
 		return 'PropertyObserver';
 	},
 
-	create: function(property, model, listener, bind){
+	create: function(property, model, listener, bind, token){
 		this.property = property;
 		this.setModel(model);
 		if( typeof listener == 'function' ){
 			this.onChange(listener, bind);
 		}
+		this.token = token;
 	},
 
 	notify: function(change){
 		this.lastChange = change;
 		if( typeof this.listener == 'function' ){
-			this.listener.call(this.bind, change);
+			this.listener.call(this.bind, change, this.token);
 		}
 	},
 

@@ -8,7 +8,7 @@ var PathObserver = {
 		return 'PathObserver';
 	},
 
-	create: function(path, model, listener, bind){
+	create: function(path, model, listener, bind, token){
 		this.path = path;
 
 		var parts = path.split('.'), i = 0, j = parts.length, currentPart, part;
@@ -31,6 +31,7 @@ var PathObserver = {
 		}
 
 		this.firstPart.setModel(model);
+		this.lastPart.token = token;
 		this.lastPart.onChange(listener, bind || this);
 	},
 

@@ -1,0 +1,59 @@
+<h1>Recursive Template</h1>
+<ul>
+	<template repeat="items" id="t">
+		<li>{name}
+			<ul>
+				<template ref="t" repeat="children"></template>
+			</ul>
+		</li>
+	</template>
+</ul>
+
+<script>
+
+var tpl = $('t').template;
+var model = {
+	items: [
+		{
+			'name': 'Africa',
+			'children': [
+				{
+					'name': 'Egypt'
+				},
+				{
+					'name': 'Kenya',
+					'children': [
+						{
+							'name': 'Nairobi'
+						},
+						{
+							'name': 'Mombasa'
+						}
+					]
+				}
+			],
+		},
+		{
+			'name': 'Asia',
+			'children': [
+				{
+					'name': 'China'
+				},
+				{
+					'name': 'India'
+				},
+				{
+					'name': 'Russia'
+				},
+				{
+					'name': 'Mongolia'
+				}
+			]
+		},
+
+	]
+};
+
+tpl.setModel(model);
+
+</script>

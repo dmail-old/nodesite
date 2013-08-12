@@ -1,0 +1,13 @@
+<div id="template" template>
+	Am i visible ? {visible}
+	<div template if="visible">Here I am</span>
+</div>
+
+<script>
+var template = $('template').template;
+var model = {
+	visible: !true
+};
+
+template.setModel(model);
+</script>

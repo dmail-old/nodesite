@@ -3,7 +3,7 @@
 		<li>{name}, comments:
 			<ul>
 				<li>Im always first li</li>
-				<div id="comment" repeat="comments" template>
+				<div repeat="comments" if="visible" template>
 					<li>{}</li>
 				</div>
 				<li>Im always last li</li>
@@ -16,8 +16,8 @@
 var template = $('template').template;
 var model = {
 	users: [
-		{name: 'damien', comments: ['hey', 'men']},
-		//{name: 'seb', comments: ['yo', 'dude']}
+		{name: 'damien', comments: ['hey', 'men'], visible: false},
+		{name: 'seb', comments: ['yo', 'dude'], visible: true}
 	]
 };
 

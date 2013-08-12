@@ -80,9 +80,11 @@ Object.append(HTMLTemplateElement, {
 	},
 
 	createAll: function(list){
-		var i = 0, j = list.length;
+		var i = 0, j = list.length, node, template;
 		for(;i<j;i++){
-			window.Template.new(list[i]);
+			node = list[i];
+			template = window.Template.new(node);
+			// ici on peut chercher des template dans le content
 		}
 	},
 
@@ -98,3 +100,23 @@ if( HTMLTemplateElement.supported === false ){
 	HTMLTemplateElement.prototype = Object.create(window.HTMLUnknownElement.prototype);
 	Object.defineProperty(HTMLTemplateElement.prototype, 'content', this.contentDescriptor);
 }
+
+Object.append(HTMLTemplateElement.prototype, {
+	getReference: function(){
+		var node = this, ref = this, id = this.getAttribute('ref'), nextRef;
+
+		if( id ){
+			node = document.getElementById(id);
+			if( node ){
+				ref = node;
+			}
+		}
+
+		if( ref != this ){
+			nextRef = ref.getReference();
+			if( nextRef ) ref = nextRef;
+		}
+
+		return ref;
+	}
+});

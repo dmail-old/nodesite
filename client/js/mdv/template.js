@@ -6,15 +6,12 @@ name: template
 
 description: mainly inspired from polymer:
 
-https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1194
+https://github.com/Polymer/Template-instantiation/blob/master/src/template-instantiation.js
 
 TODO:
 
 - support for named scope: 'comment in user.comments' and 'foo as bar'
 http://www.polymer-project.org/platform/mdv/expression_syntax.html#named-scopes
-
-- support if attribute
-- support ref attribute
 
 MORE:
 
@@ -42,10 +39,12 @@ var Template = {
 
 	create: function(element){
 		window.HTMLTemplateElement.decorate(element);
-
 		this.element = element;
 		element.template = this;
-		this.content = element.content;
+		// problème ici: la reference vers le parent est perdu
+		// si le template est un sous template
+		// puisque content.parentNode pour un template === null
+		this.content = element.getReference().content;
 	},
 
 	parse: function(){
@@ -69,6 +68,7 @@ var Template = {
 		this.unsetModel();
 		this.model = model;
 		this.templateIterator = TemplateIterator.new(this);
+		this.templateIterator.checkAttributes();
 	},
 
 	unsetModel: function(){
@@ -248,7 +248,7 @@ var TemplateIterator = {
 		this.element = template.element;
 		this.instances = [];
 
-		this.checkAttributes();
+		//this.checkAttributes();
 	},
 
 	getInsertBeforeNodeAt: function(index){
@@ -326,16 +326,16 @@ var TemplateIterator = {
 		}
 	},
 
-	observe: function(array){
-		this.unobserve();
-		this.arrayObserver = window.ArrayObserver.new(array, this.arrayChanged, this);
-	},
-
 	unobserve: function(){
 		if( this.arrayObserver ){
 			this.arrayObserver.close();
 			this.arrayObserver = null;
 		}
+	},
+
+	observe: function(array){
+		this.unobserve();
+		this.arrayObserver = window.ArrayObserver.new(array, this.arrayChanged, this);
 	},
 
 	destroyInstances: function(){
@@ -346,51 +346,51 @@ var TemplateIterator = {
 		this.instances.length = 0;
 	},
 
-	valueChanged: function(change){
-		// on répète le template pour chaque item
-		if( Array.isArray(change.value) ){
-			this.observe(change.value);
-		}
-		// supression de toutes les instances
-		else{
-			this.unobserve();
+	resolveInputs: function(values){
+		console.log(values);
+
+		if( 'if' in values && !values['if'] ){
+			// on supprime toute les instances
 			this.destroyInstances();
 		}
-	},
+		else if( 'repeat' in values ){
+			var value = values['repeat'];
 
-	bindChanged: function(change){
-		this.instances[0].setModel(change.value);
+			// on répète le template pour chaque item
+			if( Array.isArray(value) ){
+				this.observe(value);
+			}
+			// supression de toutes les instances
+			else{
+				this.unobserve();
+				this.destroyInstances();
+			}
+		}
+		else{
+			// on observe une sous partie du modèle, ou le modèle lui même
+			var model = 'bind' in values ? values['bind'] : this.template.model;
+
+			if( this.instances.length === 0 ){
+				this.insertInstanceAt(0, model);
+			}
+			else{
+				this.instances[0].setModel(model);
+			}
+		}
 	},
 
 	checkAttributes: function(){
+		var attrs = ['if', 'repeat', 'bind'], i = 0, j = attrs.length, attr;
 		var model = this.template.model;
 
-		/*
-		polymer: Templateiterator écoute les propriétés bind, if et repeat
-		de cette manière il construit les itérations en fonctions des valeurs
-		de ces trois propriété et pas que de repeat
-		https://github.com/Polymer/mdv/blob/master/src/template_element.js#L1224
-		*/
-
-		// repeat
-		if( this.element.hasAttribute('repeat') ){
-			var repeat = this.element.getAttribute('repeat');
-			this.observer = window.PathObserver.new(repeat, model, this.valueChanged, this);
-		}
-		// bind
-		else{
-			var bind = this.element.getAttribute('bind');
-
-			// on observe une sous partie du modèle
-			if( bind ){
-				this.insertInstanceAt(0);
-				this.observer = window.PathObserver.new(bind, model, this.bindChanged, this);
-			}
-			// on observe le modèle
-			else{
-				this.insertInstanceAt(0, model);
+		this.inputs = window.ComputedBinding.new(this.resolveInputs, this);
+		for(;i<j;i++){
+			attr = attrs[i];
+			if( this.element.hasAttribute(attr) ){
+				this.element.bind(attr, model, this.element.getAttribute(attr), this);
 			}
 		}
+		this.inputs.resolve();
 	},
 
 	close: function(){
@@ -401,5 +401,43 @@ var TemplateIterator = {
 			this.observer = null;
 			this.closed = true;
 		}
+	}
+};
+
+var TemplateBinding = {
+	closed: false,
+	node: null,
+	property: null,
+	model: null,
+	path: null,
+	iterator: null,
+
+	create: function(node, property, model, path, iterator){
+		this.node = node;
+		this.property = property;
+		this.model = model;
+		this.path = path || '';
+		this.iterator = iterator;
+		this.iterator.inputs.observe(this.property, this.model, this.path);
+	},
+
+	close: function() {
+		if( this.closed === false ){
+			this.iterator.inputs.unobserve(this.property);
+			this.iterator = null;
+			this.node = null;
+			this.model = null;
+			this.closed = true;
+		}
+	}
+};
+
+window.HTMLTemplateElement.prototype.bind = function(name, model, path){
+	if( name == 'bind' || name == 'repeat' || name == 'if' ){
+		this.unbind(name);
+		return this.bindings[name] = TemplateBinding.new(this, name, model, path, this.template.templateIterator);
+	}
+	else{
+		return HTMLElement.prototype.bind.call(this, name, model, path);
 	}
 };

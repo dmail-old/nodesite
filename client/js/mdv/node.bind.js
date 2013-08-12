@@ -20,7 +20,7 @@ var NodeBinding = {
 
 	onchange: function(change){
 		this.valueChanged(change.value);
-	},	
+	},
 
 	close: function(){
 		if( this.closed === false ){
@@ -45,7 +45,7 @@ Node.prototype.unbind = function(name) {
 
 Node.prototype.unbindAll = function(){
 	if( !this.bindings ) return;
-	
+
 	var names = Object.keys(this.bindings), i = 0, j = names.length, binding;
 	for(;i<j;i++) {
 		binding = this.bindings[names[i]];
@@ -55,7 +55,7 @@ Node.prototype.unbindAll = function(){
 	this.bindings = {};
 };
 
-Text.prototype.bind = function(name, model, path){
+window.Text.prototype.bind = function(name, model, path){
 	if( name !== 'textContent' ){
 		return Node.prototype.bind.call(this, name, model, path);
 	}
@@ -74,7 +74,7 @@ var AttributeBinding = NodeBinding.extend({
 			element.removeAttribute(attrName);
 			attrName = attrName.slice(0, - this.conditionalEnd.length);
 		}
-		
+
 		NodeBinding.create.call(this, element, attrName, model, path);
 	},
 
@@ -89,7 +89,7 @@ var AttributeBinding = NodeBinding.extend({
 		}
 		else{
 			this.node.setAttribute(this.property, this.encodeValue(value));
-		}	
+		}
     }
 });
 
@@ -125,32 +125,32 @@ var ComputedBinding = {
 		}
 	},
 
-	checkResolve: function(force){
-		if( this.delayed === false || force === true ){
+	checkResolve: function(){
+		if( this.delayed === false ){
 			this.resolve();
 		}
-	},	
+	},
 
-	valueChanged: function(change){
-		this.values[change.name] = change.value;
+	valueChanged: function(change, token){
+		this.values[token] = change.value;
 		this.checkResolve();
 	},
 
-	observe: function(name, model, path, suppressResolve) {
+	observe: function(name, model, path){
 		this.unobserve(name);
 		this.size++;
-		this.observers[name] = window.PathObserver.new(path, model, this.valueChanged, this);
-		this.checkResolve(!suppressResolve);
+		this.observers[name] = window.PathObserver.new(path, model, this.valueChanged, this, name);
+		this.checkResolve();
 	},
 
-	unobserve: function(name, suppressResolve) {
+	unobserve: function(name) {
 		if( this.observers[name] ){
 			this.size--;
 			this.observers[name].close();
 			delete this.observers[name];
 			delete this.values[name];
-			this.checkResolve(!suppressResolve);
-		}      
+			this.checkResolve();
+		}
 	},
 
 	close: function(){

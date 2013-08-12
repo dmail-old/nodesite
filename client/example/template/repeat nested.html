@@ -1,0 +1,25 @@
+<ul>
+	<div id="template" repeat="users" template>
+		<li>{name}, comments:
+			<ul>
+				<li>Im always first li</li>
+				<div id="comment" repeat="comments" template>
+					<li>{}</li>
+				</div>
+				<li>Im always last li</li>
+			</ul>
+		</li>
+	</div>
+</ul>
+
+<script>
+var template = $('template').template;
+var model = {
+	users: [
+		{name: 'damien', comments: ['hey', 'men']},
+		{name: 'seb', comments: ['yo', 'dude']}
+	]
+};
+
+template.setModel(model);
+</script>

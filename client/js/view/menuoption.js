@@ -26,6 +26,8 @@ NS.viewDocument.define('menuoption', NS.viewDocument.require('node').extend({
 
 		NOTE: on déclare que img dépend de type et img, en réalité:
 		- img dépend aussi de this.imageSrc & this.types
+
+
 		- name dépend de lang.menu
 		- key dépend de lang['key_' + key]
 
