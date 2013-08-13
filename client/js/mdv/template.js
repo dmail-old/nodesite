@@ -41,9 +41,6 @@ var Template = {
 		window.HTMLTemplateElement.decorate(element);
 		this.element = element;
 		element.template = this;
-		// problème ici: la reference vers le parent est perdu
-		// si le template est un sous template
-		// puisque content.parentNode pour un template === null
 		this.content = element.getReference().content;
 	},
 
@@ -238,17 +235,15 @@ var TemplateIterator = {
 	template: null,
 	element: null,
 	instances: null,
-	observer: null,
 	arrayObserver: null,
 	closed: false,
+	inputs: null,
 	toString: function(){ return 'TemplateIterator'; },
 
 	create: function(template){
 		this.template = template;
 		this.element = template.element;
 		this.instances = [];
-
-		//this.checkAttributes();
 	},
 
 	getInsertBeforeNodeAt: function(index){
@@ -347,8 +342,6 @@ var TemplateIterator = {
 	},
 
 	resolveInputs: function(values){
-		console.log(values);
-
 		if( 'if' in values && !values['if'] ){
 			// on supprime toute les instances
 			this.destroyInstances();
@@ -397,8 +390,6 @@ var TemplateIterator = {
 		if( this.closed === false ){
 			this.unobserve();
 			this.destroyInstances();
-			this.observer.close();
-			this.observer = null;
 			this.closed = true;
 		}
 	}

@@ -246,39 +246,40 @@ route.use(function useAction(next){
 	}
 });
 
-// le truc c'est qu'en fait toute les requêtes doivent recevoir sendPage sauf
-// lorsqu'on demande un fichier js/css/img/etc
+// sendFile
+route.use(function useFile(next){
 
-// sendPage
-route.use(function usePage(next){
-	var pathname = this.url.pathname;
-	var slash = pathname.indexOf('/', 1);
-	var dirname = this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)).slice(1);
+	function isFileRequest(){
+		if( this.method != 'HEAD' && this.method != 'GET' ) return false;
 
-	// html file géré par index.html
-	if( pathname.endsWith('.html') ){
-		this.sendPage();
+		var pathname = this.url.pathname;
+		var slash = pathname.indexOf('/', 1);
+		var dirname = this.url.pathname.slice(0, this.url.pathname.indexOf('/', 1)).slice(1);
+
+		// on demande quelque chose à la racine, ayant une extension
+		if( slash === -1 && pathname.contains('.') ){
+			// les fichiers js à la racine ne sont pas des fichiers mais plutot des page à la php
+			return !pathname.endsWith('.js');
+		}
+
+		if( dirname == 'css' || dirname == 'js' || dirname == 'img' ){
+			return true;
+		}
+
+		return false;
 	}
-	// on demande quelque chose à la racine, sans extension ou finissant par .js
-	else if( slash === -1 && (!pathname.contains('.') || pathname.endsWith('.js')) ){
-		this.sendPage();
-	}
-	else if( dirname == 'example' ){
-		this.sendPage();
+
+	if( isFileRequest.call(this) ){
+		this.sendFile(this.url.pathname);
 	}
 	else{
 		next();
 	}
 });
 
-// sendFile
-route.use(function useFile(next){
-	if( this.method == 'HEAD' || this.method == 'GET' ){
-		this.sendFile(this.url.pathname);
-	}
-	else{
-		next();
-	}
+// sendPage, always sendPage to every other URL
+route.use(function usePage(next){
+	this.sendPage();
 });
 
 module.exports = route;
