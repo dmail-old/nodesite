@@ -1,0 +1,3 @@
+[submodule "client/js/observer"]
+	path = client/js/observer
+	url = git@github.com:dmail/observer.git
