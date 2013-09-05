@@ -195,29 +195,6 @@ Array.implement('insertSort', function(item, compare){
 	return this;
 });
 
-Array.implement('sortWithAffectations', function(comparer){
-	var array = this, i = 0, j = array.length, pairs = [], pair, affectations = [];
-
-	for(;i<j;i++){
-		pairs[i] = [i, array[i]];
-	}
-
-	if( typeof comparer != 'function' ) comparer = Function.COMPARE;
-
-	pairs.sort(function(a, b){
-		return comparer.call(array, a[1], b[1]);
-	});
-
-	i = 0;
-	for(;i<j;i++){
-		pair = pairs[i];
-		affectations.push(pair[0], i);
-		array[i] = pair[1];
-	}
-
-	return affectations;
-});
-
 Array.implement('shuffle', function(){
 	var i = this.length - 1, j, temp;
 
