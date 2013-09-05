@@ -12,11 +12,17 @@ TODO:
 
 - support for named scope: 'comment in user.comments' and 'foo as bar'
 http://www.polymer-project.org/platform/mdv/expression_syntax.html#named-scopes
+- support events binding
+je sais pas ce qui est le mieux entre
+on-click à la polymer
+addEvent('span>div', 'click') à la x-tag de mozilla
+- support custom element instantiation
+donc faut checker tout les tagName de tous les éléments
+et instantier des objets javascript correspondant
 
 MORE:
 
 - support having method on model that can depend on property
-
 as for AttributBinding with conditional we could have a sort of
 isMethod in PropertyObserver
 in case it's a method it listen for method affectation
@@ -24,7 +30,6 @@ and also for property named in the arguments of the method then we could write
 
 model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
 <template>{fullName()}</template>
-
 - support checked and value attribute on input
 
 */
