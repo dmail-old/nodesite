@@ -49,8 +49,7 @@ if( true || !('WeakMap' in window) ){
 		},
 
 		clear: function(){
-			this.keys = [];
-			this.values = [];
+			this.keys.legnth = this.values.length = 0;
 		}
 	};
 }

@@ -1,17 +1,19 @@
-<template bind="foo">
+<template id="template" bind="foo">
 	<!-- foo.* available -->
-	foo: {name}
-	<template bind="foo.bar as bar">
-		foo: {foo.name}, bar: {bar.name}
+	<!--foo: {name}<br />-->
+	<template>
+		foo: {foo.bar.name}<br />
 		<!-- foo.* & bar.* available -->
 		<template bind="bar.bat">
 			<!-- only properties of bat are available -->
-			bat: {name}
+			<!--bat: {name}<br />-->
 			<template bind="boo as bot">
 			<!-- bot.* and properties of bat are available. NOT foo.* or bar.* -->
-			boo: {bot.name}
-			bat: {bat.name}
+			<!--
+			boo: {bot.name}<br />
+			bat: {bat.name}<br />
 			foo: {foo.name} or {name} (both should be undefined)
+		-->
 			</template>
 		</template>
 	</template>
@@ -25,7 +27,7 @@ var model = {
 		bar: {
 			name: 'bar',
 			bat: {
-				name: 'bat'
+				name: 'bat',
 				boo: {
 					name: 'boo'
 				}

@@ -194,7 +194,7 @@ Object.implement({
 		return object;
 	},
 
-	// return an instance of this calling it's create method
+	// return an instance of this object calling it's create method
 	new: function(){
 		var instance = Object.create(this), create = instance.create;
 

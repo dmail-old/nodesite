@@ -10,7 +10,7 @@ https://github.com/Polymer/Template-instantiation/blob/master/src/template-insta
 
 TODO:
 
-- support for named scope: 'comment in user.comments' and 'foo as bar'
+- support for named scope: repeat 'comment in user.comments' and bind 'foo as bar'
 http://www.polymer-project.org/platform/mdv/expression_syntax.html#named-scopes
 - support events binding
 je sais pas ce qui est le mieux entre
@@ -31,6 +31,7 @@ and also for property named in the arguments of the method then we could write
 model.fullName = function(firstName, lastName){ return firstName + ' ' + lastName; };
 <template>{fullName()}</template>
 - support checked and value attribute on input
+https://github.com/Polymer/NodeBind/blob/master/src/NodeBind.js#L170
 
 */
 
@@ -52,6 +53,20 @@ var Template = {
 	parse: function(){
 		if( this.linkers == null ){
 			this.linkers = window.Parser.parse(this.content, true);
+
+			var bind = this.element.getAttribute('bind');
+
+			if( bind && bind.contains(' as ') ){
+				var i = 0, j = this.linkers.length, linker;
+
+				for(;i<j;i++){
+					linker = this.linkers[i];
+					console.log(linker.toString(), linker.modelPath);
+					linker.namedScope(bind.split(' as ')[1], bind.split(' as ')[0]);
+					console.log(linker.toString(), linker.modelPath);
+				}
+			}
+
 		}
 		return this.linkers;
 	},
@@ -368,6 +383,12 @@ var TemplateIterator = {
 			// on observe une sous partie du modèle, ou le modèle lui même
 			var model = 'bind' in values ? values['bind'] : this.template.model;
 
+			/*
+			on regarde si y'a un as dans le bind
+			si y'en a un genre foo as bar
+			chaque fois qu'on trouve bar faut le remplacer par foo
+			*/
+
 			if( this.instances.length === 0 ){
 				this.insertInstanceAt(0, model);
 			}
@@ -385,6 +406,7 @@ var TemplateIterator = {
 		for(;i<j;i++){
 			attr = attrs[i];
 			if( this.element.hasAttribute(attr) ){
+				// TODO ici aussi la valeur de l'attribut if, bind est sujet au named scope
 				this.element.bind(attr, model, this.element.getAttribute(attr), this);
 			}
 		}

@@ -5,7 +5,7 @@ name: Filter
 
 description: Help to get match(es) against a function called in a loop
 
-requires: Object.at, Function.TRUE, Function.FALSE
+requires: Object.at, Function.TRUE, Function.FALSE, Function.THIS
 
 provides: Filter
 

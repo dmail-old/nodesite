@@ -7,7 +7,7 @@ var NodeBinding = {
 	create: function(node, property, model, path){
 		this.node = node;
 		this.property = property;
-		this.observer = window.PathObserver.new(path, model, this.onchange, this);
+		this.observer = this.observe(path, model, this.onchange, this);
 	},
 
 	encodeValue: function(value){
@@ -20,6 +20,10 @@ var NodeBinding = {
 
 	onchange: function(change){
 		this.valueChanged(change.value);
+	},
+
+	observe: function(path, model, token){
+		return window.PathObserver.new(path, model, this.onchange, this, token);
 	},
 
 	close: function(){
@@ -131,7 +135,7 @@ var ComputedBinding = {
 		}
 	},
 
-	valueChanged: function(change, token){
+	onchange: function(change, token){
 		this.values[token] = change.value;
 		this.checkResolve();
 	},
@@ -139,7 +143,7 @@ var ComputedBinding = {
 	observe: function(name, model, path){
 		this.unobserve(name);
 		this.size++;
-		this.observers[name] = window.PathObserver.new(path, model, this.valueChanged, this, name);
+		this.observers[name] = window.PathObserver.new(path, model, this.onchange, this, name);
 		this.checkResolve();
 	},
 

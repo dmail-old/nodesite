@@ -1,11 +1,11 @@
-var Parser = {
+window.Parser = {
 	parsers: [],
 
 	collect: function(node, path){
-		if( typeof path != 'string' ) path = '';
-
 		var found = [], parsers = this.parsers, i = 0, j = parsers.length;
 		var nodeType = node.nodeType, linker, terminal = false;
+
+		if( typeof path != 'string' ) path = '';
 
 		for(;i<j;i++){
 			linker = parsers[i].call(this, node);
@@ -25,10 +25,14 @@ var Parser = {
 	},
 
 	collectNodeList: function(nodeList, path){
-		if( typeof path != 'string' ) path = '';
-		else if( path !== '' ) path+= '.';
-
 		var found = [], i = 0, j = nodeList.length;
+
+		if( typeof path != 'string' ){
+			path = '';
+		}
+		else if( path !== '' ){
+			path+= '.';
+		}
 
 		for(;i<j;i++){
 			found = found.concat(this.collect(nodeList[i], path + i));
@@ -59,10 +63,11 @@ var Parser = {
 	},
 
 	// https://github.com/Polymer/mdv/blob/master/src/template_element.js#L871
-	parseMustacheTokens: function(string) {
+	parseMustacheTokens: function(string){
 		if( !string || !string.length ) return;
 
-		var open = '{', close = '}', tokens, length = string.length, startIndex = 0, lastIndex = 0, endIndex = 0;
+		var open = '{', close = '}', tokens, length = string.length;
+		var startIndex = 0, lastIndex = 0, endIndex = 0;
 
 		while( lastIndex < length ){
 			startIndex = string.indexOf(open, lastIndex);
@@ -86,23 +91,18 @@ var Parser = {
 		return tokens;
 	},
 
-	isSingleBinding: function(tokens){
-		return tokens.length == 3 && tokens[0].length === 0 && tokens[2].length === 0;
-	},
-
-	isSingleTokenBinding: function(tokens){
-		return tokens.length == 3;
-	},
-
 	getTokensLinker: function(name, tokens){
-		if( this.isSingleBinding(tokens) ){
+		// {name} -> tokens contains only one mustache, no prefix/suffix
+		if( tokens.length == 3 && tokens[0].length === 0 && tokens[2].length === 0 ){
 			return window.PropertyLinker.new(name, tokens[1]);
 		}
-		else if( this.isSingleTokenBinding(tokens) ){
+		// Hello: {name}! -> tokens contains one mustache and/or a prefix/suffix
+		else if( tokens.length === 3 ){
 			return window.TokenLinker.new(name, tokens[1], tokens[0], tokens[2]);
 		}
+		// Hello {name}, you are {age} years old! -> list of tokens
 		else{
-			return window.TokensLinker.new(name, tokens);
+			return window.TokenListLinker.new(name, tokens);
 		}
 	},
 
@@ -117,16 +117,17 @@ var Parser = {
 	}
 };
 
-Parser.register(function parseTextContent(node){
+window.Parser.register(function parseTextContent(node){
 	if( node.nodeType != 3 ) return false;
 
 	return this.getLinker('textContent', node.textContent);
 });
 
-Parser.register(function parseAttributes(node){
+window.Parser.register(function parseAttributes(node){
 	if( node.nodeType != 1 ) return false;
 
-	var attributes = node.attributes, i = 0, j = attributes.length, attr, linker, linkerlist = [];
+	var attributes = node.attributes, i = 0, j = attributes.length, attr, linker;
+	var linkerlist = [];
 
 	for(;i<j;i++){
 		attr = attributes[i];
@@ -141,7 +142,7 @@ Parser.register(function parseAttributes(node){
 	return window.LinkerListLinker.new(linkerlist);
 });
 
-Parser.register(function parseSubTemplate(node){
+window.Parser.register(function parseSubTemplate(node){
 	if( window.HTMLTemplateElement.isTemplate(node) ){
 		return window.SubTemplateLinker.new(node);
 	}

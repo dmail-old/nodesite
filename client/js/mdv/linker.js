@@ -3,59 +3,77 @@ var Linker = {
 	path: null,
 	toString: function(){ return 'Linker'; },
 	link: Function.EMPTY,
-	unlink: Function.EMPTY
+	unlink: Function.EMPTY,
+	namedScope: Function.EMPTY
 };
 
 var PropertyLinker = Linker.extend({
 	nodeAttribute: null,
-	modelProperty: null,
+	modelPath: null,
 	toString: function(){ return 'PropertyLinker'; },
 
-	create: function(nodeAttribute, modelProperty){
+	create: function(nodeAttribute, modelPath){
 		this.nodeAttribute = nodeAttribute;
-		this.modelProperty = modelProperty;
+		this.modelPath = modelPath;
 	},
 
 	link: function(node, model){
-		node.bind(this.nodeAttribute, model, this.modelProperty);
+		node.bind(this.nodeAttribute, model, this.modelPath);
 	},
 
 	unlink: function(node, model){
 		node.unbind(this.nodeAttribute);
+	},
+
+	namedScope: function(search, replace){
+		this.modelPath = PropertyLinker.getNamedScopePath(this.modelPath, search, replace);
+	},
+
+	getNamedScopePath: function(path, search, replace){
+		if( path == search ){
+			return replace;
+		}
+
+		if( path.split('.')[0] == search ){
+			return replace + '.' + path.split('.').slice(1).join();
+		}
+
+		return path;
 	}
 });
 
 var TokenLinker = Linker.extend({
 	nodeAttribute: null,
-	modelProperty: null,
+	modelPath: null,
 	prefix: '',
 	suffix: '',
 	toString: function(){ return 'TokenLinker'; },
 
-	create: function(nodeAttribute, modelProperty, prefix, suffix){
+	create: function(nodeAttribute, modelPath, prefix, suffix){
 		this.nodeAttribute = nodeAttribute;
-		this.modelProperty = modelProperty;
+		this.modelPath = modelPath;
 		this.prefix = prefix;
 		this.suffix = suffix;
 	},
 
-
-
 	link: function(node, model){
 		var self = this;
-		var observer = window.PathObserver.new(this.modelProperty, model, function(change){
+		var observer = window.PathObserver.new(this.modelPath, model, function(change){
 			this.value = self.prefix + change.value + self.suffix;
 		});
 
+		// node is binded to observer.value wich is updated when pathobserver changes
 		node.bind(this.nodeAttribute, observer, 'value');
 	},
 
 	unlink: function(node){
 		node.unbind(this.nodeAttribute);
-	}
+	},
+
+	namedScope: PropertyLinker.namedScope
 });
 
-var TokensLinker = Linker.extend({
+var TokenListLinker = Linker.extend({
 	nodeAttribute: null,
 	tokens: null,
 	toString: function(){ return 'TokensLinker'; },
@@ -96,6 +114,13 @@ var TokensLinker = Linker.extend({
 
 	unlink: function(node, model){
 		node.unbind(this.nodeAttribute);
+	},
+
+	namedSope: function(search, replace){
+		var i = 1, j = this.tokens.length;
+		for(;i<j;i+=2){
+			this.tokens[i] = PropertyLinker.getNamedScopePath(this.tokens[i], search, replace);
+		}
 	}
 });
 
@@ -118,6 +143,13 @@ var LinkerListLinker = Linker.extend({
 		var list = this.list, i = 0, j = list.length;
 		for(;i<j;i++){
 			list[i].unlink(node, model);
+		}
+	},
+
+	namedScope: function(search, replace){
+		var list = this.list, i = 0, j = list.length;
+		for(;i<j;i++){
+			list[i].namedScope(search, replace);
 		}
 	}
 });
