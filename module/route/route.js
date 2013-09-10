@@ -185,7 +185,7 @@ var route = {
 		function nextHandler(error){
 			// handler à retournée une erreur
 			if( error ){
-				return self.error(new Error('internal error'));
+				return self.error(error);
 			}
 
 			// aucun handler n'a match
