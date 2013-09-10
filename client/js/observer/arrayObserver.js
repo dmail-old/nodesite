@@ -347,7 +347,7 @@ window.ArrayObserver = {
 };
 
 // sort an array with comparer and return the list of performed affectations
-Array.prototype.sortWithAffectations = function(comparer){
+Array.implement('sortWithAffectations', function(comparer){
 	var array = this, i = 0, j = array.length, pairs = [], pair, affectations = [];
 
 	for(;i<j;i++){
@@ -368,4 +368,4 @@ Array.prototype.sortWithAffectations = function(comparer){
 	}
 
 	return affectations;
-};
+});
