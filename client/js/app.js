@@ -29,7 +29,7 @@ window.server = {
 		}
 	},
 
-	createLink: function(){
+	open: function(){
 		var request = NS.Request.new({
 			link: 'chain',
 			method: 'post',
@@ -174,7 +174,10 @@ window.app = {
 			return text;
 		});
 
-		window.server.createLink();
+		// window.connection.open serait un nom plus juste
+		// ou alors window.server.connection.open
+		// ou window.serverConnection.open
+		window.server.open();
 
 		this.emitter = NS.ElementEmitter.new(window);
 		this.emitter.on({
@@ -257,28 +260,36 @@ window.app = {
 		});
 	},
 
-	// bouton back ou next activé
+	// bouton prev ou next activé
 	popstate: function(e){
 		window.route.change(document.location.href, e.state);
 	},
 
+	getAnchorElement: function(element){
+		while( element && element.tagName && element.tagName.toLowerCase() != 'a' ){
+			element = element.parentNode;
+		}
+
+		return element;
+	},
+
 	// lorsqu'on click sur un élément de la page
 	click: function(e){
-		var element = e.target;
+		var anchorElement = this.getAnchorElement(e.target);
 
-		if( element != document && element.tagName.toLowerCase() == 'a' ){
+		if( anchorElement ){
 			// click de molette
 			if( e.code == 2 ) return true;
 			// touche ctrl ou touche cmd
 			if( e.control || e.meta ) return true;
 			// URL courante, on laisse la page se recharger
-			if( document.location.href == element.href ) return true;
+			if( document.location.href == anchorElement.href ) return true;
 			// URL externe
-			if( document.location.hostname != element.hostname ) return true;
+			if( document.location.hostname != anchorElement.hostname ) return true;
 
 			// les URL internes entrainent une requête AJAX et history.pushState
-			history.pushState(null, null, element.href);
-			window.route.change(element.href);
+			history.pushState(null, null, anchorElement.href);
+			window.route.change(anchorElement.href);
 			e.preventDefault();
 			return false;
 		}
