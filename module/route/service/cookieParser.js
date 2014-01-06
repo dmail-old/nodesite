@@ -19,10 +19,10 @@ exports.extend = {
 
 	parseCookie: function(cookies){
 		try{
-			return require('./cookie').parse(cookies);
+			return require('../../cookie.js').parse(cookies);
 		}
 		catch(e){
-			return null;
+			return e;
 		}
 	}
 };
@@ -33,6 +33,9 @@ exports.use = function cookieParser(next){
 		this.cookieParams = this.parseCookie(this.cookieSource);
 		if( this.cookieParams == null ){
 			next(new Error('invalid cookies format'));
+		}
+		else if( this.cookieParams instanceof Error ){
+			next(this.cookieParams);
 		}
 	}
 	next();

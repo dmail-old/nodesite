@@ -9,7 +9,12 @@ window.PathObserver = {
 	},
 
 	create: function(path, model, listener, bind, token){
+		if( typeof path != 'string' ){
+			throw new Error('path must be a string');
+		}
+
 		this.path = path;
+
 
 		var parts = path.split('.'), i = 0, j = parts.length, currentPart, part;
 

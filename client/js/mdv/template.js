@@ -38,9 +38,8 @@ https://github.com/Polymer/NodeBind/blob/master/src/NodeBind.js#L170
 var Template = {
 	element: null,
 	content: null,
-	linkers: null,
-	hasSubTemplate: false,
 	templateIterator: null,
+	linkers: null,
 	toString: function(){ return 'Template'; },
 
 	create: function(element){
@@ -48,27 +47,6 @@ var Template = {
 		this.element = element;
 		element.template = this;
 		this.content = element.getReference().content;
-	},
-
-	parse: function(){
-		if( this.linkers == null ){
-			this.linkers = window.Parser.parse(this.content, true);
-
-			var bind = this.element.getAttribute('bind');
-
-			if( bind && bind.contains(' as ') ){
-				var i = 0, j = this.linkers.length, linker;
-
-				for(;i<j;i++){
-					linker = this.linkers[i];
-					console.log(linker.toString(), linker.modelPath);
-					linker.namedScope(bind.split(' as ')[1], bind.split(' as ')[0]);
-					console.log(linker.toString(), linker.modelPath);
-				}
-			}
-
-		}
-		return this.linkers;
 	},
 
 	cloneContent: function(){
@@ -96,6 +74,17 @@ var Template = {
 			}
 			this.model = null;
 		}
+	},
+
+	parse: function(){
+		return window.Parser.parse(this.content, true);
+	},
+
+	getLinkers: function(){
+		if( this.linkers === null ){
+			this.linkers = this.parse();
+		}
+		return this.linkers;
 	}
 };
 
@@ -191,17 +180,19 @@ var TemplateInstance = {
 	},
 
 	link: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker, node;
+		var linkers = this.template.getLinkers(), i = linkers.length, linker, node;
 
 		while(i--){
 			linker = linkers[i];
 			node = this.findNode(linker.path);
-			if( node ) linker.link(node, model);
+			if( node ){
+				linker.link(node, model);
+			}
 		}
 	},
 
 	unlink: function(model){
-		var linkers = this.template.parse(), i = linkers.length, linker, node;
+		var linkers = this.template.getLinkers(), i = linkers.length, linker, node;
 
 		while(i--){
 			linker = linkers[i];
@@ -258,6 +249,8 @@ var TemplateIterator = {
 	arrayObserver: null,
 	closed: false,
 	inputs: null,
+	scopeNamed: false,
+
 	toString: function(){ return 'TemplateIterator'; },
 
 	create: function(template){
@@ -266,7 +259,7 @@ var TemplateIterator = {
 		this.instances = [];
 	},
 
-	getInsertBeforeNodeAt: function(index){
+	getNodeForInsertionAt: function(index){
 		var before;
 
 		// use firstNode of the nextInstance
@@ -288,7 +281,7 @@ var TemplateIterator = {
 	insertInstanceAt: function(index, model){
 		var instance = this.template.createInstance(model);
 		this.instances[index] = instance;
-		instance.insert(this.element.parentNode, this.getInsertBeforeNodeAt(index));
+		instance.insert(this.element.parentNode, this.getNodeForInsertionAt(index));
 		return instance;
 	},
 
@@ -381,7 +374,16 @@ var TemplateIterator = {
 		}
 		else{
 			// on observe une sous partie du modèle, ou le modèle lui même
-			var model = 'bind' in values ? values['bind'] : this.template.model;
+			var model;
+
+			// bind = "name as othername" -> utilise le model
+			if( this.scopeNamed || !('bind' in values) ){
+				model = this.template.model;
+			}
+			// bind = "name" -> utilise le sous objet appelé "name"
+			else{
+				model = values['bind'];
+			}
 
 			/*
 			on regarde si y'a un as dans le bind
@@ -398,18 +400,70 @@ var TemplateIterator = {
 		}
 	},
 
-	checkAttributes: function(){
-		var attrs = ['if', 'repeat', 'bind'], i = 0, j = attrs.length, attr;
-		var model = this.template.model;
+	getAttributeKeyword: function(attrName){
+		if( attrName == 'repeat' ){
+			return 'in';
+		}
+		else if( attrName == 'bind' ){
+			return 'as';
+		}
+		else{
+			return '';
+		}
+	},
 
-		this.inputs = window.ComputedBinding.new(this.resolveInputs, this);
-		for(;i<j;i++){
-			attr = attrs[i];
-			if( this.element.hasAttribute(attr) ){
-				// TODO ici aussi la valeur de l'attribut if, bind est sujet au named scope
-				this.element.bind(attr, model, this.element.getAttribute(attr), this);
+	parseAttributeValue: function(name, value){
+		var result = [], index, keyword = this.getAttributeKeyword(name);
+
+		if( keyword ){
+			index = value.indexOf(' ' + keyword + ' ');
+
+			if( index !== - 1 ){
+				result.push(value.slice(0, index));
+				result.push(keyword);
+				result.push(value.slice(index + keyword.length + 2));
+
+				return result;
 			}
 		}
+
+		result.push(value);
+
+		return result;
+	},
+
+	forEachInputs: function(node, fn, bind){
+		var attrs = ['if', 'repeat', 'bind'], i = 0, j = attrs.length, attrName;
+
+		bind = bind || this;
+		for(;i<j;i++){
+			attrName = attrs[i];
+			if( node.hasAttribute(attrName) ){
+				fn.call(
+					bind,
+					attrName,
+					this.parseAttributeValue(attrName, node.getAttribute(attrName))
+				);
+			}
+		}
+	},
+
+	checkAttribute: function(name, value){
+
+		if( value.length > 1 ){
+			this.scopeNamed = true;
+			var linkers = this.template.getLinkers(), i = 0, j = linkers.length;
+			for(;i<j;i++){
+				linkers[i].namedScope(value[0], value[2]);
+			}
+		}
+
+		this.inputs.observe(name, this.template.model, value[0]);
+	},
+
+	checkAttributes: function(){
+		this.inputs = window.ComputedBinding.new(this.resolveInputs, this);
+		this.forEachInputs(this.element, this.checkAttribute, this);
 		this.inputs.resolve();
 	},
 
@@ -419,43 +473,5 @@ var TemplateIterator = {
 			this.destroyInstances();
 			this.closed = true;
 		}
-	}
-};
-
-var TemplateBinding = {
-	closed: false,
-	node: null,
-	property: null,
-	model: null,
-	path: null,
-	iterator: null,
-
-	create: function(node, property, model, path, iterator){
-		this.node = node;
-		this.property = property;
-		this.model = model;
-		this.path = path || '';
-		this.iterator = iterator;
-		this.iterator.inputs.observe(this.property, this.model, this.path);
-	},
-
-	close: function() {
-		if( this.closed === false ){
-			this.iterator.inputs.unobserve(this.property);
-			this.iterator = null;
-			this.node = null;
-			this.model = null;
-			this.closed = true;
-		}
-	}
-};
-
-window.HTMLTemplateElement.prototype.bind = function(name, model, path){
-	if( name == 'bind' || name == 'repeat' || name == 'if' ){
-		this.unbind(name);
-		return this.bindings[name] = TemplateBinding.new(this, name, model, path, this.template.templateIterator);
-	}
-	else{
-		return HTMLElement.prototype.bind.call(this, name, model, path);
 	}
 };

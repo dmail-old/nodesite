@@ -1,0 +1,20 @@
+<template id="template" bind="foo as bar">
+	bar.name: {bar.name}<br />
+	<template bind="foo as man">
+	bar.name: {bar.name}<br />
+	man.name: {man.name}<br />
+	name: {name}<br />
+	</template>
+</template>
+
+<script>
+var template = $('template').template;
+var model = {
+	foo: {
+		name: 'foo'
+	}
+};
+
+template.setModel(model);
+
+</script>
