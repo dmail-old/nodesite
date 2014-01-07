@@ -1,9 +1,8 @@
 /*
-Line is an line in a Table.
 
-byte: number of the bute where the line starts in the file
-data: the line as a string
-item: the line string as a JavaScript Object
+Line in JSON format
+
+item: the line as a JavaScript Object
 
 TODO:
 
@@ -11,17 +10,10 @@ gestion des erreurs lorsque data ne peut être parse ou que item ne peut être s
 
 */
 
-var Line = {
-	byte: 0,
-	data: '',
-	item: null,	
+var Line = require('./line.js');
 
-	create: function(byte, data){
-		this.byte = byte;
-		if( arguments.length > 1 ){
-			this.setData(data);
-		}
-	},
+var JSONLine = Line.extend({
+	item: null,
 
 	setData: function(data){
 		if( typeof data == 'string' ){
@@ -34,14 +26,25 @@ var Line = {
 		}		
 	},
 
+	empty: function(){
+		Line.empty.call(this);
+		this.item = {};
+	},
+
 	parse: function(data){
 		var item = null;
 
 		if( data.length ){
 			try{
-				item = JSON.parse(data);/*, function(key, value){
-					if( key == 'byte' || key == 'index' || key == 'data' ) return this.error('les propriétés index, byte et data sont réservé à la BDD');
-				}.bind(this));*/
+				item = JSON.parse(data);
+
+				/*
+				item = JSON.parse(data, , function(key, value){
+					if( key == 'byte' || key == 'index' || key == 'data' ){
+						return this.error('les propriétés index, byte et data sont réservé à la BDD');
+					}
+				}.bind(this));
+				*/
 			}
 			catch(e){
 				this.warn('ligne ' + this.length + ' malformée' + data);
@@ -67,6 +70,4 @@ var Line = {
 
 		return data;
 	}
-};
-
-module.exports = Line;
+});

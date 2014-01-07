@@ -14,6 +14,7 @@ Mise en place de compte utilisateur, connexion, inscription, déconnexion en uti
 FIX
 
 */
+
 global.root = process.cwd();
 global.FS = require('fs');
 global.util = require('util');
@@ -32,6 +33,12 @@ global.NS = {};
 
 ['emitter'].forEach(function(name){
 	require(root + '/client/js/lib/' + name);
+});
+
+var lineFile = require('./module/lineFile/lineFile.js');
+var file = lineFile.new('./temp/player.items');
+file.open(function(error, lines){
+	this.appendLine('clément', function(){});
 });
 
 var files = FS.readdirSync(root + '/lang/' + config.lang);
