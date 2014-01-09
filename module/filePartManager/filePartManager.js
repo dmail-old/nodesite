@@ -1,14 +1,13 @@
 /*
-LIneFile help to manipulate a file line by line
+File help to manipulate a file content line by line
 
-separator: the char used to separate lines in that file (default to '\n')
+separator: the char used to separate file content into parts (default to '\n')
 name: name of the file
 size: size of the file
 path: path to the file
 encoding: encoding of the file
-lines: array of lines
-state: 'closed' | 'opening' | 'opened' | 'closing' (default to 'closed')
-lockers: number of lock on the Table avoiding it to be modified until unlocked
+parts: array of parts
+state: 'closed' | 'opening' | 'opened' | 'reading' | 'readed' | 'writing' | 'closing' (default to 'closed')
 
 NOTE:
 - the file is entirely read and kept into memory
@@ -16,28 +15,23 @@ NOTE:
 
 TODO:
 
-gestion des erreurs lorsque le fichier existe pas ou autre
-lecture auto du fichier lorsqu'on cherche à effectuer une opération dessus
+appendPart et replacePart, gérer le fait que data peut émettre une erreur lorsque c'est du JSON invalide
 
 */
 
-var Line = require('./line.js');
+var FilePart = require('./filePart.js');
 var FS = require('fs');
 
-var LineFile = require(root + '/client/js/lib/emitter.js').extend({
+var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	path: null,
-	separator: '\n',
-	separatorCharCode: null,
-	encoding: 'utf8',	
-	size: null,
-	lines: null,
+	state: 'closed',
 	fd: null,
 	stat: null,
-	state: 'closed',
-
-	// lockers: 0,
-	// pile: null,
-	// datas: null, array of lines string
+	size: null,
+	encoding: 'utf8',
+	separator: '\n',
+	separatorCharCode: null,
+	parts: null,
 
 	create: function(path, encoding){
 		if( typeof path != 'string' ){
@@ -50,27 +44,87 @@ var LineFile = require(root + '/client/js/lib/emitter.js').extend({
 		this.path = path;
 		if( typeof encoding == 'string' ) this.encoding = encoding;
 		this.separatorCharCode = this.separator.charCodeAt(0);
-		this.lines = [];
-	},
-
-	createLine: function(byte, data){
-		return Line.new(byte, data);
+		this.parts = [];
 	},
 
 	error: function(){
 		// TODO
 	},
 
-	getEncoding: function(){
-		return this.encoding;
+	reply: function(callback, bind){
+		if( callback == null ){
+			callback = console.log;
+			bind = console;
+		}
+		else if( typeof callback != 'function' ){
+			throw new TypeError('function expected as callback');
+		}
+
+		bind = bind || this;
+
+		return callback.apply(bind, Array.slice(arguments, 2));
 	},
 
-	byteLength: function(data){
-		return Buffer.byteLength(data, this.getEncoding());
+	open: function(callback, bind){
+
+		if( this.state != 'closed' ){
+			return this.reply(callback, bind, new Error('file already open'));
+		}
+		
+		this.state = 'opening';
+
+		function onopen(error, fd){
+			if( error ){
+				// crée le fichier si il n'existe pas
+				if( error.code == 'ENOENT' && error.errno == 34 ){
+					return FS.open(this.path, 'w', onopen.bind(this));
+				}
+				return this.reply(callback, bind, error);
+			}
+			
+			this.state = 'opened';
+			this.fd = fd;
+			this.reply(callback, bind);
+		}
+
+		FS.open(this.path, 'r+', onopen.bind(this));
 	},
 
-	addLine: function(byte, data){
-		this.lines.push(this.createLine(byte, data));
+	close: function(callback, bind){
+
+		if( this.state != 'opened' ){
+			return this.reply(callback, bind, new Error('file not opened'));
+		}
+		if( this.fd == null ){
+			return this.reply(callback, bind, new Error('file descriptor is null'));
+		}
+
+		function onclose(error){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+
+			this.parts = [];
+			this.state = 'closed';
+			this.fd = null;
+			this.stat = null;
+			this.size = null;
+
+			this.reply(callback, bind, null);
+		}
+
+		this.state = 'closing';
+		FS.close(this.fd, onclose.bind(this));
+	},
+
+	createPart: function(data, byte){
+		return FilePart.new(data, byte);
+	},
+
+	addPart: function(data, byte){
+		var part = this.createPart(data, byte);
+		this.parts.push(part);
+		return part;
 	},
 
 	parseBuffer: function(buffer){
@@ -79,31 +133,37 @@ var LineFile = require(root + '/client/js/lib/emitter.js').extend({
 		for(;i<j;i++){
 			code = buffer[i];
 			if( code == this.separatorCharCode ) {
-				this.addLine(byte, buffer.slice(byte, i).toString(encoding));
+				this.addPart(buffer.slice(byte, i).toString(encoding), byte);
 				byte = i+1;
 			}
 		}
 
-		// crée une dernière ligne pour la fin du fichier
-		this.addLine(byte, buffer.slice(byte, j).toString(encoding));
+		// crée une dernière partie pour la fin du fichier
+		this.addPart(buffer.slice(byte, j).toString(encoding), byte);
+
+		return this.parts;
 	},
 
-	open: function(callback, bind){
-		bind = bind || this;
-		this.state = 'opening';	
+	getEncoding: function(){
+		return this.encoding;
+	},
+
+	read: function(callback, bind){
+		if( this.state != 'opened' ){
+			return this.reply(callback, bind, new Error('file not opened'));
+		}
 
 		function onread(error, readed, buffer){
 			if( error ){
-				return callback.call(bind, error);
+				return this.reply(callback, bind, error);
 			}
 
-			this.parseBuffer(buffer);
-			callback.call(bind, null, this.lines);
+			this.reply(callback, bind, null, this.parseBuffer(buffer));
 		}
 
 		function onstat(error, stat){
 			if( error ){
-				return this.callback.call(this.bind, error);
+				return this.reply(callback, bind, error);
 			}
 
 			this.stat = stat;
@@ -113,180 +173,178 @@ var LineFile = require(root + '/client/js/lib/emitter.js').extend({
 				return onread.call(this, null, 0, '');
 			}
 			
-			this.state = 'reading';
 			FS.read(this.fd, new Buffer(stat.size), 0, stat.size, 0, onread.bind(this));
 		}
 
-		function onopen(error, fd){
-			if( error ){
-				// crée la table si elle n'existe pas
-				if( error.code == 'ENOENT' && error.errno == 34 ){
-					return FS.open(this.path, 'w', onopen.bind(this));
-				}
-				return callback.call(bind, error);
-			}
-			
-			this.state = 'opened';
-			this.fd = fd;
-			FS.fstat(fd, onstat.bind(this));
-		}
-
-		FS.open(this.path, 'r+', onopen.bind(this));
+		this.state = 'reading';
+		FS.fstat(this.fd, onstat.bind(this));
 	},
 
-	close: function(callback, bind){
-		bind = bind || this;
+	byteLength: function(data){
+		return Buffer.byteLength(data, this.getEncoding());
+	},
 
-		if( this.fd == null ){
-			return callback.call(bind, new Error('Line manager not opened'));
+	write: function(data, byte, callback, bind){
+		// byte est un argument optionnel
+		if( typeof byte != 'number' ){
+			bind = callback;
+			callback = byte;
+			byte = 0;
 		}
 
-		function onclose(error){
-			if( error ){
-				return callback.call(bind, error);
-			}
-
-			this.lines = [];
-			this.state = 'closed';
-			this.fd = null;
-			this.stat = null;
-			this.size = null;
-
-			callback.call(bind);
-		}		
-
-		this.state = 'closing';
-		FS.close(this.fd, onclose.bind(this));
-	}
-});
-
-LineFile.supplement({
-	writeAfterByte: function(byte, data, callback, bind){
-		bind = bind || this;
+		if( this.state != 'readed' ){
+			this.reply(callback, bind, new Error('can\'t write: file not in readed state'));
+		}
 
 		function onwrite(error, written, buffer){
 			if( error ){
-				return callback.call(bind, error);
+				return this.reply(callback, bind, error);
 			}
+
+			this.state = 'readed';
+			this.size+= buffer.length;
 
 			if( written != buffer.length ){
 				error = new Error('write error: ' + written + 'bytes written on ' + buffer.length);
-				return callback.call(bind, error);
+				return this.reply(callback, bind, error);
 			}
-
-			this.size+= buffer.length;
-			callback.call(bind);
+			
+			this.reply(callback, bind);
 		}
 
 		if( data === '' ){
 			onwrite.call(this, null, 0, '');
 		}
 		else{
+			this.state = 'writing';
 			FS.write(this.fd, data, byte, this.byteLength(data), onwrite.bind(this));
 		}
 	},
 
-	getDataAfterLine: function(index){
-		var i = index, j = this.lines.length, data = '';
-		for(;i<j;i++){
-			if( i !== index ){
-				data+= this.separator;
-			}
-			data+= this.lines[i].data;
-		}
-
-		return data;
-	},
-
-	truncateAndWriteAfterByte: function(byte, data, callback, bind){
+	truncateThenWrite: function(byte, data, callback, bind){
 		// écrit directement en fin de fichier
 		if( byte >= this.size ){
-			this.writeAfterByte(byte, data, callback, bind);
+			this.write(data, byte, callback, bind);
 			return;
 		}
+
 		// tronque avant d'écrire en fin de fichier
 		function ontruncate(error){
 			if( error ){
-				return this.callback.call(this.bind, error);
+				return this.reply(callback, bind, error);
 			}
 
 			this.size = byte;
-			this.writeAfterByte(byte, data, callback, bind);
+			this.write(data, byte, callback, bind);
 		}
 
 		FS.truncate(this.fd, byte, ontruncate.bind(this));
 	},
 
-	replaceLine: function(index, data, callback, bind){
-		var line = this.lines[index], i, j, oldLength = this.byteLength(line.data), length, diff;
-
-		line.setData(data);
-		length = this.byteLength(line.data);
-		diff = oldLength - length;
-
-		// décale toutes les lignes suivantes
-		if( diff !== 0 ){
-			i = index + 1;
-			j = this.lines.length;
-			console.log('décale toutes les lignes suivantes de ', diff);
-			for(;i<j;i++){
-				this.lines[i].byte-= diff;
+	getDataAfterPart: function(index){
+		var i = index, j = this.parts.length, data = '';
+		for(;i<j;i++){
+			if( i !== index ){
+				data+= this.separator;
 			}
+			data+= this.parts[i].data;
 		}
 
-		if( diff === 0 ){
-			this.writeAfterByte(line.byte, line.data, callback, bind);
-		}
-		else{
-			this.truncateAndWriteAfterByte(line.byte, this.getDataAfterLine(index), callback, bind);
-		}
+		return data;
 	},
 
-	removeLine: function(index, callback, bind){
-		var line = this.lines[index], i, j, diff = this.byteLength(line.data);
-
-		// je supprime la première ligne
-		if( index === 0 ){
-			// il n'y a qu'une ligne: le fichier devient vide et c'est tout
-			if( this.lines.length == 1 ){
-				line.empty();
-				FS.truncate(this.fd, 0, callback, bind);
-				return;
-			}
-
-			// la ligne suivante perd son séparateur ce qui décale d'autant le bytes des lignes suivantes
-			diff+= this.byteLength(this.separator);
-		}
-
-		if( diff !== 0 ){
-			i = index + 1;
-			j = this.lines.length;
-			for(;i<j;i++){
-				this.lines[i].byte-= diff;
-			}
-		}
-
-		this.lines.splice(index, 1);
-		this.truncateAndWriteAfterByte(line.byte, this.getDataAfterLine(index), callback, bind);
-	},
-
-	appendLine: function(data, callback, bind){
-		var index = this.lines.length, lastLine = this.lines[index - 1], byte, line;
+	appendPart: function(data, callback, bind){
+		var index = this.parts.length, lastPart = this.parts[index - 1], byte;
 
 		// le fichier est actuellement vide
-		if( index === 1 && lastLine.data === '' ){
+		if( index === 1 && lastPart.data === '' ){
 			byte = 0;
 		}
 		else{
-			byte = lastLine.byte + this.byteLength(lastLine.data) + this.byteLength(this.separator);
+			byte = lastPart.byte + this.byteLength(lastPart.data) + this.byteLength(this.separator);
 		}
 
-		this.lines.push(this.createLine(byte, data));
-		this.writeAfterByte(byte - this.byteLength(this.separator), this.separator + data, callback, bind);
+		this.write(this.separator + data, byte - this.byteLength(this.separator), function(error){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+			this.reply(callback, bind, this.addPart(data, byte));
+		});
+	},
+
+	replacePart: function(index, data, callback, bind){
+		var part = this.parts[index], i, j, oldData = part.data, diff;
+
+		part.setData(data);
+		diff = this.byteLength(oldData) - this.byteLength(part.data);
+
+		function onsuccess(error){
+			if( error ){
+				part.setData(oldData);
+				return this.reply(callback, bind, error);
+			}
+
+			// décale toutes les lignes suivantes
+			if( diff !== 0 ){
+				i = index + 1;
+				j = this.parts.length;
+				for(;i<j;i++){
+					this.parts[i].byte-= diff;
+				}
+			}
+
+			this.reply(callback, bind, null, part);
+		}
+
+		if( diff === 0 ){
+			this.write(part.data, part.byte, onsuccess);
+		}
+		else{
+			this.truncateThenWrite(part.byte, this.getDataAfterPart(index), onsuccess);
+		}
+
+		return part;
+	},
+
+	removePart: function(index, callback, bind){
+		var part = this.parts[index], i, j, diff = this.byteLength(part.data);
+
+		// je supprime la première ligne
+		if( index === 0 ){
+			// la ligne suivante perd son séparateur ce qui décale d'autant le bytes des lignes suivantes
+			diff+= this.byteLength(this.separator);
+		}
+		
+		this.truncateThenWrite(part.byte - diff, this.getDataAfterPart(index), function(error){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+
+			if( diff !== 0 ){
+				i = index + 1;
+				j = this.parts.length;
+				for(;i<j;i++){
+					this.parts[i].byte-= diff;
+				}
+			}
+
+			if( index === 0 ){
+				// il n'y a qu'une partie: cette partie devient vide
+				if( this.parts.length == 1 ){
+					part.empty();
+				}
+				// on supprime totalement cette partie
+				else{
+					this.parts.splice(index, 1);
+				}
+			}
+
+			this.reply(callback, bind, null, part);
+		});
 	}
 });
 
-module.exports = LineFile;
+module.exports = FilePartManager;
 
 /*
 updateLine: function(index, properties){

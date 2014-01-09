@@ -35,11 +35,10 @@ global.NS = {};
 	require(root + '/client/js/lib/' + name);
 });
 
-var lineFile = require('./module/lineFile/lineFile.js');
-var file = lineFile.new('./temp/player.items');
-file.open(function(error, lines){
-	this.appendLine('clément', function(){});
-});
+var FilePartManager = require('./module/filePartManager/filePartManager.js');
+var filePartManager = FilePartManager.new('./temp/player.items');
+// filePartManager.open();
+// filePartManager.read();
 
 var files = FS.readdirSync(root + '/lang/' + config.lang);
 files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name); });
