@@ -133,11 +133,10 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	},
 
 	parseBuffer: function(buffer){
-		var byte = 0, i = 0, j = buffer.length, code;
+		var byte = 0, i = 0, j = buffer.length, separatorCode = this.separatorBuffer[0];
 
 		for(;i<j;i++){
-			code = buffer[i];
-			if( code == this.separatorBuffer[i] ){
+			if( buffer[i] == separatorCode ){
 				this.addPart(buffer.slice(byte, i), byte);
 				byte = i+1;
 			}
@@ -193,6 +192,11 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			callback = byte;
 			byte = 0;
 		}
+		// byte ne doit pas être sortir des limites du fichier
+		else{
+			byte = Math.max(byte, 0);
+			byte = Math.min(byte, this.size);
+		}
 
 		if( this.state != 'readed' ){
 			this.reply(callback, bind, new Error('can\'t write: file not in readed state'));
@@ -204,7 +208,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			}
 
 			this.state = 'readed';
-			this.size+= buffer.length;
+			this.size = Math.max(this.size, byte + buffer.length);
 
 			if( written != buffer.length ){
 				error = new Error('write error: ' + written + 'bytes written on ' + buffer.length);
@@ -226,7 +230,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	truncateThenWrite: function(byte, buffer, callback, bind){
 		// écrit directement en fin de fichier
 		if( byte >= this.size ){
-			this.write(buffer, byte, callback, bind);
+			this.write(buffer, this.size, callback, bind);
 			return;
 		}
 
