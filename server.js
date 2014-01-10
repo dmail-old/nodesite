@@ -15,6 +15,7 @@ FIX
 
 */
 
+
 global.root = process.cwd();
 global.FS = require('fs');
 global.util = require('util');
@@ -37,8 +38,13 @@ global.NS = {};
 
 var FilePartManager = require('./module/filePartManager/filePartManager.js');
 var filePartManager = FilePartManager.new('./temp/player.items');
-// filePartManager.open();
-// filePartManager.read();
+filePartManager.open(function(){
+	this.read(function(error, parts){		
+		this.removePart(3, function(){
+			console.log(this.parts);
+		});
+	});
+});
 
 var files = FS.readdirSync(root + '/lang/' + config.lang);
 files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name); });

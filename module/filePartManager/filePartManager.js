@@ -17,6 +17,8 @@ TODO:
 
 appendPart et replacePart, gérer le fait que data peut émettre une erreur lorsque c'est du JSON invalide
 
+faut rééssayer les trucs maintenant qu'on utilise les buffers
+
 */
 
 var FilePart = require('./filePart.js');
@@ -31,6 +33,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	encoding: 'utf8',
 	separator: '\n',
 	separatorCharCode: null,
+	separatorBuffer: null,
 	parts: null,
 
 	create: function(path, encoding){
@@ -42,8 +45,14 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		}
 
 		this.path = path;
-		if( typeof encoding == 'string' ) this.encoding = encoding;
+		if( typeof encoding == 'string' ){
+			if( !Buffer.isEncoding(encoding) ){
+				throw new Error(encoding + ' is not a valid encoding');
+			}
+			this.encoding = encoding;
+		}
 		this.separatorCharCode = this.separator.charCodeAt(0);
+		this.separatorBuffer = new Buffer(this.separator, this.getEncoding());
 		this.parts = [];
 	},
 
@@ -84,7 +93,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			
 			this.state = 'opened';
 			this.fd = fd;
-			this.reply(callback, bind);
+			this.reply(callback, bind, null, fd);
 		}
 
 		FS.open(this.path, 'r+', onopen.bind(this));
@@ -117,29 +126,29 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		FS.close(this.fd, onclose.bind(this));
 	},
 
-	createPart: function(data, byte){
-		return FilePart.new(data, byte);
+	createPart: function(buffer, byte){
+		return FilePart.new(buffer, byte);
 	},
 
-	addPart: function(data, byte){
-		var part = this.createPart(data, byte);
+	addPart: function(buffer, byte){
+		var part = this.createPart(buffer, byte);
 		this.parts.push(part);
 		return part;
 	},
 
 	parseBuffer: function(buffer){
-		var byte = 0, i = 0, j = buffer.length, code, encoding = this.getEncoding();
+		var byte = 0, i = 0, j = buffer.length, code;
 
 		for(;i<j;i++){
 			code = buffer[i];
-			if( code == this.separatorCharCode ) {
-				this.addPart(buffer.slice(byte, i).toString(encoding), byte);
+			if( code == this.separatorCharCode ){
+				this.addPart(buffer.slice(byte, i), byte);
 				byte = i+1;
 			}
 		}
-
+		
 		// crée une dernière partie pour la fin du fichier
-		this.addPart(buffer.slice(byte, j).toString(encoding), byte);
+		this.addPart(buffer.slice(byte, j), byte);
 
 		return this.parts;
 	},
@@ -158,6 +167,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				return this.reply(callback, bind, error);
 			}
 
+			this.state = 'readed';
 			this.reply(callback, bind, null, this.parseBuffer(buffer));
 		}
 
@@ -180,11 +190,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		FS.fstat(this.fd, onstat.bind(this));
 	},
 
-	byteLength: function(data){
-		return Buffer.byteLength(data, this.getEncoding());
-	},
-
-	write: function(data, byte, callback, bind){
+	write: function(buffer, byte, callback, bind){
 		// byte est un argument optionnel
 		if( typeof byte != 'number' ){
 			bind = callback;
@@ -212,19 +218,19 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			this.reply(callback, bind);
 		}
 
-		if( data === '' ){
+		if( buffer.length === 0 ){
 			onwrite.call(this, null, 0, '');
 		}
 		else{
 			this.state = 'writing';
-			FS.write(this.fd, data, byte, this.byteLength(data), onwrite.bind(this));
+			FS.write(this.fd, buffer, 0, buffer.length, byte, onwrite.bind(this));
 		}
 	},
 
-	truncateThenWrite: function(byte, data, callback, bind){
+	truncateThenWrite: function(byte, buffer, callback, bind){
 		// écrit directement en fin de fichier
 		if( byte >= this.size ){
-			this.write(data, byte, callback, bind);
+			this.write(buffer, byte, callback, bind);
 			return;
 		}
 
@@ -235,54 +241,84 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			}
 
 			this.size = byte;
-			this.write(data, byte, callback, bind);
+			this.write(buffer, byte, callback, bind);
 		}
 
 		FS.truncate(this.fd, byte, ontruncate.bind(this));
 	},
 
 	getDataAfterPart: function(index){
-		var i = index, j = this.parts.length, data = '';
+		var i = index, j = this.parts.length, buffer = new Buffer(0), list;
+		
 		for(;i<j;i++){
+			list = [buffer];
 			if( i !== index ){
-				data+= this.separator;
+				list.push(this.separatorBuffer);
 			}
-			data+= this.parts[i].data;
+			list.push(this.parts[i].buffer);
+			buffer = Buffer.concat(list);
 		}
 
-		return data;
+		return buffer;
 	},
 
 	appendPart: function(data, callback, bind){
-		var index = this.parts.length, lastPart = this.parts[index - 1], byte;
+		var index = this.parts.length, lastPart = this.parts[index - 1], part, byte = 0;
+		var empty = index === 1 && lastPart.buffer.length === 0, buffer, writeBuffer, writeByte;
+				
+		buffer = new Buffer(data, this.getEncoding());		
+		writeBuffer = buffer;		
+		writeByte = byte;
 
-		// le fichier est actuellement vide
-		if( index === 1 && lastPart.data === '' ){
-			byte = 0;
-		}
-		else{
-			byte = lastPart.byte + this.byteLength(lastPart.data) + this.byteLength(this.separator);
-		}
+		// si le fichier n'est pas vide
+		if( !empty ){
+			byte = lastPart.byte + lastPart.buffer.length + this.separatorBuffer.length;
+			part = this.createPart(buffer, byte);
 
-		this.write(this.separator + data, byte - this.byteLength(this.separator), function(error){
+			// create a temporary buffer to write the separator and the new part
+			writeBuffer = Buffer.concat([this.separatorBuffer, buffer]);
+			// start to write at separator
+			writeByte = byte - this.separatorBuffer.length;
+		}
+		
+		this.write(writeBuffer, writeByte, function(error){
 			if( error ){
 				return this.reply(callback, bind, error);
 			}
-			this.reply(callback, bind, this.addPart(data, byte));
+			
+			if( empty ){
+				lastPart.setBuffer(buffer);
+				part = lastPart;
+			}
+			else{
+				this.parts.push(part);
+			}
+			
+			this.reply(callback, bind, part);
 		});
 	},
 
 	replacePart: function(index, data, callback, bind){
-		var part = this.parts[index], i, j, oldData = part.data, diff;
+		var part = this.parts[index], i, j, buffer, writeBuffer, diff;
 
-		part.setData(data);
-		diff = this.byteLength(oldData) - this.byteLength(part.data);
+		if( !part ){
+			return this.reply(callback, bind, new Error('no part found at index ' + index));
+		}
+
+		buffer = new Buffer(data, this.getEncoding());
+		writeBuffer = buffer;
+
+		if( index != (this.parts.length - 1) ){
+			writeBuffer = Buffer.concat([buffer, this.separatorBuffer]);
+		}
+		diff = part.buffer.length - writeBuffer.length;
 
 		function onsuccess(error){
 			if( error ){
-				part.setData(oldData);
 				return this.reply(callback, bind, error);
 			}
+
+			part.setBuffer(buffer);
 
 			// décale toutes les lignes suivantes
 			if( diff !== 0 ){
@@ -297,25 +333,36 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		}
 
 		if( diff === 0 ){
-			this.write(part.data, part.byte, onsuccess);
+			this.write(writeBuffer, part.byte, onsuccess);
 		}
 		else{
-			this.truncateThenWrite(part.byte, this.getDataAfterPart(index), onsuccess);
+			this.truncateThenWrite(part.byte, Buffer.concat([writeBuffer, this.getDataAfterPart(index + 1)]), onsuccess);
 		}
 
 		return part;
 	},
 
 	removePart: function(index, callback, bind){
-		var part = this.parts[index], i, j, diff = this.byteLength(part.data);
+		var part = this.parts[index], i, j, diff, byte;
 
-		// je supprime la première ligne
-		if( index === 0 ){
-			// la ligne suivante perd son séparateur ce qui décale d'autant le bytes des lignes suivantes
-			diff+= this.byteLength(this.separator);
+		if( !part ){
+			return this.reply(callback, bind, new Error('no part found at index ' + index));
+		}
+
+		diff = part.buffer.length;
+		byte = part.byte;
+		
+		// je supprime la dernière ligne
+		if( index === (this.parts.length - 1) ){
+			// la ligne d'avant perds son séparateur je dois dont truncate à cet endroit là
+			byte-= this.separatorBuffer.length;
+		}
+		// la ligne suivante perd son séparateur ce qui décale d'autant le bytes des lignes suivantes
+		else{
+			diff+= this.separatorBuffer.length;
 		}
 		
-		this.truncateThenWrite(part.byte - diff, this.getDataAfterPart(index), function(error){
+		this.truncateThenWrite(byte, this.getDataAfterPart(index + 1), function(error){
 			if( error ){
 				return this.reply(callback, bind, error);
 			}
@@ -328,15 +375,13 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				}
 			}
 
-			if( index === 0 ){
-				// il n'y a qu'une partie: cette partie devient vide
-				if( this.parts.length == 1 ){
-					part.empty();
-				}
-				// on supprime totalement cette partie
-				else{
-					this.parts.splice(index, 1);
-				}
+			// il n'y a qu'une partie: cette partie devient vide
+			if( index === 0 && this.parts.length == 1  ){
+				part.empty();
+			}
+			// on supprime totalement cette partie
+			else{
+				this.parts.splice(index, 1);
 			}
 
 			this.reply(callback, bind, null, part);

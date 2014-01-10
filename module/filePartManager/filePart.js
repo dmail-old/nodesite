@@ -3,18 +3,18 @@
 Part of a file content
 
 byte: number of the byte where the part starts in the file content
-data: the part content as a string
+buffer: the part data as buffer
 
 */
 
 var FilePart = {
 	byte: 0,
-	data: '',
+	buffer: new Buffer(0),
 	file: null,
 
-	create: function(data, byte){
+	create: function(buffer, byte){
 		if( arguments.length > 0 ){
-			this.setData(data);		
+			this.setBuffer(buffer);		
 			if( arguments.length > 1 ){
 				if( typeof byte != 'number' ){
 					throw new TypeError('byte should be a number');
@@ -23,35 +23,18 @@ var FilePart = {
 			}
 		}
 	},
-
-	byteLength: function(){
-		return this.file.byteLength(this.data);
-	},
-
-	setData: function(data){
-		this.data = data;
+	
+	setBuffer: function(buffer){
+		this.buffer = buffer;
+		this.data = buffer.toString();
 	},
 
 	empty: function(){
-		this.data = '';
+		this.buffer = FilePart.buffer;
 	},
 
-	replace: function(part, callback, bind){
-		if( this.file ){
-			this.file.replacePart(this, callback, bind || this);
-		}
-		return this;
-	},
-
-	remove: function(callback, bind){
-		if( this.file ){
-			this.file.removePart(this, callback, bind || this);
-		}
-		return this;
-	},
-
-	toString: function(){
-		return this.data;
+	toString: function(encoding){
+		return this.buffer.toString(encoding);
 	}
 };
 
