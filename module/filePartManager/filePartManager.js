@@ -1,5 +1,5 @@
 /*
-File help to manipulate a file content line by line
+FilePartManager manipulate a file content part by part splitting the part with separator 
 
 separator: the char used to separate file content into parts (default to '\n')
 name: name of the file
@@ -17,8 +17,6 @@ TODO:
 
 appendPart et replacePart, gérer le fait que data peut émettre une erreur lorsque c'est du JSON invalide
 
-faut rééssayer les trucs maintenant qu'on utilise les buffers
-
 */
 
 var FilePart = require('./filePart.js');
@@ -32,7 +30,6 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	size: null,
 	encoding: 'utf8',
 	separator: '\n',
-	separatorCharCode: null,
 	separatorBuffer: null,
 	parts: null,
 
@@ -51,7 +48,6 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			}
 			this.encoding = encoding;
 		}
-		this.separatorCharCode = this.separator.charCodeAt(0);
 		this.separatorBuffer = new Buffer(this.separator, this.getEncoding());
 		this.parts = [];
 	},
@@ -141,7 +137,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 
 		for(;i<j;i++){
 			code = buffer[i];
-			if( code == this.separatorCharCode ){
+			if( code == this.separatorBuffer[i] ){
 				this.addPart(buffer.slice(byte, i), byte);
 				byte = i+1;
 			}

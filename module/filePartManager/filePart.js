@@ -10,7 +10,6 @@ buffer: the part data as buffer
 var FilePart = {
 	byte: 0,
 	buffer: new Buffer(0),
-	file: null,
 
 	create: function(buffer, byte){
 		if( arguments.length > 0 ){
@@ -23,7 +22,7 @@ var FilePart = {
 			}
 		}
 	},
-	
+
 	setBuffer: function(buffer){
 		this.buffer = buffer;
 		this.data = buffer.toString();
