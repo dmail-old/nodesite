@@ -32,6 +32,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 	separator: '\n',
 	separatorBuffer: null,
 	parts: null,
+	partConstructor: FilePart,
 
 	create: function(path, encoding){
 		if( typeof path != 'string' ){
@@ -52,10 +53,6 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		this.parts = [];
 	},
 
-	error: function(){
-		// TODO
-	},
-
 	reply: function(callback, bind){
 		if( callback == null ){
 			callback = console.log;
@@ -70,6 +67,25 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		return callback.apply(bind, Array.slice(arguments, 2));
 	},
 
+	onopen: function(){
+		this.applyListeners('open', arguments);
+	},
+
+	onread: function(){
+		this.applyListeners('read', arguments);
+	},
+
+	onclose: function(){
+		this.applyListeners('close', arguments);
+	},
+
+	onwrite: function(error, written, buffer){
+		if( !error && written != buffer.length ){
+			error = new Error('write error: ' + written + 'bytes written on ' + buffer.length);
+		}
+		this.emit('write', error, written, buffer);
+	},
+
 	open: function(callback, bind){
 
 		if( this.state != 'closed' ){
@@ -78,21 +94,17 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		
 		this.state = 'opening';
 
-		function onopen(error, fd){
+		this.on('open', function(error, fd){
 			if( error ){
-				// crée le fichier si il n'existe pas
-				if( error.code == 'ENOENT' && error.errno == 34 ){
-					return FS.open(this.path, 'w', onopen.bind(this));
-				}
 				return this.reply(callback, bind, error);
 			}
-			
+
 			this.state = 'opened';
 			this.fd = fd;
 			this.reply(callback, bind, null, fd);
-		}
+		});
 
-		FS.open(this.path, 'r+', onopen.bind(this));
+		FS.open(this.path, 'r+', this.onopen.bind(this));
 	},
 
 	close: function(callback, bind){
@@ -104,30 +116,111 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			return this.reply(callback, bind, new Error('file descriptor is null'));
 		}
 
-		function onclose(error){
+		this.on('close', function(error){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+			this.clean();
+			this.reply(callback, bind);
+		});
+
+		this.state = 'closing';
+		FS.close(this.fd, this.onclose.bind(this));
+	},
+
+	read: function(callback, bind){
+		if( this.state != 'opened' ){
+			return this.reply(callback, bind, new Error('file not opened'));
+		}
+
+		function onstat(error, stat){
 			if( error ){
 				return this.reply(callback, bind, error);
 			}
 
-			this.parts = [];
-			this.state = 'closed';
-			this.fd = null;
-			this.stat = null;
-			this.size = null;
+			this.on('read', function(error, readed, buffer){
+				if( error ){
+					return this.reply(callback, bind, error);
+				}
+				this.state = 'readed';
+				this.reply(callback, bind, null, this.parseBuffer(buffer));
+			});
 
-			this.reply(callback, bind, null);
+			this.stat = stat;
+			this.size = stat.size;
+
+			if( stat.size === 0 ){
+				return this.onread(null, 0, new Buffer(0));
+			}
+			
+			FS.read(this.fd, new Buffer(stat.size), 0, stat.size, 0, this.onread.bind(this));
 		}
 
-		this.state = 'closing';
-		FS.close(this.fd, onclose.bind(this));
+		this.state = 'reading';
+		FS.fstat(this.fd, onstat.bind(this));
 	},
 
-	createPart: function(buffer, byte){
-		return FilePart.new(buffer, byte);
+	write: function(buffer, byte, callback, bind){
+		// byte est un argument optionnel
+		if( typeof byte != 'number' ){
+			bind = callback;
+			callback = byte;
+			byte = 0;
+		}
+		// byte ne doit pas être sortir des limites du fichier
+		else{
+			byte = Math.max(byte, 0);
+			byte = Math.min(byte, this.size);
+		}
+
+		if( this.state != 'readed' ){
+			return this.reply(callback, bind, new Error('can\'t write: file not in readed state'));
+		}
+
+		this.on('write', function(error, written, buffer){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+
+			this.state = 'readed';
+			this.size = Math.max(this.size, byte + buffer.length);
+			this.reply(callback, bind);
+		});
+
+		if( buffer.length === 0 ){
+			this.onwrite(null, 0, new Buffer(0));
+		}
+		else{
+			this.state = 'writing';
+			FS.write(this.fd, buffer, 0, buffer.length, byte, this.onwrite.bind(this));
+		}
+	},
+
+	clean: function(){
+		this.state = 'closed';
+		this.parts = [];
+		this.fd = null;
+		this.stat = null;
+		this.size = null;
+	},
+
+	unlink: function(callback, bind){
+		FS.unlink(this.path, function(error){
+			if( error ){
+				return this.reply(callback, bind, error);
+			}
+			this.clean();
+			this.reply(callback, bind);
+		}.bind(this));
+	},
+
+	newPart: function(){
+		return this.partConstructor.new.apply(this.partConstructor, arguments);
 	},
 
 	addPart: function(buffer, byte){
-		var part = this.createPart(buffer, byte);
+		var part = this.newPart(buffer);
+		part.byte = byte;
 		this.parts.push(part);
 		return part;
 	},
@@ -152,81 +245,6 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		return this.encoding;
 	},
 
-	read: function(callback, bind){
-		if( this.state != 'opened' ){
-			return this.reply(callback, bind, new Error('file not opened'));
-		}
-
-		function onread(error, readed, buffer){
-			if( error ){
-				return this.reply(callback, bind, error);
-			}
-
-			this.state = 'readed';
-			this.reply(callback, bind, null, this.parseBuffer(buffer));
-		}
-
-		function onstat(error, stat){
-			if( error ){
-				return this.reply(callback, bind, error);
-			}
-
-			this.stat = stat;
-			this.size = stat.size;
-
-			if( stat.size === 0 ){
-				return onread.call(this, null, 0, '');
-			}
-			
-			FS.read(this.fd, new Buffer(stat.size), 0, stat.size, 0, onread.bind(this));
-		}
-
-		this.state = 'reading';
-		FS.fstat(this.fd, onstat.bind(this));
-	},
-
-	write: function(buffer, byte, callback, bind){
-		// byte est un argument optionnel
-		if( typeof byte != 'number' ){
-			bind = callback;
-			callback = byte;
-			byte = 0;
-		}
-		// byte ne doit pas être sortir des limites du fichier
-		else{
-			byte = Math.max(byte, 0);
-			byte = Math.min(byte, this.size);
-		}
-
-		if( this.state != 'readed' ){
-			this.reply(callback, bind, new Error('can\'t write: file not in readed state'));
-		}
-
-		function onwrite(error, written, buffer){
-			if( error ){
-				return this.reply(callback, bind, error);
-			}
-
-			this.state = 'readed';
-			this.size = Math.max(this.size, byte + buffer.length);
-
-			if( written != buffer.length ){
-				error = new Error('write error: ' + written + 'bytes written on ' + buffer.length);
-				return this.reply(callback, bind, error);
-			}
-			
-			this.reply(callback, bind);
-		}
-
-		if( buffer.length === 0 ){
-			onwrite.call(this, null, 0, '');
-		}
-		else{
-			this.state = 'writing';
-			FS.write(this.fd, buffer, 0, buffer.length, byte, onwrite.bind(this));
-		}
-	},
-
 	truncateThenWrite: function(byte, buffer, callback, bind){
 		// écrit directement en fin de fichier
 		if( byte >= this.size ){
@@ -247,7 +265,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		FS.truncate(this.fd, byte, ontruncate.bind(this));
 	},
 
-	getDataAfterPart: function(index){
+	concatBufferFrom: function(index){
 		var i = index, j = this.parts.length, buffer = new Buffer(0), list;
 		
 		for(;i<j;i++){
@@ -262,18 +280,41 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		return buffer;
 	},
 
-	appendPart: function(data, callback, bind){
-		var index = this.parts.length, lastPart = this.parts[index - 1], part, byte = 0;
-		var empty = index === 1 && lastPart.buffer.length === 0, buffer, writeBuffer, writeByte;
-				
-		buffer = new Buffer(data, this.getEncoding());		
-		writeBuffer = buffer;		
+	isPart: function(part){
+		return this.partConstructor.isPrototypeOf(part);
+	},
+
+	checkPart: function(part){
+		var error = null;
+
+		if( !this.isPart(part) ){
+			part = new Error('not a part object');
+		}
+		else if( part.byte != null ){
+			error = new Error('part is already in an other file');
+		}
+
+		return error;
+	},
+
+	appendPart: function(part, callback, bind){
+		var index = this.parts.length, lastPart = this.parts[index - 1], byte = 0, error;
+		var buffer, writeBuffer, writeByte;
+
+		error = this.checkPart(part);
+		if( error ){
+			return this.reply(callback, bind, error);
+		}
+		
+		writeBuffer = buffer;
 		writeByte = byte;
 
-		// si le fichier n'est pas vide
-		if( !empty ){
+		// si le fichier est vide
+		if( index === 1 && lastPart.buffer.length === 0 ){
+			this.parts = [];
+		}
+		else{
 			byte = lastPart.byte + lastPart.buffer.length + this.separatorBuffer.length;
-			part = this.createPart(buffer, byte);
 
 			// create a temporary buffer to write the separator and the new part
 			writeBuffer = Buffer.concat([this.separatorBuffer, buffer]);
@@ -286,27 +327,33 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				return this.reply(callback, bind, error);
 			}
 			
-			if( empty ){
-				lastPart.setBuffer(buffer);
-				part = lastPart;
-			}
-			else{
-				this.parts.push(part);
-			}
-			
+			part.byte = byte;
+			this.parts.push(part);			
 			this.reply(callback, bind, part);
 		});
 	},
 
-	replacePart: function(index, data, callback, bind){
-		var part = this.parts[index], i, j, buffer, writeBuffer, diff;
+	replacePart: function(oldPart, part, callback, bind){
+		var index = this.parts.indexOf(oldPart), i, j, buffer, writeBuffer, writeByte, diff, error;
 
-		if( !part ){
-			return this.reply(callback, bind, new Error('no part found at index ' + index));
+		error = this.checkPart(part);
+
+		if( !error ){
+			if( !this.isPart(oldPart) ){
+				error = new Error('oldPart is not a part object');
+			}
+			else if( index === -1 ){
+				error = new Error('oldPart not a part of this file');
+			}
 		}
 
-		buffer = new Buffer(data, this.getEncoding());
+		if( error ){
+			return this.reply(callback, bind, error);
+		}
+
+		buffer = part.buffer;
 		writeBuffer = buffer;
+		writeByte = oldPart.byte;
 
 		if( index != (this.parts.length - 1) ){
 			writeBuffer = Buffer.concat([buffer, this.separatorBuffer]);
@@ -318,7 +365,8 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				return this.reply(callback, bind, error);
 			}
 
-			part.setBuffer(buffer);
+			part.byte = writeByte;
+			this.parts[index] = part;
 
 			// décale toutes les lignes suivantes
 			if( diff !== 0 ){
@@ -333,20 +381,28 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		}
 
 		if( diff === 0 ){
-			this.write(writeBuffer, part.byte, onsuccess);
+			this.write(writeBuffer, writeByte, onsuccess);
 		}
 		else{
-			this.truncateThenWrite(part.byte, Buffer.concat([writeBuffer, this.getDataAfterPart(index + 1)]), onsuccess);
+			this.truncateThenWrite(writeByte, Buffer.concat([writeBuffer, this.concatBufferFrom(index + 1)]), onsuccess);
 		}
 
 		return part;
 	},
 
-	removePart: function(index, callback, bind){
-		var part = this.parts[index], i, j, diff, byte;
+	removePart: function(part, callback, bind){
+		var i, j, diff, byte, error, index;
 
-		if( !part ){
-			return this.reply(callback, bind, new Error('no part found at index ' + index));
+		error = this.checkPart(part);
+
+		if( !error ){
+			index = this.parts.indexOf(part);
+			if( index === -1 ){
+				error = new Error('not part of this file');
+			}
+		}
+		if( error ){
+			return this.reply(callback, bind, error);
 		}
 
 		diff = part.buffer.length;
@@ -362,7 +418,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			diff+= this.separatorBuffer.length;
 		}
 		
-		this.truncateThenWrite(byte, this.getDataAfterPart(index + 1), function(error){
+		this.truncateThenWrite(byte, this.concatBufferFrom(index + 1), function(error){
 			if( error ){
 				return this.reply(callback, bind, error);
 			}

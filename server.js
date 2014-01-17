@@ -36,6 +36,7 @@ global.NS = {};
 	require(root + '/client/js/lib/' + name);
 });
 
+/*
 var FilePartManager = require('./module/filePartManager/filePartManager.js');
 var filePartManager = FilePartManager.new('./temp/player.items');
 filePartManager.open(function(){
@@ -45,6 +46,7 @@ filePartManager.open(function(){
 		});
 	});
 });
+*/
 
 var files = FS.readdirSync(root + '/lang/' + config.lang);
 files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name); });

@@ -72,8 +72,8 @@ NS.Filter = {
 			while(i--){
 				part = parsed[i];
 				if( part.operator == ':' && part.key.endsWith('name') ){
-					var name = String(Object.getAt(item, part.key)), value = part.value.split(/\s+/g), j = value.length;
-					while(j--) if( name.indexOf(value[j]) > -1 ) break;
+					var value = String(Object.getAt(item, part.key)), search = part.value.split(/\s+/g), j = search.length;
+					while(j--) if( value.indexOf(search[j]) > -1 ) break;
 					// si j vaut -1 c'est que indexOf a échoué sur toutes les parties du nom recherché
 					if( j < 0 ) return false;
 				}

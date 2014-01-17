@@ -1,13 +1,16 @@
-var File = require('./file.js');
+var FilePartManager = require('./filePartManager.js');
 var JSONFilePart = require('./jsonFilePart.js');
 
-var JSONFilePartManager = File.extend({
-	createPart: function(byte, data){
-		try{
-			return JSONFilePart.new(byte, data);
+var JSONFilePartManager = FilePartManager.extend({
+	partConstructor: JSONFilePart,
+
+	checkPart: function(part){
+		var error = FilePartManager.checkPart.call(this, part);
+		if( !error && part.JSONError ){
+			error = part.JSONError;
 		}
-		catch(e){
-			// JSON malformé
-		}
+		return error;
 	}
 });
+
+module.exports = JSONFilePartManager;

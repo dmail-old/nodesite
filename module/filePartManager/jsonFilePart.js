@@ -4,48 +4,42 @@ FilePart in JSON format
 
 item: the part as a JavaScript Object
 
-TODO:
-
-gestion des erreurs lorsque data ne peut être parse ou que item ne peut être stringify
-pour la gestion du json a priori on gèreras pas ça ici c'est JSONFile qui attendras forcément un object js
-qu'on parseras
-
 */
 
 var FilePart = require('./filePart.js');
 
 var JSONFilePart = FilePart.extend({
 	item: null,
-	JSONerror: null,
+	JSONError: null,
 
-	setData: function(data){
-		this.JSONerror = null;
+	setBuffer: function(buffer){
+		this.JSONError = null;
 
-		if( typeof data == 'string' ){
-			this.data = data;
-			
+		if( typeof buffer == 'string' ){
 			try{
-				this.item = this.parse(data);
+				this.item = this.parse(buffer);
 			}
 			catch(e){
-				this.JSONerror = e;
+				this.JSONError = e;
 			}
 		}
-		else if( typeof data == 'object' ){
-			this.item = data;
+		else if( typeof buffer == 'object' ){
+			this.item = buffer;
 
 			try{
-				this.data = this.parse(data);
+				buffer = this.stringify(buffer);
 			}
 			catch(e){
-				this.JSONerror = e;
+				this.JSONError = e;
 			}
 		}
+
+		return FilePart.setBuffer.apply(this, arguments);
 	},
 
 	empty: function(){
-		FilePart.empty.call(this);
-		this.item = null;
+		this.item = JSONFilePart.item;
+		return FilePart.empty.call(this);
 	},
 
 	parse: function(data){
