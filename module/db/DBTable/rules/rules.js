@@ -8,8 +8,116 @@ description: oblige les propriétés des objets de la BDD à suivre un schéma
 ...
 */
 
-// autres
-Table.implement({
+var Rules = {
+	caseSensitive: true,
+	validators: [],
+	rules: null,
+
+	create: function(){
+
+	},
+
+	get: function(key, name){
+		var rules = this.schema.rules;
+
+		switch(arguments.length){
+		case 0:
+			return rules;
+		case 1:
+			return rules[key] || null;
+		case 2:
+			rules = rules[key];
+			return rules ? (rules[name] || null) : null;
+		}
+
+		return null;
+	},
+
+	has: function(key, name){
+		switch(arguments.length){
+		case 0:
+			return Boolean(this.getRule());
+		case 1:
+			return Boolean(this.getRule(key));
+		case 2:
+			var rules = this.getRule(key);
+			return rules && name in rules;
+		}
+
+		return false;
+	},
+
+	// retourne la valeur par défaut pour le champ key ou undefined
+	getDefault: function(key){
+		var value = this.getRule(key, 'default');
+		if( typeof value == 'function' ){
+			value = value.call(this);
+		}
+		return value;
+	},
+
+	// compare a et b sachant que les valeurs proviennent de key
+	compare: function(key, a, b){
+		return this.identic(a, b);
+	},
+
+	// retourne si a == b
+	identic: function(a, b){
+		if( this.caseSensitive ){
+			return String(a) == String(b);
+		}
+		return String(a).toLowerCase() == String(b).toLowerCase();
+	},
+
+	// retourne value telle qu'elle seras inscrite dans la BDD
+	encode: function(key, value){
+		if( this.hasRule(key) ){
+			var setters = this.setters, name;
+
+			if( value === null && this.hasRule(key, 'default') ) value = this.getDefault(key);
+			if( value != null && this.hasRule(key, 'type') ){
+				var type = this.getRule(key, 'type');
+
+				if( !Object.is(value, type) ){
+					try{
+						value = Object.cast(value, type);
+					}
+					catch(e){
+						throw e;
+					}
+				}
+			}
+
+			for(name in setters){
+				if( this.hasRule(key, name) ){
+					value = setters[name].call(this, value, this.getRule(key, name));
+				}
+			}
+		}
+
+		return value;
+	},
+
+	// retourne value telle qu'elle est utilisée hors BDD
+	decode: function(key, value){
+		if( this.hasRule(key) ){
+			var getters = this.getters, name;
+
+			for(name in getters){
+				if( this.hasRule(key, name) ){
+					value = getters[name].call(this, value, this.getRule(key, name));
+				}
+			}
+		}
+
+		return value;
+	},
+
+	addValidator: function(name, validator){
+		if( typeof validator == 'function' ) validator = {test: validator};
+		validator.name = name;
+		this.validators.push(validator);
+	},
 	getItem: function(key, value){
 		var i = 0, j = this.items.length, item;
 		for(;i<j;i++){
@@ -40,159 +148,11 @@ Table.implement({
 			value = this.nextFree(key, value, count++);
 		}
 		return value;
-	}
-});
-
-Table.setters = {
-	set: function(value, setter){
-		return setter.call(this, value);
 	},
 
-	trim: function(value){
-		return value.trim();
-	},
-
-	upperCase: function(value){
-		return value.toUpperCase();
-	},
-
-	lowerCase: function(value){
-		return value.toLowerCase();
-	},
-
-	singleSpace: function(value){
-		return value.replace(/\s+/, ' ');
-	}
-};
-
-Table.getters = {
-	get: function(value, getter){
-		return getter.call(this, value);
-	}
-};
-
-Table.validators = [];
-Table.addValidator = function(name, validator){
-	if( typeof validator == 'function' ) validator = {test: validator};
-	validator.name = name;
-	this.validators.push(validator);
-};
-
-Table.addValidator('match', function(key, value, match){ return match.call(this, value); });
-// renommmer regexp
-Table.addValidator('pattern', function(key, value, pattern){ console.colorAll('pattern', pattern); return pattern.test(value); });
-Table.addValidator('min', function(key, value, min){ return value >= min; });
-Table.addValidator('max', function(key, value, max){ return value <= max; });
-Table.addValidator('unique', Table.isFree);
-Table.addValidator('ref', {
-	async: true,
-	// je vérifie que la référenc existe
-	test: function(key, value, ref, callback){
-		DB.getTable(ref).read(function(error){ callback(error ? error : !this.isFree('id', value)); });
-	}
-});
-Table.addValidator('notnull', {
-	testnull: true,
-	test: function(key, value){ return value !== null; }
-});
-
-Table.implement({
-	getRule: function(key, name){
-		var rules = this.schema.rules;
-
-		switch(arguments.length){
-		case 0:
-			return rules;
-		case 1:
-			return rules[key] || null;
-		case 2:
-			rules = rules[key];
-			return rules ? (rules[name] || null) : null;
-		}
-
-		return null;
-	},
-
-	hasRule: function(key, name){
-		switch(arguments.length){
-		case 0:
-			return Boolean(this.getRule());
-		case 1:
-			return Boolean(this.getRule(key));
-		case 2:
-			var rules = this.getRule(key);
-			return rules && name in rules;
-		}
-
-		return false;
-	},
-
-	// retourne la valeur par défaut pour le champ key ou undefined
-	getDefault: function(key){
-		var value = this.getRule(key, 'default');
-		if( typeof value == 'function' ) value = value.call(this);
-		return value;
-	},
-
-	// compare valuea avec valueb sachant que les valeurs proviennent de key
-	compare: function(key, valuea, valueb){
-		return this.identic(valuea, valueb);
-	},
-
-	// retourne si a == b
-	identic: function(a,b){
-		if( this.schema.caseSensitive ){
-			return String(a) == String(b);
-		}
-		return String(a).toLowerCase() == String(b).toLowerCase();
-	},
-
-	// retourne value telle qu'elle seras inscrite dans la BDD
-	encode: function(key, value){
-		if( this.hasRule(key) ){
-			var setters = this.constructor.setters, name;
-
-			if( value === null && this.hasRule(key, 'default') ) value = this.getDefault(key);
-			if( value != null && this.hasRule(key, 'type') ){
-				var type = this.getRule(key, 'type');
-
-				if( !Object.is(value, type) ){
-					try{
-						value = Object.cast(value, type);
-					}
-					catch(e){
-						throw e;
-					}
-				}
-			}
-
-			for(name in setters){
-				if( this.hasRule(key, name) ){
-					value = setters[name].call(this, value, this.getRule(key, name));
-				}
-			}
-		}
-
-		return value;
-	},
-
-	// retourne value telle qu'elle est utilisée hors BDD
-	decode: function(key, value){
-		if( this.hasRule(key) ){
-			var getters = this.constructor.getters, name;
-			for(name in getters){
-				if( this.hasRule(key, name) ){
-					value = getters[name].call(this, value, this.getRule(key, name));
-				}
-			}
-		}
-
-		return value;
-	},
-
-	// value est t-'elle une valeur valide pour key
-	isValid: function(key, value, callback){
-		var self = this, validators = this.constructor.validators, validator, i = 0, j = validators.length;
+	// check if value is a valid value for key (test all rules)
+	check: function(key, value, callback){
+		var self = this, validators = this.validators, validator, i = 0, j = validators.length;
 
 		function nextValidator(){
 			if( i < j ){
@@ -265,10 +225,57 @@ Table.implement({
 				continue;
 			}
 
-			this.isValid(key, value, next);
+			this.check(key, value, next);
 		}
 	}
+};
+
+module.exports = Rules;
+
+Rules.addValidator('match', function(key, value, match){ return match.call(this, value); });
+Rules.addValidator('regexp', function(key, value, regexp){ return regexp.test(value); });
+Rules.addValidator('min', function(key, value, min){ return value >= min; });
+Rules.addValidator('max', function(key, value, max){ return value <= max; });
+Rules.addValidator('unique', Rules.isFree);
+Rules.addValidator('notnull', {
+	testnull: true,
+	test: function(key, value){ return value !== null; }
 });
+Rules.addValidator('ref', {
+	async: true,
+	// je vérifie que la référenc existe
+	test: function(key, value, ref, callback){
+		DB.getTable(ref).read(function(error){ callback(error ? error : !this.isFree('id', value)); });
+	}
+});
+
+Rules.setters = {
+	set: function(value, setter){
+		return setter.call(this, value);
+	},
+
+	trim: function(value){
+		return value.trim();
+	},
+
+	upperCase: function(value){
+		return value.toUpperCase();
+	},
+
+	lowerCase: function(value){
+		return value.toLowerCase();
+	},
+
+	singleSpace: function(value){
+		return value.replace(/\s+/, ' ');
+	}
+};
+
+Rules.getters = {
+	get: function(value, getter){
+		return getter.call(this, value);
+	}
+};
 
 /*
 ---
@@ -378,5 +385,3 @@ Table.implement({
 		this.preserveReference('removeAll', ids, null, callback);
 	}
 });
-
-DB.Table = Table;

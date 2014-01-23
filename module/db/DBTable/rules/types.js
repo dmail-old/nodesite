@@ -1,5 +1,5 @@
 var types = {
-	'all':{
+	'all': {
 	
 	},
 	
@@ -18,10 +18,11 @@ var types = {
 		}
 	},
 	
-	'date':{
+	'date': {
 		is: function(value){
 			return value instanceof Date;
 		},
+
 		cast: function(value){
 			if( value === null || value === '' ) return Date(value);
 			if( value instanceof Date ) return value;
@@ -37,13 +38,13 @@ var types = {
 		}
 	},
 	
-	'function':{
+	'function': {
 		is: function(value){
 			return typeof value == 'function' || value instanceof Function;
 		}
 	},
 	
-	'number':{
+	'number': {
 		cast: function(value){
 			if( !isNaN(value) ){
 				if( value === null || value === '' ) return Number(value);
@@ -57,22 +58,23 @@ var types = {
 		}
 	},
 	
-	'object':{
+	'object': {
 		is: function(value){
 			return typeof value == 'object';
 		}
 	},
 	
-	'regexp':{
+	'regexp': {
 		is: function(value){
 			return value instanceof Regexp;
 		}
 	},
 	
-	'string':{
+	'string': {
 		is: function(value){
 			return typeof value == 'string' || value instanceof String;
 		},
+		
 		cast: function(value){
 			if( value === null ) return String(value);
 			if( typeof value !== 'undefined' && value.toString ) return value.toString();
@@ -86,7 +88,7 @@ var types = {
 
 Object.cast = function(source, type){
 	type = types[type];
-	if( !type || !type.cast ) throw new TypeError('unable to cast' +value+ ' as '+type);
+	if( !type || !type.cast ) throw new TypeError('unable to cast' + value + ' as '+ type);
 	else return type.cast(source);
 };
 

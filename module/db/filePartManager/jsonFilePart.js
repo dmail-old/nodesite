@@ -10,17 +10,16 @@ var FilePart = require('./filePart.js');
 
 var JSONFilePart = FilePart.extend({
 	item: null,
-	JSONError: null,
 
-	setBuffer: function(buffer){
-		this.JSONError = null;
+	setBuffer: function(buffer, encoding){
+		this.bufferError = null;
 
-		if( typeof buffer == 'string' ){
+		if( Buffer.isBuffer(buffer) || typeof buffer == 'string' ){
 			try{
-				this.item = this.parse(buffer);
+				this.item = this.parse(typeof buffer == 'string' ? buffer : buffer.toString(encoding));
 			}
 			catch(e){
-				this.JSONError = e;
+				this.bufferError = e;
 			}
 		}
 		else if( typeof buffer == 'object' ){
@@ -30,7 +29,7 @@ var JSONFilePart = FilePart.extend({
 				buffer = this.stringify(buffer);
 			}
 			catch(e){
-				this.JSONError = e;
+				this.bufferError = e;
 			}
 		}
 
@@ -75,3 +74,5 @@ var JSONFilePart = FilePart.extend({
 		return data;
 	}
 });
+
+module.exports = JSONFilePart;

@@ -179,7 +179,7 @@ window.app = {
 		// ou window.serverConnection.open
 		window.server.open();
 
-		this.emitter = NS.ElementEmitter.new(window);
+		this.emitter = NS.ElementEmitter.new(window, this);
 		this.emitter.on({
 			'click': this.click,
 			'popstate': this.popstate

@@ -1,13 +1,6 @@
 /*
-FilePartManager manipulate a file content part by part splitting the part with separator 
 
-separator: the char used to separate file content into parts (default to '\n')
-name: name of the file
-size: size of the file
-path: path to the file
-encoding: encoding of the file
-parts: array of parts
-state: 'closed' | 'opening' | 'opened' | 'reading' | 'readed' | 'writing' | 'closing' (default to 'closed')
+description: manipulate a file content part by part splitting the part with separator 
 
 NOTE:
 - the file is entirely read and kept into memory
@@ -15,42 +8,43 @@ NOTE:
 
 TODO:
 
-appendPart et replacePart, gérer le fait que data peut émettre une erreur lorsque c'est du JSON invalide
-
 */
 
-var FilePart = require('./filePart.js');
-var FS = require('fs');
+var FilePartManager = NS.Emitter.extend({
+	partConstructor: require('./filePart.js'),
+	fileSystem: require('fs'),
 
-var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
-	path: null,
-	state: 'closed',
-	fd: null,
-	stat: null,
-	size: null,
-	encoding: 'utf8',
-	separator: '\n',
-	separatorBuffer: null,
-	parts: null,
-	partConstructor: FilePart,
+	path: null,				// path to the file
+	state: 'closed',		// 'closed','opening','opened','reading','readed','writing','closing' (default: 'closed')
+	fd: null,				// filedescriptor when the file is opened
+	stat: null,				// stat object used to read the file
+	size: null,				// size of the file
+	encoding: 'utf8',		// encoding of the file content
+	separator: '\n',		// the char used to separate file content into parts (default to '\n')
+	separatorBuffer: null,	// separatorBuffer that will be created from separator	
+	parts: null,			// array of part
 
 	create: function(path, encoding){
 		if( typeof path != 'string' ){
-			throw new TypeError('string expected for database file name');
+			throw new TypeError('string expected for file path ' + typeof string + ' given');
 		}
 		if( path === '' ){
-			throw new TypeError('database file name cannot be empty');
+			throw new TypeError('file path cannot be empty');
 		}
 
-		this.path = path;
+		this.setPath(path);
 		if( typeof encoding == 'string' ){
 			if( !Buffer.isEncoding(encoding) ){
 				throw new Error(encoding + ' is not a valid encoding');
 			}
 			this.encoding = encoding;
 		}
-		this.separatorBuffer = new Buffer(this.separator, this.getEncoding());
-		this.parts = [];
+
+		NS.Emitter.create.call(this);
+	},
+
+	setPath: function(path){
+		this.path = path;
 	},
 
 	reply: function(callback, bind){
@@ -92,40 +86,47 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			return this.reply(callback, bind, new Error('file already open'));
 		}
 		
-		this.state = 'opening';
-
-		this.on('open', function(error, fd){
+		this.once('open', function(error, fd){
 			if( error ){
-				return this.reply(callback, bind, error);
+				this.state = 'closed';
+				this.reply(callback, bind, error);
 			}
-
-			this.state = 'opened';
-			this.fd = fd;
-			this.reply(callback, bind, null, fd);
+			else{
+				this.state = 'opened';
+				this.fd = fd;
+				this.separatorBuffer = new Buffer(this.separator, this.getEncoding());
+				this.parts = [];
+				this.reply(callback, bind, null, fd);
+			}
 		});
 
-		FS.open(this.path, 'r+', this.onopen.bind(this));
+		this.state = 'opening';
+		this.fileSystem.open(this.path, 'r+', this.onopen.bind(this));
 	},
 
 	close: function(callback, bind){
+		var state = this.state;
 
-		if( this.state != 'opened' ){
+		if( state != 'opened' && state != 'readed' ){
 			return this.reply(callback, bind, new Error('file not opened'));
 		}
 		if( this.fd == null ){
 			return this.reply(callback, bind, new Error('file descriptor is null'));
 		}
 
-		this.on('close', function(error){
+		this.once('close', function(error){
 			if( error ){
-				return this.reply(callback, bind, error);
+				this.state = state;
+				this.reply(callback, bind, error);
 			}
-			this.clean();
-			this.reply(callback, bind);
+			else{
+				this.clean();
+				this.reply(callback, bind);
+			}			
 		});
 
 		this.state = 'closing';
-		FS.close(this.fd, this.onclose.bind(this));
+		this.fileSystem.close(this.fd, this.onclose.bind(this));
 	},
 
 	read: function(callback, bind){
@@ -138,12 +139,15 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				return this.reply(callback, bind, error);
 			}
 
-			this.on('read', function(error, readed, buffer){
+			this.once('read', function(error, readed, buffer){
 				if( error ){
-					return this.reply(callback, bind, error);
+					this.state = 'opened';
+					this.reply(callback, bind, error);
 				}
-				this.state = 'readed';
-				this.reply(callback, bind, null, this.parseBuffer(buffer));
+				else{
+					this.state = 'readed';
+					this.reply(callback, bind, null, this.parseBuffer(buffer));
+				}
 			});
 
 			this.stat = stat;
@@ -153,11 +157,11 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 				return this.onread(null, 0, new Buffer(0));
 			}
 			
-			FS.read(this.fd, new Buffer(stat.size), 0, stat.size, 0, this.onread.bind(this));
+			this.fileSystem.read(this.fd, new Buffer(stat.size), 0, stat.size, 0, this.onread.bind(this));
 		}
 
 		this.state = 'reading';
-		FS.fstat(this.fd, onstat.bind(this));
+		this.fileSystem.fstat(this.fd, onstat.bind(this));
 	},
 
 	write: function(buffer, byte, callback, bind){
@@ -177,12 +181,13 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			return this.reply(callback, bind, new Error('can\'t write: file not in readed state'));
 		}
 
-		this.on('write', function(error, written, buffer){
+		this.once('write', function(error, written, buffer){
+			this.state = 'readed';
+
 			if( error ){
 				return this.reply(callback, bind, error);
 			}
-
-			this.state = 'readed';
+			
 			this.size = Math.max(this.size, byte + buffer.length);
 			this.reply(callback, bind);
 		});
@@ -192,20 +197,20 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		}
 		else{
 			this.state = 'writing';
-			FS.write(this.fd, buffer, 0, buffer.length, byte, this.onwrite.bind(this));
+			this.fileSystem.write(this.fd, buffer, 0, buffer.length, byte, this.onwrite.bind(this));
 		}
 	},
 
 	clean: function(){
 		this.state = 'closed';
-		this.parts = [];
+		this.parts = null;
 		this.fd = null;
 		this.stat = null;
 		this.size = null;
 	},
 
 	unlink: function(callback, bind){
-		FS.unlink(this.path, function(error){
+		this.fileSystem.unlink(this.path, function(error){
 			if( error ){
 				return this.reply(callback, bind, error);
 			}
@@ -262,7 +267,7 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			this.write(buffer, byte, callback, bind);
 		}
 
-		FS.truncate(this.fd, byte, ontruncate.bind(this));
+		this.fileSystem.truncate(this.fd, byte, ontruncate.bind(this));
 	},
 
 	concatBufferFrom: function(index){
@@ -293,19 +298,29 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		else if( part.byte != null ){
 			error = new Error('part is already in an other file');
 		}
+		else if( part.bufferError ){
+			error = part.bufferError;
+		}
 
 		return error;
 	},
 
 	appendPart: function(part, callback, bind){
-		var index = this.parts.length, lastPart = this.parts[index - 1], byte = 0, error;
-		var buffer, writeBuffer, writeByte;
+		var index, lastPart, byte = 0, error, buffer, writeBuffer, writeByte;
 
-		error = this.checkPart(part);
+		if( this.state == 'closed' ){
+			error = new Error('can\'t appendPart file is closed');
+		}
+		else{
+			error = this.checkPart(part);
+		}
+
 		if( error ){
 			return this.reply(callback, bind, error);
-		}
-		
+		}		
+
+		index = this.parts.length;
+		lastPart = this.parts[index - 1];
 		writeBuffer = buffer;
 		writeByte = byte;
 
@@ -329,12 +344,12 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			
 			part.byte = byte;
 			this.parts.push(part);			
-			this.reply(callback, bind, part);
+			this.reply(callback, bind, null, part);
 		});
 	},
 
 	replacePart: function(oldPart, part, callback, bind){
-		var index = this.parts.indexOf(oldPart), i, j, buffer, writeBuffer, writeByte, diff, error;
+		var index, i, j, buffer, writeBuffer, writeByte, diff, error;
 
 		error = this.checkPart(part);
 
@@ -342,8 +357,14 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 			if( !this.isPart(oldPart) ){
 				error = new Error('oldPart is not a part object');
 			}
-			else if( index === -1 ){
-				error = new Error('oldPart not a part of this file');
+			else if( this.state == 'closed' ){
+				error = new Error('cannot replacePart file is closed');
+			}
+			else{
+				index = this.parts.indexOf(oldPart);
+				if( index === -1 ){
+					error = new Error('oldPart not a part of this file');
+				}
 			}
 		}
 
@@ -396,11 +417,17 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 		error = this.checkPart(part);
 
 		if( !error ){
-			index = this.parts.indexOf(part);
-			if( index === -1 ){
-				error = new Error('not part of this file');
+			if( this.state == 'closed' ){
+				error = new Error('cannot removePart, file is closed');
+			}
+			else{
+				index = this.parts.indexOf(part);
+				if( index === -1 ){
+					error = new Error('not part of this file');
+				}
 			}
 		}
+
 		if( error ){
 			return this.reply(callback, bind, error);
 		}
@@ -446,251 +473,3 @@ var FilePartManager = require(root + '/client/js/lib/emitter.js').extend({
 });
 
 module.exports = FilePartManager;
-
-/*
-updateLine: function(index, properties){
-		var line = this.lines[index], item = line.item, key, changed = false;
-
-		for(key in properties){
-			if( item[key] !== properties[key] ){
-				this.emit('change', key, item[key], properties[key]);
-				item[key] = properties[key];
-				changed = true;
-			}
-		}
-
-		if( changed ){
-			this.exec('replaceLine', index, this.stringify(item), item);
-		}
-	},
-
-LineFile.supplement({
-	_match: function(match, fn, first){
-		match = Finder.from(match);
-		var lines = this.lines, i = 0, j = lines.length, line;
-
-		for(;i<j;i++){
-			line = lines[i];
-			if( match.call(this, line.item) ){
-				fn.call(this, line.item, i);
-				if( first ) break;
-			}
-		}
-	},
-
-	match: function(match, fn){
-		return this._match(match, fn, true);
-	},
-
-	matchAll: function(match, fn){
-		return this._match(match, fn);
-	},
-
-	stack: function(){
-		this.pile.push(arguments);
-	},
-
-	unstack: function(){
-		return this.pile.length ? this.pile.shift() : null;
-	},
-
-	drain: function(){
-		this.emit('drain');
-	},
-
-	lock: function(){
-		this.lockers++;
-	},
-
-	unlock: function(){
-		if( this.isLocked() ){
-			this.lockers--;
-		}
-
-		if( !this.isLocked() ){
-			var pile = this.unstack();
-			if( pile ){
-				this.beforeExec.apply(this, pile);
-			}
-			else{
-				this.drain();
-			}
-		}
-	},
-
-	isLocked: function(){
-		return this.lockers !== 0;
-	},
-
-	watchChanges: function(){
-		this.watching = true;
-	},
-
-	warn: function(message){
-		console.warn(message);
-	},
-
-	error: function(error){
-		if( typeof error == 'string' ) error = new Error(error);
-		// l'ouverture a échouée, l'appel ne seras pas effectué
-		if( this.oncesuccess ) delete this.oncesuccess;
-
-		this.reply(error);
-		this.unlock();
-	},
-
-	success: function(){
-		var oncesuccess = this.oncesuccess;
-		if( oncesuccess ){
-			delete this.oncesuccess;
-			oncesuccess.call(this);
-		}
-		else{
-			this.reply.apply(this, [null].concat(Array.slice(arguments)));
-			this.unlock();
-		}
-	},
-
-	reply: function(){
-		if( this.callback ){
-			this.callback.apply(this, arguments);
-		}
-	},
-
-	// dès que possible l'appel seras lancé
-	demand: function(action, args){
-		if( this.isLocked() ){
-			this.stack(action, args);
-		}
-		else{
-			this.beforeExec(action, args);
-		}
-	},
-
-	beforeExec: function(action, args){
-		delete this.callback;
-
-		if( args ){
-			args = Array.slice(args);
-			var i = args.length;
-			while(i--){
-				if( typeof args[i] == 'function' ){
-					this.callback = args[i];
-					break;
-				}
-			}
-		}
-		else{
-			args = [];
-		}
-
-		this.action = action;
-		this.args = args;
-
-		this.lock();
-		// on doit ouvrir la table si elle n'a jamais été ouverte, seulement ensuite on procède à l'action
-		if( this.state != 'opened' && action != 'open' ){
-			this.oncesuccess = function(){ this.exec.apply(this, [this.action].concat(this.args)); };
-			this.open();
-		}
-		else{
-			this.exec.apply(this, [action].concat(args));
-		}
-	},
-
-	exec: function(action){
-		if( this.watching && ['appendLine', 'removeLine', 'replaceLine'].indexOf(action) !== -1 ){
-			this.changes.push(Array.slice(arguments));
-			return;
-		}
-
-		var args = Array.slice(arguments, 1);
-		this.methods[action].apply(this, args);
-	},
-
-	before: function(event, fn){
-		return this.on('before' + event, fn);
-	}
-});
-
-LineFile.defineAction = function(name, method){
-	LineFile.methods[name] = method;
-	LineFile[name] = function(){
-		this.demand(name, arguments);
-	};
-};
-
-LineFile.defineActions = function(actions){
-	for(var action in actions){
-		LineFile.defineAction(action, actions[action]);
-	}
-};
-
-LineFile.defineActions({
-	asap: function(fn){
-		// appelle la fonction qu'on veut
-		fn.call(this);
-		// si cette fonction n'a rien déclenché de bloquant
-		if( !this.isLocked() ){
-			// on déclenche le callback sans erreur
-			this.callback();
-		}
-	},
-
-	eval: function(fn){
-		fn.apply(this, Array.slice(arguments, 1));
-	},
-
-	read: function(){
-		this.success(this.lines);
-	},
-
-	/*
-	find: function(match){
-		this.success(this.items.find(match));
-	},
-
-	findAll: function(match){
-		this.success(this.items.findAll(match));
-	},
-
-	insert: function(item){
-		this.watchChanges();
-		this.exec('appendLine', this.stringify(item));
-		this.applyChanges();
-	},
-
-	insertAll: function(items){
-		this.watchChanges();
-		var i = 0, j = items.length;
-		for(;i<j;i++){
-			this.exec('appendLine', this.stringify(items[i]));
-		}
-		this.applyChanges();
-	},
-
-	remove: function(match){
-		this.watchChanges();
-		this.match(match, function(item, index){ this.exec('removeLine', index); });
-		this.applyChanges();
-	},
-
-	removeAll: function(match){
-		this.watchChanges();
-		this.matchAll(match, function(item, index){ this.exec('removeLine', index); });
-		this.applyChanges();
-	},
-
-	update: function(match, properties){
-		this.watchChanges();
-		this.match(match, function(item, index){ this.updateLine(index, properties); });
-		this.applyChanges();
-	},
-
-	updateAll: function(match, properties){
-		this.watchChanges();
-		this.matchAll(match, function(item, index){ this.updateLine(index, properties); });
-		this.applyChanges();
-	}
-});
-*/

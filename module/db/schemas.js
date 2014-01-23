@@ -1,5 +1,10 @@
 /**
 
+TODO
+
+enum: type string only, doit faire partie d'une liste
+min, max, regexp, singleSpace, trim sont spécifiques aux nombres ou aux chaines hors il est quand même possible de mettre cela si on a mit type number ou string
+
 Pour une table on peut donner des contraintes aux propriétés:
 
 type - (string) Impose que la valeur soit d'un type particulier
@@ -13,13 +18,14 @@ type - (string) Impose que la valeur soit d'un type particulier
 unique - (boolean) A true la valeur doit être unique
 default - (?) Une valeur ou une fonction retournant une valeur qui seras utilisé par défaut (si type = "function" on verras)
 match - (function) Fonction qui recevras la valeur et retourne true ou false
-pattern - (regexp) La valeur doit vérifier cette regexp
+regexp - (regexp) La valeur doit vérifier cette regexp
 lowerCase - (booolean) La valeur seras mise en minuscule
 upperCase - (boolean) La valeur seras mise en majuscule
 trim - (boolean) Les espaces de début et de fin seront supprimé
 singleSpace - (boolean) Les espaces doublé seront supprimé
 min - (number) La valeur doit être supérieure ou égale à ce minimum
 max - (number) La valeur doit être inférieur ou égale à ce maximum
+length - (number) La valeur doit être de cette longueur
 set - (function) Retourne la valeur telle qu'elle doit être sauvegardé
 get - (function) Retourne la valeur telle qu'elle doit être retournée depuis la BDD
 
@@ -41,11 +47,11 @@ var Rules = {
 		index: true,
 		trim: true,
 		singleSpace: true,
-		pattern: /^[\w ]+$/
+		regexp: /^[\w ]+$/
 	},
 	email:{
 		type: 'string',
-		pattern: /^[a-z0-9&\'\.\-_\+]+@[a-z0-9\-]+\.([a-z0-9\-]+\.)*?[a-z]+$/i
+		regexp: /^[a-z0-9&\'\.\-_\+]+@[a-z0-9\-]+\.([a-z0-9\-]+\.)*?[a-z]+$/i
 	},
 	ctime:{
 		type: 'date',
@@ -53,7 +59,7 @@ var Rules = {
 	},
 	mtime:{
 		type: 'date',
-		// lorsque l'utilisateur est modifié le mtime est modifié
+		// lorsque la ligne est modifié le mtime est modifié
 		onupdate: Date.now,
 		default: Date.now
 	}

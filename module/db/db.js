@@ -3,33 +3,19 @@
 /*
 
 MORE
-- une fonction insertLine pour insérer une line entre d'autre ligne?
 
 NOTE
 - lorsqu'on populate les référence, l'objet qu'on référence peut lui même avoir des référence, on peut alors les populates elles aussi
 dans ce cas, on doit détecter les référence circulaire pour ne pas populate en boucle
 
 TODO
-- vider la mémoire qu'on a de cette table après un temps d'inactivité (?)
-
-- dans les schémas
-enum: type string only, doit faire partie d'une liste
-index: indexe la propriété pour une lecture plus rapide
-min, max, pattern, singleSpace, trim sont spécifiques aux nombres ou aux chaines hors il est quand même possible de mettre cela si on a mit type number
- 
-- les schémas doivent s'opérer coté client pour que je dispose du bon objet, la BDD se contente de faire les actions basique qu'on lui demande
-seul unique et ref resteront coté BDD (même pas)
-
-- faire quelque chose de souple et clair pour répondre aux demandes
-créer une class request et response?
 
 */
 
-var FS = require('fs');
-require('./types.js');
-
 var DB = {
 	schemas: require('./schemas.js'),
+	TableConstructor: require('./DBTable'),
+	dirPath: './',
 	tables: {},
 
 	start: function(){
@@ -39,7 +25,7 @@ var DB = {
 			this.getTable(table);
 		}
 
-		for(table in tables){
+		/*for(table in tables){
 			table = tables[table];
 			if( table.hasRule() ){
 				rules = table.getRule();
@@ -49,13 +35,21 @@ var DB = {
 					}
 				}
 			}
-		}
+		}*/
+	},
+
+	createTable: function(){
+		return this.TableConstructor.new.apply(this.TableConstructor, arguments);
 	},
 
 	getTable: function(name){
+		if( typeof name != 'string' ){
+			throw new TypeError('string expected for table name');
+		}
+
 		var table = this.tables[name];
 		if( !table ){
-			table = this.tables[name] = Table.new(name);
+			table = this.tables[name] = this.createTable(this.dirPath + '/' + name);
 		}
 		return table;
 	},
@@ -64,12 +58,24 @@ var DB = {
 		callback.call(this, this.tables);
 	},
 
-	getSchema: function(table){
-		table = this.getTable(table);
+	getSchema: function(name){
+		var table = this.getTable(name);
 		//callback.call(this, table.schema);
+	},
+
+	insert: function(tableName, fields, callback){
+		var table = this.getTable(tableName);
+
+		if( table ){
+			table.insert(fields, callback);
+		}
+		else{
+			callback(new Error('can\'t find table ' + tableName));
+		}
 	}
 };
 
+/*
 var Table = {
 	name: null,
 
@@ -93,7 +99,7 @@ var Table = {
 	},
 
 	update: function(){
-		/*
+		
 		this.matchRules(properties, function(error){
 			if( error ) return this.error(error);
 
@@ -103,11 +109,10 @@ var Table = {
 			});
 			this.applyChanges();
 		});
-		*/
 	},
 
 	updateAll: function(){
-		/*
+		
 		this.matchRules(properties, function(error){
 			if( error ) return this.error(error);
 
@@ -117,11 +122,11 @@ var Table = {
 			});
 			this.applyChanges();
 		});
-		*/
+		
 	},
 
 	insert: function(){
-		/*var key, rules = this.getRules(), result;
+		var key, rules = this.getRules(), result;
 
 		// met les propriétés par défaut
 		for(key in rules){
@@ -138,7 +143,6 @@ var Table = {
 
 			this.applyChanges();
 		});
-		*/
 	},
 
 	find: function(){
@@ -149,6 +153,7 @@ var Table = {
 
 	}
 };
+*/
 
 /*
 préserve les références

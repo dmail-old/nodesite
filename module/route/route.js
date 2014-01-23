@@ -157,7 +157,9 @@ var route = {
 
 	send: function(status, data, encoding){
 		this.status = status;
-		if( data ) this.data = data;
+		if( data ){
+			this.data = data;
+		}
 
 		if( this.data ){
 			this.data = this.format(this.data, encoding);

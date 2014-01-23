@@ -1,7 +1,7 @@
 NS.ElementEmitter = NS.EventEmitter.extend({
 	create: function(element, bind){
-		NS.EventEmitter.create.call(this, bind || element);
 		this.element = element;
+		NS.EventEmitter.create.call(this, bind || element);
 	},
 
 	handleEvent: function(e){

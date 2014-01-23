@@ -72,15 +72,20 @@ exports.extend = {
 
 			// appelle les handlers pour une type d'action (./, filesystem, etc)
 			if( typeof handle == 'function' ){
-				if( !handle.call(this, action, args) ) return this.error(new Error('unauthorized'));
+				if( !handle.call(this, action, args) ){
+					return this.error(new Error('unauthorized'));
+				}
 			}
 		}
 
 		global.applyScript(path, this, args, function(error, response){
 
-			if( error ) return this.error(error);
-
-			this.send(200, response);
+			if( error ){
+				this.error(error);
+			}
+			else{
+				this.send(200, response);
+			}
 
 		}.bind(this));
 	}

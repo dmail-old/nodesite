@@ -24,6 +24,8 @@ for(;i<j;i++){
 
 document.body.appendChild(clone);
 
-
+window.server.callAction('database/insert', 'user', {name: 'damien'}, function(error, user){
+	console.log(error, user);
+});
 
 </script>

@@ -36,18 +36,6 @@ global.NS = {};
 	require(root + '/client/js/lib/' + name);
 });
 
-/*
-var FilePartManager = require('./module/filePartManager/filePartManager.js');
-var filePartManager = FilePartManager.new('./temp/player.items');
-filePartManager.open(function(){
-	this.read(function(error, parts){		
-		this.removePart(3, function(){
-			console.log(this.parts);
-		});
-	});
-});
-*/
-
 var files = FS.readdirSync(root + '/lang/' + config.lang);
 files.forEach(function(name){ require(root + '/lang/' + config.lang + '/' + name); });
 
@@ -57,12 +45,24 @@ require(root + '/module/fs.extra.js');
 global.File = require(root + '/module/file.js');
 global.FileInfo = require(root + '/module/fileinfo.js');
 global.logger = require(root + '/module/logger.js');
-//global.DB = require(root + '/db/db.js');
 var http = require('http');
 var Crypto = require('crypto');
 
+global.DB = require(root + '/module/db');
+DB.dirPath = './temp';
+
+/*
+var table = DB.getTable('player.items');
+
+table.find(true, function(error, part){
+	console.log(this.parts);
+});
+*/
+
 global.applyScript = function(path, bind, args, callback){
-	if( typeof callback != 'function' ) throw new Error('callback expected');
+	if( typeof callback != 'function' ){
+		throw new Error('callback expected');
+	}
 
 	var module, count;
 
@@ -73,7 +73,9 @@ global.applyScript = function(path, bind, args, callback){
 		return callback(e);
 	}
 
-	if( typeof module != 'function' ) return callback(new Error('script at ' + path + ' is not callable'));
+	if( typeof module != 'function' ){
+		return callback(new Error('script at ' + path + ' is not callable'));
+	}
 
 	args = args || [];
 	count = module.length - 1;

@@ -1,15 +1,13 @@
 /*
 
-Part of a file content
-
-byte: number of the byte where the part starts in the file content
-buffer: the part content as buffer
+description: part of a file content
 
 */
 
 var FilePart = {
-	byte: null,
-	buffer: new Buffer(0),
+	byte: null,				// byte index where the part starts in the file content
+	buffer: new Buffer(0),	// the part content as buffer
+	bufferError: null,		// an error caused by setBuffer
 
 	create: function(buffer, encoding){
 		if( arguments.length > 0 ){
@@ -20,19 +18,18 @@ var FilePart = {
 	setBuffer: function(buffer, encoding){
 		if( typeof buffer == 'string' ){
 			buffer = new Buffer(buffer, encoding);
-			this.data = buffer;
+		}
+
+		if( Buffer.isBuffer(buffer) ){
+			this.buffer = buffer;
 		}
 		else{
-			this.data = buffer.toString();
+			this.bufferError = new TypeError('not a buffer');
 		}
+	},
 
-		if( !Buffer.isBuffer(buffer) ){
-			throw new TypeError('not a buffer');
-		}
-
-		this.buffer = buffer;
-
-		return buffer;
+	setData: function(data){
+		this.data = data;
 	},
 
 	empty: function(){

@@ -1,4 +1,5 @@
 module.exports = function(path, callback){	
+	// pour éviter de remove vraiment pour le moment
 	return callback();
 	
 	FS.stat(path, function(error, stat){	
