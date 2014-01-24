@@ -4,23 +4,23 @@ window.server = {
 		'application/json': function(){
 			var text = this.response.text, json;
 
-			try{
-				json = JSON.parse(text);
+			if( text === '' ){
+				this.emit('handle', null, null);
 			}
-			catch(e){
-				return this.emit('handle', e);
-			}
+			else{
+				try{
+					json = JSON.parse(text);
+				}
+				catch(e){
+					return this.emit('handle', e);
+				}
 
-			if( json == null ){
-				return this.emit('handle', new Error('empty json'));
-			}
-			if( json.status != 200 ){
-				return this.emit('handle', new Error('SERVER : ' + json.data));
-			}
-
-			this.json = json;
-
-			this.emit('handle', null, json.data);
+				this.json = json;
+				if( json.status != 200 ){
+					return this.emit('handle', new Error('SERVER : ' + json.data));
+				}
+				this.emit('handle', null, json.data);
+			}			
 		},
 
 		'text/html': function(){

@@ -146,28 +146,26 @@ var route = {
 			this.setContentType(contentType);
 		}
 
-		if( contentType in this.formats ){
-			return this.formats[contentType].call(this, data, encoding);
+		if( data != null ){
+			if( contentType in this.formats ){
+				data = this.formats[contentType].call(this, data, encoding);
+			}
+			else{
+				this.status = 415; // unsupported content-type
+			}
 		}
-		else{
-			this.status = 415; // unsupported content-type
-			return null;
-		}
+
+		return data;
+
 	},
 
 	send: function(status, data, encoding){
 		this.status = status;
-		if( data ){
-			this.data = data;
-		}
-
-		if( this.data ){
-			this.data = this.format(this.data, encoding);
-		}
+		this.data = this.format(data, encoding);
 
 		this.writeHead();
 
-		if( this.data ){
+		if( this.data != null ){
 			this.write(this.data, encoding);
 		}
 
