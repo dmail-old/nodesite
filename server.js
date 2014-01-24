@@ -51,14 +51,6 @@ var Crypto = require('crypto');
 global.DB = require(root + '/module/db');
 DB.dirPath = './temp';
 
-/*
-var table = DB.getTable('player.items');
-
-table.find(true, function(error, part){
-	console.log(this.parts);
-});
-*/
-
 global.applyScript = function(path, bind, args, callback){
 	if( typeof callback != 'function' ){
 		throw new Error('callback expected');

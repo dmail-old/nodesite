@@ -51,6 +51,7 @@ var DB = {
 		if( !table ){
 			table = this.tables[name] = this.createTable(this.dirPath + '/' + name);
 		}
+
 		return table;
 	},
 
@@ -63,7 +64,21 @@ var DB = {
 		//callback.call(this, table.schema);
 	},
 
+	find: function(tableName, selector, callback){
+		
+		var table = this.getTable(tableName);
+
+		if( table ){
+			table.find(selector, callback);
+		}
+		else{
+			callback(new Error('can\'t find table ' + tableName));
+		}
+
+	},
+
 	insert: function(tableName, fields, callback){
+
 		var table = this.getTable(tableName);
 
 		if( table ){
@@ -72,6 +87,33 @@ var DB = {
 		else{
 			callback(new Error('can\'t find table ' + tableName));
 		}
+
+	},
+
+	update: function(tableName, selector, fields, callback){
+
+		var table = this.getTable(tableName);
+
+		if( table ){
+			table.update(selector, fields, callback);
+		}
+		else{
+			callback(new Error('can\'t find table ' + tableName));
+		}
+
+	},
+
+	remove: function(tableName, selector, callback){
+
+		var table = this.getTable(tableName);
+
+		if( table ){
+			table.remove(selector, callback);
+		}
+		else{
+			callback(new Error('can\'t find table ' + tableName));
+		}
+
 	}
 };
 

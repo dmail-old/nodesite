@@ -17,7 +17,7 @@ NS.Emitter = {
 	},
 
 	listeners: function(name){
-		var listeners = this.$listeners;
+		var listeners = this.$listeners, list;
 
 		if( name in listeners ) list = listeners[name];
 		else list = false;

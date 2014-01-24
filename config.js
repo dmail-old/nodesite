@@ -163,7 +163,7 @@ robot: utilisé pour google
 ptet ajouté noanalytics: si je veux pas qu'une page soit prise en compte par google analytics
 */
 config.pages = {
-	"index": {"id":0, "public": true}
+	"index": {"id": 0, "public": true}
 };
 
 // fichier qu'on met dans le cache du navigateur

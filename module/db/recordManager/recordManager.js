@@ -35,12 +35,17 @@ var RecordManager = JSONFilePartManager.extend({
 
 		if( changed ){
 			var newPart = this.newPart(item);
-			this.replacePart(part, newPart, function(){
-				this.reply(callback, bind, newPart);
+			this.replacePart(part, newPart, function(error){
+				if( error ){
+					this.reply(callback, bind, error);
+				}
+				else{
+					this.reply(callback, bind, null, item);
+				}
 			});
 		}
 		else{
-			this.reply(callback, bind, part);
+			this.reply(callback, bind, item);
 		}
 	},
 
@@ -111,7 +116,14 @@ var RecordManager = JSONFilePartManager.extend({
 				this.reply(callback, bind, error);
 			}
 			else{
-				this.appendPart(this.newPart(fields), callback, bind);
+				this.appendPart(this.newPart(fields), function(error, part){
+					if( error ){
+						this.reply(callback, bind, error);
+					}
+					else{
+						this.reply(callback, bind, null, part.item);
+					}					
+				});
 			}
 		});
 	},
@@ -136,7 +148,14 @@ var RecordManager = JSONFilePartManager.extend({
 				this.reply(callback, bind, error);
 			}
 			else if( part ){
-				this.removePart(part, callback, bind);
+				this.removePart(part, function(error, part){
+					if( error ){
+						this.reply(callback, bind, error);
+					}
+					else{
+						this.reply(callback, bind, null, part.item);
+					}
+				});
 			}
 			else{
 				this.notfound(selector, callback, bind);

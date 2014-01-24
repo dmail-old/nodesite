@@ -321,6 +321,7 @@ var FilePartManager = NS.Emitter.extend({
 
 		index = this.parts.length;
 		lastPart = this.parts[index - 1];
+		buffer = part.buffer;
 		writeBuffer = buffer;
 		writeByte = byte;
 
