@@ -1,6 +1,6 @@
 <template id="template" bind="foo as foo">
 	<!-- foo.* available -->
-	foo: {foo.name}<br />
+	foo.name: {foo.name}<br />
 	<template bind="foo.bar as bar">
 		foo.name: {foo.name}<br />
 		bar.name: {bar.name}<br />

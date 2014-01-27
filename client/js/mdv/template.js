@@ -307,7 +307,7 @@ var TemplateIterator = {
 
 			/*
 			move is a costfull operation (two splice) but it's the only way i've found
-			to make DOM follow the instances array state
+			to make array state follow DOM insertion 
 
 			the reason is that array.splice and DOM insertion works the same:
 			the element is removed from it's place then inserted to his new location
@@ -442,7 +442,7 @@ var TemplateIterator = {
 				fn.call(
 					bind,
 					attrName,
-					this.parseAttributeValue(attrName, node.getAttribute(attrName))
+					node.getAttribute(attrName)
 				);
 			}
 		}
@@ -450,15 +450,17 @@ var TemplateIterator = {
 
 	checkAttribute: function(name, value){
 
-		if( value.length > 1 ){
+		var parts = this.parseAttributeValue(name, value);
+
+		if( parts.length > 1 ){
 			this.scopeNamed = true;
 			var linkers = this.template.getLinkers(), i = 0, j = linkers.length;
 			for(;i<j;i++){
-				linkers[i].namedScope(value[0], value[2]);
+				linkers[i].namedScope(parts[0], parts[2]);
 			}
 		}
 
-		this.inputs.observe(name, this.template.model, value[0]);
+		this.inputs.observe(name, this.template.model, parts[0]);
 	},
 
 	checkAttributes: function(){

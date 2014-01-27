@@ -84,7 +84,6 @@ Object.append(HTMLTemplateElement, {
 		for(;i<j;i++){
 			node = list[i];
 			template = window.Template.new(node);
-			// ici on peut chercher des template dans le content
 		}
 	},
 

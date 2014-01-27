@@ -1,7 +1,8 @@
 /*
+
 NOTE:
 
-Cant catch the following:
+VERY IMPORTANT: Cant catch the following:
 
 - delete array[index] due to ObjectChangeEmitter limitations (Object.watch cant detect delete)
 - array[index] = value where index is greater than array.length, value and previous values to array.length will be ignored

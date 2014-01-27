@@ -1,4 +1,4 @@
-var PropertyObserver = {
+window.PropertyObserver = {
 	closed: false,
 	property: null, // Number|String
 	model: null,

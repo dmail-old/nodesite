@@ -61,26 +61,18 @@ config.js = [].concat(
 		"element", "element.properties",
 		"element.styles", "element.measure",
 		"element.keepIntoView", "element.find",
-		"request"
+		"request", "cookie"
 	].prefix('browser/'),
 	[
-		"linker", "parser", "node.bind", "HTMLTemplateElement", "template"
-	].prefix('mdv/'),
+		"parser", "linker", "attributeLinker", "linkerListLinker", "subTemplateLinker"
+	].prefix('parser/').concat([
+		"node.bind", "HTMLTemplateElement", "template"
+	]).prefix('mdv/'),
+	/*
 	[
 		"selection", "keynav", "rootkeynav", "shortcut", "editable"
 	].prefix('ui/'),
-	[
-		"model", "view", "template", "controller"
-	],
-	[
-		"node", "menuoption", "menu",
-	].prefix('model/'),
-	[
-		"selector", "node", "rootnode", "tree", "menuoption", "menu"
-	].prefix('view/'),
-	[
-
-	].prefix('controller/'),
+	*/
 	/*
 	rewrite needed
 	[

@@ -1,6 +1,6 @@
 <template id="template" bind="foo as bar">
 	bar.name: {bar.name}<br />
-	<template bind="foo as man">
+	<template bind="foo as man"> <!-- foo n'existe plus normalement tout est undefined (foo -> bar) -->
 	bar.name: {bar.name}<br />
 	man.name: {man.name}<br />
 	name: {name}<br />
