@@ -16,6 +16,12 @@ Object.defineProperty(Event.prototype, 'rightClick', {
 	}
 });
 
+Object.defineProperty(Event.prototype, 'middleClick', {
+	get: function(){
+		return this.which == 2 || this.code == 2;
+	}
+});
+
 Object.defineProperty(Event.prototype, 'wheel', {
 	get: function(){
 		if( this.type == 'DOMMouseScroll' || this.type == 'mousewheel' ){
@@ -72,7 +78,7 @@ Object.defineProperty(Event.prototype, 'client', {
 Event.keys = {};
 Object.defineProperty(Event.prototype, 'key', {
 	get: function(){
-		var code = this.wich || this.keyCode, key = Event.keys[code];
+		var code = this.which || this.keyCode, key = Event.keys[code];
 
 		if( this.type == 'keydown' || this.type == 'keyup' ){
 			if( code > 111 && code < 124 ) key = 'f' + (code - 111);

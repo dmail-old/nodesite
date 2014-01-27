@@ -279,7 +279,7 @@ window.app = {
 
 		if( anchorElement ){
 			// click de molette
-			if( e.code == 2 ) return true;
+			if( e.middleClick ) return true;
 			// touche ctrl ou touche cmd
 			if( e.control || e.meta ) return true;
 			// URL courante, on laisse la page se recharger
