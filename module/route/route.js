@@ -212,6 +212,7 @@ var route = {
 
 route.formats = require('./format.js');
 
+// very important, keep any async operation after bodyParser else request is aborted
 [
 	'cookieParser', 'urlParser', 'queryParser', 'bodyParser',
 	'methodOverride', 'params', 'jsonParam', 'responseTime', 'logger',
@@ -234,6 +235,27 @@ route.use(function useCORS(next){
 	else{
 		next();
 	}
+});
+
+// I need to know wich user is asking from now
+route.use(function identify(next){
+	this.user = null;
+
+	if( this.cookieParams.session ){
+		this.user = DB.find('user', 'session:' + this.cookieParams.session, function(error, user){
+			if( error ){
+				next(error);
+			}
+			else{
+				this.user = user;
+				next();
+			}
+		}, this);
+	}
+	else{
+		next();
+	}
+	
 });
 
 // sendAction

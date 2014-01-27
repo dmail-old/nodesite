@@ -64,12 +64,12 @@ var DB = {
 		//callback.call(this, table.schema);
 	},
 
-	find: function(tableName, selector, callback){
+	find: function(tableName, selector, callback, bind){
 		
 		var table = this.getTable(tableName);
 
 		if( table ){
-			table.find(selector, callback);
+			table.find(selector, callback, bind);
 		}
 		else{
 			callback(new Error('can\'t find table ' + tableName));

@@ -1,17 +1,17 @@
 /*
 
-NOTE
 
 TODO
 
-- websocket
-- tester si socket.io permet de passer des erreurs au client
 - session
 
 Modification du nom, password etc
-Mise en place de compte utilisateur, connexion, inscription, déconnexion en utilisant AJAX pour le moment
+Mise en place de compte utilisateur, connexion, inscription, déconnexion
 
-FIX
+Comment reconnaitre un utilisateur identifié? cookie pour le moment
+coté serveur on recrée toujours un user en fonction de ce que la requête envoie comme id de session
+comment crée un id de session coté client ou serveur? normalement on écrit le cookie coté serveur
+mais on peut très bien imaginé l'écrire coté client lors de la connexion / inscription
 
 */
 

@@ -1,8 +1,11 @@
+require('../../../client/js/browser/cookie');
+
 exports.extend = {
 	cookieSource: '',
 	cookieParams: {},
+	cookieModule: NS.Cookie,
 
-	setCookie: function(properties){
+	setCookie: function(options){
 		var cookies = this.headers['Set-Cookie'];
 
 		if( typeof cookies == 'string' ){
@@ -12,14 +15,16 @@ exports.extend = {
 			cookies = [];
 		}
 
-		cookies.push(require('./cookie').stringify(properties));
+		var cookie = this.cookieModule.new(options);
+
+		cookies.push(cookie.toString());
 
 		this.setHeader('Set-Cookie', cookies);
 	},
 
 	parseCookie: function(cookies){
 		try{
-			return require('../../cookie.js').parse(cookies);
+			return this.cookieModule.parseAll(cookies);
 		}
 		catch(e){
 			return e;
@@ -29,6 +34,7 @@ exports.extend = {
 
 exports.use = function cookieParser(next){
 	this.cookieSource = this.request.headers.cookie;
+
 	if( this.cookieSource ){
 		this.cookieParams = this.parseCookie(this.cookieSource);
 		if( this.cookieParams == null ){

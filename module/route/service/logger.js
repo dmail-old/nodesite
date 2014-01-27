@@ -1,8 +1,6 @@
 module.exports = function logger(next){
 	this.emitter.on('header', function(){
-		var level;
-		var message = '';
-		var status;
+		var level, message = '', status;
 
 		if( this.status >= 500 ){
 			level = 'error';
@@ -23,6 +21,10 @@ module.exports = function logger(next){
 		else{
 			level = 'info';
 			status = this.status;
+		}
+
+		if( this.user ){
+			message+= '[' + this.user.name + '] ';
 		}
 
 		message+= String.setType(this.method, 'pink');

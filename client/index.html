@@ -24,8 +24,14 @@ for(;i<j;i++){
 
 document.body.appendChild(clone);
 
-window.server.callAction('database/find', 'user', 'damien', function(error, user){
-	console.log(error, user);
+/*
+window.server.callAction('signin', {
+	name: 'damien',
+	password: 'maillard'	
+}, function(error, user){
+	console.log(arguments)
+	document.setCookie('session', user.session);
 });
+*/
 
 </script>
