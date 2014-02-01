@@ -68,11 +68,15 @@ exports.extend = {
 		if( directories[0] == 'action' ){
 			var group = directories.length > 2 ? directories[directories.length - 2] : './';
 			var action = Path.basename(relative, '.js');
-			var handle = config.actions[group];
+			var handle = config.actions[group], result;
 
 			// appelle les handlers pour une type d'action (./, filesystem, etc)
 			if( typeof handle == 'function' ){
-				if( !handle.call(this, action, args) ){
+				result = handle.call(this, action, args);
+				if( result instanceof Error ){
+					return this.error(result);
+				}
+				else if( result === false ){
 					return this.error(new Error('unauthorized'));
 				}
 			}

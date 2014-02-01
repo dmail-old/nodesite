@@ -37,14 +37,18 @@ config.js = [].concat(
 		"object", "regexp", "boolean", "number", "function", "string", "array"
 	].prefix('core/'),
 	[
+		// null, regexp, array doivent être avant object sinon objectselector prévaut
+		"selector", "arraySelector", "booleanSelector", "functionSelector", "numberSelector",
+		"nullSelector", "regExpSelector", "objectSelector", "stringSelector"
+	].prefix('selector/').concat(
+	[
 		"object.util", "object.at",
 		"random",
-		"filter",
 		"list",  "array.iterate", "array.find",
 		"options", "chain", "memory", "path",
 		"weakMap",
 		"fx"
-	].prefix('util/'),
+	]).prefix('util/'),
 	[
 		"emitter", "emitterInterface",
 		"event", "eventEmitter", "eventEmitterInterface", "eventListener",
@@ -65,7 +69,8 @@ config.js = [].concat(
 	].prefix('browser/'),
 	[
 		"parser", "linker", "attributeLinker", "linkerListLinker", "subTemplateLinker"
-	].prefix('parser/').concat([
+	].prefix('parser/').concat(
+	[
 		"node.bind", "HTMLTemplateElement", "template"
 	]).prefix('mdv/'),
 	/*
@@ -88,12 +93,76 @@ config.js = [].concat(
 	"app"
 );
 
+
 // ces fonctions sont appelées lorsqu'un client demande à éxécuté un script situé dans le dossier "action"
 // les fonctions peuvent retourne true ou false pour authoriser le client à éxécuter l'action
 config.actions = {
+	// les actions à la racine sont toutes autorisé
 	"./": function(action, args){
 		return true;
 	},
+
+	// les actions de la BDD
+	"database": function(action, args){
+		var tableName = args[0], isAnonymous = false, isUser = false, isAdmin = false;
+
+		if( this.user ){
+			isAnonymous = true;
+			if( this.user.level === 1 ){
+				isAdmin = true;
+			}
+		}
+		else{
+			isAnonymous = true;
+		}
+
+		// l'admin fait ce qu'il veut
+		if( isAdmin ){
+			return true;
+		}
+
+		// un utilisateur?
+		if( isUser ){
+			// peut chercher dans toutes les tables
+			if( action == 'find' ){
+				return true;
+			}
+
+			// ne peut rien insérer pour le moment
+			if( action == 'insert' ){
+				return false;
+			}
+
+			// ne peut supprimer que dans la table user (et seulement lui même)
+			if( action == 'remove' ){
+				var selector = args[1];
+			}
+
+			// ne peut update que la table user(et seulement lui même)
+			if( action == 'update' ){
+				var selector = args[1];
+			}
+		}
+
+		// un anonyme?
+		if( isAnonymous ){
+			if( action == 'find' ){
+				// un invité n'a pas le droit de chercher dans les tables suivantes
+				if( [].contains(tableName) ){
+					return false;
+				}
+				return true;				
+			}
+			// un invité peut ajouter un utilisateur c'est tout
+			if( action == 'insert' && tableName == 'user' ){
+				return true;
+			}
+			return false;
+		}
+
+	},
+
+	// les actions du filesystem faut voir
 	"filesystem": function(action, args){
 		// lorsque le client demande à effectué une action sur le filesystem
 		// il agit toujours dans le dossier client/

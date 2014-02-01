@@ -3,7 +3,7 @@ NS.NodeFinder = {
 		var i = 0, j = arguments.length;
 
 		for(;i<j;i++){
-			if( NS.Filter.toFilter(arguments[i])(this) == NS.Filter.ACCEPT ) return true;
+			if( NS.Selector.new(arguments[i]).match(this) ) return true;
 		}
 
 		return false;
@@ -11,10 +11,15 @@ NS.NodeFinder = {
 };
 
 Object.eachPair(NS.NodeTraversal, function(name, iterator){
-	NS.NodeFinder['get' + name.capitalize()] = function(filter, bind, all){
-		if( typeof filter == 'undefined' ){
-			filter = true;
+	if( typeof iterator != 'function' ) return;
+
+	NS.NodeFinder['get' + name.capitalize()] = function(selector, all){
+		if( typeof selector == 'undefined' ){
+			selector = true;
 		}
-		return NS.Filter.filterIterator(iterator, this, !all, filter, bind);
+
+		selector = NS.Selector.new(selector);
+
+		return selector.iterate(iterator, this, !all);
 	};
 });

@@ -172,9 +172,13 @@ var route = {
 		this.end();
 	},
 
+	isErrorTraceAllowed: function(){
+		return config.debug || (this.user && this.user.level == 1);
+	},
+
+	//if( config.debug || this.user. )
+
 	error: function(error){
-		//logger.log('error', error.stack);
-		console.log(error.stack);
 		this.send(500, error);
 	},
 

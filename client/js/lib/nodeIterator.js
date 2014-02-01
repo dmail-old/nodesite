@@ -17,7 +17,7 @@ NS.NodeIterator = {
 		var node = null, start = this.current;
 
 		while( node = this[direction]() ){
-			if( fn.call(bind, node) == NS.Filter.ACCEPT ){
+			if( fn.call(bind, node) == NS.NodeTraversal.ACCEPT ){
 				return node;
 			}
 		}
@@ -40,7 +40,7 @@ NS.NodeIterator = {
 			}
 
 			while( node && node != start ){
-				if( fn.call(bind, node) === NS.Filter.ACCEPT ){
+				if( fn.call(bind, node) === NS.NodeTraversal.ACCEPT ){
 					return node;
 				}
 				node = this[direction]();

@@ -3,6 +3,9 @@ module.exports = {
 		if( data instanceof Error ){
 			if( data.statusCode ) this.status = data.statusCode;
 			data = data.message;
+			if( this.isErrorTraceAllowed(data) ){
+				data+= data.stack;
+			}
 		}
 		else if( typeof data === 'object' ){
 			data = JSON.stringify(data);
@@ -40,8 +43,11 @@ module.exports = {
 				type = 'type';
 			}
 
+			if( this.isErrorTraceAllowed(data) ){
+				json.stack = data.stack;
+			}
+
 			json.data = data.message;
-			json.stack = data.stack;
 			json.type = type;
 		}
 		else if( Buffer.isBuffer(data) ){

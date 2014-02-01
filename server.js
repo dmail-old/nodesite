@@ -94,12 +94,15 @@ global.callScript = function(path, bind){
 	return this.applyScript(path, bind, args, callback);
 };
 
+global.md5 = function(string){
+	var hash = Crypto.createHash('md5');
+	return hash.update(string).digest('hex');
+};
+
 // retourne une chaine unique
 global.generateUID = function(){
-	var microtime = process.hrtime()[1], md5 = Crypto.createHash('md5');
-	// gènère la chaîne à laquelle on ajoute microtime() pour la rendre unique
-	md5.update(String.random(16) + microtime + String.random(16));
-	return md5.digest('hex');
+	// gènère la chaîne à laquelle on ajoute process.hrtime()[1] (current timestamp in ms) pour la rendre unique
+	return global.md5(String.random(16) + process.hrtime()[1] + String.random(16));
 };
 
 Error.stackTraceLimit = 20;
