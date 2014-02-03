@@ -42,7 +42,7 @@ config.js = [].concat(
 		"nullSelector", "regExpSelector", "objectSelector", "stringSelector"
 	].prefix('selector/').concat(
 	[
-		"object.util", "object.at",
+		"object.util",
 		"random",
 		"list",  "array.iterate", "array.find",
 		"options", "chain", "memory", "path",
@@ -55,10 +55,11 @@ config.js = [].concat(
 		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"
 	].prefix('lib/'),
 	[
-		"object.watch", "objectChangeEmitter",
-		"propertyObserver", "partObserver", "pathObserver",
-		"arrayObserver"
-	].prefix('observer/'),
+		"object.watch", "objectChangeEmitter", "arrayObserver"
+	].prefix('observer/').concat(
+	[
+		"lexer", "part", "path", "partObserver", "pathObserver"
+	]).prefix('objectPath/'),
 	[
 		"browser", "os",
 		"event", "elementEmitter",
@@ -94,8 +95,15 @@ config.js = [].concat(
 );
 
 
-// ces fonctions sont appelées lorsqu'un client demande à éxécuté un script situé dans le dossier "action"
-// les fonctions peuvent retourne true ou false pour authoriser le client à éxécuter l'action
+/*
+
+ces fonctions sont appelées lorsqu'une requête demande à éxécuté un script situé dans le dossier "action"
+
+return true -> authorise à éxécuter l'action
+return false -> empêche d'éxécuter l'action
+return error -> empêche de faire l'action et donne des précisions sur pourquoi
+
+*/
 config.actions = {
 	// les actions à la racine sont toutes autorisé
 	"./": function(action, args){
@@ -104,11 +112,11 @@ config.actions = {
 
 	// les actions de la BDD
 	"database": function(action, args){
-		var tableName = args[0], isAnonymous = false, isUser = false, isAdmin = false;
+		var tableName = args[0], isAnonymous = false, isUser = false, isAdmin = false, user = this.user;
 
-		if( this.user ){
+		if( user ){
 			isAnonymous = true;
-			if( this.user.level === 1 ){
+			if( user.level === 1 ){
 				isAdmin = true;
 			}
 		}
@@ -133,14 +141,32 @@ config.actions = {
 				return false;
 			}
 
-			// ne peut supprimer que dans la table user (et seulement lui même)
-			if( action == 'remove' ){
-				var selector = args[1];
-			}
+			// ne peut supprimer que des données lui appartenant
+			if( action == 'remove' || action == 'update'  ){
+				var selector = args[1] = NS.Selector.new(args[1]);
+				var owner;
 
-			// ne peut update que la table user(et seulement lui même)
-			if( action == 'update' ){
-				var selector = args[1];
+				if( tableName === 'user' ){
+					owner = function(item){
+						return item.id === user.id;
+					};
+				}
+				else{
+					owner = function(item){
+						return item.user === user.id;
+					};
+				}
+
+				selector.match = function(item){
+					if( NS.Selector.match.apply(this, arguments) ){
+						if( owner(item) ){
+							return true;
+						}
+						// not the owner of the item
+						return false;
+					}
+					return false;
+				};
 			}
 		}
 
@@ -173,18 +199,22 @@ config.actions = {
 	}
 };
 
+/*
 config.socket = {
 	// TODO origines autorisées pour les sockets
 	"origins": "*:*"
 };
+*/
 
+/*
 config.db = {
 	"host": "127.0.0.1",
 	"port": 8125,
-	// "name": "coderank",
+	// "name": "ovalia",
 	"user": "root",
 	"password": ""
 };
+*/
 
 // mimetype par défaut
 config.mimetype = "application/octet-stream";

@@ -284,12 +284,12 @@ window.ArrayObserver = {
 			index = affectations[i + 1];
 
 			if( oldIndex == index ){
-				// no moved needed affectations made this move useless
+				// affectations made this move useless
 			}
 			else{
 				moves.push(oldIndex, index);
 
-				// the value is moved to the left ir the right of it's current index
+				// the value is moved to the left or the right of it's current index
 				if( index < oldIndex ){
 					gap = 1;
 				}
@@ -298,8 +298,7 @@ window.ArrayObserver = {
 				}
 
 				/*
-				for this affectations i store trace in a tempTrace array
-				that will be merge with trace after
+				for this affectations, store trace in a tempTrace array, that will be merge with trace after
 				else the trace array could contain two identical index
 				thus making trace.indexOf(from); possibly return the wrong index location
 				*/

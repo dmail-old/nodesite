@@ -9,7 +9,31 @@ if( !Array.slice ){
 	};
 }
 
-Array.complement({
+Array.complement({	
+	shuffle: function(){
+		var i = this.length - 1, j, temp;
+
+		while( i > 0 ){
+			j = Math.floor(Math.random() * (i + 1));
+			temp = this[i];
+			this[i] = this[j];
+			this[j] = temp;
+			i--;
+		}
+
+		return this;
+	},
+
+	move: function(from, to){
+		if( from != to ){
+			var value = this[from];
+			this.splice(from, 1);
+			// put at the new index
+			this.splice(to, 0, value);
+		}
+		return this;
+	},
+	
 	applyEach: function(method, args){
 		var i = 0, j = this.length, item;
 
@@ -136,7 +160,7 @@ Array.complement({
 
 		var i = 0, test = value;
 
-		while( exists.call(this, test) ) test = next(value, i++);
+		while( exists.call(this, test) ) test = next(value, i++, this);
 
 		return test;
 	}

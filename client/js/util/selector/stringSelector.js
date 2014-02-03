@@ -18,28 +18,26 @@
 		},
 
 		new: function(string){
+			string = string.trim();
 			if( string in this.cache ){
 				return this.cache[string];
 			}
-			return Selector.new.apply(this, arguments);
+			return Object.prototype.new.apply(this, arguments);
 		},
 
 		create: function(string){
-			string = string.trim();
 			this.raw = string;
 			this.cache[string] = this;
-
 			Selector.create.apply(this, arguments);
-
 			this.parse();
 		},
 
 		getProperty: function(item, key){
-			return Object.getAt(item, key);
+			return item ? window.ObjectPath.new(key).setModel(item).get() : false;
 		},
 
 		hasProperty: function(item, key){
-			return item ? item.hasOwnProperty(key) : false;
+			return item ? window.ObjectPath.new(key).setModel(item).has() : false;
 		},
 
 		matchPart: function(item, part){
@@ -148,7 +146,9 @@
 				while(i--){
 					part = parsed[i];
 					if( part.operator == ':' && part.key.endsWith('name') ){
-						var value = String(Object.getAt(item, part.key)), search = part.value.split(/\s+/g), j = search.length;
+						var value, search = part.value.split(/\s+/g), j = search.length;
+
+						value = String(this.getProperty(item, part.key));
 						while(j--) if( value.indexOf(search[j]) > -1 ) break;
 						// si j vaut -1 c'est que indexOf a échoué sur toutes les parties du nom recherché
 						if( j < 0 ) return false;
@@ -185,4 +185,3 @@
 	Selector.addConstructor('string', StringSelector);
 
 })(NS.Selector);
-

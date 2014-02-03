@@ -17,6 +17,7 @@ mais on peut très bien imaginé l'écrire coté client lors de la connexion / i
 
 
 global.root = process.cwd();
+global.window = global;
 global.FS = require('fs');
 global.util = require('util');
 global.Path = require('path');
@@ -28,8 +29,12 @@ global.NS = {};
 	require(root + '/client/js/core/' + name);
 });
 
-['object.at', 'filter', 'random'].forEach(function(name){
+['random'].forEach(function(name){
 	require(root + '/client/js/util/' + name);
+});
+
+['lexer', 'part', 'path'].forEach(function(name){
+	require(root + '/client/js/objectPath/' + name);
 });
 
 ['emitter'].forEach(function(name){

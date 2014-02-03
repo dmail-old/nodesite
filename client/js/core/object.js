@@ -198,7 +198,7 @@ Object.implement({
 	new: function(){
 		var instance = Object.create(this), create = instance.create;
 
-		if( typeof create == "function" ) instance.create.apply(instance, arguments);
+		if( typeof create == "function" ) create.apply(instance, arguments);
 
 		return instance;
 	},
