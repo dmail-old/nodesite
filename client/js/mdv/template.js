@@ -23,8 +23,6 @@ et instantier des objets javascript correspondant
 MORE:
 
 - support having method on model that can depend on property
-as for AttributBinding with conditional we could have a sort of
-isMethod in PropertyObserver
 in case it's a method it listen for method affectation
 and also for property named in the arguments of the method then we could write
 

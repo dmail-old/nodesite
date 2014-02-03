@@ -32,21 +32,17 @@
 			this.parse();
 		},
 
-		getProperty: function(item, key){
-			return item ? window.ObjectPath.new(key).setModel(item).get() : false;
-		},
-
-		hasProperty: function(item, key){
-			return item ? window.ObjectPath.new(key).setModel(item).has() : false;
+		getProperty: function(item, part){
+			return String(part.accessor.setModel(item).get());
 		},
 
 		matchPart: function(item, part){
 			var compare = part.compare;
 
 			if( compare ){
-				return compare(String(this.getProperty(item, part.key)), part.value);
+				return compare(this.getProperty(item, part), part.value);
 			}
-			return this.hasProperty(item, part.key);
+			return part.accessor.setModel(item).has();
 		},
 
 		filter: function(item){
@@ -122,6 +118,7 @@
 
 				this.part = {
 					key: key,
+					accessor: window.PathAccessor.new(key),
 					operator: operator,
 					value: value,
 					compare: null
@@ -137,7 +134,7 @@
 			return '';
 		},
 
-		// unused, would allow to test a value with indexOf over each space separated words
+		// unused, would allow some property value to be tested with indexOf over each space separated words
 		getPartial: function(expression){
 			var parsed = this.parse(expression);
 
@@ -145,10 +142,10 @@
 				var i = parsed.length, part;
 				while(i--){
 					part = parsed[i];
-					if( part.operator == ':' && part.key.endsWith('name') ){
+					if( part.operator == ':' && part.accessor.lastPart.name == 'name' ){
 						var value, search = part.value.split(/\s+/g), j = search.length;
 
-						value = String(this.getProperty(item, part.key));
+						value = this.getProperty(item, part);
 						while(j--) if( value.indexOf(search[j]) > -1 ) break;
 						// si j vaut -1 c'est que indexOf a échoué sur toutes les parties du nom recherché
 						if( j < 0 ) return false;
