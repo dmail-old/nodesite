@@ -6,14 +6,14 @@ Array.prototype.prefix = function(prefix){
 
 var config = {
 	// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
-	"serverFiles": [
-		"config.js",
-		"server.js",
-		"module",
+	"restartFiles": [
+		"./node_modules",
+		"./config.js",
+		"./server/server.js",
+		"./server/node_modules",
 		//"db",
-		"client/js/lib",
-		"lang/fr",
-		"action",
+		"./server/lang/fr",
+		"./server/action",
 	],
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
@@ -35,65 +35,55 @@ config.css = [
 config.js = [].concat(
 	[
 		"object", "regexp", "boolean", "number", "function", "string", "array"
-	].prefix('core/'),
+	].prefix('node_modules/core/'),
 	[
 		// null, regexp, array doivent être avant object sinon objectselector prévaut
 		"selector", "arraySelector", "booleanSelector", "functionSelector", "numberSelector",
-		"nullSelector", "regExpSelector", "objectSelector", "stringSelector"
-	].prefix('selector/').concat(
+		"nullSelector", "regExpSelector", "objectSelector", "stringSelector", "index"
+	].prefix('node_modules/selector/').concat(
 	[
-		"object.util",
-		"random",
-		"list",  "array.iterate", "array.find",
-		"options", "chain", "memory", "path",
-		"weakMap",
-		"fx"
-	]).prefix('util/'),
+		// from /node_modules
+		"random", "array.iterate", "array.find", "emitter", "cookie",
+		// from /client/node_modules
+
+	].prefix('node_modules/')),
 	[
-		"emitter", "emitterInterface",
-		"event", "eventEmitter", "eventEmitterInterface", "eventListener",
-		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"
-	].prefix('lib/'),
+		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document",
+		"event", "eventEmitter", "eventListener", "emitterInterface", "eventEmitterInterface"
+	].prefix('node_modules/lib/'),
 	[
-		"object.watch", "objectChangeEmitter", "arrayObserver"
-	].prefix('observer/').concat(
+		"lexer", "pathPart", "objectPath", "pathAccessor"
+	].prefix('node_modules/objectPath/'),
 	[
-		"lexer", "part", "path", "partObserver", "pathObserver"
-	]).prefix('objectPath/'),
+		"object.watch", "objectChangeEmitter", "partObserver", "pathObserver", "arrayObserver"
+	].prefix('node_modules/objectObserver/').concat(
+	[
+		"object.util", "chain", "options"
+	].prefix('node_modules/util/'),
 	[
 		"browser", "os",
 		"event", "elementEmitter",
 		"element", "element.properties",
 		"element.styles", "element.measure",
 		"element.keepIntoView", "element.find",
-		"request", "cookie"
-	].prefix('browser/'),
+		"request"
+	].prefix('node_modules/browser/')),
 	[
-		"parser", "linker", "attributeLinker", "linkerListLinker", "subTemplateLinker"
-	].prefix('parser/').concat(
+		"nodeBinding", "attributeBinding", "computedBinding", "node.bind"
+	].prefix('binding/').concat(
 	[
-		"node.bind", "HTMLTemplateElement", "template"
-	]).prefix('mdv/'),
-	/*
+		"linker", "attributeLinker", "linkerListLinker", "subTemplateLinker", "parser", "index"
+	].prefix('parser/')).concat(	
 	[
-		"selection", "keynav", "rootkeynav", "shortcut", "editable"
-	].prefix('ui/'),
-	*/
-	/*
-	rewrite needed
+		"HTMLTemplateElement", "template"
+	]).prefix('node_modules/mdv/'),
 	[
-		"fx.scroll",
-		"surface",
-		"element.wrapVectors",
-		"box",
-		"popup",
-		"popup.valid",
-		"selectionRectangle"
-	].prefix('view/box/'),
-	*/
-	"app"
+		"app"
+	].prefix('node_modules/'),
+	[
+		"weakMap"
+	].prefix('js/')
 );
-
 
 /*
 
@@ -143,7 +133,9 @@ config.actions = {
 
 			// ne peut supprimer que des données lui appartenant
 			if( action == 'remove' || action == 'update'  ){
-				var selector = args[1] = NS.Selector.new(args[1]);
+				var Selector = require('./client/js/util/selector/selector.js');
+
+				var selector = args[1] = Selector.new(args[1]);
 				var owner;
 
 				if( tableName === 'user' ){
@@ -158,7 +150,7 @@ config.actions = {
 				}
 
 				selector.match = function(item){
-					if( NS.Selector.match.apply(this, arguments) ){
+					if( Selector.match.apply(this, arguments) ){
 						if( owner(item) ){
 							return true;
 						}

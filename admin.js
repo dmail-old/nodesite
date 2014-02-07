@@ -1,6 +1,7 @@
 /*
 
-Je vais plutot envoyer le serveur à mon application, si l'application plante alors je répond aux requêtes par en maintenance tant que l'application ne redémarre pas non?
+Je vais plutot envoyer le serveur à mon application
+si l'application plante alors je répond aux requêtes par en maintenance tant que l'application ne redémarre pas non?
 
 */
 
@@ -18,7 +19,7 @@ global.root = process.cwd();
 global.config = require('./config.js');
 
 var
-	Watcher = require(root + '/module/watcher.js'),
+	Watcher = require('watcher'),
 	util = require('util'),
 	platform = process.platform,
 	isWindows = platform === 'win32',
@@ -55,7 +56,10 @@ Object.append(App.prototype, {
 			return;
 		}
 
-		this.process = childProcess.spawn(this.processName, this.args, {stdio: [null, null, null, null, 'ipc']});
+		this.process = childProcess.spawn(this.processName, this.args, {
+			cwd: require('path').dirname(this.args[0]),
+			stdio: [null, null, null, null, 'ipc']
+		});
 		this.ctime = Number(new Date());
 
 		this.process.stdout.on('data', function(data){ process.stdout.write(data); });
@@ -131,7 +135,7 @@ Object.append(App.prototype, {
 	}
 });
 
-var server = new App(root + '/server.js');
+var server = new App(root + '/server/server.js');
 
 function restart(path){
 	console.log('\033[35m'+ path +'\033[39m modified server restart');
@@ -139,7 +143,7 @@ function restart(path){
 }
 
 server.on('start', function(){
-	Watcher.watchAll(config.serverFiles, restart);
+	Watcher.watchAll(config.restartFiles, restart);
 });
 
 server.on('stop', function(){
@@ -151,7 +155,7 @@ server.on('stop', function(){
 		response.write('Serveur en maintenance');
 		response.end();
 	});
-	server.standby.listen(8124, '127.0.0.1', function(){
+	server.standby.listen(config.port, config.host, function(){
 		console.log('Serveur de secours lancé');
 	});
 });
