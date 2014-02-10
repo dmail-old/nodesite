@@ -1,56 +1,51 @@
-/*
-
-Je vais plutot envoyer le serveur à mon application
-si l'application plante alors je répond aux requêtes par en maintenance tant que l'application ne redémarre pas non?
-
-*/
-
-var FS = require('fs');
-
-function handleError(error){
-	FS.appendFileSync('error.log', '\n' + error.stack);
+function handleNativeError(error){
+	require('fs').appendFileSync('./log/admin.log', '\n' + error.stack);
 	throw error;
 }
 
-process.on('uncaughtException', handleError);
+process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 30);
 
-global.root = process.cwd();
+require('core');
+var ansi = require('ansi');
+var Logger = require('logger');
+var logger = Logger.new('./log/admin.log');
+var serverLogger = Logger.new('./log/server.log');
+
+/*
+process.removeListener('uncaughtException', handleNativeError);
+process.on('uncaughtException', function(error){
+	logger.error(error);
+	throw error;
+});
+*/
+
 global.config = require('./config.js');
 
-var
-	Watcher = require('watcher'),
-	util = require('util'),
-	platform = process.platform,
-	isWindows = platform === 'win32',
-	childProcess = require('child_process'),
-	EventEmitter = require('events').EventEmitter
-;
+var Watcher = require('watcher');
+var util = require('util');
+var childProcess = require('child_process');
+var Emitter = require('emitter');
 
-var App = function(){
-	this.args = Array.prototype.slice.call(arguments);
-	this.process = null;
-	this.ctime = null;
-};
-
-util.inherits(App, EventEmitter);
-
-Object.append = function(source, append){
-	for(var key in append){
-		source[key] = append[key];
-	}
-	return source;
-};
-
-Object.append(App.prototype, {
+var Nodeapp = Emitter.extend({
+	args: null,
+	process: null,
+	ctime: null,
 	processName: 'node',
 	state: 'closed', // closed, started, restarting?
+	standby: false,
+	restarting: false,
+
+	create: function(){
+		this.args = Array.prototype.slice.call(arguments);
+		this.args[0] = require('path').normalize(this.args[0]);
+	},
 
 	start: function(){
 		if( this.standby ){
 			this.standby.close(function(){
-				console.log('Serveur de secours stoppé');
-				delete this.standby;
+				logger.info('Serveur de secours stoppé');
+				this.standby = false;
 				this.start();
 			}.bind(this));
 			return;
@@ -58,26 +53,24 @@ Object.append(App.prototype, {
 
 		this.process = childProcess.spawn(this.processName, this.args, {
 			cwd: require('path').dirname(this.args[0]),
-			stdio: [null, null, null, null, 'ipc']
+			stdio: [process.stdin, process.stdout, process.stderr, null, 'ipc']
 		});
 		this.ctime = Number(new Date());
 
-		this.process.stdout.on('data', function(data){ process.stdout.write(data); });
-		this.process.stderr.on('data', function(data){ process.stderr.write(data); });
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
-
-		// pinched from https://github.com/DTrejo/run.js - pipes stdin to the child process - cheers DTrejo ;-)
-		process.stdin.resume();
-		process.stdin.setEncoding('utf8');
-		process.stdin.pipe(this.process.stdin);
-
+		
+		this.state = 'started';
 		this.emit('start');
+	},
+
+	isWindows: function(){
+		return process.platform === 'win32';
 	},
 
 	restart: function(){
 		if( this.process ){
-			if( isWindows ){
+			if( this.isWindows() ){
 				this.restarting = true;
 				this.kill();
 			}
@@ -91,17 +84,17 @@ Object.append(App.prototype, {
 	},
 
 	kill: function(signal){
-		this.process.kill(signal);
 		this.emit('kill', signal);
+		this.process.kill(signal);
 	},
 
 	onexit: function(code, signal){
 		if( this.restarting ){
-			delete this.restarting;
+			this.restarting = false;
 			signal = 'SIGUSR2';
 		}
 		// this is nasty, but it gives it windows support
-		if( isWindows && signal == 'SIGTERM' ) signal = 'SIGUSR2';
+		if( this.isWindows() && signal == 'SIGTERM' ) signal = 'SIGUSR2';
 
 		// exit the monitor, but do it gracefully
 		if( signal == 'SIGUSR2' ){
@@ -135,30 +128,34 @@ Object.append(App.prototype, {
 	}
 });
 
-var server = new App(root + '/server/server.js');
+/*
 
-function restart(path){
-	console.log('\033[35m'+ path +'\033[39m modified server restart');
-	server.restart();
-}
+Je vais plutot envoyer le serveur à mon application
+si l'application plante alors je répond aux requêtes par en maintenance tant que l'application ne redémarre pas non?
 
-server.on('start', function(){
-	Watcher.watchAll(config.restartFiles, restart);
+*/
+
+var nodeServer = Nodeapp.new(process.cwd() + '/server/server.js');
+
+nodeServer.on('start', function(){
+	Watcher.watchAll(config.restartFiles, function(path){
+		logger.info(ansi.magenta(path) + ' modified server restart');
+		nodeServer.restart();
+	});
 });
 
-server.on('stop', function(){
+nodeServer.on('stop', function(){
 	var http = require('http');
 
 	// répond à toutes les requêtes par 'serveur en maintenance'
-	server.standby = http.createServer(function(request, response){
+	nodeServer.standby = http.createServer(function(request, response){
 		response.writeHead(200, {'Content-Type': 'text/plain'});
 		response.write('Serveur en maintenance');
 		response.end();
 	});
-	server.standby.listen(config.port, config.host, function(){
-		console.log('Serveur de secours lancé');
+	nodeServer.standby.listen(config.port, config.host, function(){
+		logger.warn('Serveur de secours lancé');
 	});
 });
 
-server.start();
-
+nodeServer.start();

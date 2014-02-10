@@ -1,49 +1,32 @@
 /*
 
-
 TODO
-
-- session
 
 Modification du nom, password etc
 Mise en place de compte utilisateur, connexion, inscription, déconnexion
 
-Comment reconnaitre un utilisateur identifié? cookie pour le moment
-coté serveur on recrée toujours un user en fonction de ce que la requête envoie comme id de session
-comment crée un id de session coté client ou serveur? normalement on écrit le cookie coté serveur
-mais on peut très bien imaginé l'écrire coté client lors de la connexion / inscription
-
 */
 
-global.path = require('path');
-global.root = process.cwd();
+global.FS = require('fs');
+global.util = require('util');
+global.Path = require('path');
 global.ROOTPATH = '..';
 global.SERVERPATH = '.';
-global.CLIENTPATH = global.ROOTPATH + global.path.sep + 'client';
+global.CLIENTPATH = global.ROOTPATH + global.Path.sep + 'client';
+global.config = require(global.ROOTPATH + '/config.js');
+global.lang = {};
 
 require('core');
 require('random');
 require('objectPath/pathAccessor');
 
-global.window = global;
-global.FS = require('fs');
-global.util = require('util');
-global.Path = require('path');
-global.config = require(global.ROOTPATH + '/config.js');
-global.lang = {};
-global.NS = {};
+global.File = require('file');
+global.FileInfo = require('fileinfo');
+global.DB = require('database');
+DB.dirPath = './temp';
 
 var files = FS.readdirSync('./lang/' + config.lang);
 files.forEach(function(name){ require('./lang/' + config.lang + '/' + name); });
-
-require('color');
-require('fs.extra');
-
-global.File = require('file');
-global.FileInfo = require('fileinfo');
-global.logger = require('logger');
-global.DB = require('database');
-DB.dirPath = './temp';
 
 global.applyScript = function(path, bind, args, callback){
 	if( typeof callback != 'function' ){
@@ -101,29 +84,89 @@ global.generateUID = function(){
 
 Error.stackTraceLimit = 20;
 
-String.defineType('name', {color: 'magenta', font: 'bold'});
-String.defineType('path', {color: 'magenta', font: 'bold'});
-String.defineType('time', {color: 'grey', font: 'bold'});
-
-String.defineType('green', {color: 'green'});
-String.defineType('blue', {color: 'cyan'});
-String.defineType('yellow', {color: 'yellow'});
-String.defineType('pink', {color: 'magenta'});
-
-var demand = require('demand');
-demand.resolveModule('core/regexp.js', function(filepath){
-	//console.log(filepath);
-});
-
+var ansi = require('ansi');
+var Demand = require('demand');
 var server = {
 	http: require('http'),
+	logger: require('logger').new(),
 
 	onrequest: function(request, response){
-		demand.new(request, response).start();
+		var demand = Demand.new(request, response);
+
+		demand.getLevel = function(){
+			var status = this.status, level;
+
+			if( status >= 500 ){
+				level = 'error';
+			}
+			if( status >= 400 ){
+				level = 'warn';
+			}
+			level = 'info';
+
+			return level;	
+		};
+
+		demand.getStatusStyle = function(){
+			var status = this.statusCode;
+
+			if( status >= 500 ){
+				return 'red';
+			}
+			if( status >= 400 ){
+				return 'yellow';
+			}
+			if( status >= 300 ){
+				return 'blue';
+			}
+			if( status >= 200 ){
+				return 'green';
+			}		
+			return 'inherit';
+		};
+
+		demand.getLogMessage = function(){
+			var message = '';
+
+			if( this.user ){
+				message+= '[' + this.user.name + '] ';
+			}
+
+			message+= ansi.magenta(this.method);
+			message+= ' ' + ansi.setStyle(this.status, this.getStatusStyle());
+			message+= ' ' + ansi.magenta(this.url.pathname);
+
+			if( this.args ){
+				message+= ' ' + ansi.bold(this.args);
+			}
+
+			var time = response.getHeader('x-response-time');
+			if( time ){
+				message+= ' ' + ansi.bold(time + 'ms');
+			}
+
+			return message;
+		};
+
+		demand.emitter.on('response', function(){
+			if( this.hasHeader('content-type') ){
+				var contentType = this.getContentType();
+				if( !this.accept(contentType) ){
+					server.logger.warn(contentType + ' not in accept header');
+				}
+			}
+			
+			server.logger.log(
+				this.getLevel(),
+				this.getLogMessage()
+			);
+		});
+
+		demand.start();
 	},
 
 	onclientError: function(e){
-		console.log('client error', e);
+		server.logger.error('client request error', e);
 	},
 
 	open: function(){
@@ -186,7 +229,7 @@ server.listen(config.port, config.host, function(error){
 		}
 		throw error;
 	}
-
-	logger.info('Server running at '+String.setType(config.host, 'b') + ':' + String.setType(config.port, 'c'));
+	
+	server.logger.info('Server running at %s:%s', ansi.grey(config.host), ansi.red(config.port));
 });
 

@@ -1,7 +1,10 @@
 module.exports = function(path, callback){
 	var fileinfos = [];
 
-	FS.iterate(path, function(error, name, stat, next){
+	var FS = require('fs');
+	var extra = require('fs.extra');
+
+	extra.iterate(path, function(error, name, stat, next){
 		if( error ) return callback(error);
 		if( !name ) return callback(null, fileinfos);
 
