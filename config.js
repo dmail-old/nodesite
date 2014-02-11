@@ -43,14 +43,16 @@ config.js = [].concat(
 	].prefix('node_modules/selector/').concat(
 	[
 		// from /node_modules
-		"random", "array.iterate", "array.find", "emitter", "cookie",
+		"random", "array.iterate", "array.find", "cookie",
 		// from /client/node_modules
 
 	].prefix('node_modules/')),
 	[
-		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document",
-		"event", "eventEmitter", "eventListener", "emitterInterface", "eventEmitterInterface"
-	].prefix('node_modules/lib/'),
+		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"		
+	].prefix('node_modules/document/'),
+	[
+		"emitter", "index", "event", "eventEmitter", "eventListener", "emitterInterface", "eventEmitterInterface"
+	].prefix('node_modules/emitter/'),
 	[
 		"lexer", "pathPart", "objectPath", "pathAccessor"
 	].prefix('node_modules/objectPath/'),
