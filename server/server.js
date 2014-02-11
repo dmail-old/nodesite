@@ -108,7 +108,7 @@ var server = {
 		};
 
 		demand.getStatusStyle = function(){
-			var status = this.statusCode;
+			var status = this.status;
 
 			if( status >= 500 ){
 				return 'red';
@@ -117,7 +117,7 @@ var server = {
 				return 'yellow';
 			}
 			if( status >= 300 ){
-				return 'blue';
+				return 'cyan';
 			}
 			if( status >= 200 ){
 				return 'green';
@@ -137,12 +137,12 @@ var server = {
 			message+= ' ' + ansi.magenta(this.url.pathname);
 
 			if( this.args ){
-				message+= ' ' + ansi.bold(this.args);
+				message+= ' ' + ansi.grey(this.args);
 			}
 
-			var time = response.getHeader('x-response-time');
+			var time = this.getHeader('x-response-time');
 			if( time ){
-				message+= ' ' + ansi.bold(time + 'ms');
+				message+= ' ' + ansi.grey(time + 'ms');
 			}
 
 			return message;
@@ -232,4 +232,3 @@ server.listen(config.port, config.host, function(error){
 	
 	server.logger.info('Server running at %s:%s', ansi.grey(config.host), ansi.red(config.port));
 });
-

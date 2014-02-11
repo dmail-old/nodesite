@@ -1,5 +1,5 @@
 function handleNativeError(error){
-	require('fs').appendFileSync('./log/admin.log', '\n' + error.stack);
+	require('fs').appendFileSync('./log/error.log', '\n' + error.stack);
 	throw error;
 }
 
@@ -10,20 +10,6 @@ require('core');
 var ansi = require('ansi');
 var Logger = require('logger');
 var logger = Logger.new('./log/admin.log');
-var serverLogger = Logger.new('./log/server.log');
-
-/*
-process.removeListener('uncaughtException', handleNativeError);
-process.on('uncaughtException', function(error){
-	logger.error(error);
-	throw error;
-});
-*/
-
-global.config = require('./config.js');
-
-var Watcher = require('watcher');
-var util = require('util');
 var childProcess = require('child_process');
 var Emitter = require('emitter');
 
@@ -37,7 +23,7 @@ var Nodeapp = Emitter.extend({
 	restarting: false,
 
 	create: function(){
-		this.args = Array.prototype.slice.call(arguments);
+		this.args = Array.slice(arguments);
 		this.args[0] = require('path').normalize(this.args[0]);
 	},
 
@@ -136,6 +122,8 @@ si l'application plante alors je répond aux requêtes par en maintenance tant q
 */
 
 var nodeServer = Nodeapp.new(process.cwd() + '/server/server.js');
+var Watcher = require('watcher');
+var config = require('./config.js');
 
 nodeServer.on('start', function(){
 	Watcher.watchAll(config.restartFiles, function(path){
