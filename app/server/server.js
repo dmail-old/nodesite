@@ -10,10 +10,13 @@ Mise en place de compte utilisateur, connexion, inscription, déconnexion
 global.FS = require('fs');
 global.util = require('util');
 global.Path = require('path');
-global.ROOTPATH = '..';
-global.SERVERPATH = '.';
-global.CLIENTPATH = global.ROOTPATH + global.Path.sep + 'client';
-global.config = require(global.ROOTPATH + '/config.js');
+
+global.ROOT_PATH = '../..';
+global.APP_PATH = global.ROOT_PATH + global.Path.sep + 'app';
+global.SERVER_PATH = '.';
+global.CLIENT_PATH = global.APP_PATH + global.Path.sep + 'client';
+
+global.config = require(global.ROOT_PATH + '/config.js');
 global.lang = {};
 
 require('core');

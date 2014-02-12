@@ -18,22 +18,22 @@ module.exports = function(url, callback){
 
 	// on demande un dossier
 	if( isDirectory ){
-		var JSFileExists = FS.existsSync(global.CLIENTPATH + pathname + 'index.js');
+		var JSFileExists = FS.existsSync(global.CLIENT_PATH + pathname + 'index.js');
 
 		if( JSFileExists ){
-			this.sendScriptResponse(global.CLIENTPATH + pathname + 'index.js');
+			this.sendScriptResponse(global.CLIENT_PATH + pathname + 'index.js');
 		}
 		else{
-			this.sendFile(global.CLIENTPATH + pathname + 'index.html');
+			this.sendFile(global.CLIENT_PATH + pathname + 'index.html');
 		}
 	}
 	else if( pathname.endsWith('.html') ){
 		console.log('sendfile', pathname);
-		this.sendFile(global.CLIENTPATH + pathname);
+		this.sendFile(global.CLIENT_PATH + pathname);
 	}
 	else if( pathname.endsWith('.js') ){
 		pathname = pathname.replace(/\.js$/, '');
-		this.sendScriptResponse(global.CLIENTPATH + pathname + '.js');
+		this.sendScriptResponse(global.CLIENT_PATH + pathname + '.js');
 	}
 	else{
 		this.send(404);

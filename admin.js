@@ -6,12 +6,15 @@ function handleNativeError(error){
 process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 30);
 
-require('core');
+var APP_MODULE_PATH = './app/node_modules';
+
+require(APP_MODULE_PATH + '/core');
+
 var ansi = require('ansi');
 var Logger = require('logger');
 var logger = Logger.new('./log/admin.log');
 var childProcess = require('child_process');
-var Emitter = require('emitter');
+var Emitter = require(APP_MODULE_PATH + '/emitter');
 
 var Nodeapp = Emitter.extend({
 	args: null,
@@ -121,7 +124,7 @@ si l'application plante alors je répond aux requêtes par en maintenance tant q
 
 */
 
-var nodeServer = Nodeapp.new(process.cwd() + '/server/server.js');
+var nodeServer = Nodeapp.new(process.cwd() + '/app/server/server.js');
 var Watcher = require('watcher');
 var config = require('./config.js');
 

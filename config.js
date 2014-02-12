@@ -7,13 +7,13 @@ Array.prototype.prefix = function(prefix){
 var config = {
 	// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
 	"restartFiles": [
-		"./node_modules",
+		"./app/node_modules",
 		"./config.js",
-		"./server/server.js",
-		"./server/node_modules",
+		"./app/server/server.js",
+		"./app/server/node_modules",
 		//"db",
-		"./server/lang/fr",
-		"./server/action",
+		"./app/server/lang/fr",
+		"./app/server/action",
 	],
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
