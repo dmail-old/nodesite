@@ -14,6 +14,18 @@ var ansi = require('ansi');
 var Logger = require('logger');
 var logger = Logger.new('./log/admin.log');
 var childProcess = require('child_process');
+
+/*
+au lieu de ça, ce qui serais au top moumoute
+c'est que emitter se trouve en fait dans /node_modules et donc accessible partout
+mais app/node_modules ou même /app/client/node_modules emitter.js dedans y'ai écris
+module.exports = require('../../emitter');
+prob c'est que coté client ça marcheras pas du tout
+donc faudrais plutot établir une liste de modules qu'on autorise à partager au client
+pour le moment on touche rien xD
+*/
+
+
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
 var Nodeapp = Emitter.extend({
