@@ -80,7 +80,7 @@ config.js = [].concat(
 		"HTMLTemplateElement", "template"
 	]).prefix('node_modules/mdv/'),
 	[
-		"app"
+		"app", "test/test"
 	].prefix('node_modules/'),
 	[
 		"weakMap"
