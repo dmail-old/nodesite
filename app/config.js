@@ -1,20 +1,8 @@
-/* global Path */
-
 Array.prototype.prefix = function(prefix){
 	return this.map(function(value){ return prefix + value; });
 };
 
 var config = {
-	// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
-	"restartFiles": [
-		"./app/node_modules",
-		"./config.js",
-		"./app/server/server.js",
-		"./app/server/node_modules",
-		//"db",
-		"./app/server/lang/fr",
-		"./app/server/action",
-	],
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
 	"debug": true,
@@ -80,7 +68,7 @@ config.js = [].concat(
 		"HTMLTemplateElement", "template"
 	]).prefix('node_modules/mdv/'),
 	[
-		"app", "test/test"
+		"app"
 	].prefix('node_modules/'),
 	[
 		"weakMap"
@@ -234,8 +222,9 @@ config.mimetypes = {
 	"mp3": "audio/mpeg"
 };
 
-config.getMimetype = function(path){
-	return config.mimetypes[Path.extname(path).substr(1)] || config.mimetype;
+config.getMimetype = function(fileName){
+	var path = require('path');
+	return config.mimetypes[path.extname(fileName).substr(1)] || config.mimetype;
 };
 
 /* Configurations des pages

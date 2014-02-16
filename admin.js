@@ -138,10 +138,20 @@ si l'application plante alors je répond aux requêtes par en maintenance tant q
 
 var nodeServer = Nodeapp.new(process.cwd() + '/app/server/server.js');
 var Watcher = require('watcher');
-var config = require('./config.js');
+
+// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
+var restartFiles = [
+	"./app/node_modules",
+	"./app/config.js",
+	"./app/server/server.js",
+	"./app/server/node_modules",
+	//"db",
+	"./app/server/lang/fr",
+	"./app/server/action",
+];
 
 nodeServer.on('start', function(){
-	Watcher.watchAll(config.restartFiles, function(path){
+	Watcher.watchAll(restartFiles, function(path){
 		logger.info(ansi.magenta(path) + ' modified server restart');
 		nodeServer.restart();
 	});
@@ -149,6 +159,7 @@ nodeServer.on('start', function(){
 
 nodeServer.on('stop', function(){
 	var http = require('http');
+	var config = require('./app/config.js');
 
 	// répond à toutes les requêtes par 'serveur en maintenance'
 	nodeServer.standby = http.createServer(function(request, response){

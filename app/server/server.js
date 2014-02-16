@@ -1,9 +1,8 @@
+/* global FS, util, Path, ROOT_PATH, APP_PATH, SERVER_PATH, CLIENT_PATH */
+
 /*
 
 TODO
-
-Modification du nom, password etc
-Mise en place de compte utilisateur, connexion, inscription, déconnexion
 
 */
 
@@ -11,12 +10,12 @@ global.FS = require('fs');
 global.util = require('util');
 global.Path = require('path');
 
-global.ROOT_PATH = '../..';
-global.APP_PATH = global.ROOT_PATH + global.Path.sep + 'app';
+global.ROOT_PATH = '..' + Path.sep +  '..';
+global.APP_PATH = ROOT_PATH + Path.sep + 'app';
 global.SERVER_PATH = '.';
-global.CLIENT_PATH = global.APP_PATH + global.Path.sep + 'client';
+global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
-global.config = require(global.ROOT_PATH + '/config.js');
+global.config = require(APP_PATH + Path.sep + 'config.js');
 global.lang = {};
 
 require('core');
