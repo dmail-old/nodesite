@@ -31,7 +31,7 @@ config.js = [].concat(
 	].prefix('node_modules/selector/').concat(
 	[
 		// from /node_modules
-		"random", "array.iterate", "array.find", "cookie",
+		"random", "array.iterate", "array.find", "array.insertsort", "cookie",
 		// from /client/node_modules
 
 	].prefix('node_modules/')),
@@ -63,9 +63,12 @@ config.js = [].concat(
 	].prefix('binding/').concat(
 	[
 		"linker", "attributeLinker", "linkerListLinker", "subTemplateLinker", "parser", "index"
-	].prefix('parser/')).concat(	
+	].prefix('parser/')).concat(
 	[
-		"HTMLTemplateElement", "template"
+		"templateInstance", "templateIterator", "template", "HTMLTemplateElement"
+	].prefix('template/')).concat(
+	[
+
 	]).prefix('node_modules/mdv/'),
 	[
 		"app"
