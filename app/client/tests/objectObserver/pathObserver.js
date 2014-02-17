@@ -4,36 +4,6 @@ testModule('objectObserver/pathObserver', function(PathObserver){
 	var firstPart = pathObserver.firstPart;
 	var lastPart = pathObserver.lastPart;
 
-	it('got a new change type', function(){
-		pathObserver.setModel({user: 'damien'});
-		expect(firstPart.lastChange.type).toBe('new');
-	});
-
-	it('got a deleted change type', function(){
-		pathObserver.unsetModel();
-		expect(firstPart.lastChange.type).toBe('deleted');
-	});
-
-	it('got an updated change type', function(){
-		var model = {user: 'damien'};
-		pathObserver.setModel(model);
-		model.user = 'idir';
-		expect(firstPart.lastChange.type).toBe('updated');
-	});
-
-	it('get an updated change for different model and different value', function(){
-		pathObserver.setModel({user: 'damien'});
-		pathObserver.setModel({user: 'clement'});
-		expect(firstPart.lastChange.type).toBe('updated');
-	});
-
-	it('ignore a change for different model but same value', function(){
-		pathObserver.setModel({user: 'damien'});
-		var change = firstPart.lastChange;
-		pathObserver.setModel({user: 'damien'});
-		expect(change).toBe(firstPart.lastChange);
-	});
-
 	it('react when the path is resolved', function(){
 		pathObserver.setModel({
 			user:{

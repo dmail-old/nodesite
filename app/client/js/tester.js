@@ -26,8 +26,8 @@ var Test = {
 		try{
 			this.fn.apply(this, arguments);
 		}
-		catch(error){
-
+		catch(e){
+			error = e;
 		}
 
 		this.error = error;
@@ -36,7 +36,7 @@ var Test = {
 	},
 
 	createExpectError: function(a, b){
-		return new Error('expect ' + b + ' and got ' + a);
+		return new Error(this.description + ': expect ' + b + ' and got ' + a);
 	}
 };
 
