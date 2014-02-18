@@ -89,7 +89,10 @@ var TestSuite = {
 		}
 
 		if( errors.length ){
-			console.error('TEST FAILED:', this.description, errors.length, 'errors', errors);
+			console.error('TESTS FAILED:', this.description, errors.length, 'errors', errors);
+		}
+		else{
+			console.log('TESTS PASSED:', this.description);
 		}
 	}
 };
