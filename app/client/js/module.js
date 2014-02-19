@@ -15,38 +15,36 @@ Module.prototype = {
 	Path: NS.path,
 	cache: {},
 
-	hasExtension: function(path, ext){
-		return path.indexOf(ext, path.length - ext.length) !== -1;
+	hasExtension: function(filename, ext){
+		return filename.indexOf(ext, filename.length - ext.length) !== -1;
 	},
 
-	ensureExtension: function(path, ext){
-		if( !this.hasExtension(path, ext) ){
-			path = path + ext;
+	ensureExtension: function(filename, ext){
+		if( !this.hasExtension(filename, ext) ){
+			filename = filename + ext;
 		}
-		return path;
+		return filename;
 	},
 
-	load: function(path){
+	load: function(filename){
 		var xhr = new XMLHttpRequest();
 
-		console.log(this.filename + ' require ' + path);
+		console.log(this.filename + ' require ' + filename);
 
 		// false for sync request
-		xhr.open("GET", document.location.origin + '/node_modules/' + path, false);
+		xhr.open("GET", document.location.origin + '/node_modules/' + filename, false);
 		xhr.send(null);
 
 		return xhr;					
 	},
 
-	getCache: function(path){
-
-		if( path in this.cache ) return this.cache[path];
-
-		if( !this.hasExtension(path, '.js') ){
-			path = path + '.js';
-			if( path in this.cache ) return this.cache[path];
+	getCache: function(filename){
+		if( filename in this.cache ){
+			return this.cache[filename];
 		}
-
+		if( !this.hasExtension(filename, '.js') ){
+			return this.getCache(filename + '.js');
+		}
 		return null;
 	},
 
@@ -90,7 +88,7 @@ Module.prototype = {
 	resolve: function(path){
 		// resolve relative path
 		if( path[0] == '/' || path.slice(0,2) == './' || path.slice(0,3) == '../' ){
-			return this.Path.resolve(this.Path.dirname(this.filename), path);
+			return this.Path.resolve(this.dirname, path);
 		}
 		// resolve absolute path
 		else{

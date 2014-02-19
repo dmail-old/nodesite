@@ -1,10 +1,8 @@
 testModule('objectObserver/pathObserver', function(PathObserver){
 
-	var pathObserver = PathObserver.new('user.comment.title');
-	var firstPart = pathObserver.firstPart;
-	var lastPart = pathObserver.lastPart;
-
 	it('react when the path is resolved', function(){
+		var pathObserver = PathObserver.new('user.comment.title');
+
 		pathObserver.setModel({
 			user:{
 				comment: {
@@ -13,10 +11,12 @@ testModule('objectObserver/pathObserver', function(PathObserver){
 			}		
 		});
 
-		expect(lastPart.lastChange.value).toBe('titre');
+		expect(pathObserver.value).toBe('titre');
 	});
 
 	it('ignore change out of model', function(){
+		var pathObserver = PathObserver.new('user.comment.title');
+
 		pathObserver.setModel({
 			user: {
 				comment: {
@@ -25,12 +25,21 @@ testModule('objectObserver/pathObserver', function(PathObserver){
 			}		
 		});
 
-		var user = firstPart.model.user;
-		firstPart.model.user = null;
+		var user = pathObserver.model.user;
+		pathObserver.model.user = null;
 		user.comment.title = 'coucou';
 
-		expect(lastPart.lastChange.type).toBe('deleted');
-		expect(lastPart.lastChange.oldValue).toBe('titre');
+		expect(pathObserver.lastChange.type).toBe('deleted');
+		expect(pathObserver.lastChange.oldValue).toBe('titre');
+	});
+
+	it('got a token for the pathobserver', function(){
+		var tokenName = null;
+		var pathObserver = PathObserver.new('name', {name: 'damien'}, function(change, token){
+			tokenName = token;
+		}, null, 'token');
+
+		expect(tokenName).toBe('token');
 	});
 
 });
