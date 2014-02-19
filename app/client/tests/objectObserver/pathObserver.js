@@ -11,7 +11,7 @@ testModule('objectObserver/pathObserver', function(PathObserver){
 			}		
 		});
 
-		expect(pathObserver.value).toBe('titre');
+		expect(pathObserver.get()).toBe('titre');
 	});
 
 	it('ignore change out of model', function(){

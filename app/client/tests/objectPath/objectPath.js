@@ -1,23 +1,22 @@
 testModule('objectPath/objectPath', function(ObjectPath){
 
-	var objectPath = ObjectPath.new('user.comment.title');
-	var firstPart = objectPath.firstPart;
-	var lastPart = objectPath.lastPart;
-
 	it('has a firstPart with named user', function(){
-		expect(firstPart.name).toBe('user');
+		var path = ObjectPath.new('user.comment.title');
+		expect(path.firstPart.name).toBe('user');
 	});
 
 	it('has a firstPart.nextPart named comment', function(){
-		expect(firstPart.nextPart.name).toBe('comment');
+		var path = ObjectPath.new('user.comment.title');
+		expect(path.firstPart.nextPart.name).toBe('comment');
 	});
 
 	it('has a lastPart named title', function(){
-		expect(lastPart.name).toBe('title');
+		var path = ObjectPath.new('user.comment.title');
+		expect(path.lastPart.name).toBe('title');
 	});
 
 	it('set the correct model to parts', function(){
-		
+		var path = ObjectPath.new('user.comment.title');
 		var model = {
 			user: {
 				comment: {
@@ -25,16 +24,16 @@ testModule('objectPath/objectPath', function(ObjectPath){
 				}
 			}
 		};
-		objectPath.setModel(model);
+		path.setModel(model);
 
-		expect(firstPart.model).toBe(model);
-		expect(firstPart.nextPart.model).toBe(model.user);
-		expect(lastPart.model).toBe(model.user.comment);
+		expect(path.firstPart.model).toBe(model);
+		expect(path.firstPart.nextPart.model).toBe(model.user);
+		expect(path.lastPart.model).toBe(model.user.comment);
 
 	});
 
 	it('read the correct value for parts', function(){
-		
+		var path = ObjectPath.new('user.comment.title');
 		var model = {
 			user: {
 				comment: {
@@ -42,15 +41,15 @@ testModule('objectPath/objectPath', function(ObjectPath){
 				}
 			}
 		};
-		objectPath.setModel(model);
+		path.setModel(model);
 
-		expect(firstPart.get()).toBe(model.user);
-		expect(firstPart.nextPart.get()).toBe(model.user.comment);
-		expect(lastPart.get()).toBe('titre');
+		expect(path.firstPart.get()).toBe(model.user);
+		expect(path.firstPart.nextPart.get()).toBe(model.user.comment);
+		expect(path.lastPart.get()).toBe('titre');
 	});
 
 	it('propagate unsetModel', function(){
-
+		var path = ObjectPath.new('user.comment.title');
 		var model = {
 			user: {
 				comment: {
@@ -58,16 +57,16 @@ testModule('objectPath/objectPath', function(ObjectPath){
 				}
 			}
 		};
-		objectPath.setModel(model);
-		firstPart.unsetModel();
+		path.setModel(model);
+		path.unsetModel();
 
-		expect(firstPart.model).toBe(null);
-		expect(lastPart.model).toBe(null);
+		expect(path.firstPart.model).toBe(null);
+		expect(path.lastPart.model).toBe(null);
 
 	});
 
 	it('propagate part.set to nextPart model', function(){
-
+		var path = ObjectPath.new('user.comment.title');
 		var model = {
 			user: {
 				comment: {
@@ -75,15 +74,15 @@ testModule('objectPath/objectPath', function(ObjectPath){
 				}
 			}
 		};
-		objectPath.setModel(model);
+		path.setModel(model);
 
-		firstPart.set({
+		path.set({
 			comment: {
 				title: 'coucou'
 			}
 		});
 
-		expect(lastPart.get()).toBe('coucou');
+		expect(path.get()).toBe('coucou');
 
 	});
 
