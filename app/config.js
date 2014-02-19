@@ -3,15 +3,16 @@ Array.prototype.prefix = function(prefix){
 };
 
 var config = {
-	"local": true,
-	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
-	"debug": true,
 	"protocol": "http",
 	"host": "127.0.0.1",
 	"port": 8124,
 	// encodage des pages
 	"encoding": "utf8",
-	"lang": "fr"
+	"lang": "fr",
+	"local": true,
+	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
+	"debug": true,
+	"debug_modules": true
 };
 
 // fichier css qu'on donne au client
@@ -24,6 +25,9 @@ config.js = [].concat(
 	[
 		"object", "regexp", "boolean", "number", "function", "string", "array"
 	].prefix('node_modules/core/'),
+	[
+		"weakMap"
+	].prefix('js/'),
 	[
 		// null, regexp, array doivent être avant object sinon objectselector prévaut
 		"selector", "arraySelector", "booleanSelector", "functionSelector", "numberSelector",
@@ -62,7 +66,9 @@ config.js = [].concat(
 		"nodeBinding", "attributeBinding", "computedBinding", "node.bind"
 	].prefix('binding/').concat(
 	[
-		"linker", "attributeLinker", "linkerListLinker", "subTemplateLinker", "parser", "index"
+		"linker", "directLinker", "tokenLinker", "tokenListLinker", "attributeLinker",
+		"linkerListLinker", "subTemplateLinker",
+		"parser", "index"
 	].prefix('parser/')).concat(
 	[
 		"templateInstance", "templateIterator", "template", "HTMLTemplateElement"
@@ -72,10 +78,7 @@ config.js = [].concat(
 	]).prefix('node_modules/mdv/'),
 	[
 		"app"
-	].prefix('node_modules/'),
-	[
-		"weakMap"
-	].prefix('js/')
+	].prefix('node_modules/')
 );
 
 /*
