@@ -20,8 +20,7 @@ git submodule --remote --merge
 
 (see http://stackoverflow.com/questions/5828324/update-git-submodule)
 
-INCONVENIENT MAJEUR: j'ai besoin d'internet, je suis sur que y'a moyen de s'en passer
-mais je sais pas comment du tout
+INCONVENIENT MAJEUR: j'ai besoin d'internet, je suis sur que y'a moyen de s'en passer mais je sais pas comment du tout
 */
 
 Error.stackTraceLimit = 20;
