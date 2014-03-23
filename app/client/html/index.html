@@ -1,0 +1,53 @@
+Hello world
+
+<a href="./example">Go to examples</a>
+
+<template id="template" native>
+	<div>
+		bouh
+		<template native>coucou</template>
+	</div>
+</template>
+
+<script>
+var tpl = $('template');
+
+var clone = tpl.content.cloneNode(true);
+
+var sublist = clone.querySelectorAll('template'), i = 0, j = sublist.length;
+
+// active les sous templates
+for(;i<j;i++){
+	var subclone = sublist[i].content.cloneNode(true);
+	sublist[i].parentNode.insertBefore(subclone, sublist[i].nextSibling);
+}
+
+// faudrait plutot utiliser le page container: require('app').container
+require('app').app.container.appendChild(clone);
+
+/*
+require('app').server.callAction('signin', {
+	name: 'damien',
+	password: 'maillard'	
+}, function(error, user){
+	console.log(arguments)
+	document.setCookie('session', user.session);
+});
+*/
+
+</script>
+
+<div id="repeat-template" repeat="users" template> {{}} </div>
+
+<script>
+var template = $('repeat-template').template;
+var model = {
+	users: [
+		'damien',
+		'idir',
+		'cassandre',
+		'alex'
+	]
+};
+//template.setModel(model);
+</script>

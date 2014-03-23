@@ -1,0 +1,25 @@
+<template id="template-example" repeat="files">
+	<a href="./">{{file}}</a><br />
+</template>
+
+<script>
+/*
+
+On se retrouve face à un problème de taille:
+
+Le serveur lit ce fichier et cherche à remplacer les {}
+sauf que j'ai besoin de la notation {} pour mes templates
+
+-> faut trouver un moyen de passer des données du serveur au client
+
+Autre problème: lorsque je met {} dans le template pour le <a href=""> la page se bloque carrément o_O
+Il faut aussi tester "repeat files as file" qui semble ne pas marcher et qui serais bien pratique
+
+*/
+
+var model = {
+	files: {{files}}
+};
+
+//$('template-example').template.setModel(model);
+</script>

@@ -1,170 +1,123 @@
-/* global FS, util, Path, ROOT_PATH, APP_PATH, SERVER_PATH, CLIENT_PATH */
+/* global FS, util, Path, ABS_PATH, ROOT_PATH, APP_PATH, SERVER_PATH, CLIENT_PATH */
 
 /*
 
-TODO
+on va créer un dépot git pour emitter, pour objectPath, pour objectObserver, pour elementEmitter, pour module
+faudras aussi finir router un de ses jours et créer un dépot pour lui aussi
 
+Pour utiliser gitsubmodule
+
+Dans le superprojet je me met la ou je veux ajouter le sous projet
+
+git submodule add [url]
+
+Toute modification, commit etc doit se faire dans le sous-projet
+Pour récup tout ça je me met dans le superprojet et je fais
+
+git submodule foreach git pull origin master
+or
+git submodule --remote --merge
+
+(see http://stackoverflow.com/questions/5828324/update-git-submodule)
+
+INCONVENIENT MAJEUR: j'ai besoin d'internet, je suis sur que y'a moyen de s'en passer
+mais je sais pas comment du tout
 */
 
+Error.stackTraceLimit = 20;
+
 global.FS = require('fs');
-global.util = require('util');
 global.Path = require('path');
 
-global.ROOT_PATH = '..' + Path.sep +  '..';
+global.ROOT_PATH = Path.resolve(process.cwd(), '../../');
 global.APP_PATH = ROOT_PATH + Path.sep + 'app';
-global.SERVER_PATH = '.';
+global.SERVER_PATH = APP_PATH + Path.sep + 'server';
 global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 global.config = require(APP_PATH + Path.sep + 'config.js');
-global.lang = {};
 
 require('core');
-require('random');
+require('random/random');
 require('objectPath/pathAccessor');
+
+Object.append(global, require('functions'));
+global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 global.File = require('file');
 global.FileInfo = require('fileinfo');
 global.DB = require('database');
 DB.dirPath = './temp';
 
-var files = FS.readdirSync('./lang/' + config.lang);
-files.forEach(function(name){ require('./lang/' + config.lang + '/' + name); });
+//example à garder, voici comment faire se succéder des streams
 
-global.applyScript = function(path, bind, args, callback){
-	if( typeof callback != 'function' ){
-		throw new Error('callback expected');
-	}
 
-	var module, count;
+var fileStream = require('fs').createReadStream('test.txt');
+var stream = new require('stream').Duplex();
+var stream_a = new require('stream').Duplex();
+var stream_b = new require('stream').Duplex();
 
-	try{
-		module = require(path);
-	}
-	catch(e){
-		return callback(e);
-	}
-
-	if( typeof module != 'function' ){
-		return callback(new Error('script at ' + path + ' is not callable'));
-	}
-
-	args = args || [];
-	count = module.length - 1;
-
-	if( count > 0 && count != args.length ){
-		// if( Function.argumentNames(module)[count + 1] == 'callback' ){
-		return callback(new Error(path + ' expect exactly ' + count + ' arguments ' + args.length + ' given'));
-		// }
-	}
-
-	args = [].concat(args);
-	args.push(callback);
-
-	try{
-		module.apply(bind, args);
-	}
-	catch(e){
-		return callback(e);
-	}
+stream._read = function(n){
+	return this.read(n);
+};
+stream._write = function(chunk){
+	this.push(chunk);
+};
+stream_a._read = function(n){
+	return this.read(n);
+};
+stream_a._write = function(chunk){
+	console.log('stream_a got', chunk.toString());
+	this.push(chunk.toString() + 'stream_a');
+};
+stream_b._read = function(n){
+	return this.read(n);
+};
+stream_b._write = function(chunk){
+	console.log('stream_b got', chunk.toString());
+	this.push(chunk.toString() + 'stream_b');
 };
 
-global.callScript = function(path, bind){
-	var args = Array.slice(arguments, 2), callback = args.pop();
-	return this.applyScript(path, bind, args, callback);
-};
+stream.on('data', function(chunk){
+	console.log('stream got', chunk.toString());
+});
 
-global.md5 = function(string){
-	var hash = require('crypto').createHash('md5');
-	return hash.update(string).digest('hex');
-};
+stream.on('error', function(){
+	console.log('stream error');
+});
 
-// retourne une chaine unique
-global.generateUID = function(){
-	// gènère la chaîne à laquelle on ajoute process.hrtime()[1] (current timestamp in ms) pour la rendre unique
-	return global.md5(String.random(16) + process.hrtime()[1] + String.random(16));
-};
+stream_a.on('error', function(){
+	console.log('stream_a error');
+});
+fileStream.on('error', function(){
+	console.log('filestream error');
+});
 
-Error.stackTraceLimit = 20;
+//stream_b.pipe(stream);
+//stream_a.pipe(stream_b);
+//fileStream.pipe(stream_a);
+//stream_a.emit('error', new Error());
+
+var ComputedStream = require('computedStream');
+var computedStream = new ComputedStream();
+
+computedStream.chain(fileStream);
+computedStream.chain(stream_a);
+computedStream.chain(stream_b);
+
+computedStream.on('data', function(data){
+	console.log('computedStream', data.toString());
+});
+
+computedStream.resolve();
 
 var ansi = require('ansi');
-var Demand = require('demand');
 var server = {
 	http: require('http'),
 	logger: require('logger').new(),
+	router: require('router'),
 
 	onrequest: function(request, response){
-		var demand = Demand.new(request, response);
-
-		demand.getLevel = function(){
-			var status = this.status, level;
-
-			if( status >= 500 ){
-				level = 'error';
-			}
-			if( status >= 400 ){
-				level = 'warn';
-			}
-			level = 'info';
-
-			return level;	
-		};
-
-		demand.getStatusStyle = function(){
-			var status = this.status;
-
-			if( status >= 500 ){
-				return 'red';
-			}
-			if( status >= 400 ){
-				return 'yellow';
-			}
-			if( status >= 300 ){
-				return 'cyan';
-			}
-			if( status >= 200 ){
-				return 'green';
-			}		
-			return 'inherit';
-		};
-
-		demand.getLogMessage = function(){
-			var message = '';
-
-			if( this.user ){
-				message+= '[' + this.user.name + '] ';
-			}
-
-			message+= ansi.magenta(this.method);
-			message+= ' ' + ansi.setStyle(this.status, this.getStatusStyle());
-			message+= ' ' + ansi.magenta(this.url.pathname);
-
-			if( this.args ){
-				message+= ' ' + ansi.grey(this.args);
-			}
-
-			var time = this.getHeader('x-response-time');
-			if( time ){
-				message+= ' ' + ansi.grey(time + 'ms');
-			}
-
-			return message;
-		};
-
-		demand.emitter.on('response', function(){
-			if( this.hasHeader('content-type') ){
-				var contentType = this.getContentType();
-				if( !this.accept(contentType) ){
-					server.logger.warn(contentType + ' not in accept header');
-				}
-			}
-			
-			server.logger.log(
-				this.getLevel(),
-				this.getLogMessage()
-			);
-		});
-
-		demand.start();
+		this.router.new(request, response);//.start();
 	},
 
 	onclientError: function(e){
@@ -213,7 +166,6 @@ var server = {
 	},
 
 	// lorsqu'une socket veut se connecter
-	// on pourras lire les cookies afin de restaurer une session
 	authorize: function(data, callback){
 		callback(null, true);
 	},
@@ -222,6 +174,28 @@ var server = {
 		//new Client(socket);
 	}
 };
+
+var router = server.router;
+// use basic services
+router.use('bodyReader');
+router.use('cookieParser');
+router.use('params');
+router.use('methodOverride');
+router.use('jsonParam');
+router.use('responseTime');
+router.use('session');
+router.use('logger', server.logger);
+router.use('cors');
+router.use('page');
+router.use('file');
+router.use('errorHandler');
+
+router.use('bodyWriter');
+
+router.allowErrorTrace = config.debug;
+//router.Request.defaultAcceptedCharset = config.charset;
+router.Request.charset = config.charset;
+router.Response.charset = config.charset;
 
 server.open();
 server.listen(config.port, config.host, function(error){

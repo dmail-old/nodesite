@@ -1,0 +1,23 @@
+function sendPage(){
+	var page = this.createHTMLPage('html/example.html');
+	
+	FS.readdir(global.CLIENT_PATH + '/' + this.url.pathname, function(error, files){			
+		if( error ){
+			return this.error(error);
+		}
+		page.send({
+			files: JSON.stringify(files)
+		});
+
+	}.bind(this));
+}
+
+module.exports = {
+	GET: function(){
+		sendPage.call(this);
+	},
+
+	POST: function(){
+		sendPage.call(this);
+	}
+};

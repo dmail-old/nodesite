@@ -1,4 +1,4 @@
-lang.keys = {
+module.exports = {
 	"property": "propriété",
 	"a_property": "une propriété",
 	"the_property": "la propriété",

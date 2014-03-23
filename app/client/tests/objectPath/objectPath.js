@@ -65,7 +65,7 @@ testModule('objectPath/objectPath', function(ObjectPath){
 
 	});
 
-	it('propagate part.set to nextPart model', function(){
+	it('set/get the value', function(){
 		var path = ObjectPath.new('user.comment.title');
 		var model = {
 			user: {
@@ -76,13 +76,10 @@ testModule('objectPath/objectPath', function(ObjectPath){
 		};
 		path.setModel(model);
 
-		path.set({
-			comment: {
-				title: 'coucou'
-			}
-		});
+		path.set('coucou');
 
 		expect(path.get()).toBe('coucou');
+		expect(model.user.comment.title).toBe('coucou');
 
 	});
 

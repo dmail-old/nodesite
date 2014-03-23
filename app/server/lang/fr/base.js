@@ -1,4 +1,4 @@
-Object.append(lang, {
+module.exports = {
 	"yes": "oui",
 	"no": "non",
 	"ok": "ok",
@@ -19,4 +19,4 @@ Object.append(lang, {
 	"redo": "refaire",
 	
 	"none": "aucun"	
-});
+};

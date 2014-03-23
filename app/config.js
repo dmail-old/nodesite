@@ -7,12 +7,12 @@ var config = {
 	"host": "127.0.0.1",
 	"port": 8124,
 	// encodage des pages
-	"encoding": "utf8",
+	"charset": "utf8",
 	"lang": "fr",
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
 	"debug": true,
-	"debug_modules": true
+	"debug_modules": !true
 };
 
 // fichier css qu'on donne au client
@@ -23,7 +23,7 @@ config.css = [
 // fichier js qu'on donne au client
 config.js = [].concat(
 	[
-		"object", "regexp", "boolean", "number", "function", "string", "array"
+		"Object.prototype.new/object", "regexp", "boolean", "number", "function", "string", "array"
 	].prefix('node_modules/core/'),
 	[
 		"weakMap"
@@ -34,10 +34,9 @@ config.js = [].concat(
 		"nullSelector", "regExpSelector", "objectSelector", "stringSelector", "index"
 	].prefix('node_modules/selector/').concat(
 	[
-		// from /node_modules
-		"random", "array.iterate", "array.find", "array.insertsort", "cookie",
-		// from /client/node_modules
-
+		// from app/node_modules
+		"random/random", "Array.prototype.iterate/iterate", "array.find", "array.insertsort", "cookie", "lexer", "mustacheParser"
+		// from app/client/node_modules
 	].prefix('node_modules/')),
 	[
 		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"		
@@ -46,7 +45,7 @@ config.js = [].concat(
 		"emitter", "index", "event", "eventEmitter", "eventListener", "emitterInterface", "eventEmitterInterface"
 	].prefix('node_modules/emitter/'),
 	[
-		"lexer", "pathPart", "objectPath", "pathAccessor"
+		"partLexer", "pathPart", "objectPath", "pathAccessor"
 	].prefix('node_modules/objectPath/'),
 	[
 		"object.watch", "objectChangeEmitter", "partObserver", "pathObserver", "arrayObserver"
@@ -90,102 +89,6 @@ return false -> empêche d'éxécuter l'action
 return error -> empêche de faire l'action et donne des précisions sur pourquoi
 
 */
-config.actions = {
-	// les actions à la racine sont toutes autorisé
-	"./": function(action, args){
-		return true;
-	},
-
-	// les actions de la BDD
-	"database": function(action, args){
-		var tableName = args[0], isAnonymous = false, isUser = false, isAdmin = false, user = this.user;
-
-		if( user ){
-			isAnonymous = true;
-			if( user.level === 1 ){
-				isAdmin = true;
-			}
-		}
-		else{
-			isAnonymous = true;
-		}
-
-		// l'admin fait ce qu'il veut
-		if( isAdmin ){
-			return true;
-		}
-
-		// un utilisateur?
-		if( isUser ){
-			// peut chercher dans toutes les tables
-			if( action == 'find' ){
-				return true;
-			}
-
-			// ne peut rien insérer pour le moment
-			if( action == 'insert' ){
-				return false;
-			}
-
-			// ne peut supprimer que des données lui appartenant
-			if( action == 'remove' || action == 'update'  ){
-				var Selector = require('./client/js/util/selector/selector.js');
-
-				var selector = args[1] = Selector.new(args[1]);
-				var owner;
-
-				if( tableName === 'user' ){
-					owner = function(item){
-						return item.id === user.id;
-					};
-				}
-				else{
-					owner = function(item){
-						return item.user === user.id;
-					};
-				}
-
-				selector.match = function(item){
-					if( Selector.match.apply(this, arguments) ){
-						if( owner(item) ){
-							return true;
-						}
-						// not the owner of the item
-						return false;
-					}
-					return false;
-				};
-			}
-		}
-
-		// un anonyme?
-		if( isAnonymous ){
-			if( action == 'find' ){
-				// un invité n'a pas le droit de chercher dans les tables suivantes
-				if( [].contains(tableName) ){
-					return false;
-				}
-				return true;				
-			}
-			// un invité peut ajouter un utilisateur c'est tout
-			if( action == 'insert' && tableName == 'user' ){
-				return true;
-			}
-			return false;
-		}
-
-	},
-
-	// les actions du filesystem faut voir
-	"filesystem": function(action, args){
-		// lorsque le client demande à effectué une action sur le filesystem
-		// il agit toujours dans le dossier client/
-		// faux, c'est juste quelque chose à vérifier mais pas à imposer
-
-		//args[0] = 'client/' + args[0];
-		return true;
-	}
-};
 
 /*
 config.socket = {
@@ -243,7 +146,111 @@ robot: utilisé pour google
 ptet ajouté noanalytics: si je veux pas qu'une page soit prise en compte par google analytics
 */
 config.pages = {
-	"index": {"id": 0, "public": true}
+	"/": {
+		// root pages execution always authorized
+		"access": function(){ return true; }
+	},
+
+	"index": {
+		"id": 0,
+		"public": true
+	},
+
+	// les actions de la BDD
+	"database": {
+		"access": function(tableName, selector){
+			var action = this.name;
+			var args = this.args;
+			var isAnonymous = false, isUser = false, isAdmin = false, user = this.user;
+
+			if( user ){
+				isAnonymous = true;
+				if( user.level === 1 ){
+					isAdmin = true;
+				}
+			}
+			else{
+				isAnonymous = true;
+			}
+
+			// l'admin fait ce qu'il veut
+			if( isAdmin ){
+				return true;
+			}
+
+			// un utilisateur?
+			if( isUser ){
+				// peut chercher dans toutes les tables
+				if( action == 'find' ){
+					return true;
+				}
+
+				// ne peut rien insérer pour le moment
+				if( action == 'insert' ){
+					return false;
+				}
+
+				// ne peut supprimer que des données lui appartenant
+				if( action == 'remove' || action == 'update'  ){
+					var Selector = require('./client/js/util/selector/selector.js');
+
+					selector = args[1] = Selector.new(selector);
+					
+					var owner;
+
+					if( tableName === 'user' ){
+						owner = function(item){
+							return item.id === user.id;
+						};
+					}
+					else{
+						owner = function(item){
+							return item.user === user.id;
+						};
+					}
+
+					selector.match = function(item){
+						if( Selector.match.apply(this, arguments) ){
+							if( owner(item) ){
+								return true;
+							}
+							// not the owner of the item
+							return false;
+						}
+						return false;
+					};
+				}
+			}
+
+			// un anonyme?
+			if( isAnonymous ){
+				if( action == 'find' ){
+					// un invité n'a pas le droit de chercher dans les tables suivantes
+					if( [].contains(tableName) ){
+						return false;
+					}
+					return true;				
+				}
+				// un invité peut ajouter un utilisateur c'est tout
+				if( action == 'insert' && tableName == 'user' ){
+					return true;
+				}
+				return false;
+			}
+		}
+	},
+
+	// les actions du filesystem faut voir
+	"filesystem": {
+		"access": function(){
+			// lorsque le client demande à effectué une action sur le filesystem
+			// il agit toujours dans le dossier client/
+			// faux, c'est juste quelque chose à vérifier mais pas à imposer
+
+			//args[0] = 'client/' + args[0];
+			return true;
+		}
+	}
 };
 
 // fichier qu'on met dans le cache du navigateur

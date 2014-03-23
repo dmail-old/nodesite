@@ -146,8 +146,7 @@ var restartFiles = [
 	"./app/server/server.js",
 	"./app/server/node_modules",
 	//"db",
-	"./app/server/lang/fr",
-	"./app/server/action",
+	"./app/server/lang/fr"
 ];
 
 nodeServer.on('start', function(){

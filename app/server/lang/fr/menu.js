@@ -1,26 +1,13 @@
-Object.append(lang, {
+var lang = {
 	"key_space": "espace",
 	"key_enter": "entrée",
 	"key_delete": "suppr",
 	"key_insert": "ins"
-});
+};
 
 lang.menu = {
-	"active": 'Ouvrir',
-	"expand": lang.expand,
-	"contract": lang.contract,
-	"open": lang.open,
-	"display": lang.display,
-	"relist": lang.reload,
-	"cut": lang.cut,
-	"copy": lang.copy,
-	"paste": lang.paste,
-	"undo": lang.undo,
-	"redo": lang.redo,
-	
+	"active": 'Ouvrir',	
 	"trash": "mettre à la corbeille",
-	"remove": lang.remove,
-	"rename": lang.rename,
 	
 	"insert": "nouveau",
 	"insert_dir": "dossier",
@@ -57,3 +44,5 @@ Object.eachPair({
 
 lang.menu['undo_recycle'] = 'Récupérer depuis la corbeille';
 lang.menu['redo_trash'] = 'Remettre à la corbeille';
+
+module.exports = lang;

@@ -1,4 +1,4 @@
-Object.append(lang, {
+module.exports = {
 	"duplicate_title": function(action, node, child, property, value){
 		if( action == 'move' ) return 'Déplacement de ' + node.name + ' vers ' + child.parentNode.name;
 		if( action == 'copy' ) return 'Copie de ' + node.name + ' vers ' + child.parentNode.name;
@@ -12,4 +12,4 @@ Object.append(lang, {
 		return 'La valeur ' + value + ' est déjà utilisé pour la propriété ' + property;
 	},
 	"duplicate_resolve": ", que voulez vous faire?"
-});
+};

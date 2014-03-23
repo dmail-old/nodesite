@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html dir="ltr">
+
+	<head>
+		{{metas}}
+		<title>{{title}}</title>
+		{{favicon}}
+		{{styles}}
+		<script type="text/javascript">
+
+			window.NS = {};
+			window.config = {{config}};
+			window.lang = {{lang}};
+
+			for( var key in lang ){
+				var value = lang[key];
+				if( typeof value == "string" && value.indexOf('(function (') === 0 ) lang[key] = eval(value);
+			}
+
+			window.onerror = function(msg, url, line){
+				//console.log('window error', arguments);
+			};
+
+			if( !window.setImmediate ){
+				window.setImmediate = function(fn, args){
+					return window.setTimeout(fn, 0, args);
+				};
+				window.clearImmediate = window.clearTimeout;
+			}
+
+		</script>		
+		{{head_scripts}}
+	</head>
+
+	<body>
+
+		<noscript>Javascript is disabled this app will not work</noscript>
+
+		<script>
+
+			// app.init will be called once css and js have fully loaded
+			window.onload = function(){
+				// setTimeout is to avoid initial popstate event
+				setTimeout(function(){ require('app').app.init(); }, 0);
+			};
+
+		</script>
+
+		<div id="page"></div>
+
+		<div id="scripts">{{scripts}}</div>
+		
+	</body>
+
+</html>
