@@ -3,15 +3,15 @@
 <html dir="ltr">
 
 	<head>
-		{{metas}}
-		<title>{{title}}</title>
-		{{favicon}}
-		{{styles}}
+		{%metas%}
+		<title>{%title%}</title>
+		{%favicon%}
+		{%styles%}
 		<script type="text/javascript">
 
 			window.NS = {};
-			window.config = {{config}};
-			window.lang = {{lang}};
+			window.config = {%config%};
+			window.lang = {%lang%};
 
 			for( var key in lang ){
 				var value = lang[key];
@@ -30,7 +30,7 @@
 			}
 
 		</script>		
-		{{head_scripts}}
+		{%head_scripts%}
 	</head>
 
 	<body>
@@ -49,7 +49,7 @@
 
 		<div id="page"></div>
 
-		<div id="scripts">{{scripts}}</div>
+		<div id="scripts">{%scripts%}</div>
 		
 	</body>
 

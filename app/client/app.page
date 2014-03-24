@@ -46,6 +46,9 @@ module.exports = {
 				'js/module'
 			]),
 			'scripts': page.parseScripts(jsFiles),
+			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
+			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
+			// qui mettras les fonctions aussi sous forme de chaine 
 			'lang': JSON.stringify(lang, Function.replacer),
 			'config': JSON.stringify({
 				'protocol': config.protocol,
