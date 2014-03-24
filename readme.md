@@ -6,10 +6,10 @@
 
 ## Client/Server shared documentation
 
-- [Object.prototype.new()](/tree/master/app/node_modules/core/Object.prototype.new)
-- [Array.prototype.iterate()](/tree/master/app/node_modules/Array.prototype.iterate)
-- [random](/tree/master/app/node_modules/random)
-- [Emitter](/tree/master/app/node_modules/emitter)
+- [Object.prototype.new()](/app/node_modules/core/Object.prototype.new)
+- [Array.prototype.iterate()](/app/node_modules/Array.prototype.iterate)
+- [random](/app/node_modules/random)
+- [Emitter](/app/node_modules/emitter)
 - TODO objectPath
 - TODO objectObserver
 - TODO other stuff
