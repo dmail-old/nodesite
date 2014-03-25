@@ -1,3 +1,7 @@
+// this file will be put in app/node_modules/array.prototype.iterate/tests/1.js
+// server side all the website tree will be recursively browser searching for nodes_modules/tests/ folder
+// the file within thoose folder will be consider as tests to run agains the module
+
 testModule('Array.prototype.iterate/iterate', function(){
 
 	it('call fn on every element of the array', function(){
