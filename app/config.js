@@ -35,7 +35,7 @@ config.js = [].concat(
 	].prefix('node_modules/selector/').concat(
 	[
 		// from app/node_modules
-		"random/random", "Array.prototype.iterate/iterate", "array.find", "array.insertsort", "cookie", "lexer", "mustacheParser"
+		"random/random", "Array.prototype.iterate/iterate", "array.find", "array.insertsort", "cookie", "lexer", "stringTemplate/stringTemplate"
 		// from app/client/node_modules
 	].prefix('node_modules/')),
 	[
