@@ -12,7 +12,7 @@
 - [Emitter](/app/node_modules/emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
 - [objectPath](/app/node_modules/objectPath)
-- TODO objectObserver
+- [objectObserver](/app/node_modules/objectObserver)
 - TODO other stuff
 
 ## Server documentation
