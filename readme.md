@@ -1,10 +1,21 @@
-## How code is shared by client and server?
+A node web framework: focusing on simplicity and reusability.
 
-- TODO Module
+Strength:
+
+- Share modules between client and server
+
+Weaknesses:
+
+- In developement
+- Client code does not support IE<9
+
+## How modules are shared by client&server?
+
 - TODO Path
+- TODO Module
 - TODO router/middleware/node_modules
 
-## Client/Server shared documentation
+## Client&Server modules
 
 - [Object.prototype.new](/app/node_modules/core/Object.prototype.new)
 - [Array.prototype.iterate](/app/node_modules/Array.prototype.iterate)
@@ -15,11 +26,11 @@
 - [ObjectPathObserver](/app/node_modules/ObjectPathObserver)
 - TODO other stuff
 
-## Server documentation
+## Server modules
 
 - TODO
 
-## Client documentation
+## Client modules
 
 - TODO ElementEmitter
 - TODO MDV
