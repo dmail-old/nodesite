@@ -1,13 +1,16 @@
 A node web framework: focusing on simplicity and reusability.
 
-Strength:
+Works on windows, linux and mac environment.
 
-- Share modules between client and server
+WARNING: Not stable!! In developement.
 
-Weaknesses:
+## Client compatibility
 
-- In developement
-- Client code does not support IE<9
+- IE 9+
+- Firefox 6+
+- Chrome 2+
+- Opera 11.5+
+- Safari 5.1+
 
 ## How modules are shared by client&server?
 
