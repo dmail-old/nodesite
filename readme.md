@@ -11,8 +11,8 @@
 - [random](/app/node_modules/random)
 - [Emitter](/app/node_modules/emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
-- [objectPath](/app/node_modules/objectPath)
-- [objectObserver](/app/node_modules/objectObserver)
+- [ObjectPath](/app/node_modules/ObjectPath)
+- [ObjectPathObserver](/app/node_modules/ObjectPathObserver)
 - TODO other stuff
 
 ## Server documentation
