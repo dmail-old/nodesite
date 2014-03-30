@@ -33,6 +33,7 @@ Module.prototype = {
 
 		// false for sync request
 		xhr.open("GET", document.location.origin + '/node_modules/' + filename, false);
+		xhr.setRequestHeader('x-required-by', this.filename);
 		xhr.send(null);
 
 		return xhr;					

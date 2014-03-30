@@ -20,66 +20,6 @@ config.css = [
 	"site", "resize", "box", "popup", "selectionRectangle", "node", "root", "menu", "tree", "selector", "editor"
 ];
 
-// fichier js qu'on donne au client
-config.js = [].concat(
-	[
-		"Object.prototype.new/object", "regexp", "boolean", "number", "function", "string", "array"
-	].prefix('node_modules/core/'),
-	[
-		"weakMap"
-	].prefix('js/'),
-	[
-		// null, regexp, array doivent être avant object sinon objectselector prévaut
-		"selector", "arraySelector", "booleanSelector", "functionSelector", "numberSelector",
-		"nullSelector", "regExpSelector", "objectSelector", "stringSelector", "index"
-	].prefix('node_modules/selector/').concat(
-	[
-		// from app/node_modules
-		"random/random", "Array.prototype.iterate/iterate", "array.find", "array.insertsort", "cookie", "lexer", "stringTemplate/stringTemplate"
-		// from app/client/node_modules
-	].prefix('node_modules/')),
-	[
-		"nodeInterface", "nodeTraversal", "nodeIterator", "nodeFinder", "document"		
-	].prefix('node_modules/document/'),
-	[
-		"emitter", "index", "event", "eventEmitter", "eventListener", "emitterInterface", "eventEmitterInterface"
-	].prefix('node_modules/emitter/'),
-	[
-		"partLexer", "pathPart", "objectPath", "pathAccessor"
-	].prefix('node_modules/objectPath/'),
-	[
-		"object.watch", "objectChangeEmitter", "partObserver", "pathObserver", "arrayObserver"
-	].prefix('node_modules/objectObserver/').concat(
-	[
-		"object.util", "chain", "options"
-	].prefix('node_modules/util/'),
-	[
-		"browser", "os",
-		"event", "elementEmitter",
-		"element", "element.properties",
-		"element.styles", "element.measure",
-		"element.keepIntoView", "element.find",
-		"request"
-	].prefix('node_modules/browser/')),
-	[
-		"nodeBinding", "attributeBinding", "computedBinding", "node.bind"
-	].prefix('binding/').concat(
-	[
-		"linker", "directLinker", "tokenLinker", "tokenListLinker", "attributeLinker",
-		"linkerListLinker", "subTemplateLinker",
-		"parser", "index"
-	].prefix('parser/')).concat(
-	[
-		"templateInstance", "templateIterator", "template", "HTMLTemplateElement"
-	].prefix('template/')).concat(
-	[
-
-	]).prefix('node_modules/mdv/'),
-	[
-		"app"
-	].prefix('node_modules/')
-);
-
 /*
 
 ces fonctions sont appelées lorsqu'une requête demande à éxécuté un script situé dans le dossier "action"
