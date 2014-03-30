@@ -9,7 +9,6 @@
 		{%styles%}
 		<script type="text/javascript">
 
-			window.NS = {};
 			window.config = {%config%};
 			window.lang = {%lang%};
 
@@ -38,6 +37,9 @@
 		<noscript>Javascript is disabled this app will not work</noscript>
 
 		<script>
+
+			window.$ = document.getElementById.bind(document);
+			document.html = document.documentElement;
 
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){
