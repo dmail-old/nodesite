@@ -1,8 +1,6 @@
-A node web framework: focusing on simplicity and reusability.
+A node web framework focusing on simplicity and reusability.
 
-Works on windows, linux and mac environment.
-
-WARNING: Not stable!! In developement.
+WARNING: Unstable!! In developement.
 
 ## Client compatibility
 
