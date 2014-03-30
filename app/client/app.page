@@ -35,6 +35,11 @@ module.exports = {
 			jsFiles = jsFiles.concat(testFiles);
 		}
 
+		// les fichiers js proviendront à la fois des dossier test/
+		// mais seront aussi automatiquement injecté, voir dans node_modules.dependencies
+
+		jsFiles = [];
+
 		var page = this.createHTMLPage('html/app.html');
 		page.setParams({
 			'metas': page.parseMetas(metas),
