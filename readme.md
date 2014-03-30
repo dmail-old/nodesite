@@ -16,22 +16,22 @@ WARNING: Unstable!! In developement.
 - TODO Module
 - TODO router/middleware/node_modules
 
-## Client&Server modules
+## Main shared modules
 
 - [Object.prototype.new](/app/node_modules/core/Object.prototype.new)
-- [Array.prototype.iterate](/app/node_modules/Array.prototype.iterate)
-- [random](/app/node_modules/random)
-- [Emitter](/app/node_modules/emitter)
+- [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
-- [ObjectPath](/app/node_modules/ObjectPath)
-- [ObjectPathObserver](/app/node_modules/ObjectPathObserver)
+- [PropertyAccessor](/app/node_modules/PropertyAccessor)
+- [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)
 - TODO other stuff
 
-## Server modules
+## Main server modules
 
-- TODO
+- TODO router
+- TODO database
+- TODO computedStream
 
-## Client modules
+## Main client modules
 
 - TODO ElementEmitter
 - TODO MDV
