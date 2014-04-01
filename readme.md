@@ -21,7 +21,6 @@ WARNING: Unstable!! In developement.
 - [Object.prototype.new](/app/node_modules/core/Object.prototype.new)
 - [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
-- [PropertyAccessor](/app/node_modules/PropertyAccessor)
 - [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)
 - TODO other stuff
 
