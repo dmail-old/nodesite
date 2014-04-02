@@ -1,7 +1,3 @@
-Array.prototype.prefix = function(prefix){
-	return this.map(function(value){ return prefix + value; });
-};
-
 var config = {
 	"protocol": "http",
 	"host": "127.0.0.1",
@@ -15,7 +11,10 @@ var config = {
 	"debug_modules": !true
 };
 
-// fichier css qu'on donne au client
+// fichier js qu'on envoie au client
+config.js = [];
+
+// fichier css qu'on envoie au client
 config.css = [
 	"site", "resize", "box", "popup", "selectionRectangle", "node", "root", "menu", "tree", "selector", "editor"
 ];
