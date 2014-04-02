@@ -1,42 +1,33 @@
-var Module = function(path){
-	this.path = path;
-	this.filename = this.Path.normalize(path);
-	this.dirname = this.Path.dirname(this.filename);
+/*
+C'est le client qui va s'occuper de wrap le script
 
-	if( this.filename != 'index.js' && this.Path.basename(this.filename) == 'index.js' ){
-		this.cache[this.filename.slice(0, -('/index.js'.length))] = this;
-	}
+// https://github.com/joyent/node/blob/master/lib/module.js
+// native module dans https://github.com/joyent/node/blob/master/src/node.js
 
+le serveur va passer au client un array de javascript à wrapper et à évaluer
+pour qu'on puisse avoir ça en cache
+
+du coup faut modifier le code de require
+
+*/
+
+var Module = function(filename){
+	this.filename = filename;
 	this.cache[this.filename] = this;
 	this.exports = {};
 };
 
 Module.prototype = {
 	Path: NS.path,
+	source: null,
 	cache: {},
+
+	get dirname(){
+		return this.Path.dirname(this.filename);
+	},
 
 	hasExtension: function(filename, ext){
 		return filename.indexOf(ext, filename.length - ext.length) !== -1;
-	},
-
-	ensureExtension: function(filename, ext){
-		if( !this.hasExtension(filename, ext) ){
-			filename = filename + ext;
-		}
-		return filename;
-	},
-
-	load: function(filename){
-		var xhr = new XMLHttpRequest();
-
-		console.log(this.filename + ' require ' + filename);
-
-		// false for sync request
-		xhr.open("GET", document.location.origin + '/node_modules/' + filename, false);
-		xhr.setRequestHeader('x-required-by', this.filename);
-		xhr.send(null);
-
-		return xhr;					
 	},
 
 	getCache: function(filename){
@@ -44,46 +35,9 @@ Module.prototype = {
 			return this.cache[filename];
 		}
 		if( !this.hasExtension(filename, '.js') ){
-			return this.getCache(filename + '.js');
+			return this.getCache(filename + '.js') || this.getCache(filename + '/index.js');
 		}
 		return null;
-	},
-
-	require: function(path){
-		//var givenPath = path;
-		path = this.resolve(path);
-		var cache = this.getCache(path);
-
-		if( cache ){
-			return cache.exports;
-		}
-		else{
-			var xhr = this.load(path), response;
-
-			if( xhr.status === 200 || xhr.status === 0 ){
-				response = xhr.responseText;
-			}
-			// file not found maybe we asked for a directory? try to find an index.js file in this directory
-			else{
-				throw new Error('module not found ' + path);
-			}
-
-			try{
-				eval(response + '\n//@sourceURL='+ path);
-			}
-			catch(e){
-				throw e;
-			}
-
-			cache = this.getCache(path);
-
-			if( cache ){
-				return cache.exports;
-			}
-			else{
-				throw new Error(path + ' has not called new Module() or the path is invalid');
-			}
-		}
 	},
 
 	resolve: function(path){
@@ -94,6 +48,70 @@ Module.prototype = {
 		// resolve absolute path
 		else{
 			return path;
+		}
+	},
+
+	load: function(parentModule){
+		if( this.source ) return this.source; 
+
+		var xhr = new XMLHttpRequest();
+
+		// false for sync request
+		xhr.open("GET", document.location.origin + '/node_modules/' + this.path, false);
+		if( parentModule ) xhr.setRequestHeader('x-required-by', parentModule.path);
+		xhr.send(null);
+
+		if( xhr.status === 200 || xhr.status === 0 ){
+			response = xhr.responseText;
+		}
+		// file not found maybe we asked for a directory? try to find an index.js file in this directory
+		else{
+			throw new Error('module not found ' + path);
+		}
+
+		return this.source = response;
+	},
+
+	prefix: '\n(function(exports, require, module, __filename, __dirname){\n\n',,
+	suffix: '\n\n}).call(module.exports, module.exports, module.require.bind(module), module, module.path, module.dirname);\n',
+
+	wrap: function(code){
+		return this.prefix + code + this.suffix;
+	},
+
+	compile: function(){
+		var source = this.wrap(this.source);
+
+		try{
+			var prevmodule = window.module;
+
+			window.module = this;
+			eval(source + '\n//# sourceURL='+ this.path);
+			window.module = prevmodule;
+		}
+		catch(e){
+			throw e;
+		}
+	},
+
+	require: function(path){
+		//var givenPath = path;
+		path = this.resolve(path);
+
+		var module = this.getCache(path);
+
+		if( module ){
+			return module.exports;
+		}
+		else{
+			module = Module.new(path);
+
+			// may fail (module not found)
+			module.load(this);
+			// may fail (module eval may throw errors)
+			module.compile();
+
+			return module.exports;
 		}
 	}
 };
