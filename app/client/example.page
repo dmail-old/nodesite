@@ -1,10 +1,11 @@
 function sendPage(){
-	var page = this.createHTMLPage('html/example.html');
+	var page = this.createHTMLPage();
 	
 	FS.readdir(global.CLIENT_PATH + '/' + this.url.pathname, function(error, files){			
 		if( error ){
 			return this.error(error);
 		}
+
 		page.send({
 			files: JSON.stringify(files)
 		});

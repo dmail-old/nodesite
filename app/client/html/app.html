@@ -5,31 +5,16 @@
 	<head>
 		{%metas%}
 		<title>{%title%}</title>
-		{%favicon%}
+		<link href="{%origin%}/{%favicon%}" type="image/x-icon" rel="shortcut icon"/>
 		{%styles%}
 		<script type="text/javascript">
-
 			window.config = {%config%};
 			window.lang = {%lang%};
-
-			for( var key in lang ){
-				var value = lang[key];
-				if( typeof value == "string" && value.indexOf('(function (') === 0 ) lang[key] = eval(value);
-			}
-
 			window.onerror = function(msg, url, line){
 				//console.log('window error', arguments);
 			};
-
-			if( !window.setImmediate ){
-				window.setImmediate = function(fn, args){
-					return window.setTimeout(fn, 0, args);
-				};
-				window.clearImmediate = window.clearTimeout;
-			}
-
-		</script>		
-		{%head_scripts%}
+		</script>
+		<script src="{%origin%}/js/module.js" type="text/javascript"></script>
 	</head>
 
 	<body>
@@ -41,6 +26,16 @@
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
 
+			(function(){
+				var modules = {%modules%}, module;
+
+				for(var path in modules){
+					module = new Module(path, window.module);
+					module.source = modules[path];
+					module.compile();
+				}
+			})();
+
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){
 				// setTimeout is to avoid initial popstate event
@@ -51,8 +46,8 @@
 
 		<div id="page"></div>
 
-		<div id="scripts">{%scripts%}</div>
-		
+		{%scripts%}
+
 	</body>
 
 </html>

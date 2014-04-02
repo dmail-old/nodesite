@@ -1,6 +1,5 @@
 function sendPage(){
-	var page = this.createHTMLPage('html/index.html');
-	page.send();
+	this.createHTMLPage().send();
 }
 
 module.exports = {

@@ -40,27 +40,27 @@ module.exports = {
 
 		jsFiles = [];
 
-		var page = this.createHTMLPage('html/app.html');
-		page.setParams({
-			'metas': page.parseMetas(metas),
+		var page = this.createHTMLPage();
+		page.send({
+			'origin': require('url').format({
+				protocol: config.protocol,
+				host: config.host + (config.port ? ':' + config.port : ''),
+				pathname: path
+			}),
+			'metas': page.renderMetaTags(metas),
 			'title': lang.metas.title,
-			'favicon': page.setTagUrl(page.tags.favicon, 'favicon.png'),
-			'styles': page.parseStyles(config.css),
-			'head_scripts': page.parseScripts([
-				'js/path',
-				'js/module'
-			]),
-			'scripts': page.parseScripts(jsFiles),
+			'favicon': 'favicon.png',
+			'styles': page.renderStyleTags(config.css),
+			'scripts': page.renderScriptTags(config.js),
 			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
 			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
 			// qui mettras les fonctions aussi sous forme de chaine 
-			'lang': JSON.stringify(lang, Function.replacer),
-			'config': JSON.stringify({
+			'lang': lang,
+			'config': {
 				'protocol': config.protocol,
 				'host': config.host,
 				'port': config.port
-			})
+			}
 		});
-		page.send();
 	}
 };
