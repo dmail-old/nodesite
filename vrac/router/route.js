@@ -19,7 +19,7 @@ var Route = {
 	// TODO route match only some methods, je pense pas qu'on le mettras là
 	method: null,
 
-	create: function(test, listener, bind){
+	init: function(test, listener, bind){
 		this.test = test;			
 		this.listener = listener;
 		this.bind = this || bind;

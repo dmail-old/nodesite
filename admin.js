@@ -37,7 +37,7 @@ var Nodeapp = Emitter.extend({
 	standby: false,
 	restarting: false,
 
-	create: function(){
+	init: function(){
 		this.args = Array.slice(arguments);
 		this.args[0] = require('path').normalize(this.args[0]);
 	},
