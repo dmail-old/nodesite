@@ -18,7 +18,7 @@ WARNING: Unstable!! In developement.
 
 ## Main shared modules
 
-- [Object.prototype.new](/app/node_modules/Object.prototype.new)
+- [Object.instance](/app/node_modules/Object.instance)
 - [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
 - [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)
