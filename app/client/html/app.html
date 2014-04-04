@@ -26,16 +26,6 @@
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
 
-			(function(){
-				var modules = {%modules%}, module;
-
-				for(var path in modules){
-					module = new Module(path, window.module);
-					module.source = modules[path];
-					module.compile();
-				}
-			})();
-
 			// app.init will be called once css and js have fully loaded
 			window.onload = function(){
 				// setTimeout is to avoid initial popstate event
@@ -46,7 +36,20 @@
 
 		<div id="page"></div>
 
-		{%scripts%}
+		<div id="modules">{%modules%}</div>
+		<script>
+		(function(){
+			var moduleContainer = $('modules'), i = 0, j = moduleContainer.children.length, moduleScript;
+
+			for(;i<j;i++){
+				moduleScript = moduleContainer.children[i];
+				module = new Module(moduleScript.src, window.module);
+				module.source = moduleScript.textContent;
+			}
+		})();
+		</script>
+
+		<div id="scripts">{%scripts%}</div>
 
 	</body>
 

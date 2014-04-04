@@ -38,7 +38,16 @@ module.exports = {
 		// les fichiers js proviendront à la fois des dossier test/
 		// mais seront aussi automatiquement injecté, voir dans node_modules.dependencies
 
-		jsFiles = [];
+		var modules = []; // ça c'est à faire
+
+		var cssFiles = config.css.map(function(name){
+			return 'css/' + name + '.css';
+		});
+
+		jsFiles = jsFiles.map(function(name){
+			if( !name.endsWith('.js') ) return name + '.js';
+			return name;
+		});
 
 		var page = this.createHTMLPage();
 		page.send({
@@ -50,8 +59,9 @@ module.exports = {
 			'metas': page.renderMetaTags(metas),
 			'title': lang.metas.title,
 			'favicon': 'favicon.png',
-			'styles': page.renderStyleTags(config.css),
-			'scripts': page.renderScriptTags(config.js),
+			'styles': page.renderTags('style', cssFiles),
+			'scripts': page.renderTags('script', jsFiles),
+			'modules': page.renderTags('module', modules),
 			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
 			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
 			// qui mettras les fonctions aussi sous forme de chaine 

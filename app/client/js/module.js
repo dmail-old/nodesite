@@ -13,12 +13,13 @@ https://github.com/joyent/node/blob/master/src/node.js
 var Module = function(filename, parent){
 	this.filename = filename;
 	this.parent = parent;
-	this.exports = {};
+	this.cache[filename] = this;
 };
 
 Module.prototype = {
 	source: null,
 	parent: null,
+	exports: null,
 	cache: {},
 
 	hasExtension: function(filename, ext){
@@ -54,28 +55,30 @@ Module.prototype = {
 		return source;
 	},
 
-	prefix: '\n(function(exports, require, module, __filename, __dirname){\n\n',
-	suffix: '\n\n}).call(module.exports, module.exports, module.require.bind(module), module, module.filename, module.dirname);\n',
+	_compile: function(source){
+		var prefix = '(function(exports, require, module, __filename, __dirname){\n\n';
+		var suffix = '\n\n)';
 
-	wrap: function(script){
-		return this.prefix + script + this.suffix;
+		source = prefix + source + suffix;
+		source+= '\n//# sourceURL='+ this.filename;
+		
+		var fn = eval(source);
+		fn.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
 	},
 
 	compile: function(){
-		// may fail (module not found)
-		var source = this.load();
+		if( !this.hasOwnProperty('exports') ){
+			// may fail (module not found)
+			var source = this.load();
 
-		source = this.wrap(source);
+			this.exports = {};
 
-		try{
-			var prevmodule = window.module;
-
-			window.module = this;
-			eval(source + '\n//# sourceURL='+ this.filename);
-			window.module = prevmodule;
-		}
-		catch(e){
-			throw e;
+			try{
+				this._compile(source);
+			}
+			catch(e){
+				throw e;
+			}
 		}
 	},
 
@@ -92,19 +95,14 @@ Module.prototype = {
 	require: function(path){
 		var filename = this.resolve(path), module = this.getCache(filename);
 
-		if( module ){
-			return module.exports;
-		}
-		else{
+		if( !module ){
 			module = new Module(filename, this);
-
-			this.cache[filename] = module;
-
-			// may fail (module eval may throw errors)
-			module.compile();
-
-			return module.exports;
 		}
+
+		// may fail (module eval may throw errors)
+		module.compile();
+
+		return module.exports;
 	}
 };
 
