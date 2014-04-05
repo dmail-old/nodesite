@@ -14,6 +14,10 @@
 			Javascript is disabled this app will not work
 		</noscript>
 
+		<div id="page">
+
+		</div>
+
 		<script type="text/javascript">
 			window.config = {%config%};
 			window.lang = {%lang%};
@@ -26,34 +30,34 @@
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
 
-			// app.init will be called once css have fully loaded
+			// app.init will be called once js&css have fully loaded
 			// setTimeout is to avoid any initial popstate event
 			window.onload = function(){	setTimeout(function(){
 
-				function load(filename, callback, bind){
-					var xhr = new XMLHttpRequest();
-					var url = document.location.origin + '/' + filename;
+				Module.prototype.preload = function(callback){
+					var module = this, xhr = this._load(this.filename, true);
 
-					xhr.open('GET', url, true);
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
-							if( this.status == 200 || this.status === 0 ){
-								callback.call(bind, null, this.responseText, filename);
+							var result = module.getXhrResponse(this);
+							if( result instanceof Error ){
+								throw result;
+								callback.call(module, result);
 							}
 							else{
-								callback.call(bind, new Error('module not found ' + this.filename), null, filename);
+								module.source = xhr.responseText;
+								callback.call(module);
 							}
-						}				
+						}
 					};
-					xhr.send(null);
-				}
+				};
 
-				function loadAll(filenames, onload, onend){
-					var i = 0, j = filenames.length, count = 0;
+				function preloadModules(filenames, onend){
+					var i = 0, j = filenames.length, count = 0, module;
 
-					function _onload(error, response, filename){
-						onload(error, response, filename);
+					if( j === 0 ) return onend();
 
+					function onpreload(error){
 						count++;
 						if( count === j - 1 ){
 							onend();
@@ -61,42 +65,20 @@
 					}
 
 					for(;i<j;i++){
-						load(filenames[i], _onload);
-					}
-				}			
-
-				function onscriptload(error, response, filename){
-					if( error ){
-						throw error;
-					}
-					else{
-						this.eval(response, filename);
+						module = window.module.createChild(filenames[i]);
+						module.preload(onpreload);
 					}
 				}
 
-				function onscriptsloaded(){
+				preloadModules({%modules%}, function(){
 					require('app').app.init();
-				}
-
-				function onmoduleload(error, response, filename){
-					if( error ) throw error;
-
-					var module = window.module.createChild(filename);
-					module.source = response;
-				}
-
-				function onmodulesloaded(){
-					loadAll({%scripts%}, onscriptload, onscriptsloaded);
-				}
-
-				loadAll({%modules%}, onmoduleload, onmodulesloaded);
+				});
 
 			}, 0};
 		</script>
 
-		<div id="page">
+		{%scripts%}
 
-		</div>
 	</body>
 
 </html>

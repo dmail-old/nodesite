@@ -26,19 +26,25 @@ Module.prototype = {
 		return path;
 	},
 
-	_load: function(url, callback, bind){
+	_load: function(url, async){
 		var xhr = new XMLHttpRequest();
 
 		url = document.location.origin + '/' + url;
 		
-		xhr.open('GET', url, false);
+		xhr.open('GET', url, Boolean(async));
 		if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.filename);
 		xhr.send(null);
 
+		if( xhr.readyState == 4 ){
+			return this.getXhrResponse(xhr);
+		}
+		return xhr;
+	},
+
+	getXhrResponse: function(xhr){
 		if( xhr.status == 200 || xhr.status === 0 ){
 			return xhr.responseText;
 		}
-
 		return new Error('not found');
 	},
 
