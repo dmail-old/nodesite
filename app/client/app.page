@@ -60,8 +60,8 @@ module.exports = {
 			'title': lang.metas.title,
 			'favicon': 'favicon.png',
 			'styles': page.renderTags('style', cssFiles),
-			'scripts': page.renderTags('script', jsFiles),
-			'modules': page.renderTags('module', modules),
+			'scripts': jsFiles,
+			'modules': modules,
 			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
 			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
 			// qui mettras les fonctions aussi sous forme de chaine 

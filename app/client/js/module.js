@@ -1,12 +1,8 @@
 /*
 
-
-
 inspiration:
 https://github.com/joyent/node/blob/master/lib/module.js
 https://github.com/joyent/node/blob/master/src/node.js 
-
-
 
 */
 
@@ -30,53 +26,62 @@ Module.prototype = {
 		return path;
 	},
 
-	load: function(){
-		var source = this.source;
+	_load: function(url, callback, bind){
+		var xhr = new XMLHttpRequest();
 
-		if( source == null ){
-			var xhr = new XMLHttpRequest();
+		url = document.location.origin + '/' + url;
+		
+		xhr.open('GET', url, false);
+		if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.filename);
+		xhr.send(null);
 
-			// false for sync request
-			xhr.open("GET", document.location.origin + '/node_modules/' + this.path, false);
-			if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.filename);
-			xhr.send(null);
-
-			if( xhr.status === 200 || xhr.status === 0 ){
-				source = xhr.responseText;
-			}
-			// file not found maybe we asked for a directory? try to find an index.js file in this directory
-			else{
-				throw new Error('module not found ' + path);
-			}
-
-			this.source = source;
+		if( xhr.status == 200 || xhr.status === 0 ){
+			return xhr.responseText;
 		}
 
-		return source;
+		return new Error('not found');
 	},
 
-	_compile: function(source){
-		var prefix = '(function(exports, require, module, __filename, __dirname){\n\n';
-		var suffix = '\n\n)';
+	load: function(){
+		if( this.source == null ){
+			this.source = this._load(this.filename);
+		}
+		return this.source;
+	},
 
-		source = prefix + source + suffix;
-		source+= '\n//# sourceURL='+ this.filename;
-		
-		var fn = eval(source);
-		fn.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
+	eval: function(source, filename){
+		source+= '\n//# sourceURL='+ filename;
+		return window.eval(source);
 	},
 
 	compile: function(){
 		if( !this.hasOwnProperty('exports') ){
-			// may fail (module not found)
-			var source = this.load();
 
-			this.exports = {};
+			var source, fn;
 
 			try{
-				this._compile(source);
+				source = this.load();
 			}
 			catch(e){
+				// module not found ou autre
+				throw e;
+			}
+
+			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
+			try{
+				fn = this.eval(source, this.filename);
+			}
+			catch(e){
+				// syntax error in module source or similar error
+				throw e;
+			}
+
+			this.exports = {};
+			try{
+				source.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
+			}
+			catch(e){
+				// execution of the module code raise an error
 				throw e;
 			}
 		}
@@ -92,14 +97,18 @@ Module.prototype = {
 		return null;
 	},
 
+	createChild: function(filename){
+		return new Module(filename, this);
+	},
+
 	require: function(path){
 		var filename = this.resolve(path), module = this.getCache(filename);
 
 		if( !module ){
-			module = new Module(filename, this);
+			module = this.createChild(filename);
 		}
 
-		// may fail (module eval may throw errors)
+		// may throw different errors as not found, syntax error and more
 		module.compile();
 
 		return module.exports;

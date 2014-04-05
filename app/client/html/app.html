@@ -7,50 +7,96 @@
 		<title>{%title%}</title>
 		<link href="{%origin%}/{%favicon%}" type="image/x-icon" rel="shortcut icon"/>
 		{%styles%}
+	</head>
+
+	<body>
+		<noscript>
+			Javascript is disabled this app will not work
+		</noscript>
+
 		<script type="text/javascript">
 			window.config = {%config%};
 			window.lang = {%lang%};
-			window.onerror = function(msg, url, line){
+			window.onerror = function(message, url, line){
 				//console.log('window error', arguments);
 			};
 		</script>
 		<script src="{%origin%}/js/module.js" type="text/javascript"></script>
-	</head>
-
-	<body>
-
-		<noscript>Javascript is disabled this app will not work</noscript>
-
-		<script>
-
+		<script type="text/javascript">
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
 
-			// app.init will be called once css and js have fully loaded
-			window.onload = function(){
-				// setTimeout is to avoid initial popstate event
-				setTimeout(function(){ require('app').app.init(); }, 0);
-			};
+			// app.init will be called once css have fully loaded
+			// setTimeout is to avoid any initial popstate event
+			window.onload = function(){	setTimeout(function(){
 
+				function load(filename, callback, bind){
+					var xhr = new XMLHttpRequest();
+					var url = document.location.origin + '/' + filename;
+
+					xhr.open('GET', url, true);
+					xhr.onreadystatechange = function(){
+						if( this.readyState == 4 ){
+							if( this.status == 200 || this.status === 0 ){
+								callback.call(bind, null, this.responseText, filename);
+							}
+							else{
+								callback.call(bind, new Error('module not found ' + this.filename), null, filename);
+							}
+						}				
+					};
+					xhr.send(null);
+				}
+
+				function loadAll(filenames, onload, onend){
+					var i = 0, j = filenames.length, count = 0;
+
+					function _onload(error, response, filename){
+						onload(error, response, filename);
+
+						count++;
+						if( count === j - 1 ){
+							onend();
+						}
+					}
+
+					for(;i<j;i++){
+						load(filenames[i], _onload);
+					}
+				}			
+
+				function onscriptload(error, response, filename){
+					if( error ){
+						throw error;
+					}
+					else{
+						this.eval(response, filename);
+					}
+				}
+
+				function onscriptsloaded(){
+					require('app').app.init();
+				}
+
+				function onmoduleload(error, response, filename){
+					if( error ) throw error;
+
+					var module = window.module.createChild(filename);
+					module.source = response;
+				}
+
+				function onmodulesloaded(){
+					loadAll({%scripts%}, onscriptload, onscriptsloaded);
+				}
+
+				loadAll({%modules%}, onmoduleload, onmodulesloaded);
+
+			}, 0};
 		</script>
 
-		<div id="page"></div>
+		<div id="page">
 
-		<div id="modules">{%modules%}</div>
-		<script>
-		(function(){
-			var moduleContainer = $('modules'), i = 0, j = moduleContainer.children.length, moduleScript;
-
-			for(;i<j;i++){
-				moduleScript = moduleContainer.children[i];
-				module = new Module(moduleScript.src, window.module);
-				module.source = moduleScript.textContent;
-			}
-		})();
-		</script>
-
-		<div id="scripts">{%scripts%}</div>
-
+		</div>
 	</body>
 
 </html>
