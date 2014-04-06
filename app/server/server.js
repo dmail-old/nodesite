@@ -186,6 +186,7 @@ router.use('session');
 router.use('logger', server.logger);
 router.use('cors');
 router.use('page');
+router.use('module');
 router.use('file');
 router.use('errorHandler');
 
