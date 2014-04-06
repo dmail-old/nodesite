@@ -6,33 +6,60 @@ https://github.com/joyent/node/blob/master/src/node.js
 
 */
 
-var Module = function(filename, parent){
-	this.filename = filename;
-	this.parent = parent;
-	this.cache[filename] = this;
+var Module = function(url, parent){
+	url = new window.URL(url, parent ? parent.url : null);
+
+	var instance = this.getCache(url);	
+
+	if( instance ){
+		return instance;
+	}
+	else{
+		this.url = url;	
+		this.parent = parent;
+		this.cache[this.url] = this;
+		return this;
+	}	
 };
 
 Module.prototype = {
-	source: null,
-	parent: null,
-	exports: null,
 	cache: {},
 
 	hasExtension: function(filename, ext){
 		return filename.indexOf(ext, filename.length - ext.length) !== -1;
 	},
 
-	resolve: function(path){
-		return path;
+	getCache: function(url){
+		if( typeof url == 'string' ) url = new window.URL(url);
+
+		var module = null;
+
+		if( url in this.cache ){
+			module = this.cache[url];
+		}
+		else if( !this.hasExtension(url.pathname, '.js') ){
+			
+			url.pathname+= '.js';
+			module = this.getCache(url);
+			if( module ) return module;
+
+			url.pathname = url.pathname.slice(0, -'.js'.length) + '/index.js';
+			module = this.getCache(url);
+			if( module ) return module;
+		}
+
+		return module;
 	},
 
+	source: null,
+	exports: null,
+	
 	_load: function(url, async){
 		var xhr = new XMLHttpRequest();
-
-		url = document.location.origin + '/' + url;
 		
 		xhr.open('GET', url, Boolean(async));
-		if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.filename);
+		xhr.setRequestHeader('x-module', true);
+		if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.url);
 		xhr.send(null);
 
 		if( xhr.readyState == 4 ){
@@ -50,13 +77,13 @@ Module.prototype = {
 
 	load: function(){
 		if( this.source == null ){
-			this.source = this._load(this.filename);
+			this.source = this._load(this.url);
 		}
 		return this.source;
 	},
 
-	eval: function(source, filename){
-		source+= '\n//# sourceURL='+ filename;
+	eval: function(source, url){
+		source+= '\n//# sourceURL='+ url;
 		return window.eval(source);
 	},
 
@@ -75,7 +102,7 @@ Module.prototype = {
 
 			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
 			try{
-				fn = this.eval(source, this.filename);
+				fn = this.eval(source, this.url);
 			}
 			catch(e){
 				// syntax error in module source or similar error
@@ -84,7 +111,7 @@ Module.prototype = {
 
 			this.exports = {};
 			try{
-				source.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
+				source.apply(this.exports, this.exports, this.require.bind(this), this, this.url, this.dirname);
 			}
 			catch(e){
 				// execution of the module code raise an error
@@ -93,53 +120,40 @@ Module.prototype = {
 		}
 	},
 
-	getCache: function(filename){
-		if( filename in this.cache ){
-			return this.cache[filename];
-		}
-		if( !this.hasExtension(filename, '.js') ){
-			return this.getCache(filename + '.js') || this.getCache(filename + '/index.js');
-		}
-		return null;
+	createChild: function(url){
+		return new Module(url, this);
 	},
 
-	createChild: function(filename){
-		return new Module(filename, this);
-	},
-
-	require: function(path){
-		var filename = this.resolve(path), module = this.getCache(filename);
-
-		if( !module ){
-			module = this.createChild(filename);
-		}
-
+	require: function(url){
+		var module = module.createChild(url);
 		// may throw different errors as not found, syntax error and more
 		module.compile();
-
 		return module.exports;
+	},
+
+	get filename(){
+		return this.url.pathname;
+	},
+
+	get dirname(){
+		var path = this.filename, lastSlash;
+
+		if( path.length > 1 && path[path.length - 1] == '/' ) path = path.replace(/\/+$/, '');
+
+		lastSlash = path.lastIndexOf('/');
+		switch(lastSlash){
+		case -1:
+			return '.';
+		case 0:
+			return '/';
+		default:
+			return path.substring(0, lastSlash);
+		}
 	}
 };
 
 // main module
-window.module = new Module('.');
+window.module = new Module(window.location.origin);
 window.require = window.module.require.bind(window.module);
 window.__filename = window.module.filename;
-window.__dirname = window.module.filename;
-
-Module.prototype.Path = require('path');
-Module.prototype.resolve = function(path){
-	// resolve relative path
-	if( path[0] == '/' || path.slice(0,2) == './' || path.slice(0,3) == '../' ){
-		return this.Path.resolve(this.dirname, path);
-	}
-	// resolve absolute path
-	else{
-		return path;
-	}
-};
-Object.defineProperty(Module.prototype, 'dirname', {
-	get: function(){
-		return this.Path.dirname(this.filename);
-	}
-});
+window.__dirname = window.module.dirname;

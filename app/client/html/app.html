@@ -25,6 +25,7 @@
 				//console.log('window error', arguments);
 			};
 		</script>
+		<script src="{%origin%}/js/url.js" type="text/javascript"></script>
 		<script src="{%origin%}/js/module.js" type="text/javascript"></script>
 		<script type="text/javascript">
 			window.$ = document.getElementById.bind(document);
@@ -35,7 +36,7 @@
 			window.onload = function(){	setTimeout(function(){
 
 				Module.prototype.preload = function(callback){
-					var module = this, xhr = this._load(this.filename, true);
+					var module = this, xhr = this._load(this.url, true);
 
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
@@ -52,8 +53,8 @@
 					};
 				};
 
-				function preloadModules(filenames, onend){
-					var i = 0, j = filenames.length, count = 0, module;
+				function preloadModules(urls, onend){
+					var i = 0, j = urls.length, count = 0, module;
 
 					if( j === 0 ) return onend();
 
@@ -65,7 +66,7 @@
 					}
 
 					for(;i<j;i++){
-						module = window.module.createChild(filenames[i]);
+						module = window.module.createChild(urls[i]);
 						module.preload(onpreload);
 					}
 				}
