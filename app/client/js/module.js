@@ -53,15 +53,24 @@ Module.prototype = {
 	exports: null,
 	
 	_load: function(url, async){
-		var xhr = new XMLHttpRequest();
+		var isCrossOrigin = url.origin != window.location.origin, xhr = new XMLHttpRequest();
 		
-		xhr.open('GET', url, Boolean(async));
-		
-		if( url.origin == window.location.origin ){
-			xhr.setRequestHeader('x-module', true);
+		// sync request will throw error on crossOrigin due to mozilla thinking they should throw a fucking error
+		// because sync request are bad blah blah blah. THANK YOU MOZILLA!!
+		if( isCrossOrigin ){			
+			if( 'withCredentials' in xhr ){
+				xhr.withCredentials = true;
+			}
+			else{
+				xhr = new window.XDomainRequest();
+			}			
+		}
+		else{
 			if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.url);
 		}
-		
+
+		xhr.open('GET', url, Boolean(async));
+		xhr.setRequestHeader('x-module', true);		
 		xhr.send(null);
 
 		if( xhr.readyState == 4 ){
