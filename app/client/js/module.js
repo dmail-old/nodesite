@@ -30,8 +30,6 @@ Module.prototype = {
 	},
 
 	getCache: function(url){
-		if( typeof url == 'string' ) url = new window.URL(url);
-
 		var module = null;
 
 		if( url in this.cache ){
@@ -58,8 +56,12 @@ Module.prototype = {
 		var xhr = new XMLHttpRequest();
 		
 		xhr.open('GET', url, Boolean(async));
-		xhr.setRequestHeader('x-module', true);
-		if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.url);
+		
+		if( url.origin == window.location.origin ){
+			xhr.setRequestHeader('x-module', true);
+			if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.url);
+		}
+		
 		xhr.send(null);
 
 		if( xhr.readyState == 4 ){
