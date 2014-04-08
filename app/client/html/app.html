@@ -36,25 +36,24 @@
 			window.onload = function(){	setTimeout(function(){
 
 				Module.prototype.preload = function(callback){
-					var module = this, xhr = this._load(this.url, true);
+					var module = this, xhr = new XMLHttpRequest();
 
+					xhr.open('GET', this.url, true);
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
-							var result = module.getXhrResponse(this);
-							if( result instanceof Error ){
-								throw result;
-								callback.call(module, result);
-							}
-							else{
+							if( this.status >= 200 || this.status < 400 ){
 								module.source = xhr.responseText;
 								callback.call(module);
+							}
+							else{
+								callback.call(module, new Error('not found'));
 							}
 						}
 					};
 				};
 
-				function preloadModules(urls, onend){
-					var i = 0, j = urls.length, count = 0, module;
+				function preloadModules(resolveds, onend){
+					var i = 0, j = resolveds.length, count = 0, module;
 
 					if( j === 0 ) return onend();
 
@@ -66,12 +65,44 @@
 					}
 
 					for(;i<j;i++){
-						module = window.module.createChild(urls[i]);
+						resolved = resolveds[i];
+
+						var k = 0, l = resolved.urls.length;
+						for(;k<l;l++){
+							window.module.resolvedURLS[resolved.urls[k]] = resolved.target;
+						}
+
+						module = window.module.createChild(url.target);
 						module.preload(onpreload);
 					}
 				}
 
-				preloadModules({%modules%}, function(){
+				/*
+				NAAAAAAN voilà ce qui faut:
+
+				var resolvedURLS = {
+					"app": "node_modules/app",
+					"./app": "node_modules/app",
+					"mdv": "node_modules/mdv/index.js" 
+				};
+
+				-> je le met en cache pour éviter des resolves
+
+				var modules = [
+					"node_modules/app",
+					"node_modules/mdv/index.js"
+				];
+
+				-> je le met en cache pour éviter de les load
+
+				-> avantage: je garde la logique de resolve et de load séparé
+				je n'ai pas besoin de lire le module pour un module qui se resolve à la même url
+				-> inconvénient: deux requête par module différent
+				*/
+
+				var resolvedModuleURLS = {%resolvedModuleURLS%};			
+
+				preloadModules(resolvedModuleURLS, function(){
 					require('app').app.init();
 				});
 

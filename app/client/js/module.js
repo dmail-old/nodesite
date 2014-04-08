@@ -7,90 +7,37 @@ https://github.com/joyent/node/blob/master/src/node.js
 */
 
 var Module = function(url, parent){
-	url = new window.URL(url, parent ? parent.url : null);
-
-	var instance = this.getCache(url);	
-
-	if( instance ){
-		return instance;
-	}
-	else{
-		this.url = url;	
-		this.parent = parent;
-		this.cache[this.url] = this;
-		return this;
-	}	
+	this.url = new window.URL(url, parent ? parent.url : null);
+	this.parent = parent;
 };
 
 Module.prototype = {
+	resolvedURLS: {},
 	cache: {},
-
-	hasExtension: function(filename, ext){
-		return filename.indexOf(ext, filename.length - ext.length) !== -1;
-	},
-
-	getCache: function(url){
-		var module = null;
-
-		if( url in this.cache ){
-			module = this.cache[url];
-		}
-		else if( !this.hasExtension(url.pathname, '.js') ){
-			
-			url.pathname+= '.js';
-			module = this.getCache(url);
-			if( module ) return module;
-
-			url.pathname = url.pathname.slice(0, -'.js'.length) + '/index.js';
-			module = this.getCache(url);
-			if( module ) return module;
-		}
-
-		return module;
-	},
-
 	source: null,
 	exports: null,
 	
-	_load: function(url, async){
-		var isCrossOrigin = url.origin != window.location.origin, xhr = new XMLHttpRequest();
-		
-		// sync request will throw error on crossOrigin due to mozilla thinking they should throw a fucking error
-		// because sync request are bad blah blah blah. THANK YOU MOZILLA!!
-		if( isCrossOrigin ){			
-			if( 'withCredentials' in xhr ){
-				xhr.withCredentials = true;
-			}
-			else{
-				xhr = new window.XDomainRequest();
-			}			
-		}
-		else{
-			if( this.parent ) xhr.setRequestHeader('x-required-by', this.parent.url);
-		}
+	_resolve: function(url){
+		var xhr = new XMLHttpRequest();
 
-		xhr.open('GET', url, Boolean(async));
-		xhr.setRequestHeader('x-module', true);		
+		xhr.open('GET', window.location.origin, false);
+		xhr.setRequestHeader('x-required-by', this.url);
+		xhr.setRequestHeader('x-require', url);
 		xhr.send(null);
 
-		if( xhr.readyState == 4 ){
-			return this.getXhrResponse(xhr);
+		if( xhr.status >= 200 || this.status < 400 ){
+			this.source = xhr.responseText;
+			return xhr.getResponseHeader('x-module-url');
 		}
-		return xhr;
+
+		throw new Error('not found');
 	},
 
-	getXhrResponse: function(xhr){
-		if( xhr.status == 200 || xhr.status === 0 ){
-			return xhr.responseText;
+	resolve: function(url){
+		if( url in this.resolvedUrls ){
+			return this.resolvedUrls[url];
 		}
-		return new Error('not found');
-	},
-
-	load: function(){
-		if( this.source == null ){
-			this.source = this._load(this.url);
-		}
-		return this.source;
+		return this._resolve(url);
 	},
 
 	eval: function(source, url){
@@ -101,15 +48,7 @@ Module.prototype = {
 	compile: function(){
 		if( !this.hasOwnProperty('exports') ){
 
-			var source, fn;
-
-			try{
-				source = this.load();
-			}
-			catch(e){
-				// module not found ou autre
-				throw e;
-			}
+			var source = this.source, fn;
 
 			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
 			try{
@@ -136,7 +75,15 @@ Module.prototype = {
 	},
 
 	require: function(url){
-		var module = module.createChild(url);
+		url = this.resolve(url);
+
+		if( url in this.cache ){
+			module = this.cache[url];
+		}
+		else{
+			module = this.cache[url] = this.createChild(url);
+		}
+
 		// may throw different errors as not found, syntax error and more
 		module.compile();
 		return module.exports;
