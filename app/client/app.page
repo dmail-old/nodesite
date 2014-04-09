@@ -61,7 +61,7 @@ module.exports = {
 			'favicon': 'favicon.png',
 			'styles': page.renderTags('style', cssFiles),
 			'scripts': page.renderTags('script', jsFiles),
-			'modules': modules,
+			'rootModuleNode': {},
 			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
 			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
 			// qui mettras les fonctions aussi sous forme de chaine 

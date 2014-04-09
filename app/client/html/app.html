@@ -36,11 +36,8 @@
 			window.onload = function(){	setTimeout(function(){
 
 				Module.prototype.preload = function(callback){
-					var module = this, xhr = new XMLHttpRequest();
+					var module = this, xhr = this._load(true);
 
-					var xhr = module._load(true);
-
-					xhr.open('GET', this.url, true);
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
 							if( this.status >= 200 || this.status < 400 ){
@@ -54,26 +51,33 @@
 					};
 				};
 
-				function preloadModules(modules, onend){
-					var i = 0, j = modules.length, count = 0, module;
+				function preloadModule(module, node, fn){
+					var children = node.children, i = 0, j = children.length, childNode, childModule, count;
 
-					if( j === 0 ) return onend();
+					if( j === 0 ) return fn();
 
-					function onpreload(error){
+					count = 0;
+					function onpreload(){
 						count++;
 						if( count === j - 1 ){
-							onend();
+							fn();
 						}
 					}
 
+					parent.resolvedPaths = node.resolvedPaths;
+
 					for(;i<j;i++){
-						module = window.module.createChild(window.module.resolve(modules[i]));
-						module.preload(onpreload);
+						childNode = children[i];
+						childModule = parent.createChild(childNode.filename);						
+						// once child are loaded, load the module
+						preloadChildren(childModule, childNode, function(){
+							childModule.preload(onpreload);
+						});
 					}
 				}
 
-				window.module.resolvedURLS = {%moduleURLS%};
-				preloadModules({%modules%}, function(){
+				var rootModuleNode = {%rootModuleNode%};
+				preloadModule(window.module, rootModuleNode, function(){
 					require('app').app.init();
 				});
 
