@@ -38,6 +38,8 @@
 				Module.prototype.preload = function(callback){
 					var module = this, xhr = new XMLHttpRequest();
 
+					var xhr = module._load(true);
+
 					xhr.open('GET', this.url, true);
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
@@ -52,8 +54,8 @@
 					};
 				};
 
-				function preloadModules(resolveds, onend){
-					var i = 0, j = resolveds.length, count = 0, module;
+				function preloadModules(modules, onend){
+					var i = 0, j = modules.length, count = 0, module;
 
 					if( j === 0 ) return onend();
 
@@ -65,44 +67,13 @@
 					}
 
 					for(;i<j;i++){
-						resolved = resolveds[i];
-
-						var k = 0, l = resolved.urls.length;
-						for(;k<l;l++){
-							window.module.resolvedURLS[resolved.urls[k]] = resolved.target;
-						}
-
-						module = window.module.createChild(url.target);
+						module = window.module.createChild(window.module.resolve(modules[i]));
 						module.preload(onpreload);
 					}
 				}
 
-				/*
-				NAAAAAAN voilà ce qui faut:
-
-				var resolvedURLS = {
-					"app": "node_modules/app",
-					"./app": "node_modules/app",
-					"mdv": "node_modules/mdv/index.js" 
-				};
-
-				-> je le met en cache pour éviter des resolves
-
-				var modules = [
-					"node_modules/app",
-					"node_modules/mdv/index.js"
-				];
-
-				-> je le met en cache pour éviter de les load
-
-				-> avantage: je garde la logique de resolve et de load séparé
-				je n'ai pas besoin de lire le module pour un module qui se resolve à la même url
-				-> inconvénient: deux requête par module différent
-				*/
-
-				var resolvedModuleURLS = {%resolvedModuleURLS%};			
-
-				preloadModules(resolvedModuleURLS, function(){
+				window.module.resolvedURLS = {%moduleURLS%};
+				preloadModules({%modules%}, function(){
 					require('app').app.init();
 				});
 
