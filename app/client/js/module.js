@@ -16,17 +16,27 @@ Module.prototype = {
 	cache: {},
 	source: null,
 	exports: null,
-	async: false,
+
+	headers: {
+		module: 'x-module',
+		resolve: 'x-resolve',
+		resolveParent: 'x-resolve-parent'
+	},
 	
 	_resolve: function(){
 		var xhr = new XMLHttpRequest();
 
-		xhr.open('GET', window.location.origin + '/require', this.async);
-		xhr.setRequestHeader('x-required-by', this.parent.filename);
-		xhr.setRequestHeader('x-require', this.filename);
+		xhr.open('GET', window.location.origin, false);
+		xhr.setRequestHeader(this.headers.resolve, this.filename);
+		xhr.setRequestHeader(this.headers.resolveParent, this.parent.filename);
 		xhr.send(null);
 
-		return xhr.responseText;
+		if( xhr.status >= 200 || this.status < 400 ){
+			return xhr.responseText;	
+		}
+		else{
+			throw new Error('not found');
+		}
 	},
 
 	resolve: function(path){
@@ -45,26 +55,21 @@ Module.prototype = {
 	_load: function(){
 		var xhr = new XMLHttpRequest();
 
-		xhr.open('GET', window.location.origin + '/require', this.async);
-		xhr.setRequestHeader('x-required-by', this.parent.filename);
-		xhr.setRequestHeader('x-require', this.filename);
+		xhr.open('GET', window.location.origin, false);
+		xhr.setRequestHeader(this.headers.module, this.filename);
 		xhr.send(null);
 
-		return xhr;
+		if( xhr.status >= 200 || this.status < 400 ){
+			return xhr.responseText;	
+		}
+		else{
+			throw new Error('not found');
+		}
 	},
 
 	load: function(){
 		if( this.source ) return this.source;
-
-		var xhr = this._load(false);
-		if( xhr.status >= 200 || this.status < 400 ){
-			this.source = xhr.responseText;	
-		}
-		else{
-			throw new Error('not found');
-		}		
-
-		return this.source;
+		return this.source = this._load();
 	},
 
 	eval: function(source, url){

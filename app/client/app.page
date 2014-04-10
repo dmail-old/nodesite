@@ -61,10 +61,8 @@ module.exports = {
 			'favicon': 'favicon.png',
 			'styles': page.renderTags('style', cssFiles),
 			'scripts': page.renderTags('script', jsFiles),
-			'rootModuleNode': {},
-			// on auras plus besoin de JSON.stringify, si ce qu'on veut remplacer
-			// est dans une balise script on fait automatiqueent JSON.stringify avec un replacer
-			// qui mettras les fonctions aussi sous forme de chaine 
+			// module requested are cached, we can use that cache to preload module on page init
+			'moduleTree': null,//require('../server/node_modules/router/middleware/module').Module.cache['/'],
 			'lang': lang,
 			'config': {
 				'protocol': config.protocol,

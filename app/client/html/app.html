@@ -36,7 +36,11 @@
 			window.onload = function(){	setTimeout(function(){
 
 				Module.prototype.preload = function(callback){
-					var module = this, xhr = this._load(true);
+					var module = this, xhr = new XMLHttpRequest();
+
+					xhr.open('GET', window.location.origin, true);
+					xhr.setRequestHeader('x-module', this.filename);
+					xhr.send(null);
 
 					xhr.onreadystatechange = function(){
 						if( this.readyState == 4 ){
@@ -45,13 +49,17 @@
 								callback.call(module);
 							}
 							else{
-								callback.call(module, new Error('not found'));
+								var error = new Error('not found');
+								throw error;
+								callback.call(module, error);
 							}
 						}
 					};
 				};
 
-				function preloadModule(module, node, fn){
+				function preloadModule(module, moduleTree, fn){
+					if( !moduleTree ) return fn();
+
 					var children = node.children, i = 0, j = children.length, childNode, childModule, count;
 
 					if( j === 0 ) return fn();
@@ -76,8 +84,8 @@
 					}
 				}
 
-				var rootModuleNode = {%rootModuleNode%};
-				preloadModule(window.module, rootModuleNode, function(){
+				var moduleTree = {%moduleTree%};
+				preloadModule(window.module, moduleTree, function(){
 					require('app').app.init();
 				});
 
