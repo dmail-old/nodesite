@@ -39,7 +39,7 @@
 					var module = this, xhr = new XMLHttpRequest();
 
 					xhr.open('GET', window.location.origin, true);
-					xhr.setRequestHeader('x-module', this.filename);
+					xhr.setRequestHeader(this.headers.module, this.filename);
 					xhr.send(null);
 
 					xhr.onreadystatechange = function(){
