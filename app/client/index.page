@@ -1,13 +1,8 @@
 function sendPage(){
-	this.createHTMLPage().send();
+	this.createTemplate().send();
 }
 
 module.exports = {
-	GET: function(){
-		sendPage.call(this);
-	},
-
-	POST: function(){
-		sendPage.call(this);
-	}	
+	GET: sendPage,
+	POST: sendPage	
 };

@@ -49,18 +49,18 @@ module.exports = {
 			return name;
 		});
 
-		var page = this.createHTMLPage();
-		page.send({
+		var template = this.page.createTemplate();
+		template.send({
 			'origin': require('url').format({
 				protocol: config.protocol,
 				host: config.host + (config.port ? ':' + config.port : ''),
 				pathname: path
 			}),
-			'metas': page.renderMetaTags(metas),
+			'metas': template.renderMetaTags(metas),
 			'title': lang.metas.title,
 			'favicon': 'favicon.png',
-			'styles': page.renderTags('style', cssFiles),
-			'scripts': page.renderTags('script', jsFiles),
+			'styles': template.renderTags('style', cssFiles),
+			'scripts': template.renderTags('script', jsFiles),
 			// module requested are cached, we can use that cache to preload module on page init
 			'moduleTree': null,//require('../server/node_modules/router/middleware/module').Module.cache['/'],
 			'lang': lang,

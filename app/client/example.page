@@ -1,12 +1,10 @@
 function sendPage(){
-	var page = this.createHTMLPage();
-	
-	FS.readdir(global.CLIENT_PATH + '/' + this.url.pathname, function(error, files){			
+	this.request.fileSystem.readdir(global.CLIENT_PATH + '/' + this.request.url.pathname, function(error, files){			
 		if( error ){
 			return this.error(error);
 		}
 
-		page.send({
+		this.page.createTemplate().send({
 			files: JSON.stringify(files)
 		});
 
@@ -14,11 +12,6 @@ function sendPage(){
 }
 
 module.exports = {
-	GET: function(){
-		sendPage.call(this);
-	},
-
-	POST: function(){
-		sendPage.call(this);
-	}
+	GET: sendPage,
+	POST: sendPage
 };
