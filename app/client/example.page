@@ -4,8 +4,8 @@ function sendPage(){
 			return this.error(error);
 		}
 
-		this.page.createTemplate().send({
-			files: JSON.stringify(files)
+		this.send({
+			files: files
 		});
 
 	}.bind(this));
