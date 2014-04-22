@@ -48,8 +48,8 @@ Module.prototype = {
 		}
 	},
 
-	createChild: function(url){
-		return new Module(url, this);
+	createChild: function(filename){
+		return new Module(filename, this);
 	},
 
 	_load: function(){
@@ -85,7 +85,7 @@ Module.prototype = {
 
 			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
 			try{
-				fn = this.eval(source, this.url);
+				fn = this.eval(source, this.filename);
 			}
 			catch(e){
 				// syntax error in module source or similar error
@@ -94,7 +94,7 @@ Module.prototype = {
 
 			this.exports = {};
 			try{
-				source.apply(this.exports, this.exports, this.require.bind(this), this, this.url, this.dirname);
+				source.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
 			}
 			catch(e){
 				// execution of the module code raise an error
