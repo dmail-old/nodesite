@@ -7,13 +7,33 @@ https://github.com/joyent/node/blob/master/src/node.js
 */
 
 var Module = function(filename, parent){
-	this.filename = filename; // fully resolved filename
-	this.parent = parent; // parent all have on except main module
-	this.resolvedPaths = {}; // contain path already resolved to filenames for this module
+	var module;
+
+	if( filename in this.cache ){
+		module = this.cache[filename];
+	}
+	else{
+		module = this;
+		this.cache[filename] = module;
+		module.filename = filename;
+		module.parent = parent;
+		module.resolvedPaths = {};
+		module.children = [];
+	}
+
+	if( parent ){
+		parent.children.push(module);
+	}
+
+	return module;
 };
 
 Module.prototype = {
 	cache: {},
+	filename: null, // fully resolved filename
+	parent: null, // module that called require() on this one
+	children: null, // require() call in this one
+	resolvedPaths: null, // contain path already resolved to filenames for this module
 	source: null,
 	exports: null,
 
@@ -106,16 +126,13 @@ Module.prototype = {
 	},
 
 	require: function(path){
-		var filename = this.resolve(path);
+		var filename, module, exports;
 
-		if( filename in this.cache ){
-			module = this.cache[filename];
-		}
-		else{
-			module = this.cache[filename] = this.createChild(filename);
-		}
+		filename = this.resolve(path);
+		module = this.createChild(filename);
+		exports = module.compile();
 		
-		return module.compile();
+		return exports;
 	},
 
 	get dirname(){
