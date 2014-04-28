@@ -26,9 +26,8 @@ WARNING: Unstable!! In developement.
 
 ## Main server modules
 
-- TODO router
+- [router](/server/node_modules/router)
 - TODO database
-- TODO computedStream
 
 ## Main client modules
 
