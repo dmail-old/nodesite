@@ -26,7 +26,7 @@ WARNING: Unstable!! In developement.
 
 ## Main server modules
 
-- [router](/app/server/node_modules/router)
+- [Router](/app/server/node_modules/Router)
 - TODO database
 
 ## Main client modules
