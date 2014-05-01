@@ -8,7 +8,7 @@ setTimeout(function(){}, 1000 * 30);
 
 var APP_MODULE_PATH = './app/node_modules';
 
-require(APP_MODULE_PATH + '/core');
+require(APP_MODULE_PATH + '/Object.instance');
 
 var ansi = require('ansi');
 var Logger = require('logger');
@@ -38,7 +38,7 @@ var Nodeapp = Emitter.extend({
 	restarting: false,
 
 	init: function(){
-		this.args = Array.slice(arguments);
+		this.args = Array.apply(Array, arguments);
 		this.args[0] = require('path').normalize(this.args[0]);
 	},
 
