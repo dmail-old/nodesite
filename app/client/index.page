@@ -1,8 +1,3 @@
-function sendPage(){
-	this.send();
-}
-
-module.exports = {
-	GET: sendPage,
-	POST: sendPage	
+module.exports = function(page){
+	page.send();
 };

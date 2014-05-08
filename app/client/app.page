@@ -8,7 +8,7 @@ et recoit css, html, title, js ensuite il a pu qu'à mettre le CSS et le HTML ou
 module.exports = {
 	title: 'coucou',
 
-	GET: function(){
+	GET: function(page){
 		var metas = {
 			'charset': config.charset,
 			'content-type': 'text/html',
@@ -49,9 +49,8 @@ module.exports = {
 			return name;
 		});
 
-		var template = this.page.createTemplate();
-		
-		template.render({
+		var template = page.createTemplate();
+		page.send({
 			'origin': require('url').format({
 				protocol: config.protocol,
 				host: config.host + (config.port ? ':' + config.port : ''),
@@ -70,8 +69,6 @@ module.exports = {
 				'host': config.host,
 				'port': config.port
 			}
-		});
-
-		this.send(template);		
+		});		
 	}
 };

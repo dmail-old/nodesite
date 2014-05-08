@@ -1,17 +1,13 @@
-function sendPage(){
-	this.request.fileSystem.readdir(global.CLIENT_PATH + '/' + this.request.url.pathname, function(error, files){			
-		if( error ){
-			return this.error(error);
-		}
-
-		this.send({
-			files: files
-		});
-
-	}.bind(this));
-}
-
 module.exports = {
-	GET: sendPage,
-	POST: sendPage
+	GET: function(page){
+		page.request.fileSystem.readdir(global.CLIENT_PATH + '/' + page.request.url.pathname, function(error, files){			
+			if( error ){
+				return page.error(error);
+			}
+
+			page.send({
+				files: files
+			});
+		});
+	}
 };
