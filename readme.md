@@ -12,9 +12,8 @@ WARNING: Unstable!! In developement.
 
 ## How modules are shared by client&server?
 
-- TODO Path
-- TODO Module
-- TODO router/middleware/node_modules
+- [Module](/app/client/js/module)
+- [router/middleware/module](/app/server/node_modules/router/middleware/module)
 
 ## Main shared modules
 
@@ -22,15 +21,13 @@ WARNING: Unstable!! In developement.
 - [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
 - [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)
-- TODO other stuff
 
 ## Main server modules
 
 - [Router](/app/server/node_modules/Router)
-- TODO database
+- [database](/app/server/node_modules/database)
 
 ## Main client modules
 
-- TODO ElementEmitter
-- TODO MDV
-- TODO other stuff
+- [ElementEmitter](/app/client/node_modules/ElementEmitter)
+- [MDV](/app/client/node_modules/mdv)
