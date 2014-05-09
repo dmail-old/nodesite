@@ -17,6 +17,7 @@ WARNING: Unstable!! In developement.
 
 ## Main shared modules
 
+- [core](/app/node_modules/core)
 - [Object.instance](/app/node_modules/Object.instance)
 - [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
@@ -29,5 +30,5 @@ WARNING: Unstable!! In developement.
 
 ## Main client modules
 
-- [ElementEmitter](/app/client/node_modules/ElementEmitter)
+- [dom](/app/client/node_modules/dom)
 - [MDV](/app/client/node_modules/mdv)
