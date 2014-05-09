@@ -15,6 +15,8 @@ var Logger = require('logger');
 var logger = Logger.new('./log/admin.log');
 var childProcess = require('child_process');
 
+logger.styles.path = {color: 'magenta'};
+
 /*
 au lieu de ça, ce qui serais au top moumoute
 c'est que emitter se trouve en fait dans /node_modules et donc accessible partout
@@ -151,7 +153,7 @@ var restartFiles = [
 
 nodeServer.on('start', function(){
 	Watcher.watchAll(restartFiles, function(path){
-		logger.info(ansi.magenta(path) + ' modified server restart');
+		logger.info('{path} modified server restart', path);
 		nodeServer.restart();
 	});
 });

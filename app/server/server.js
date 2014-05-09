@@ -102,6 +102,9 @@ router.Request.charset = config.charset;
 router.Response.charset = config.charset;
 
 server.open();
+server.logger.styles['host'] = {color: 'grey'};
+server.logger.styles['port'] = {color: 'red'};
+
 server.listen(config.port, config.host, function(error){
 	if( error ){
 		if( error.code == 'EADDRINUSE' ){
@@ -109,6 +112,6 @@ server.listen(config.port, config.host, function(error){
 		}
 		throw error;
 	}
-	
-	server.logger.info('Server running at %s:%s', ansi.grey(config.host), ansi.red(config.port));
+
+	server.logger.info('Server running at {host}:{port}', config.host, config.port);
 });
