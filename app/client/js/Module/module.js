@@ -4,6 +4,8 @@ inspiration:
 https://github.com/joyent/node/blob/master/lib/module.js
 https://github.com/joyent/node/blob/master/src/node.js 
 
+http://fredkschott.com/post/2014/06/require-and-the-module-system/?utm_source=nodeweekly&utm_medium=email
+
 */
 
 var Module = function(filename, parent){
