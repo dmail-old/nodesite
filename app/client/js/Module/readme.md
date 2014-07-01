@@ -66,7 +66,7 @@ Module.source is evaluated as if it was written in the following anonymous funct
 
 ## Module.resolve(path)
 
-Resolve path to a module filename. This is done by an asynchronous AJAX request handled by [module/Resolver](../../server/node_modules/Router/middleware/module/Resolver).  
+Resolve path to a module filename. This is done by an asynchronous AJAX request handled by [module/Resolver](../../../server/node_modules/Router/middleware/module/Resolver).  
 Throw Module not found error if path doesn't lead to a module.
 
 ## Module.resolvedPaths
