@@ -80,3 +80,12 @@ Call Module.resolve(path), create a module, loads corresponding sources, compile
 ## Module.cache
 
 Kepp traces of module instance by filename
+
+## Undocumented properties
+
+- children
+- headers
+- _resolve(path)
+- _load()
+- createChild(filename)
+- eval()
