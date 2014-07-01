@@ -6,16 +6,10 @@ Implement module client side
 ## Example
 
 ```javascript
-// require a relative module
-require('../test/submodule');
-
-// require an absolute module
-require('modulename');
-
-window.module; // new Module('/')
-window.__dirname; // '/'
-window.__filename; // '/'
-window.require; // window.module.require.bind(window.module);
+// require a module relative to the current module
+var submodule = require('../test/submodule');
+// require a module
+var othermodule = require('modulename');
 ```
 
 ## Requirements
@@ -24,7 +18,7 @@ NONE
 
 ## new Module(filename, parent)
 
-Create a module located at filename, used internally you don't need to instantiate module by yourself.
+Create a module, used internally you don't need to instantiate module by yourself.
 
 ## Module.filename
 
@@ -36,7 +30,7 @@ Parent of this module. When a module requires an other he is considered parent o
 
 ## Module.source
 
-Javascript source that will be evaluated when module is required.
+Javascript source for this module. It will be evaluated when module is required.
 
 ## Module.load()
 
@@ -48,16 +42,16 @@ What module provides is contained in Module.exports, it can be anything.
 
 ## Module.compile()
 
-Eval source in a specific context
+Eval source in a specific [context](#context-of-module-evaluation)
 
 ```javascript
 window.ok = false;
-var test = new Module();
-test.source = "var ok = true; module.exports = 'yo';";
-test.compile();
+var testModule = new Module();
+testModule.source = "var ok = true; module.exports = 'yo';";
+testModule.compile();
 
 window.ok; // false
-test.exports; // 'yo'
+testModule.exports; // 'yo'
 ```
 
 ## Context of module evaluation
@@ -76,7 +70,7 @@ Resolve path into a module filename. throw Module not found error if path doesn'
 
 ## Module.resolvedPaths
 
-Cache resolvedPaths for this module.
+Keep traces of resolvedPaths for this module.
 
 ## Module.require(path)
 
@@ -84,4 +78,4 @@ Call Module.resolve(path), create a module, loads corresponding sources, compile
 
 ## Module.cache
 
-Cache module instance by filename
+Kepp traces of module instance by filename
