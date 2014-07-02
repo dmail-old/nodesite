@@ -7,7 +7,7 @@ global.APP_PATH = ROOT_PATH + Path.sep + 'app';
 global.SERVER_PATH = APP_PATH + Path.sep + 'server';
 global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
-global.config = require(APP_PATH + Path.sep + 'config.js');
+global.config = require(APP_PATH + Path.sep + 'config');
 
 var pair = require('Object.pair');
 pair.append(global, require('functions'));
