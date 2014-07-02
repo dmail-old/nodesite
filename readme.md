@@ -12,7 +12,7 @@ WARNING: Unstable!! In developement.
 
 ## How modules are shared by client&server?
 
-- [Module](/app/client/js/Module)
+- [client/js/Module](/app/client/js/Module)
 - [router/middleware/module](/app/server/node_modules/Router/middleware/module)
 
 ## Main shared modules
