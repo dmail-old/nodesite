@@ -13,7 +13,7 @@ WARNING: Unstable!! In developement.
 ## How modules are shared by client&server?
 
 Module are client and server side are node (CommonJS) modules.  
-Client requires a module `asynchronously` with an AJAX request to the server.
+Client requires modules `synchronously` with an AJAX request to the server.
 
 - [client/js/Module](/app/client/js/Module)
 - [router/middleware/module](/app/server/node_modules/Router/middleware/module)
