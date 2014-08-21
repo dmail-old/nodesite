@@ -155,7 +155,7 @@ Module.prototype = {
 };
 
 // main module
-window.module = new Module(window.location.origin.pathname);
+window.module = new Module(window.location.pathname);
 window.require = window.module.require.bind(window.module);
 window.__filename = window.module.filename;
 window.__dirname = window.module.dirname;
