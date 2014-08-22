@@ -1,4 +1,4 @@
-A node web framework focusing on simplicity and reusability.
+A node framework for web applications.
 
 WARNING: Unstable!! In developement.
 
