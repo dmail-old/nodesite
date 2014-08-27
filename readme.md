@@ -29,7 +29,7 @@ Client requires modules `synchronously` with an AJAX request to the server.
 ## Main server modules
 
 - [Router](/app/server/node_modules/Router)
-- [database](/app/server/node_modules/database)
+- [database](/app/server/node_modules/localDB)
 
 ## Main client modules
 
