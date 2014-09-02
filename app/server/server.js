@@ -2,6 +2,7 @@
 
 Error.stackTraceLimit = 20;
 
+global.Path = require('path');
 global.ROOT_PATH = Path.resolve(process.cwd(), '../../');
 global.APP_PATH = ROOT_PATH + Path.sep + 'app';
 global.SERVER_PATH = APP_PATH + Path.sep + 'server';
@@ -9,15 +10,17 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 global.config = require(APP_PATH + Path.sep + 'config');
 
+require('Object.instance');
+require('core/array');
 var pair = require('Object.pair');
-pair.append(global, require('functions'));
+pair.append(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var ansi = require('ansi');
 var server = {
 	http: require('http'),
 	logger: require('logger').new(),
-	router: require('router'),
+	router: require('Router'),
 
 	onrequest: function(request, response){
 		this.router.new(request, response);//.start();
@@ -80,7 +83,8 @@ var server = {
 
 var router = server.router;
 // use basic services
-router.use('bodyReader');
+
+router.use('requestStream');
 router.use('cookieParser');
 router.use('params');
 router.use('methodOverride');
@@ -94,12 +98,12 @@ router.use('module');
 router.use('file');
 router.use('errorHandler');
 
-router.use('bodyWriter');
+router.use('responseStream');
 
 router.allowErrorTrace = config.debug;
 //router.Request.defaultAcceptedCharset = config.charset;
-router.Request.charset = config.charset;
-router.Response.charset = config.charset;
+router.Request.defaultCharset = config.charset;
+router.Response.defaultCharset = config.charset;
 
 server.open();
 server.logger.styles['host'] = {color: 'grey'};

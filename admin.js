@@ -6,6 +6,8 @@ function handleNativeError(error){
 process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 30);
 
+process.stdin.pipe(require('fs').createWriteStream('./log/console.log'));
+
 var APP_MODULE_PATH = './app/node_modules';
 
 require(APP_MODULE_PATH + '/Object.instance');
@@ -26,7 +28,6 @@ prob c'est que coté client ça marcheras pas du tout
 donc faudrais plutot établir une liste de modules qu'on autorise à partager au client
 pour le moment on touche rien xD
 */
-
 
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
@@ -144,7 +145,7 @@ var Watcher = require('watcher');
 // ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
 var restartFiles = [
 	"./app/node_modules",
-	"./app/config.js",
+	"./app/config/index.js",
 	"./app/server/server.js",
 	"./app/server/node_modules",
 	//"db",
@@ -160,7 +161,7 @@ nodeServer.on('start', function(){
 
 nodeServer.on('stop', function(){
 	var http = require('http');
-	var config = require('./app/config.js');
+	var config = require('./app/config');
 
 	// répond à toutes les requêtes par 'serveur en maintenance'
 	nodeServer.standby = http.createServer(function(request, response){

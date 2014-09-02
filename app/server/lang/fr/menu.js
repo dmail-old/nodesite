@@ -30,6 +30,7 @@ lang.menu = {
 	"valid_multi_remove": "Supprimer ces {count} éléments",
 };
 
+/*
 Object.eachPair({
 	move: 'le déplacement',
 	copy: 'la copie',
@@ -41,6 +42,7 @@ Object.eachPair({
 	lang.menu['undo_' + key] = lang.menu.undo + ' ' + value;
 	lang.menu['redo_' + key] = lang.menu.redo + ' ' + value;
 });
+*/
 
 lang.menu['undo_recycle'] = 'Récupérer depuis la corbeille';
 lang.menu['redo_trash'] = 'Remettre à la corbeille';
