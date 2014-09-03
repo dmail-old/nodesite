@@ -23,7 +23,12 @@ var server = {
 	router: require('Router'),
 
 	onrequest: function(request, response){
-		this.router.new(request, response);//.start();
+		response.writeHead(501);
+		response.end();
+		return;
+
+		var route = server.router.new(request, response);
+		route.start();
 	},
 
 	onclientError: function(e){
@@ -83,7 +88,9 @@ var server = {
 
 var router = server.router;
 // use basic services
+// TODO : un middleware timeout pour envoyer requesttimeout au bout d'un certain temps
 
+/*
 router.use('requestStream');
 router.use('cookieParser');
 router.use('params');
@@ -91,7 +98,11 @@ router.use('methodOverride');
 router.use('jsonParam');
 router.use('responseTime');
 router.use('session');
+*/
+
 router.use('logger', server.logger);
+
+/*
 router.use('cors');
 router.use('page');
 router.use('module');
@@ -99,6 +110,9 @@ router.use('file');
 router.use('errorHandler');
 
 router.use('responseStream');
+*/
+
+
 
 router.allowErrorTrace = config.debug;
 //router.Request.defaultAcceptedCharset = config.charset;

@@ -6,6 +6,8 @@ function handleNativeError(error){
 process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 30);
 
+// I need a server.log who save all log coming from server console
+
 process.stdin.pipe(require('fs').createWriteStream('./log/console.log'));
 
 var APP_MODULE_PATH = './app/node_modules';
@@ -14,7 +16,7 @@ require(APP_MODULE_PATH + '/Object.instance');
 
 var ansi = require('ansi');
 var Logger = require('logger');
-var logger = Logger.new('./log/server.log');
+var logger = Logger.new('./log/admin.log');
 var childProcess = require('child_process');
 
 logger.styles.path = {color: 'magenta'};
@@ -175,3 +177,5 @@ nodeServer.on('stop', function(){
 });
 
 nodeServer.start();
+
+logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
