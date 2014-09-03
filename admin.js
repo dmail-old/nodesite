@@ -152,7 +152,7 @@ var restartFiles = [
 	"./app/server/lang/fr"
 ];
 
-nodeServer.on('start', function(){
+nodeServer.once('start', function(){
 	Watcher.watchAll(restartFiles, function(path){
 		logger.info('{path} modified server restart', path);
 		nodeServer.restart();
