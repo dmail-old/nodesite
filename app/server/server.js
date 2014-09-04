@@ -23,10 +23,6 @@ var server = {
 	router: require('Router'),
 
 	onrequest: function(request, response){
-		response.writeHead(501);
-		response.end();
-		return;
-
 		var route = server.router.new(request, response);
 		route.start();
 	},
