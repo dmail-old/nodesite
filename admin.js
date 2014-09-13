@@ -1,5 +1,5 @@
 function handleNativeError(error){
-	require('fs').appendFileSync('./log/error.log', '\n' + error.stack);
+	require('fs').appendFileSync('./log/error.log', error.stack + '\n');
 	throw error;
 }
 
@@ -8,7 +8,7 @@ setTimeout(function(){}, 1000 * 30);
 
 // I need a server.log who save all log coming from server console
 
-process.stdin.pipe(require('fs').createWriteStream('./log/console.log'));
+//process.stdin.pipe(require('fs').createWriteStream('./log/admin.log'));
 
 var APP_MODULE_PATH = './app/node_modules';
 
@@ -16,20 +16,20 @@ require(APP_MODULE_PATH + '/Object.instance');
 
 var ansi = require('ansi');
 var Logger = require('logger');
-var logger = Logger.new('./log/admin.log');
+var logger = Logger.new('./log/server.log');
 var childProcess = require('child_process');
 
 logger.styles.path = {color: 'magenta'};
 
 /*
-au lieu de ça, ce qui serais au top moumoute
-c'est que emitter se trouve en fait dans /node_modules et donc accessible partout
-mais app/node_modules ou même /app/client/node_modules emitter.js dedans y'ai écris
-module.exports = require('../../emitter');
-prob c'est que coté client ça marcheras pas du tout
-donc faudrais plutot établir une liste de modules qu'on autorise à partager au client
+au lieu de ça, ce qui il faudrais qu'emitter se trouve dans /node_modules et donc accessible partout
+par contre faudrais que le client puisse y accéder et donc établir une liste de module accessible au client
 pour le moment on touche rien xD
 */
+
+var duplex = new require('stream').Duplex();
+
+process.stdin.pipe(duplex);
 
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
@@ -59,9 +59,11 @@ var Nodeapp = Emitter.extend({
 
 		this.process = childProcess.spawn(this.processName, this.args, {
 			cwd: require('path').dirname(this.args[0]),
-			stdio: [process.stdin, process.stdout, process.stderr, null, 'ipc']
+			stdio: ['ipc']
 		});
 		this.ctime = Number(new Date());
+
+		//process.stdin, process.stdout, process.stderr, null,
 
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
@@ -176,6 +178,12 @@ nodeServer.on('stop', function(){
 	});
 });
 
+logger.styles['version'] = {color: 'yellow'};
+logger.styles['platform'] = {color: 'blue'};
+logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
 nodeServer.start();
 
-logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
+process.stdin.pipe(require('fs').createWriteStream('./log/server.log'));
+
+nodeServer.process.stdout.pipe(process.stdout);
+nodeServer.process.stderr.pipe(process.stderr);
