@@ -15,7 +15,7 @@ var APP_MODULE_PATH = './app/node_modules';
 require(APP_MODULE_PATH + '/Object.instance');
 
 var ansi = require('ansi');
-var Logger = require('logger');
+var Logger = require('Logger');
 var logger = Logger.new('./log/server.log');
 var childProcess = require('child_process');
 
