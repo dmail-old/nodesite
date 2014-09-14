@@ -27,9 +27,9 @@ par contre faudrais que le client puisse y accéder et donc établir une liste d
 pour le moment on touche rien xD
 */
 
-var duplex = new require('stream').Duplex();
+var passThrough = new require('stream').PassThrough();
 
-process.stdin.pipe(duplex);
+process.stdin.pipe(passThrough);
 
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
@@ -63,7 +63,7 @@ var Nodeapp = Emitter.extend({
 		});
 		this.ctime = Number(new Date());
 
-		//process.stdin, process.stdout, process.stderr, null,
+		//process.stdin, process.stdout, process.stderr, null, 'ipc'
 
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
@@ -183,7 +183,4 @@ logger.styles['platform'] = {color: 'blue'};
 logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
 nodeServer.start();
 
-process.stdin.pipe(require('fs').createWriteStream('./log/server.log'));
-
-nodeServer.process.stdout.pipe(process.stdout);
-nodeServer.process.stderr.pipe(process.stderr);
+nodeServer.process.stdout.pipe(logger);
