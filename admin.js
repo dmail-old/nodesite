@@ -16,7 +16,7 @@ require(APP_MODULE_PATH + '/Object.instance');
 
 var ansi = require('ansi');
 var Logger = require('Logger');
-var logger = Logger.new('./log/server.log');
+var logger = Logger.new('./log/admin.log');
 var childProcess = require('child_process');
 
 logger.styles.path = {color: 'magenta'};
@@ -26,10 +26,6 @@ au lieu de ça, ce qui il faudrais qu'emitter se trouve dans /node_modules et do
 par contre faudrais que le client puisse y accéder et donc établir une liste de module accessible au client
 pour le moment on touche rien xD
 */
-
-var passThrough = new require('stream').PassThrough();
-
-process.stdin.pipe(passThrough);
 
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
@@ -63,7 +59,7 @@ var Nodeapp = Emitter.extend({
 		});
 		this.ctime = Number(new Date());
 
-		//process.stdin, process.stdout, process.stderr, null, 'ipc'
+		//process.stdin, process.stdout, process.stderr,
 
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));

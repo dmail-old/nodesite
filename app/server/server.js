@@ -108,8 +108,6 @@ router.use('errorHandler');
 router.use('responseStream');
 */
 
-
-
 router.allowErrorTrace = config.debug;
 //router.Request.defaultAcceptedCharset = config.charset;
 router.Request.defaultCharset = config.charset;
