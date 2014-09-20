@@ -3,12 +3,12 @@ Tester
 
 Unit testing for node.js
 
-## Example
+## Test file example
 
 ```javascript
 // setup
 var array = ['a', 'b', 'c'];
-var iterate = module.iterate;
+var iterate = imports.iterate;
 
 // testing
 it('call fn on every element of the array', function(test){
@@ -33,7 +33,7 @@ it('get index as second argument', function(test){
 	test.done();
 });
 
-it('set the third arguments as the function context', function(test){
+it('set the third argument as the function context', function(test){
 	var context;
 	
 	iterate(array, function(value){
@@ -45,6 +45,12 @@ it('set the third arguments as the function context', function(test){
 });
 ```
 
+## Test file execution context
+
+The test is runned in a specific context two variables are available : it & imports.  
+it(name, fn) will create a test.  
+imports correspond to the module.exports of the module you're testing. It's set thanks to your file structure (see below).
+
 ## File struture for your unit tests
 
 Unit tests are in a 'test' folder in the module folder. Example with a 'foo' module :
@@ -53,8 +59,12 @@ Unit tests are in a 'test' folder in the module folder. Example with a 'foo' mod
 foo/
 	index.js
 	test/
-		test.js
+		test1.js
 ```
+
+## Auto test restart
+
+Changing any module file, test files included, while your tests are running will relaunch tests for this module.
 
 ## Dependency management
 
@@ -80,10 +90,6 @@ it('must find a user named damien and capitalize its name', function(test){
 });
 
 ```
-
-## Auto test restart
-
-Changing any module file, test files included, while your tests are running will relaunch tests for this module.
 
 ## Relationship between components
 
