@@ -22,7 +22,7 @@ it('call fn on every element of the array', function(test){
 	test.done();
 });
 
-it('get the index as second argument', function(test){
+it('get index as second argument', function(test){
 	var calls = [];
 
 	iterate(array, function(value, index){
@@ -33,7 +33,7 @@ it('get the index as second argument', function(test){
 	test.done();
 });
 
-it('correctly set the function context as third argument', function(test){
+it('set the third arguments as the function context', function(test){
 	var context;
 	
 	iterate(array, function(value){
