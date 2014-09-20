@@ -5,7 +5,7 @@ Unit testing for node.js
 
 ## Example
 
-```
+```javascript
 // setup
 var array = ['a', 'b', 'c'];
 var iterate = module.iterate;
@@ -47,8 +47,7 @@ it('correctly set the function context as third argument', function(test){
 
 ## File struture for your unit tests
 
-Unit tests are placed in a 'test' folder in the module folder.  
-Here is how you file structure loooks like for a 'foo' module.
+Unit tests are in a 'test' folder in the module folder. Example with a 'foo' module :
 
 ```
 foo/
@@ -89,12 +88,11 @@ Changing any module file, test files included, while your tests are running will
 ## Relationship between components
 
 Assertion is the smallest component, example of an assertion : test.equal(a,b)).  
-A Test is composed by X assertions. 
-A TestSerie runs X Test and halt when a test fails (1+ assertion failed or an error occured).
-A TestGroup runs X TestSerie and halt when a TestSerie fails.
+Test is composed by X assertions.  
+TestSerie runs X Test and halt when a test fails (1+ assertion failed or an error occured).  
+TestGroup runs X TestSerie and halt when a TestSerie fails.  
 Tester runs X TestGroup and report how all of this went.
 
-In short :
 ```
 Assertion n:1 Test n:1 TestSerie n:1 TestGroup n:1 Tester
 ```
