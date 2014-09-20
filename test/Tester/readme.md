@@ -79,10 +79,10 @@ var db = {
 	}
 };
 // database depency resolved
-module.database = db;
+imports.database = db;
 
 it('must find a user named damien and capitalize its name', function(test){
-	module.getUserNameFromDatabaseAndCapitalize('damien', function(error, user){
+	imports.getUserNameFromDatabaseAndCapitalize('damien', function(error, user){
 		test.ok(!error);
 		test.equal(user.name, 'DAMIEN');
 		test.done();
