@@ -48,12 +48,12 @@ var TestRenderer = {
 		}
 		if( test.failedAssertions ){
 			// https://github.com/caolan/nodeunit/blob/master/lib/reporters/default.js#L82
-			message = 'FAILED (%d ms), %d/%d assertions failed \n %s';
+			message = '✖ (%d ms), %d/%d assertions failed \n %s';
 			message = format(message, test.duration, test.failedAssertions, test.assertions.length, test.assertions);
 			/*TODO test.assertions devrait être formatté*/
 		}
 		else{		
-			message = 'PASSED (%d ms), %d assertions passed';
+			message = '✔ (%d ms), %d assertions passed';
 			message = format(message, test.duration, test.assertions.length);
 		}
 
