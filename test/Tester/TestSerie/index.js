@@ -14,6 +14,15 @@ var TestSerie = {
 	bind: null,
 	index: null,
 	current: null,
+	group: null,
+	module: null,
+	imports: null,
+
+	new: function(){
+		var a = Object.create(this);
+		a.init.appy(a, arguments);
+		return a;
+	},
 
 	init: function(name, tests, renderer){
 		this.name = name;
@@ -24,6 +33,10 @@ var TestSerie = {
 
 	createTest: function(name, fn){
 		return this.Test.new(name, fn);
+	},
+
+	addTest: function(test){
+		this.tests.push(test);
 	},
 
 	test: function(name, fn){
@@ -39,11 +52,13 @@ var TestSerie = {
 		this.emitter.on.apply(this.emitter, arguments);
 	},
 
-	execTest: function(test){
+	runTest: function(test){
 		test.testSuite = this;
+		test.module = this.module;
+		test.imports = this.imports;
 		this.current = test;
 		this.emit('teststart', test);
-		test.exec(this.nextNest);
+		test.run(this.nextNest);
 	},
 	
 	nextTest: function(test){
@@ -56,7 +71,7 @@ var TestSerie = {
 			this.emit('end', this);	
 		}
 		else{
-			this.execTest(this.tests[this.index]);
+			this.runTest(this.tests[this.index]);
 		}
 	},
 
@@ -64,10 +79,15 @@ var TestSerie = {
 		return this.endTime - this.startTime;
 	},
 	
-	exec: function(){
+	run: function(){
 		this.emit('start', this);
 		this.index = 0;
 		this.current = null;
+
+		if( this.tests.length && !this.hasOwnProperty('imports') && this.hasOwnProperty('module') ){
+			this.imports = this.Test.createImport(this.module);
+		}
+
 		return this.nextTest();
 	}
 };

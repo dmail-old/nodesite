@@ -11,7 +11,7 @@ var array = ['a', 'b', 'c'];
 var iterate = imports.iterate;
 
 // testing
-it('call fn on every element of the array', function(test){
+exports['call fn on every element of the array'] = function(test){
 	var calls = [];
 		
 	iterate(array,  function(value){
@@ -20,9 +20,9 @@ it('call fn on every element of the array', function(test){
 
 	test.equal(calls.join(''), 'abc');
 	test.done();
-});
+};
 
-it('get index as second argument', function(test){
+exports['get index as second argument'] function(test){
 	var calls = [];
 
 	iterate(array, function(value, index){
@@ -31,9 +31,9 @@ it('get index as second argument', function(test){
 
 	test.equal(calls.join(''), '012');
 	test.done();
-});
+};
 
-it('set the third argument as the function context', function(test){
+exports['set the third argument as the function context'] = function(test){
 	var context;
 	
 	iterate(array, function(value){
@@ -42,24 +42,33 @@ it('set the third argument as the function context', function(test){
 
 	test.equal(context, 'yo');
 	test.done();
-});
+};
 ```
 
-## Test file execution context
+## Imports variable
 
-The test is runned in a specific context two variables are available : it & imports.  
-it(name, fn) will create a test.  
-imports correspond to the module.exports of the module you're testing. It's set thanks to your file structure (see below).
+When you run a test, the module you want ot test is found thanks to your file structure (see below).  
+Then it is set to test.module and module.exports is cloned into test.imports also accessible by the `imports` global variable.  
 
 ## File struture for your unit tests
 
-Unit tests are in a 'test' folder in the module folder. Example with a 'foo' module :
+Unit tests are located in the module folder.  
+You can put the in a unique file like so  :
+
+```
+foo/
+	index.js
+	test.js
+```
+
+Or in a test folder like so :
 
 ```
 foo/
 	index.js
 	test/
-		test1.js
+		testgroupA.js
+		testgroupB.js
 ```
 
 ## Auto test restart
@@ -81,13 +90,13 @@ var db = {
 // database depency resolved
 imports.database = db;
 
-it('must find a user named damien and capitalize its name', function(test){
+exports['must find a user named damien and capitalize its name'] = function(test){
 	imports.getUserNameFromDatabaseAndCapitalize('damien', function(error, user){
 		test.ok(!error);
 		test.equal(user.name, 'DAMIEN');
 		test.done();
 	});
-});
+};
 
 ```
 

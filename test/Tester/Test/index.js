@@ -2,6 +2,7 @@
 
 */
 
+var util = require('../util');
 var Test = {
 	name: null,
 	test: null,
@@ -12,9 +13,11 @@ var Test = {
 	failedAssertions: null,
 	startTime: null,
 	endTime: null,
-	testSuite: null,
+	serie: null,
 	error: null,
 	timeout: 100,
+	module: null,
+	imports: null,
 
 	assertMethods: {
 		'ok': function(a){
@@ -29,17 +32,39 @@ var Test = {
 			return a === b;
 		},
 
-		'throws': function(fn){
+		'typeOf': function(a, b){
+			return typeof a === b;
+		},
 
+		'protoOf': function(a, b){
+			return Object.getPrototypeOf(a) === b;
+		},
+
+		'throws': function(fn){
+			try{
+				fn();
+			}
+			catch(e){
+				return true;
+			}
+			return false;
 		},
 
 		'doesNotThrow': function(fn){
-
+			try{
+				fn();
+			}
+			catch(e){
+				return false;
+			}
+			return true;
 		}
 	},
 
 	new: function(){
-		return Object.create(this).init.apply(this, arguments);
+		var a = Object.create(this);
+		a.init.apply(a, arguments);
+		return a;
 	},
 
 	init: function(name, test){
@@ -70,6 +95,7 @@ var Test = {
 
 	respond: function(error){
 		this.endTime = new Date().getTime();
+		global.imports = null;
 
 		if( this.timer != null ){
 			clearTimeout(this.timer);
@@ -102,10 +128,24 @@ var Test = {
 		}
 	},
 
-	exec: function(callback, bind){
+	createImports: function(module){
+		return util.clone(this.module.exports);
+	},
+
+	run: function(callback, bind){
 		this.callback = callback;
 		this.bind = bind || this;
 		this.startTime = new Date().getTime();
+
+		if( this.module === null ){
+			return this.respond(new Error('The module to test was not set'));
+		}
+
+		if( !this.hasOwnProperty('imports') ){
+			this.imports = this.createImports(this.module);
+		}
+
+		global.imports = this.imports;
 		
 		if( typeof this.timeout == 'number' ){
 			this.timer = setTimeout(this.ontimeout.bind(this), this.timeout);

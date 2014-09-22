@@ -14,7 +14,7 @@ var database = {
 */
 
 var TestSuite = require('TestSuite');
-var Renderer = require('TestSuiteRenderer');
+var Renderer = require('TestRenderer');
 var TestCollector = require('TestCollector');
 var Watcher = require('../../node_modules/watcher');
 
@@ -23,6 +23,10 @@ var module; // le module
 var moduleTestDirectoryPath; // chemin vers les tests de ce module 
 // https://github.com/caolan/nodeunit/blob/master/lib/utils.js#L58
 var testFilePaths; // tableau de chemin vers des fichier de tests
+
+// on peut avoir soit un fichier soit un dossier, on privilégie le fichier puis le dossier
+// du coup le testCollector ne sers qu'à collecter des test
+// ici on va écrire un collecteur qui crée testGroup et testSerie depuis les fichiers qu'il trouve
 
 Watcher.watch(moduleFilePath, function(){
 	// relancer tout les tests pour ce module
@@ -35,12 +39,12 @@ testFilePaths.forEach(function(testFilePath){
 
 	// get tests from module.exports function
 	// https://github.com/caolan/nodeunit/blob/master/lib/utils.js#L107
-	var tests = TestCollector.new(testFile).collect(module);
+	var tests = TestCollector.collect(module.exports);
 	// create a testsuite object
 	var suite = TestSuite.new('Array.iterate', tests, Renderer);
 
-	// exec the tests
-	suite.exec();
+	// run tests
+	suite.run();
 });
 
 
