@@ -1,18 +1,21 @@
 /*
-Va tester plusieurs fichier sur un même module
+
+Un testgroup par module
+
 */
 
 var TestGroup = {
 	series: null,
 	module: null,
 	imports: null,
+	listener: null,
 
-	new: function(a){
-		return Object.create(this).init(a);
+	init: function(name, series, listener){
+
 	},
 
-	init: function(){
-		
+	emit: function(){
+		this.tester.emit.apply(this.tester, arguments);
 	},
 
 	addSerie: function(){
@@ -25,6 +28,10 @@ var TestGroup = {
 
 	nextSerie: function(){
 
+	},
+
+	run: function(){
+		this.emit('groupstart', this);
 	}
 };
 

@@ -16,7 +16,60 @@ function cloneKeys(object, clone){
 	return object;
 }
 
+function eachKey(object, fn, bind){
+	var names = Object.getOwnPropertyNames(object), name, i, j, parentNames;
+
+	i = 0;
+	j = names.length;
+	for(;i<j;i++){
+		name = names[i];
+		fn.call(bind, name, object);
+	}
+
+	while( object = Object.getPrototypeOf(object) ){
+		if( object == Object.prototype ) break;
+		parentNames = Object.getOwnPropertyNames(object);
+		i = 0;
+		j = parentNames.length;
+		for(;i<j;i++){
+			name = parentNames[i];
+			if( names.indexOf(name) === -1 ){
+				names.push(name);
+				fn.call(bind, name, object);
+			}
+		}
+	}
+}
+
+function appendKey(key, object){
+	if( object ){
+		var descriptor = Object.getOwnPropertyDescriptor(object, key);
+		// not needed as we want the same descriptor as source
+		//descriptor = module.exports.cloneDescriptor(descriptor);
+		Object.defineProperty(this, key, descriptor);
+	}
+	else{
+		this[key] = object[key];
+	}
+}
+
 var util = {
+	new: function(object){
+		var instance = Object.create(object);
+		if( typeof instance.init == 'function' ){
+			instance.init.apply(this, Array.prototype.slice.call(arguments, 1));
+		}
+		return instance;
+	},
+
+	extend: function(parent, child){
+		var instance = Object.create(parent);
+
+		eachKey(child, appendKey, instance);
+
+		return instance;
+	},
+
 	clone: function(object){
 		var clone = object;
 

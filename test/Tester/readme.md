@@ -67,8 +67,8 @@ Or in a test folder like so :
 foo/
 	index.js
 	test/
-		testgroupA.js
-		testgroupB.js
+		testserieA.js
+		testserieB.js
 ```
 
 ## Auto test restart

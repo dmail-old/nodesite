@@ -1,51 +1,118 @@
 /*
 
-TODO: how to inject dependencies? (for now dependencies will be simulated in the top of the tests)
+Réfléchir cette structure qui est zarb puisque
 
-// a simulated database
-var database = {
-	find: function(selector, callback){
-		process.nextTick(function(){
-			callback({name: 'damien'})
-		})
-	}
-}
+Testserie, testgroup et tester vont tous les trois faire des trucs les uns après les autres
+Ptet qu'une sorte de truc commun peut être appliqué
+Précisons que test attends actuellement que toutes les assertions se fassent mais on pourrait set
+en option de s'arréter à la première erreur comme font testSerie, testGroup etc
+en gros Tester run TestGroup run TestSerie run Test run Assertion
+donc on regroupe tout ces trucs dans une architecture commune
+TestNode qui peut avoir un parent
+qui peut exécute une liste de chose
+s'arréter ou non quand une échoue
+
+bien définir tout ça sur du papier et en dehors de tout ceci pour que ce soit clair
 
 */
 
-var TestSuite = require('TestSuite');
-var Renderer = require('TestRenderer');
-var TestCollector = require('TestCollector');
-var Watcher = require('../../node_modules/watcher');
+var EventEmitter = require('events').EventEmitter;
 
-var moduleFilePath; // chemin vers le module à tester 
-var module; // le module
-var moduleTestDirectoryPath; // chemin vers les tests de ce module 
-// https://github.com/caolan/nodeunit/blob/master/lib/utils.js#L58
-var testFilePaths; // tableau de chemin vers des fichier de tests
+var Listener = {
+	ongroupstart: function(group){
 
-// on peut avoir soit un fichier soit un dossier, on privilégie le fichier puis le dossier
-// du coup le testCollector ne sers qu'à collecter des test
-// ici on va écrire un collecteur qui crée testGroup et testSerie depuis les fichiers qu'il trouve
+	},
 
-Watcher.watch(moduleFilePath, function(){
-	// relancer tout les tests pour ce module
-});
+	onseriestart: function(serie){
+		//renderer: require('TestRenderer'),
+		//this.renderer['on' + event].apply(this.renderer, Array.prototype.slice.call(arguments, 1));
+	}
+};
 
-testFilePaths.forEach(function(testFilePath){
-	// testCollector éxécuter le fichier testFile en lui passant module
-	// qui est le module à tester et it() pour déclarer des tests
-	var testFile;
+var util = require('./util');
+var CheckList = require('CheckList');
 
-	// get tests from module.exports function
-	// https://github.com/caolan/nodeunit/blob/master/lib/utils.js#L107
-	var tests = TestCollector.collect(module.exports);
-	// create a testsuite object
-	var suite = TestSuite.new('Array.iterate', tests, Renderer);
+var Tester = {
+	TestSuite: require('TestSuite'),
+	TestCollector: require('TestCollector'),
+	Watcher: require('../../node_modules/watcher'),
+	emitter: new EventEmitter(),
+	fileSystem: require('fs'),
 
-	// run tests
-	suite.run();
-});
+	emit: function(event){		
+		
+	},
 
+	createTest: function(name, fn){
+		return util.new(this.Test, name, fn);
+	},
 
-module.exports = exports;
+	createSerie: function(name, tests){
+		return util.new(this.TestSerie, name, tests);
+	},
+
+	createGroup: function(name, series){
+		return util.new(this.TestGroup, name, series);
+	},
+
+	collectTestsFromObject: function(object){
+		var tests = [], key;
+
+		for(key in object){
+			tests.push(this.createTest(key, object[key]));
+		}
+
+		return tests;
+	},
+
+	collectSeriesFromPath: function(path){
+		var series = [];
+	},
+
+	createGroupFromPath: function(path){
+		var series = this.collectSeriesFromPath(path);
+		var group = this.createGroup(path, series);
+		return group;
+	},
+
+	onModuleChange: function(group){
+		group.run();
+	},
+
+	collectGroupsFromPath: function(path){
+		var modulePaths = this.collectModules(path);
+		var i = 0, j = modulePaths.length;
+		var groups = [], group, modulePath;
+
+		for(;i<j;i++){
+			modulePath = modulePaths[i];
+			group = this.createGroupFromPath(modulePath);
+			groups.push(group);
+			
+			// relancer tout les tests pour ce module
+			this.Watcher.watch(modulePath, this.onModuleChange.bind(this, group));
+		}
+
+		return groups;
+	},
+
+	runGroup: function(group){
+
+	},
+
+	nextGroup: function(){
+
+	},
+
+	run: function(path){
+		this.emit('start');
+
+		var groups = this.collectGroupsFromPath(path);
+
+		// bon faut écouter comment ça se pase dans chaque group etc
+	}
+};
+
+util.extend(CheckList, Tester);
+
+module.exports = Tester;

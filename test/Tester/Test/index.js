@@ -3,19 +3,11 @@
 */
 
 var util = require('../util');
+var CheckList = require('../CheckList');
+
 var Test = {
-	name: null,
+	name: 'Anonymous Test',
 	test: null,
-	callback: null,
-	bind: null,
-	assertions: null,
-	expectedAssertions: null,
-	failedAssertions: null,
-	startTime: null,
-	endTime: null,
-	serie: null,
-	error: null,
-	timeout: 100,
 	module: null,
 	imports: null,
 
@@ -61,82 +53,29 @@ var Test = {
 		}
 	},
 
-	new: function(){
-		var a = Object.create(this);
-		a.init.apply(a, arguments);
-		return a;
-	},
-
 	init: function(name, test){
 		this.name = name;
 		if( typeof test != 'function' ) throw new TypeError('test must be a function');
 		this.test = test;
-		this.assertions = [];
-		this.failedAssertion = 0;
 	},
 
-	expect: function(expectedAssertions){
-		this.expectedAssertions = expectedAssertions;
+	expect: function(length){
+		this.length = length;
 	},
 
 	assert: function(type, args){
-		var assertion = {
+		var assertion = {			
 			type: type,
 			args: args,
 			ok: this.assertMethods[type].apply(this, args)
 		};
 
-		if( !assertion.ok ){
-			this.failedAssertions++;
-		}
+		this[this.index++] = assertion;
 
-		this.assertions.push(assertion);
+		this.checkDone(!assertion.ok);	
 	},
 
-	respond: function(error){
-		this.endTime = new Date().getTime();
-		global.imports = null;
-
-		if( this.timer != null ){
-			clearTimeout(this.timer);
-			this.timer = null;
-		}
-		if( error ) this.error = error;
-
-		process.nextTick(function(){
-			this.callback.call(this.bind, this);
-		}.bind(this));
-	},
-
-	ontimeout: function(){
-		this.timer = null;
-		this.respond(new Error('tesst takes too long, forgot to call test.done()?'));
-	},
-
-	done: function(){
-		// the test expecting one simple assertion can write test.done(something, message)
-		// it's a shorthand for test.ok(something, message); test.done()
-		if( arguments.length > 0 ){
-			this.ok.apply(this, arguments);
-		}
-
-		if( typeof this.expectedAssertions == 'number' && this.expectedAssertions != this.assertions.length ){
-			this.respond(new Error('Expect' + this.expectedAssertions + 'and got ' + this.assertions.length));
-		}
-		else{	
-			this.respond();
-		}
-	},
-
-	createImports: function(module){
-		return util.clone(this.module.exports);
-	},
-
-	run: function(callback, bind){
-		this.callback = callback;
-		this.bind = bind || this;
-		this.startTime = new Date().getTime();
-
+	setup: function(){
 		if( this.module === null ){
 			return this.respond(new Error('The module to test was not set'));
 		}
@@ -146,18 +85,44 @@ var Test = {
 		}
 
 		global.imports = this.imports;
-		
-		if( typeof this.timeout == 'number' ){
-			this.timer = setTimeout(this.ontimeout.bind(this), this.timeout);
+	},
+
+	teardown: function(){
+		global.imports = null;
+	},
+
+	done: function(){
+		// the test expecting one simple assertion can write test.done(something, message)
+		// it's a shorthand for test.ok(something, message); test.done()
+		if( arguments.length > 0 ){
+			this.ok.apply(this, arguments);
 		}
 
+		// only happens when expect(length) is called and we haven't check length stuff
+		if( this.index != this.length ){
+			this.end(new Error('Expect' + this.length + 'and got ' + this.index));
+		}
+		else{	
+			this.end();
+		}
+	},
+
+	createImports: function(module){
+		return util.clone(this.module.exports);
+	},
+
+	next: function(){
+		// noop
+	},
+
+	start: function(){
 		try{
 			this.test.call(this, this);
 		}
 		catch(e){
-			this.respond(e);
+			this.end(e);
 		}
-	}	
+	}
 };
 
 Object.keys(Test.assertMethods).forEach(function(key){
@@ -165,5 +130,7 @@ Object.keys(Test.assertMethods).forEach(function(key){
 		return this.assert(key, arguments);
 	};
 });
+
+Test = util.extend(CheckList, Test);
 
 module.exports = Test;

@@ -2,33 +2,18 @@ if( typeof global == 'undefined' ){
 	window.global = window;
 }
 
-var EventEmitter = require('events').EventEmitter;
-
 var TestSerie = {
 	Test: require('Test'),
 	name: null,
-	tests: null,
-	renderer: null,
-	emitter: null,
-	callback: null,
-	bind: null,
-	index: null,
-	current: null,
+	listener: null,
 	group: null,
 	module: null,
 	imports: null,
 
-	new: function(){
-		var a = Object.create(this);
-		a.init.appy(a, arguments);
-		return a;
-	},
-
-	init: function(name, tests, renderer){
+	init: function(name, tests, listener){
 		this.name = name;
 		this.tests = tests;
-		this.renderer = renderer;
-		this.emitter = new EventEmitter();
+		this.listener = listener;
 	},
 
 	createTest: function(name, fn){
@@ -44,12 +29,7 @@ var TestSerie = {
 	},
 
 	emit: function(event){
-		this.emitter.emit.apply(this.emitter, arguments);
-		this.renderer['on' + event].apply(this.renderer, Array.prototype.slice.call(arguments, 1));
-	},
-
-	on: function(){
-		this.emitter.on.apply(this.emitter, arguments);
+		this.listener['on' + event].apply(this.listener, Array.prototype.slice.call(arguments, 1));
 	},
 
 	runTest: function(test){
@@ -64,11 +44,11 @@ var TestSerie = {
 	nextTest: function(test){
 		// un test a échoué
 		if( test && test.failedAssertions ){
-			this.emit('end', this);
+			this.emit('serieend', this);
 		}
 		// fin des tests
 		else if( this.index >= this.tests.length ){
-			this.emit('end', this);	
+			this.emit('serieend', this);	
 		}
 		else{
 			this.runTest(this.tests[this.index]);
@@ -80,7 +60,7 @@ var TestSerie = {
 	},
 	
 	run: function(){
-		this.emit('start', this);
+		this.emit('seriestart', this);
 		this.index = 0;
 		this.current = null;
 
