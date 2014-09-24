@@ -1,75 +1,110 @@
-if( typeof global == 'undefined' ){
-	window.global = window;
-}
+var util = require('../util');
+var Check = require('../Check');
+var Test = require('../Test');
 
-var TestSerie = {
-	Test: require('Test'),
-	name: null,
-	listener: null,
-	group: null,
-	module: null,
-	imports: null,
+var TestSerie = util.extend(Check, {
+	name: 'Anonymous testSerie',
+	_name: 'testSerie',
+	timeout: 100,
 
-	init: function(name, tests, listener){
-		this.name = name;
-		this.tests = tests;
-		this.listener = listener;
+	Test: Test,
+	isCollectingFails: true,
+	failedCount: 0,
+	serie: null,
+	index: null,
+	current: null,
+
+	listener: {
+		'begin-test': function(){
+
+		},
+
+		'end-test': function(){
+			if( this.failed ){
+				this.failedCount++;
+			}
+			this.next();
+		}
 	},
 
-	createTest: function(name, fn){
-		return this.Test.new(name, fn);
+	init: function(name, serie){
+		Check.init.call(this, name);
+		if( arguments.length > 1 ){
+			if( typeof serie != 'object' ) throw new TypeError('serie must be an array');
+			this.serie = serie;
+		}
+	},
+
+	createTest: function(name, test){
+		var array = [this.Test];
+		array.push.apply(array, arguments);
+		return util.new.apply(util, array);
 	},
 
 	addTest: function(test){
-		this.tests.push(test);
+		this.serie.push(test);
 	},
 
-	test: function(name, fn){
-		return this.addTest(this.createTest(name, fn, this.ontestend, this));
+	put: function(){
+		this.addTest(this.createTest.apply(this, arguments));
 	},
 
-	emit: function(event){
-		this.listener['on' + event].apply(this.listener, Array.prototype.slice.call(arguments, 1));
-	},
-
-	runTest: function(test){
-		test.testSuite = this;
-		test.module = this.module;
-		test.imports = this.imports;
-		this.current = test;
-		this.emit('teststart', test);
-		test.run(this.nextNest);
-	},
-	
-	nextTest: function(test){
-		// un test a échoué
-		if( test && test.failedAssertions ){
-			this.emit('serieend', this);
-		}
-		// fin des tests
-		else if( this.index >= this.tests.length ){
-			this.emit('serieend', this);	
-		}
-		else{
-			this.runTest(this.tests[this.index]);
-		}
-	},
-
-	get duration(){
-		return this.endTime - this.startTime;
-	},
-	
-	run: function(){
-		this.emit('seriestart', this);
+	setup: function(){
+		this.failedCount = 0;
 		this.index = 0;
 		this.current = null;
 
-		if( this.tests.length && !this.hasOwnProperty('imports') && this.hasOwnProperty('module') ){
-			this.imports = this.Test.createImport(this.module);
+		if( !this.hasOwnProperty('module') ){
+			// error
 		}
+		if( !this.hasOwnProperty('imports') ){
+			this.imports = this.Test.createImports(this.module);
+		}
+	},
 
-		return this.nextTest();
+	prepareTest: function(test){
+		test.parent = this;
+		test.listener = this.listener;
+		test.bind = this;
+		test.module = this.module;
+		test.imports = this.imports;
+	},
+
+	next: function(){
+		// a test has failed
+		if( this.failedCount && !this.isCollectingFails ){
+			this.fail();			
+		}
+		// all test passed with success
+		else if( this.index >= this.length ){
+			if( this.failedCount ){
+				this.fail();
+			}
+			else{
+				this.pass();
+			}
+		}
+		// check the next test
+		else{
+			this.current = this[this.index];
+			this.index++;
+			this.prepareTest(this.current);
+			this.current.check();
+		}
+	},
+
+	begin: function(){
+		if( this.serie.length ){
+			Check.begin.call(this);
+		}
+		else{
+			this.pass();
+		}
+	},
+
+	check: function(){
+		this.next();
 	}
-};
+});
 
 module.exports = TestSerie;

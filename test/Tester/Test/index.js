@@ -1,15 +1,33 @@
 /*
 
+reste à voir comment propager les events :
+
+begin
+end-test
+begin-testSerie
+end-testSerie
+begin-testGroup
+end-testGroup
+begin-testApp
+end-testApp
+
 */
 
 var util = require('../util');
-var CheckList = require('../CheckList');
+var Check = require('../Check');
 
 var Test = {
-	name: 'Anonymous Test',
-	test: null,
+	name: 'Anonymous test',
+	_name: 'test',
+	timeout: 100,
+
 	module: null,
 	imports: null,
+	expectedAssertions: null,
+	assertions: null,
+	failedCount: null,
+	isCollectingFails: false,
+	closed: true,
 
 	assertMethods: {
 		'ok': function(a){
@@ -53,31 +71,16 @@ var Test = {
 		}
 	},
 
-	init: function(name, test){
-		this.name = name;
-		if( typeof test != 'function' ) throw new TypeError('test must be a function');
-		this.test = test;
-	},
-
-	expect: function(length){
-		this.length = length;
-	},
-
-	assert: function(type, args){
-		var assertion = {			
-			type: type,
-			args: args,
-			ok: this.assertMethods[type].apply(this, args)
-		};
-
-		this[this.index++] = assertion;
-
-		this.checkDone(!assertion.ok);	
+	createImports: function(module){
+		return util.clone(this.module.exports);
 	},
 
 	setup: function(){
+		this.assertions = [];
+		this.closed = false;
+
 		if( this.module === null ){
-			return this.respond(new Error('The module to test was not set'));
+			return this.end(new Error('The module to test was not set'));
 		}
 
 		if( !this.hasOwnProperty('imports') ){
@@ -91,7 +94,37 @@ var Test = {
 		global.imports = null;
 	},
 
+	check: function(){
+		this.test.call(this, this);
+	},
+
+	expect: function(length){
+		this.expectedAssertions = length;
+	},
+
+	assert: function(type, args){
+		if( this.closed === true ) return;
+
+		var assertion = {			
+			type: type,
+			args: args,
+			ok: this.assertMethods[type].apply(this, args)
+		};
+
+		this.assertions.push(assertion);
+
+		if( !assertion.ok ){
+			this.failedCount++;
+			if( !this.isCollectingFails ){
+				this.closed = true;
+				this.fail();
+			}
+		}
+	},
+
 	done: function(){
+		if( this.closed === true ) return;
+
 		// the test expecting one simple assertion can write test.done(something, message)
 		// it's a shorthand for test.ok(something, message); test.done()
 		if( arguments.length > 0 ){
@@ -99,28 +132,14 @@ var Test = {
 		}
 
 		// only happens when expect(length) is called and we haven't check length stuff
-		if( this.index != this.length ){
-			this.end(new Error('Expect' + this.length + 'and got ' + this.index));
+		if( typeof this.expectedAssertions == 'number' && this.assertions.length != this.expectedAssertions ){
+			this.error(new Error('Expect' + this.expectedAssertions + 'and got ' + this.assertions.length));
 		}
-		else{	
-			this.end();
+		else if( this.failedCount ){
+			this.fail();
 		}
-	},
-
-	createImports: function(module){
-		return util.clone(this.module.exports);
-	},
-
-	next: function(){
-		// noop
-	},
-
-	start: function(){
-		try{
-			this.test.call(this, this);
-		}
-		catch(e){
-			this.end(e);
+		else{
+			this.pass();
 		}
 	}
 };
@@ -131,6 +150,6 @@ Object.keys(Test.assertMethods).forEach(function(key){
 	};
 });
 
-Test = util.extend(CheckList, Test);
+Test = util.extend(Check, Test);
 
 module.exports = Test;

@@ -4,35 +4,14 @@ Un testgroup par module
 
 */
 
-var TestGroup = {
-	series: null,
-	module: null,
-	imports: null,
-	listener: null,
+var util = require('../util');
+var TestSerie = require('../TestSerie');
 
-	init: function(name, series, listener){
-
-	},
-
-	emit: function(){
-		this.tester.emit.apply(this.tester, arguments);
-	},
-
-	addSerie: function(){
-
-	},
-
-	runSerie: function(){
-
-	},
-
-	nextSerie: function(){
-
-	},
-
-	run: function(){
-		this.emit('groupstart', this);
-	}
-};
+var TestGroup = util.extend(TestSerie, {
+	Test: TestSerie,
+	name: 'Anonymous testGroup',
+	_name: 'testGroup',	
+	isCollectingFails: false
+});
 
 module.exports = TestGroup;
