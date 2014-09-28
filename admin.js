@@ -181,5 +181,5 @@ logger.styles['platform'] = {color: 'blue'};
 logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
 nodeServer.start();
 
-nodeServer.process.stdout.pipe(logger);
-nodeServer.process.stderr.pipe(logger);
+nodeServer.process.stdout.pipe(logger, {end: false});
+nodeServer.process.stderr.pipe(logger, {end: false});
