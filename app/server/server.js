@@ -16,6 +16,12 @@ var property = require('Object.property');
 property.append(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
+var Collector = require('../../test/Tester/TestCollector');
+//console.log(APP_PATH + Path.sep + 'client');
+var files = Collector.collect(global.APP_PATH);
+
+console.log(files);
+
 var ansi = require('ansi');
 var server = {
 	http: require('http'),
