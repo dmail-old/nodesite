@@ -30,11 +30,12 @@ var Listener = {
 };
 
 var util = require('./util');
-var CheckList = require('CheckList');
 
 var Tester = {
-	TestSuite: require('TestSuite'),
-	TestCollector: require('TestCollector'),
+	TestGroup: require('./TestGroup'),
+	TestSerie: require('./TestSerie'),
+	TestApp: require('./TestApp'),
+	Test: require('./Test'),
 	Watcher: require('../../node_modules/watcher'),
 	emitter: new EventEmitter(),
 	fileSystem: require('fs'),
@@ -53,6 +54,10 @@ var Tester = {
 
 	createGroup: function(name, series){
 		return util.new(this.TestGroup, name, series);
+	},
+
+	createApp: function(name, groups){
+		return util.new(this.TestApp, name, groups);
 	},
 
 	collectTestsFromObject: function(object){
@@ -76,7 +81,7 @@ var Tester = {
 	},
 
 	onModuleChange: function(group){
-		group.run();
+		group.begin();
 	},
 
 	collectGroupsFromPath: function(path){
@@ -96,23 +101,14 @@ var Tester = {
 		return groups;
 	},
 
-	runGroup: function(group){
-
-	},
-
-	nextGroup: function(){
-
-	},
-
 	run: function(path){
-		this.emit('start');
-
 		var groups = this.collectGroupsFromPath(path);
-
-		// bon faut écouter comment ça se pase dans chaque group etc
+		
+		this.app = this.createAppTest('nodesite', groups);
+		this.app.listener = this.listener;
+		this.app.bind = this;
+		this.app.begin();
 	}
 };
-
-util.extend(CheckList, Tester);
 
 module.exports = Tester;
