@@ -161,6 +161,11 @@ nodeServer.once('start', function(){
 	});
 });
 
+nodeServer.on('start', function(){
+	nodeServer.process.stdout.pipe(logger, {end: false});
+	nodeServer.process.stderr.pipe(logger, {end: false});
+});
+
 nodeServer.on('stop', function(){
 	var http = require('http');
 	var config = require('./app/config');
@@ -180,6 +185,3 @@ logger.styles['version'] = {color: 'yellow'};
 logger.styles['platform'] = {color: 'blue'};
 logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
 nodeServer.start();
-
-nodeServer.process.stdout.pipe(logger, {end: false});
-nodeServer.process.stderr.pipe(logger, {end: false});
