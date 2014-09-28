@@ -30,6 +30,7 @@ pour le moment on touche rien xD
 var Emitter = require(APP_MODULE_PATH + '/emitter');
 
 var Nodeapp = Emitter.extend({
+	name: 'nodeProcess',
 	args: null,
 	process: null,
 	ctime: null,
@@ -55,11 +56,12 @@ var Nodeapp = Emitter.extend({
 
 		this.process = childProcess.spawn(this.processName, this.args, {
 			cwd: require('path').dirname(this.args[0]),
-			stdio: ['ipc']
+			stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 		});
 		this.ctime = Number(new Date());
 
-		//process.stdin, process.stdout, process.stderr,
+		//stdio['pipe', 'pipe', 'pipe', 'ipc']
+		//stdio: [process.stdin, process.stdout, process.stderr, 'ipc']
 
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
@@ -180,3 +182,4 @@ logger.info('Node.js version {version} running on {platform}', process.version, 
 nodeServer.start();
 
 nodeServer.process.stdout.pipe(logger);
+nodeServer.process.stderr.pipe(logger);
