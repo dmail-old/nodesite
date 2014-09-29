@@ -30,3 +30,11 @@ function orderNodes(nodes){
 
     return nodes;
 }
+
+var Sorter = {
+    sort: function(modules){
+        return orderNodes(modules);
+    }
+};
+
+module.exports = Sorter;
