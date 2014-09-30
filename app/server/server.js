@@ -16,29 +16,6 @@ var property = require('Object.property');
 property.append(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
-var Collector = require('../../test/Tester/TestCollector');
-//console.log(APP_PATH + Path.sep + 'client');
-var moduleTests;
-
-try{
-	moduleTests = Collector.collect(global.APP_PATH);
-}
-catch(e){
-	console.log('error while collecting module to tests', '\n\n', e.stack, '\n');
-}
-
-if( moduleTests ){
-	console.log(moduleTests.length, 'modules to test');
-
-	var Sorter = require('../../test/Tester/ModuleSorter');
-
-	//console.log(require.cache);
-	//console.log(moduleTests[4].children);
-	//require(moduleTests[4].path);
-	//console.log(require.cache[moduleTests[4].path]);
-	console.log(Sorter.sort(moduleTests).map(function(module){ return module.path; }));	
-}
-
 var ansi = require('ansi');
 var server = {
 	http: require('http'),

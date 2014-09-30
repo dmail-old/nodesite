@@ -1,33 +1,20 @@
 /*
 
-reste à voir comment propager les events :
-
-begin
-end-test
-begin-testSerie
-end-testSerie
-begin-testGroup
-end-testGroup
-begin-testApp
-end-testApp
-
 */
 
 var util = require('../util');
-var Check = require('../Check');
+var TestModel = require('../TestModel');
 
-var Test = {
+var Test = util.extend(TestModel, {
+	type: 'test',
 	name: 'Anonymous test',
-	_name: 'test',
 	timeout: 100,
-
 	module: null,
 	imports: null,
 	expectedAssertions: null,
 	assertions: null,
 	failedCount: null,
-	isCollectingFails: false,
-	closed: true,
+	closeOnFailure: true,
 
 	assertMethods: {
 		'ok': function(a){
@@ -71,22 +58,16 @@ var Test = {
 		}
 	},
 
-	createImports: function(module){
-		return util.clone(this.module.exports);
+	init: function(name, test, testSerie){
+		this.name = name;
+		this.test = test;
+		this.testSerie = testSerie;
+		this.imports = testSerie.imports;
+		this.module = testSerie.module;
 	},
 
 	setup: function(){
 		this.assertions = [];
-		this.closed = false;
-
-		if( this.module === null ){
-			return this.end(new Error('The module to test was not set'));
-		}
-
-		if( !this.hasOwnProperty('imports') ){
-			this.imports = this.createImports(this.module);
-		}
-
 		global.imports = this.imports;
 	},
 
@@ -94,16 +75,12 @@ var Test = {
 		global.imports = null;
 	},
 
-	check: function(){
-		this.test.call(this, this);
-	},
-
 	expect: function(length){
 		this.expectedAssertions = length;
 	},
 
 	assert: function(type, args){
-		if( this.closed === true ) return;
+		if( this.state == 'closed' ) return;
 
 		var assertion = {			
 			type: type,
@@ -115,16 +92,14 @@ var Test = {
 
 		if( !assertion.ok ){
 			this.failedCount++;
-			if( !this.isCollectingFails ){
-				this.closed = true;
+			// le test échoue dès qu'une assertion échoue
+			if( this.closeOnFailure ){
 				this.fail();
 			}
 		}
 	},
 
 	done: function(){
-		if( this.closed === true ) return;
-
 		// the test expecting one simple assertion can write test.done(something, message)
 		// it's a shorthand for test.ok(something, message); test.done()
 		if( arguments.length > 0 ){
@@ -142,14 +117,12 @@ var Test = {
 			this.pass();
 		}
 	}
-};
+});
 
 Object.keys(Test.assertMethods).forEach(function(key){
 	Test[key] = function(){
 		return this.assert(key, arguments);
 	};
 });
-
-Test = util.extend(Check, Test);
 
 module.exports = Test;

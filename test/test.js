@@ -9,3 +9,5 @@ Ceci doit être indépendant de tout autre module
 Ceci peut très bien être lancé par admin.js comme processus au démarrage du serveur
 
 */
+
+require('Tester').run(global.ROOT_PATH);
