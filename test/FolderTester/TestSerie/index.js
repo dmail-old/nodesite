@@ -1,9 +1,6 @@
 /*
 
-Lorsque testGroup échoue il émet qu'il échoue mais je ne fais rien dans ce cas
-Alors que cela équivaut à l'échec de TestSerie
-Lorsqu'il réussit en revanche il faut vérif qu'on distingue bien qu'un testRéussit d'un TestSerie qui réussit
-Tout ça n'est pas clair franchement y'a encore du progrès à faire
+faudrais un event restart ou change
 
 */
 
@@ -11,61 +8,125 @@ var util = require('../util');
 var TestModel = require('../TestModel');
 
 var TestSerie = util.extend(TestModel, {
+	Watcher: require('../../../node_modules/watcher'),
 	Test: require('../Test'),
-	TestGroup: require('../TestGroup'),
 	type: 'testSerie',
-	name: 'Anonymous testSerie',	
+	name: 'Anonymous testSerie',
+	isWatching: true, // watch for test change and rerun the test when file is changed
+	path: null,
 	moduleTester: null,
 	module: null,
 	imports: null,
-	testGroup: null,
+	failedCount: null,
+	endsOnFailure: true, // the serie ends when a test fails
+	serie: null, // array of test	
 
 	init: function(path, moduleTester){
 		this.path = path;
 		this.moduleTester = moduleTester;
 		this.module = this.moduleTester.module;
 		this.imports = this.moduleTester.imports;
+		this.watch();
 	},
 
-	createTest: function(name, test){
-		return util.new(this.Test, name, test, this);
-	},
-
-	createTestsFromObject: function(object){
-		var tests = [], key;
-
-		for(key in object){
-			tests.push(this.createTest(key, object[key]));
+	watch: function(){
+		if( this.isWatching ){
+			this.Watcher.watch(this.path, this.change.bind(this), this.watchFilter.bind(this));
 		}
-
-		return tests;
 	},
 
-	createTestGroup: function(tests){
-		return util.new(this.Test, this.name, tests);
+	change: function(){
+		this.emit('change');
+		this.begin();
+	},
+
+	watchFilter: function(){
+		return true;
+	},
+
+	getSerie: function(){
+		// tests com from module.exports
+		return Object.keys(this.exports);
+	},
+
+	setupSerie: function(){
+		global.imports = this.imports;
+		this.exports = require(this.path);
+	},
+
+	tearDownSerie: function(){
+		global.imports = null;
+		delete require.cache[this.path];
+		this.exports = null;
 	},
 
 	setup: function(){
-		global.imports = this.imports;
-		// create tests from module.exports
-		this.tests = this.createTestsFromObject(require(this.path));
-		this.testGroup = this.createTestGroup(this.tests);
-		this.testGroup.handler = this;
+		this.setupSerie();
+		this.serie = this.getSerie();
+		this.failedCount = 0;
+		this.index = 0;
+		this.current = null;
 	},
 
 	teardown: function(){
-		global.imports = null;
-		delete require.cache[this.path];
+		// something to do?
 	},
 
-	clear: function(){
-		this.testGroup.close();
-		this.testGroup = null;
+	clean: function(){
+		this.tearDownSerie();
+		if( this.current ){
+			this.current.close();
+			this.current = null;
+		}	
+		this.serie = null;
+	},
+
+	createTest: function(name){
+		return util.new(this.Test, name, this.exports[name], this);
+	},
+
+	next: function(){
+		if( this.index >= this.serie.length ){
+			return null;
+		}
+		else{
+			this.current = this.createTest(this.serie[this.index]);
+			this.current.handler = this;
+			this.index++;
+			return this.current;
+		}
+	},
+
+	nextTest: function(){
+		if( this.next() ){
+			this.current.test();
+		}
+		// all test passed with success or no test to run
+		else{
+			this.pass();
+		}
+	},
+
+	handleEvent: function(e){
+		if( e.type == 'test-end' ){
+			if( e.target.failed ){
+				this.failedCount++;
+			}
+
+			if( this.failedCount && this.endsOnFailure ){
+				this.fail();
+			}
+			else{
+				this.nextTest();
+			}
+		}
+
+		TestModel.handleEvent.call(this, e);
 	},
 
 	test: function(){
-		return this.testGroup.begin();
-	}	
+		this.nextTest();
+	}
 });
 
 module.exports = TestSerie;

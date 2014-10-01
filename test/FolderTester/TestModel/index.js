@@ -3,13 +3,12 @@ var util = require('../util');
 var TestModel = {
 	type: 'testModel',
 	name: 'Anonymous testModel',
-	state: 'closed',
+	state: null,
 	beginTime: null,
 	endTime: null,
 	timeout: null,
 	failed: false,
 	lastError: null,
-	closeOnFailure: false,
 	handler: null,
 
 	init: function(name, test){
@@ -45,8 +44,8 @@ var TestModel = {
 		// noop
 	},
 
-	// called when the test is done
-	clear: function(){
+	// called to clean stuff when we want to rerun the tests while it was running
+	clean: function(){
 		// noop
 	},
 
@@ -63,7 +62,7 @@ var TestModel = {
 
 	begin: function(){
 		if( this.state === 'testing' ){
-			this.clear();
+			this.clean();
 		}
 
 		this.emit('begin');
@@ -87,19 +86,20 @@ var TestModel = {
 		this.teardown();
 	},
 
+	// test results are ignored
 	close: function(){
 		this.clearTimer();
-		this.clear();
+		this.clean();
 		this.state = 'closed';
 		this.emit('close');
 	},
 
 	onend: function(){
-		this.clear();
+		this.clean();
 
 		if( this.state != 'closed' ){
 			if( this.failed ){
-				this.state = this.closeOnFailure ? 'closed' : 'failed';
+				this.state = 'failed';
 				if( this.lastError ){
 					this.emit('error');
 				}

@@ -92,9 +92,10 @@ var Test = util.extend(TestModel, {
 
 		if( !assertion.ok ){
 			this.failedCount++;
-			// le test échoue dès qu'une assertion échoue
+			// le test échoue dès qu'une assertion échoue, et n'écoute pas le résultat des assertions suivantes
 			if( this.closeOnFailure ){
 				this.fail();
+				this.close();
 			}
 		}
 	},
