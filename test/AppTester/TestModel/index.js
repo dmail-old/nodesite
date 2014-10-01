@@ -19,9 +19,9 @@ var TestModel = {
 		}
 	},
 
-	handleEvent: function(){
+	handleEvent: function(e){
 		if( this.hasOwnProperty('handler') ){
-			this.handler.handleEvent(event);
+			this.handler.handleEvent(e);
 		}
 	},
 

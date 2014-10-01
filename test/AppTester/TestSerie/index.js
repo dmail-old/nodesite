@@ -66,6 +66,7 @@ var TestSerie = util.extend(TestModel, {
 		this.failedCount = 0;
 		this.index = 0;
 		this.current = null;
+		this.emit('beginSerie');
 	},
 
 	teardown: function(){

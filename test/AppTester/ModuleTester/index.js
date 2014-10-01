@@ -5,12 +5,12 @@ var ModuleTester = util.extend(TestSerie, {
 	TestSerie: TestSerie,
 	type: 'moduleTester',
 	testPaths: null,
-	level: null,
 	isWatching: true, // watch for module change and auto runs all tests when it happens
 
 	init: function(path, testPaths){
 		this.path = path;
-		this.testPaths = testPaths;
+		this.testPaths = testPaths;		
+		this.setupModule();
 		this.watch();
 	},
 
@@ -37,18 +37,25 @@ var ModuleTester = util.extend(TestSerie, {
 		return util.clone(this.module.exports);
 	},
 
-	setupSerie: function(path){
-		/*
-		il faut supprimer tous les modules qui ont été require par celui-ci
-		ou alors il faudrais les recenser mais partons là dessus pour le moment
-		il faut emptyCache parce que sinon les appels à require dans le modules
-		sont ignorés, ils sont récup depuis le cache
-		du coup on peut penser, à tort, qu'un module n'a pas de dépendence
-		*/
-		this.clearCache();
+	setupModule: function(){
+		if( this.module === null ){
+			/*
+			il faut supprimer tous les modules qui ont été require par celui-ci
+			ou alors il faudrais les recenser mais partons là dessus pour le moment
+			il faut emptyCache parce que sinon les appels à require dans le modules
+			sont ignorés, ils sont récup depuis le cache
+			du coup on peut penser, à tort, qu'un module n'a pas de dépendence
+			*/
+			this.clearCache();
+			require(this.path); // can throw errors
+			this.module = require.cache[this.path];
+		}
 
-		require(this.path); // can throw errors
-		this.module = require.cache[this.path];
+		this.level = this.getDependencyLevel();
+	},
+
+	setupSerie: function(path){
+		this.setupModule();
 		this.imports = this.createImports();
 	},
 
@@ -58,36 +65,30 @@ var ModuleTester = util.extend(TestSerie, {
 		this.imports = null;
 	},
 
-	get children(){
-		return this.module.children;
-	},
-
-	get parent(){
-		return this.module.parent;
-	},
-
-	get dependencyLevel(){
-		if( typeof this.level === 'number' ) return this.level;
-		this.level = this.getDependencyLevel();
-	},
-
 	getDependencyLevel: function(){
-		var level = 0, children = this.children, i = 0, j = children.length, child, childLevel;
+		
+		function dependencyLevel(module){
+			var level = 0, children = module.children, i = 0, j = children.length, child, childLevel;
 
-		if( j ){
-			for(;i<j;i++){
-				child = children[i];
-				childLevel = this.getDependencyLevel.call(child);
-				level = Math.max(level, childLevel);
+			if( j ){
+				for(;i<j;i++){
+					child = children[i];
+					childLevel = dependencyLevel(child);
+					level = Math.max(level, childLevel);
+				}
+
+				level++;
 			}
 
-			level++;
+			return level;
 		}
 
-		return level;
+		return dependencyLevel(this.module);		
 	},
 
 	toString: function(){
 		return this.path.replace(global.APP_PATH, '').slice(1);
 	}
 });
+
+module.exports = ModuleTester;

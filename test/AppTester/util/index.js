@@ -44,8 +44,6 @@ function eachKey(object, fn, bind){
 function appendKey(key, object){
 	if( object ){
 		var descriptor = Object.getOwnPropertyDescriptor(object, key);
-		// not needed as we want the same descriptor as source
-		//descriptor = module.exports.cloneDescriptor(descriptor);
 		Object.defineProperty(this, key, descriptor);
 	}
 	else{
@@ -57,7 +55,7 @@ var util = {
 	new: function(object){
 		var instance = Object.create(object);
 		if( typeof instance.init == 'function' ){
-			instance.init.apply(this, Array.prototype.slice.call(arguments, 1));
+			instance.init.apply(instance, Array.prototype.slice.call(arguments, 1));
 		}
 		return instance;
 	},
@@ -96,7 +94,8 @@ Array.prototype.clone = function(){
 	while(i--) clone[i] = util.clone(this[i]);
 
 	return clone;
-}
+};
+
 
 [Array].forEach(function(constructor){
 	Object.defineProperty(constructor.prototype, 'clone', {

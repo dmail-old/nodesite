@@ -8,15 +8,21 @@ var ModuleTestCollector = {
 		return testFile.slice(-3) === '.js';
 	},
 
-	collect: function(path){
-		var tests = [], parts = path.split(this.path.sep), dirname, testFolderPath, testPath, isDir;
+	filterFolder: function(modulePath){
+		var parts = modulePath.split(this.path.sep);
 
-		if( parts[parts.length - 1] !== this.testFolderName ){
-			dirname = this.path.dirname(path);
+		return parts[parts.length - 1] !== this.testFolderName;
+	},
+
+	collect: function(modulePath){
+		var tests = [], dirname, testFolderPath, testPath, isDir;
+
+		if( this.filterFolder(modulePath) ){
+			dirname = this.path.dirname(modulePath);
 			testPath = dirname + this.path.sep + this.testFileName;
 
-			if( this.fileSystem.existsSync(path) ){
-				tests.push(path);
+			if( this.fileSystem.existsSync(testPath) ){
+				tests.push(testPath);
 			}
 			else{
 				testFolderPath = dirname + this.path.sep + this.testFolderName;
@@ -30,7 +36,7 @@ var ModuleTestCollector = {
 				if( isDir ){
 					// any files in it is a test
 					tests = this.fileSystem.readdirSync(testFolderPath).filter(this.filter, this).map(function(name){
-						return path + this.path.sep + name;
+						return testFolderPath + this.path.sep + name;
 					}, this);
 				}
 			}
