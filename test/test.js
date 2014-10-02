@@ -25,27 +25,72 @@ appPath = path.resolve(process.cwd(), appPath);
 
 var appTester = AppTester.new(appPath);
 
+var ansi = require('ansi');
 appTester.listener = {
-	'appTester-beginSerie': function(){
+	'appTester-startSerie': function(){
 		// starting to tests all module found
-		//console.log(this.serie);
+		console.log(this.serie.length, 'module to test');
 	},
 
-	'testSerie-change': function(){
+	'testSerie-change': function(e){
 		// a test file has been modified
+		console.log('test file', e.target.path, 'modified, test restarting');
 	},
 
-	'moduleTester-change': function(){
+	'moduleTester-change': function(e){
 		// a module file has been modified
+		console.log('module', e.target.path, 'modified, module tests restarting');
 	},
 	
-	'test-fail': function(){
-		// a test has failed (by error or assertion)
+	'test-end': function(e){
+
 	},
 
 	'appTester-end': function(){
 		// all modules have been tested
+		// sauf que bah quand je rerun un module j'arrive pas ici puisque voilà
+
+		if( this.failedCount ){
+			var module = this.current;
+			var testSerie = module.current;
+			var lastTest = testSerie.current;
+
+			var tests = testSerie.serie, test;
+			
+			var i = 0, j = tests.length;
+
+			console.log(ansi.bold(ansi.red('✖ ' + testSerie.path)));
+
+			var message = '';
+
+			for(;i<j;i++){
+				test = tests[i];
+
+				message+= '    ';
+				if( test.failed ){
+					message+= ansi.red('✖ ' + test.name);
+					break;
+				}
+				else{
+					message+= ansi.grey('✔ ' + test.name);
+				}
+			}
+
+			console.log(message);
+
+			if( lastTest.lastError ){
+				console.log('\n', ansi.grey(lastTest.lastError.stack), '\n');
+			}
+			else if( lastTest.failed ){
+				console.log(lastTest.assertions);
+			}		
+			
+			console.log('waiting for file or module change to restart');
+		}
+		else{
+			console.log('✔ ', this.serie.length, 'test passed', this.duration);
+		}
 	}
 };
 
-appTester.begin();
+appTester.start();

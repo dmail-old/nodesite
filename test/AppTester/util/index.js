@@ -53,6 +53,8 @@ function appendKey(key, object){
 
 var util = {
 	new: function(object){
+		//if( object.isPrototypeOf(arguments[1]) ) return arguments[1];
+
 		var instance = Object.create(object);
 		if( typeof instance.init == 'function' ){
 			instance.init.apply(instance, Array.prototype.slice.call(arguments, 1));

@@ -25,7 +25,7 @@ var AppTester = util.extend(TestSerie, {
 	handleEvent: function(e){
 		TestSerie.handleEvent.call(this, e);
 
-		console.log('event', e.type);
+		console.log(e.type);
 
 		if( this.listener && this.listener[e.type] ){
 			this.listener[e.type].call(this, e);

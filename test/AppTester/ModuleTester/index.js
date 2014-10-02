@@ -1,3 +1,9 @@
+/*
+
+sur un restart module pas besoin de recréer les series puisque le module n'exporte plus la même chose
+
+*/
+
 var util = require('../util');
 var TestSerie = require('../TestSerie');
 
@@ -20,7 +26,7 @@ var ModuleTester = util.extend(TestSerie, {
 	},
 
 	getSerie: function(){
-		return this.testPaths;
+		return [].concat(this.testPaths);
 	},
 
 	createTest: function(path){

@@ -3,8 +3,8 @@ var util = require('../util');
 var TestModel = {
 	type: 'testModel',
 	name: 'Anonymous testModel',
-	state: null,
-	beginTime: null,
+	state: 'stopped', // stopped, started, ended
+	startTime: null,
 	endTime: null,
 	timeout: null,
 	failed: false,
@@ -60,14 +60,14 @@ var TestModel = {
 		this.error(error);
 	},
 
-	begin: function(){
-		if( this.state === 'testing' ){
-			this.clean();
+	start: function(){
+		if( this.state == 'started' ){
+			this.stop();
 		}
 
-		this.emit('begin');
+		this.emit('start');
 
-		this.state = 'testing';
+		this.state = 'started';
 		this.lastError = null;
 
 		if( typeof this.timeout == 'number' ){
@@ -86,31 +86,17 @@ var TestModel = {
 		this.teardown();
 	},
 
-	// test results are ignored
-	close: function(){
-		this.clearTimer();
-		this.clean();
-		this.state = 'closed';
-		this.emit('close');
-	},
-
-	onend: function(){
-		this.clean();
-
-		if( this.state != 'closed' ){
-			if( this.failed ){
-				this.state = 'failed';
-				if( this.lastError ){
-					this.emit('error');
-				}
-			}
-			else{
-				this.state = 'passed';
-				this.emit('pass');
-			}
-
-			this.emit('end');
+	restart: function(){
+		this.emit('restart');
+		
+		if( this.state == 'started' ){
+			this.stop();
 		}
+		else{
+			this.clean();
+		}
+
+		this.start();
 	},
 
 	clearTimer: function(){
@@ -120,10 +106,44 @@ var TestModel = {
 		}
 	},
 
+	// test results are ignored
+	stop: function(){
+		if( this.state == 'started' ){
+			this.state = 'stopped';
+			this.emit('stop');
+			this.clearTimer();
+			this.clean();
+		}
+	},
+
+	onend: function(){
+		this.clean();
+
+		if( this.state == 'ended' ){
+			
+			if( this.failed ){
+				if( this.lastError ){
+					this.emit('error');
+				}
+				else{
+					this.emit('fail');
+				}
+			}
+			else{				
+				this.emit('pass');
+			}
+
+			this.emit('end');
+		}
+	},
+
 	end: function(){
-		this.endTime = new Date().getTime();
-		this.clearTimer();
-		process.nextTick(this.onend.bind(this));
+		if( this.state == 'started' ){
+			this.state = 'ended';
+			this.endTime = new Date().getTime();
+			this.clearTimer();
+			process.nextTick(this.onend.bind(this));
+		}
 	},
 
 	fail: function(){
@@ -143,7 +163,7 @@ var TestModel = {
 	},
 
 	get duration(){
-		return this.endTime - this.beginTime;
+		return this.endTime - this.startTime;
 	}
 };
 

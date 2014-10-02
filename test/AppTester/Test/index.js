@@ -14,7 +14,7 @@ var Test = util.extend(TestModel, {
 	expectedAssertions: null,
 	assertions: null,
 	failedCount: null,
-	closeOnFailure: true,
+	collectFails: false,
 
 	assertMethods: {
 		'ok': function(a){
@@ -62,11 +62,12 @@ var Test = util.extend(TestModel, {
 		this.name = name;
 		this.test = test;
 		this.testSerie = testSerie;
-		this.imports = testSerie.imports;
-		this.module = testSerie.module;
 	},
 
 	setup: function(){
+		this.imports = this.testSerie.imports;
+		this.module = this.testSerie.module;
+
 		this.assertions = [];
 		global.imports = this.imports;
 	},
@@ -80,7 +81,8 @@ var Test = util.extend(TestModel, {
 	},
 
 	assert: function(type, args){
-		if( this.state == 'closed' ) return;
+		// test is stopped or ended, this assertion is ignored
+		if( this.state != 'started' ) return;
 
 		var assertion = {			
 			type: type,
@@ -92,10 +94,9 @@ var Test = util.extend(TestModel, {
 
 		if( !assertion.ok ){
 			this.failedCount++;
-			// le test échoue dès qu'une assertion échoue, et n'écoute pas le résultat des assertions suivantes
-			if( this.closeOnFailure ){
+			// le test échoue dès qu'une assertion échoue
+			if( !this.collectFails ){
 				this.fail();
-				this.close();
 			}
 		}
 	},

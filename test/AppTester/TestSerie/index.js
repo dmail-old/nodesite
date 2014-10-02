@@ -1,7 +1,5 @@
 /*
 
-faudrais un event restart ou change
-
 */
 
 var util = require('../util');
@@ -18,7 +16,7 @@ var TestSerie = util.extend(TestModel, {
 	module: null,
 	imports: null,
 	failedCount: null,
-	endsOnFailure: true, // the serie ends when a test fails
+	collectFails: false, // the serie end when a test fails
 	serie: null, // array of test	
 
 	init: function(path, moduleTester){
@@ -37,27 +35,25 @@ var TestSerie = util.extend(TestModel, {
 
 	change: function(){
 		this.emit('change');
-		this.begin();
+		this.restart();
 	},
 
 	watchFilter: function(){
 		return true;
 	},
 
-	getSerie: function(){
-		// tests com from module.exports
-		return Object.keys(this.exports);
-	},
-
 	setupSerie: function(){
-		global.imports = this.imports;
 		this.exports = require(this.path);
 	},
 
-	tearDownSerie: function(){
-		global.imports = null;
+	tearDownSerie: function(){		
 		delete require.cache[this.path];
 		this.exports = null;
+	},
+
+	getSerie: function(){
+		// tests com from module.exports
+		return Object.keys(this.exports);
 	},
 
 	setup: function(){
@@ -66,7 +62,7 @@ var TestSerie = util.extend(TestModel, {
 		this.failedCount = 0;
 		this.index = 0;
 		this.current = null;
-		this.emit('beginSerie');
+		this.emit('startSerie');
 	},
 
 	teardown: function(){
@@ -76,10 +72,8 @@ var TestSerie = util.extend(TestModel, {
 	clean: function(){
 		this.tearDownSerie();
 		if( this.current ){
-			this.current.close();
-			this.current = null;
-		}	
-		this.serie = null;
+			this.current.stop();
+		}
 	},
 
 	createTest: function(name){
@@ -92,6 +86,10 @@ var TestSerie = util.extend(TestModel, {
 		}
 		else{
 			this.current = this.createTest(this.serie[this.index]);
+			// en faisant ça je peux récup les tests fait avant
+			// cependant lorsque je restart je sais pas pourquoi
+			// mais j'apelle pas getSerie
+			this.serie[this.index] = this.current;
 			this.current.handler = this;
 			this.index++;
 			return this.current;
@@ -100,7 +98,7 @@ var TestSerie = util.extend(TestModel, {
 
 	nextTest: function(){
 		if( this.next() ){
-			this.current.test();
+			this.current.start();
 		}
 		// all test passed with success or no test to run
 		else{
@@ -114,7 +112,7 @@ var TestSerie = util.extend(TestModel, {
 				this.failedCount++;
 			}
 
-			if( this.failedCount && this.endsOnFailure ){
+			if( this.failedCount && !this.collectFails ){
 				this.fail();
 			}
 			else{
