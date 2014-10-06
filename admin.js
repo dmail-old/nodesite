@@ -25,6 +25,7 @@ logger.styles.path = {color: 'magenta'};
 var EventEmitter = require('events').EventEmitter;
 
 var Nodeapp = instance.extend(EventEmitter.prototype, {
+	Path: require('path'),
 	childProcess: require('child_process'),
 	name: 'nodeProcess',
 	args: null,
@@ -39,7 +40,7 @@ var Nodeapp = instance.extend(EventEmitter.prototype, {
 	init: function(){
 		this.constructor.apply(this);
 		this.args = Array.apply(Array, arguments);
-		this.args[0] = require('path').normalize(this.args[0]);
+		this.args[0] = this.Path.normalize(this.args[0]);
 	},
 
 	start: function(){
@@ -53,10 +54,14 @@ var Nodeapp = instance.extend(EventEmitter.prototype, {
 		}
 
 		this.process = this.childProcess.spawn(this.processName, this.args, {
-			cwd: require('path').dirname(this.args[0]),
+			cwd: this.Path.dirname(this.args[0]),
 			stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 		});
 		this.ctime = Number(new Date());
+
+		this.process.on('uncaughtException', function(e){
+			console.log('here?');
+		});
 
 		//stdio['pipe', 'pipe', 'pipe', 'ipc']
 		//stdio: [process.stdin, process.stdout, process.stderr, 'ipc']
@@ -64,8 +69,12 @@ var Nodeapp = instance.extend(EventEmitter.prototype, {
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
 
+		// ceci aussi peut écrire du texte non formatté par logger si j'écris console.log
 		this.process.stdout.pipe(logger, {end: false});
+		// ceci écriras tout le temps du texte brut lorsqu'une erreur survient
 		this.process.stderr.pipe(logger, {end: false});
+		// c'est incompatible avec la système actuel de logger qui doit émetter des objects etc
+		// donc il faudrais transformer ce texte en quelque chose d'autre
 		
 		this.state = 'started';
 		this.emit('start');
@@ -118,7 +127,7 @@ var Nodeapp = instance.extend(EventEmitter.prototype, {
 			this.start();
 		}
 		else{
-			logger.error('{path} crashed - waiting for file changes before restarting');
+			logger.error('{path} crashed - waiting for file changes before restarting', this.args[0]);
 			this.process = null;
 			this.emit('stop');
 		}
@@ -139,18 +148,18 @@ var nodeServer = Nodeapp.new(process.cwd() + '/app/server/server.js');
 
 nodeServer.logger = logger;
 
-// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
-var restartFiles = [
-	"./app/node_modules",
-	"./app/config/index.js",
-	"./app/server/server.js",
-	"./app/server/node_modules",
-	//"db",
-	"./app/server/lang/fr"
-];
-
 var Watcher = require('watcher');
 nodeServer.once('start', function(){
+	// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
+	var restartFiles = [
+		"./app/node_modules",
+		"./app/config/index.js",
+		"./app/server/server.js",
+		"./app/server/node_modules",
+		//"db",
+		"./app/server/lang/fr"
+	];
+
 	Watcher.watchAll(restartFiles, function(path){
 		logger.info('{path} modified server restart', path);
 		nodeServer.restart();
@@ -175,4 +184,7 @@ nodeServer.on('stop', function(){
 logger.styles['version'] = {color: 'yellow'};
 logger.styles['platform'] = {color: 'blue'};
 logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
-//nodeServer.start();
+
+nodeServer.start();
+
+//require('fs').createReadStream('./notes.txt').pipe(logger, {end: false});

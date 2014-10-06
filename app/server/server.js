@@ -19,7 +19,7 @@ global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang)
 var ansi = require('ansi');
 var server = {
 	http: require('http'),
-	logger: require('Logger').new(),
+	logger: require('LogStream').new(),
 	router: require('Router'),
 
 	onrequest: function(request, response){
