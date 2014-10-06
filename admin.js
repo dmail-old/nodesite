@@ -1,45 +1,43 @@
 function handleNativeError(error){
 	require('fs').appendFileSync('./log/error.log', error.stack + '\n');
-	throw error;
+	console.log(error.stack);
+	// no need to trhow
+	//throw error;
 }
 
 process.on('uncaughtException', handleNativeError);
-setTimeout(function(){}, 1000 * 30);
-
-// I need a server.log who save all log coming from server console
-
-//process.stdin.pipe(require('fs').createWriteStream('./log/admin.log'));
-
-var APP_MODULE_PATH = './app/node_modules';
-
-require(APP_MODULE_PATH + '/Object.instance');
-
-var ansi = require('ansi');
-var Logger = require('Logger');
-var logger = Logger.new('./log/admin.log');
-var childProcess = require('child_process');
-
-logger.styles.path = {color: 'magenta'};
+setTimeout(function(){}, 1000 * 60 * 30);
 
 /*
 au lieu de ça, ce qui il faudrais qu'emitter se trouve dans /node_modules et donc accessible partout
 par contre faudrais que le client puisse y accéder et donc établir une liste de module accessible au client
 pour le moment on touche rien xD
 */
+var APP_MODULE_PATH = './app/node_modules';
+var instance = require(APP_MODULE_PATH + '/Object.instance');
 
-var Emitter = require(APP_MODULE_PATH + '/emitter');
+var ansi = require('ansi');
+var Logger = require('LogStream');
+var logger = Logger.new('./log/admin.log');
 
-var Nodeapp = Emitter.extend({
+logger.styles.path = {color: 'magenta'};
+
+var EventEmitter = require('events').EventEmitter;
+
+var Nodeapp = instance.extend(EventEmitter.prototype, {
+	childProcess: require('child_process'),
 	name: 'nodeProcess',
 	args: null,
 	process: null,
 	ctime: null,
 	processName: 'node',
 	state: 'closed', // closed, started, restarting?
+	logger: null,
 	standby: false,
 	restarting: false,
 
 	init: function(){
+		this.constructor.apply(this);
 		this.args = Array.apply(Array, arguments);
 		this.args[0] = require('path').normalize(this.args[0]);
 	},
@@ -54,7 +52,7 @@ var Nodeapp = Emitter.extend({
 			return;
 		}
 
-		this.process = childProcess.spawn(this.processName, this.args, {
+		this.process = this.childProcess.spawn(this.processName, this.args, {
 			cwd: require('path').dirname(this.args[0]),
 			stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 		});
@@ -65,6 +63,9 @@ var Nodeapp = Emitter.extend({
 
 		this.process.on('exit', this.onexit.bind(this));
 		this.process.on('message', this.onmessage.bind(this));
+
+		this.process.stdout.pipe(logger, {end: false});
+		this.process.stderr.pipe(logger, {end: false});
 		
 		this.state = 'started';
 		this.emit('start');
@@ -108,16 +109,16 @@ var Nodeapp = Emitter.extend({
 		}
 		// clean exit - wait until file change to restart
 		else if( code === 0 ){
-			console.warn('\x1B[32m'+this.args[0]+' clean exit - waiting for changes before restart\x1B[0m');
+			logger.info('{path} clean exit - waiting for file changes before restart', this.args[0]);
 			this.process = null;
 			this.emit('exit');
 		}
 		else if( code === 2 ){
-			console.warn('\x1B[32m'+this.args[0]+' restart asked \x1B[0m');
+			logger.warn('{path} is asking to restart', this.args[0]);
 			this.start();
 		}
 		else{
-			console.error('\x1B[1;31m'+this.args[0]+' crashed - waiting for file changes before starting...\x1B[0m');
+			logger.error('{path} crashed - waiting for file changes before restarting');
 			this.process = null;
 			this.emit('stop');
 		}
@@ -134,15 +135,9 @@ var Nodeapp = Emitter.extend({
 	}
 });
 
-/*
-
-Je vais plutot envoyer le serveur à mon application
-si l'application plante alors je répond aux requêtes par en maintenance tant que l'application ne redémarre pas non?
-
-*/
-
 var nodeServer = Nodeapp.new(process.cwd() + '/app/server/server.js');
-var Watcher = require('watcher');
+
+nodeServer.logger = logger;
 
 // ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
 var restartFiles = [
@@ -154,16 +149,12 @@ var restartFiles = [
 	"./app/server/lang/fr"
 ];
 
+var Watcher = require('watcher');
 nodeServer.once('start', function(){
 	Watcher.watchAll(restartFiles, function(path){
 		logger.info('{path} modified server restart', path);
 		nodeServer.restart();
 	});
-});
-
-nodeServer.on('start', function(){
-	nodeServer.process.stdout.pipe(logger, {end: false});
-	nodeServer.process.stderr.pipe(logger, {end: false});
 });
 
 nodeServer.on('stop', function(){
@@ -184,4 +175,4 @@ nodeServer.on('stop', function(){
 logger.styles['version'] = {color: 'yellow'};
 logger.styles['platform'] = {color: 'blue'};
 logger.info('Node.js version {version} running on {platform}', process.version, process.platform);
-nodeServer.start();
+//nodeServer.start();
