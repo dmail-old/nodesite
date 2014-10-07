@@ -9,12 +9,12 @@ process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 60 * 30);
 
 /*
-au lieu de ça, ce qui il faudrais qu'emitter se trouve dans /node_modules et donc accessible partout
+au lieu de ça, ce qui il faudrais que proto se trouve dans /node_modules et donc accessible partout
 par contre faudrais que le client puisse y accéder et donc établir une liste de module accessible au client
 pour le moment on touche rien xD
 */
 var APP_MODULE_PATH = './app/node_modules';
-var instance = require(APP_MODULE_PATH + '/Object.instance');
+var proto = require(APP_MODULE_PATH + '/proto');
 
 var ansi = require('ansi');
 var Logger = require('LogStream');
@@ -24,7 +24,7 @@ logger.styles.path = {color: 'magenta'};
 
 var EventEmitter = require('events').EventEmitter;
 
-var Nodeapp = instance.extend(EventEmitter.prototype, {
+var Nodeapp = proto.extendFrom(EventEmitter.prototype, {
 	Path: require('path'),
 	childProcess: require('child_process'),
 	name: 'nodeProcess',

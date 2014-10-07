@@ -21,7 +21,7 @@ Client requires modules `synchronously` with an AJAX request to the server.
 ## Main shared modules
 
 - [core](/app/node_modules/core)
-- [Object.instance](/app/node_modules/Object.instance)
+- [proto](/app/node_modules/proto)
 - [Emitter](/app/node_modules/Emitter)
 - [StringTemplate](/app/node_modules/StringTemplate)
 - [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)

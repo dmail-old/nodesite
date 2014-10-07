@@ -10,7 +10,7 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 global.config = require(APP_PATH + Path.sep + 'config');
 
-require('Object.instance');
+require('proto');
 require('core/array');
 var property = require('Object.property');
 property.append(global, require('function'));
