@@ -8,14 +8,7 @@ function handleNativeError(error){
 process.on('uncaughtException', handleNativeError);
 setTimeout(function(){}, 1000 * 60 * 30);
 
-/*
-au lieu de ça, ce qui il faudrais que proto se trouve dans /node_modules et donc accessible partout
-par contre faudrais que le client puisse y accéder et donc établir une liste de module accessible au client
-pour le moment on touche rien xD
-*/
-var APP_MODULE_PATH = './app/node_modules';
-var proto = require(APP_MODULE_PATH + '/proto');
-
+var proto = require('proto');
 var ansi = require('ansi');
 var Logger = require('LogStream');
 var logger = Logger.new('./log/admin.log');
