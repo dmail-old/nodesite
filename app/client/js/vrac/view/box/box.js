@@ -14,7 +14,7 @@ FIX:
 ...
 */
 
-NS.Box = NS.Surface.extend(NS.options, {
+NS.Box = NS.Surface.create(NS.options, {
 	template: '<div class="box small" tabindex="0">Hello World</div>',
 	options: Object.extendMerge(NS.Surface.options, {
 		scrollReference: 'element',

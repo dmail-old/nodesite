@@ -17,7 +17,7 @@ logger.styles.path = {color: 'magenta'};
 
 var EventEmitter = require('events').EventEmitter;
 
-var Nodeapp = proto.extendFrom(EventEmitter.prototype, {
+var Nodeapp = proto.extend(EventEmitter.prototype, {
 	Path: require('path'),
 	childProcess: require('child_process'),
 	name: 'nodeProcess',

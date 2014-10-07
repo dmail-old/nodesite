@@ -1,4 +1,4 @@
-NS.Fx.Scroll = NS.Fx.extend({
+NS.Fx.Scroll = NS.Fx.create({
 	options: {
 		step: 30,
 		wheelStops: true

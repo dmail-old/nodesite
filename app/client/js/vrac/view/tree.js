@@ -2,7 +2,7 @@
 
 */
 
-NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').extend({
+NS.viewDocument.define('tree', NS.viewDocument.require('rootnode').create({
 	template: '<ul class="root" tabindex="0" data-indent="18"></ul>',
 	events: {
 		mouseover: function(e){

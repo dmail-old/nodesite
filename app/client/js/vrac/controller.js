@@ -71,7 +71,7 @@ NS.Controller = {
 NS.Controller.controllers = {};
 NS.Controller.define = function(name, controller){
 	controller.name = name;
-	this.controllers[name] = this.extend(controller);
+	this.controllers[name] = this.create(controller);
 };
 
 NS.View.control = function(name){

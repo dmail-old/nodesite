@@ -56,5 +56,5 @@ var exports ={
 	}
 };
 
-exports = NS.Selector.extend(exports);
+exports = NS.Selector.create(exports);
 NS.PopupSelector = exports;

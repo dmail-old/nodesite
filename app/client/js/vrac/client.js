@@ -1,4 +1,4 @@
-var Client = Object.prototype.extend({
+var Client = Object.prototype.create({
 	constructor: function(socket){
 		// console.log(socket.handshake.headers.cookie);
 		// grace au cookie de session, s'il existe on restaureras le compte de l'user

@@ -6,7 +6,7 @@ description: TokenList is used to manipulate a list of string separated by a spa
 
 */
 
-NS.TokenList =  NS.List.extend({
+NS.TokenList =  NS.List.create({
 	constructor: function(string){
 		if( string ){
 			var trimmed = String.prototype.trim.call(string);

@@ -1,4 +1,4 @@
-NS.DirectiveList = NS.List.extend({
+NS.DirectiveList = NS.List.create({
 	collect: function(node){
 		if( node.nodeType == 1 ){ // Element
 

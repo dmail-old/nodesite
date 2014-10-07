@@ -1,4 +1,4 @@
-NS.viewDocument.define('node', NS.View.extend({
+NS.viewDocument.define('node', NS.View.create({
 	template: '\
 		<li class="node">\
 			<div draggable="true">\

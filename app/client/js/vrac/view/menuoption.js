@@ -1,4 +1,4 @@
-NS.viewDocument.define('menuoption', NS.viewDocument.require('node').extend({
+NS.viewDocument.define('menuoption', NS.viewDocument.require('node').create({
 	template: '\
 		<li class="node">\
 			<div>\

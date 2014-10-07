@@ -1,10 +1,10 @@
 var Lexer = require('lexer');
-var RouteToken = Lexer.Token.extend({
+var RouteToken = Lexer.Token.create({
 	named: false,
 	splat: false
 });
 
-var RouteLexer = Lexer.extend({
+var RouteLexer = Lexer.create({
 	__name__: 'RouteLexer',
 	specials: '/?&',	
 	Token: RouteToken,

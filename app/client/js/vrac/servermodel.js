@@ -59,7 +59,7 @@ NS.servermodel = {
 	}
 };
 
-NS.Action = Object.prototype.extend({
+NS.Action = Object.prototype.create({
 	create: function(model, name, args){
 		this.model = model;
 		this.name = name;

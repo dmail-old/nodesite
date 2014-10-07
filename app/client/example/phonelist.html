@@ -133,7 +133,7 @@ var View = {
 	},
 
 	directive: function(name, directive){
-		this.directives[name] = Directive.extend(directive);
+		this.directives[name] = Directive.create(directive);
 	},
 
 	collectDirectives: function(node, path){

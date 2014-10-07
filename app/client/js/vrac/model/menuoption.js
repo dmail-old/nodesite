@@ -1,3 +1,3 @@
-NS.modelDocument.define('menuoption', NS.Model.extend({
+NS.modelDocument.define('menuoption', NS.Model.create({
 
 }));

@@ -13,7 +13,7 @@ FIX
 ...
 */
 
-NS.Popup = NS.Box.extend({
+NS.Popup = NS.Box.create({
 	template: '<div class="box popup big" tabindex="0">\
 		<div class="body">\
 			<div class="header">\

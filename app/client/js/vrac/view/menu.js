@@ -1,4 +1,4 @@
-NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').extend({
+NS.viewDocument.define('menu', NS.viewDocument.require('rootnode').create({
 	template: '<ul class="root menu line unselectable"></ul>',
 	events: {
 		mousedown: function(e){

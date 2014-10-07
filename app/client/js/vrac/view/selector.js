@@ -1,4 +1,4 @@
-NS.viewDocument.define('selector', NS.View.extend({
+NS.viewDocument.define('selector', NS.View.create({
 	template: '\
 		<div class="selector unselectable">\
 			<div class="input" tabindex="0">\

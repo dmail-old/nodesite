@@ -1,4 +1,4 @@
-NS.viewDocument.define('rootnode', NS.View.extend({
+NS.viewDocument.define('rootnode', NS.View.create({
 	keynav: null,
 
 	create: function(){
