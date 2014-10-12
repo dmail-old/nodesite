@@ -12,8 +12,8 @@ global.config = require(APP_PATH + Path.sep + 'config');
 
 require('proto');
 require('core/array');
-var property = require('Object.property');
-property.append(global, require('function'));
+var keys = require('keys');
+keys.append(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var ansi = require('ansi');
