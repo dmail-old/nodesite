@@ -10,8 +10,8 @@ setTimeout(function(){}, 1000 * 60 * 30);
 
 var proto = require('proto');
 var ansi = require('ansi');
-var Logger = require('LogStream');
-var logger = Logger.new('./log/admin.log');
+var LogStream = require('LogStream');
+var logger = LogStream.new('./log/admin.log');
 
 logger.styles.path = {color: 'magenta'};
 
