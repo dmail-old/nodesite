@@ -16,11 +16,19 @@ var property = require('property');
 property.append(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
-var ansi = require('ansi');
+var logger = require('LogStream').new();
 var server = {
 	http: require('http'),
-	logger: require('LogStream').new(),
+	logger: logger,
 	router: require('Router'),
+
+	emit: function(type){
+		if( typeof process.send == 'function' ){
+			process.send({
+				type: type
+			});
+		}
+	},
 
 	onrequest: function(request, response){
 		var route = server.router.new(request, response);
@@ -125,5 +133,6 @@ server.listen(config.port, config.host, function(error){
 		throw error;
 	}
 
-	server.logger.info('Server running at {host}:{port}', config.host, config.port);
+	logger.info('Server listening {host}:{port}', config.host, config.port);
+	server.emit('listening');
 });
