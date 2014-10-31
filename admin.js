@@ -8,9 +8,9 @@ var config = require('./app/config');
 var LogStream = require('LogStream');
 var logger = LogStream.new(/*'./log/admin.log'*/);
 
-logger.styles['version'] = {color: 'yellow'};
-logger.styles['platform'] = {color: 'blue'};
-logger.styles['path'] = {color: 'magenta'};
+logger.defineStyle('version', 'yellow');
+logger.defineStyle('platform', 'blue');
+logger.defineStyle('path', 'magenta');
 
 logger.info('node.js {version} on {platform}', process, function(){
 	var readline = require('readline'), interface = readline.createInterface(process.stdin, process.stdout);
