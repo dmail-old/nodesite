@@ -122,8 +122,11 @@ router.Request.defaultCharset = config.charset;
 router.Response.defaultCharset = config.charset;
 
 server.open();
-server.logger.styles['host'] = {color: 'grey'};
-server.logger.styles['port'] = {color: 'red'};
+
+logger.registerStyles({
+	'host': 'grey',
+	'port': 'red'
+});
 
 server.listen(config.port, config.host, function(error){
 	if( error ){

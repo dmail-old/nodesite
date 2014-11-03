@@ -8,7 +8,7 @@ var config = require('./app/config');
 var LogStream = require('LogStream');
 var logger = LogStream.new(/*'./log/admin.log'*/);
 
-logger.addStyleGroup({
+logger.registerStyles({
 	'version': 'yellow',
 	'platform': 'blue',
 	'path': 'magenta'
