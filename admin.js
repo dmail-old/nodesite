@@ -14,7 +14,7 @@ logger.Log.registerStyles({
 	'path': 'magenta'
 });
 
-logger.add('info', 'node.js {version} on {platform}', process, function(){
+logger.info('node.js {version} on {platform}', process, function(){
 	var readline = require('readline'), interface = readline.createInterface(process.stdin, process.stdout);
 
 	interface.setPrompt('> ');
