@@ -123,7 +123,7 @@ router.Response.defaultCharset = config.charset;
 
 server.open();
 
-logger.registerStyles({
+logger.Log.registerStyles({
 	'host': 'grey',
 	'port': 'red'
 });
@@ -136,6 +136,6 @@ server.listen(config.port, config.host, function(error){
 		throw error;
 	}
 
-	logger.info('Server listening {host}:{port}', config.host, config.port);
+	logger.info('Server listening {host}:{port}', config);
 	server.emit('listening');
 });
