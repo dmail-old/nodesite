@@ -39,8 +39,8 @@ logger.info('node.js {version} on {platform}', process, function(){
 var NodeProcess = require('NodeProcess');
 
 // server process
-if( !true ){
-	var Watcher = require('watcher');
+if( true ){
+	var FileChangeEmitter = require('FileChangeEmitter');
 	var http = require('http');
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
@@ -59,10 +59,10 @@ if( !true ){
 			"./app/server/node_modules",
 			//"db",
 			"./app/server/lang/fr"
-		];
+		];		
 
-		Watcher.watchAll(restartFiles, function(path){
-			logger.info('{path} modified server restart', path);
+		FileChangeEmitter.on(FileChangeEmitter.read(restartFiles), function(path){
+			logger.info('{path} modified server restart', {path: path});
 			
 			if( emergencyServer.listening ){
 				emergencyServer.close(function(){
@@ -73,8 +73,9 @@ if( !true ){
 			}
 			else{
 				serverProcess.restart();
-			}		
+			}
 		});
+
 	});
 
 	serverProcess.on('stop', function(){
