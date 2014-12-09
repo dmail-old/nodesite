@@ -40,9 +40,10 @@ var NodeProcess = require('NodeProcess');
 
 // server process
 if( true ){
-	var FileChangeEmitter = require('FileChangeEmitter');
+	var FileObserver = require('FileObserver');
 	var http = require('http');
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
+	var extraFS = require('fs.extra');
 
 	var emergencyServer = http.createServer(function(request, response){
 		response.writeHead(200, {'Content-Type': 'text/plain'});
@@ -59,9 +60,9 @@ if( true ){
 			"./app/server/node_modules",
 			//"db",
 			"./app/server/lang/fr"
-		];		
+		];
 
-		FileChangeEmitter.on(FileChangeEmitter.read(restartFiles), function(path){
+		function fileChanged(path){
 			logger.info('{path} modified server restart', {path: path});
 			
 			if( emergencyServer.listening ){
@@ -74,8 +75,13 @@ if( true ){
 			else{
 				serverProcess.restart();
 			}
-		});
+		}
 
+		restartFiles.forEach(function(restartFile){
+			extraFS.collectFileSync(restartFile).forEach(function(file){
+				FileObserver.observe(file, fileChanged, null, true);
+			});			
+		});
 	});
 
 	serverProcess.on('stop', function(){
