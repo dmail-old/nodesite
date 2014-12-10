@@ -4,7 +4,6 @@ process.on('uncaughtException', function handleNativeError(error){
 });
 setTimeout(function(){}, 1000 * 60 * 30);
 
-var config = require('./app/config');
 var LogStream = require('LogStream');
 var logger = LogStream.new();//('./log/admin.log');
 
@@ -37,75 +36,60 @@ logger.info('node.js {version} on {platform}', process, function(){
 });
 
 var NodeProcess = require('NodeProcess');
+var config = require('./app/config');
 
 // server process
-if( true ){
-	var FileObserver = require('FileObserver');
-	var http = require('http');
+if( true ){	
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
-	var extraFS = require('fs.extra');
 
-	var emergencyServer = http.createServer(function(request, response){
-		response.writeHead(200, {'Content-Type': 'text/plain'});
-		response.write('Server down');
-		response.end();
+	serverProcess.console = logger;
+	serverProcess.setRestartFiles(
+		"./app/node_modules",
+		"./app/config/index.js",
+		"./app/server/server.js",
+		"./app/server/node_modules",
+		"./app/server/lang/fr"
+	);
+
+	/*
+	serverProcess.on('listening', function(){
+		logger.info('Server listening {host}:{port}', config.host, config.port);
 	});
+	*/
 
-	serverProcess.once('start', function(){
-		// ces fichiers ou tout fichier contenu dans ces dossiers font redémarrer le serveur
-		var restartFiles = [
-			"./app/node_modules",
-			"./app/config/index.js",
-			"./app/server/server.js",
-			"./app/server/node_modules",
-			//"db",
-			"./app/server/lang/fr"
-		];
+	serverProcess.on('crash', function(){		
+		var http = require('http');
+		var emergencyServer = http.createServer(function(request, response){
+			response.writeHead(200, {'Content-Type': 'text/plain'});
+			response.write('Server down');
+			response.end();
+		});
 
-		function fileChanged(path){
-			logger.info('{path} modified server restart', {path: path});
-			
-			if( emergencyServer.listening ){
+		emergencyServer.listen(config.port, config.host, function(){
+			logger.warn('Emergency server listening {host}:{port}', config.host, config.port);
+
+			serverProcess.restart = function(){
 				emergencyServer.close(function(){
-					emergencyServer.listening = false;
 					logger.info('Emergency server closed');
+					serverProcess.restart = NodeProcess.restart;
 					serverProcess.restart();
 				});
-			}
-			else{
-				serverProcess.restart();
-			}
-		}
-
-		restartFiles.forEach(function(restartFile){
-			extraFS.collectFileSync(restartFile).forEach(function(file){
-				FileObserver.observe(file, fileChanged, null, true);
-			});			
+			};
 		});
-	});
-
-	serverProcess.on('stop', function(){
-		logger.info('{path} graceful stop - waiting for file changes before restart', this.args[0]);
-	});
-
-	serverProcess.on('crash', function(){
-		logger.error('{path} crashed - waiting for file changes before restarting', this.args[0]);
-		emergencyServer.listen(config.port, config.host, function(){
-			emergencyServer.listening = true;
-			logger.warn('Emergency server listening {host}:{port}', config.host, config.port);
-		});
-	});
-
-	serverProcess.on('listening', function(){
-		//logger.info('Server listening {host}:{port}', config.host, config.port);
 	});
 
 	serverProcess.start();
 }
 
 // test process
-if( !true ){
-	var testProcess = NodeProcess.new(process.cwd() + '/node_modules/unitTest/runTest.js', '../../../nodesite');
+if( true ){
+	var testProcess = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
+	
+	testProcess.console = logger;
+	testProcess.setRestartFiles(
+		"./node_modules/nodetest"
+	);
+
 	testProcess.start();
 }
 
