@@ -39,7 +39,7 @@ var NodeProcess = require('NodeProcess');
 var config = require('./app/config');
 
 // server process
-if( true ){	
+if( !true ){	
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
 	serverProcess.console = logger;
