@@ -2,7 +2,8 @@ process.on('uncaughtException', function handleNativeError(error){
 	require('fs').appendFileSync('./log/error.log', error.stack + '\n');
 	console.log(error.stack); // no need to throw
 });
-setTimeout(function(){}, 1000 * 60 * 30);
+
+//process.stdin.resume(); // keep process alive
 
 var LogStream = require('LogStream');
 var logger = LogStream.new();//('./log/admin.log');
@@ -39,7 +40,7 @@ var NodeProcess = require('NodeProcess');
 var config = require('./app/config');
 
 // server process
-if( !true ){	
+if( !true ){
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
 	serverProcess.console = logger;
