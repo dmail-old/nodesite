@@ -95,25 +95,26 @@ var router = server.router;
 // TODO : un middleware timeout pour envoyer requesttimeout au bout d'un certain temps
 
 /*
-router.use('requestStream');
 router.use('cookieParser');
+router.use('jsonParam');
 router.use('params');
 router.use('methodOverride');
-router.use('jsonParam');
-router.use('responseTime');
 router.use('session');
+
+router.use('autoLength');
+router.use('autoMD5');
+router.use('contentNegotiation');
 */
 
 router.use('logger', server.logger);
 
 /*
+router.use('responseTime');
 router.use('cors');
 router.use('page');
 router.use('module');
 router.use('file');
 router.use('errorHandler');
-
-router.use('responseStream');
 */
 
 router.allowErrorTrace = config.debug;
@@ -136,6 +137,9 @@ server.listen(config.port, config.host, function(error){
 		throw error;
 	}
 
-	logger.info('Server listening {host}:{port}', config);
+	logger.info('Server listening {host}:{port}', {
+		host: config.host,
+		port: config.port
+	});
 	server.emit('listening');
 });

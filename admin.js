@@ -1,3 +1,12 @@
+/*
+Il y a un bug lorsque :
+
+server process ET test process sont lancé
+un fichier fait redémarrer les deux process (même si je met un timeout)
+lorsque nodeprocess restart est log, parfois c'est log avec de la couleur
+
+*/
+
 process.on('uncaughtException', function handleNativeError(error){
 	require('fs').appendFileSync('./log/error.log', error.stack + '\n');
 	console.log(error.stack); // no need to throw
@@ -43,7 +52,7 @@ var config = require('./app/config');
 if( !true ){
 	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
-	serverProcess.console = logger;
+	//serverProcess.console = logger;
 	serverProcess.setRestartFiles(
 		"./app/node_modules",
 		"./app/config/index.js",
@@ -67,7 +76,7 @@ if( !true ){
 		});
 
 		emergencyServer.listen(config.port, config.host, function(){
-			logger.warn('Emergency server listening {host}:{port}', config.host, config.port);
+			logger.warn('Emergency server listening {host}:{port}', config);
 
 			serverProcess.restart = function(){
 				emergencyServer.close(function(){
@@ -83,15 +92,31 @@ if( !true ){
 }
 
 // test process
-if( true ){
+if( !true ){
 	var testProcess = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
-	testProcess.console = logger;
+	//testProcess.console = logger;
 	testProcess.setRestartFiles(
 		"./node_modules/nodetest"
 	);
 
 	testProcess.start();
 }
+
+/*
+on va utiliser un stream qui parse le JSON et re log ce qui est log
+sans utiliser fork pour ne pas pipe le stream
+
+comment on fait pour templateRepeater?
+*/
+
+//new JSONParseStream
+
+var child = require('child_process').spawn('node', ['test.js']);
+
+
+child.stdout.on('data', function(data){
+	console.log(data.toString());
+});
 
 // database process (maybe will be launched by server)
