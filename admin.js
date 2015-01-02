@@ -12,7 +12,7 @@ process.on('uncaughtException', function handleNativeError(error){
 	console.log(error.stack); // no need to throw
 });
 
-//process.stdin.resume(); // keep process alive
+process.stdin.resume(); // keep process alive
 
 var LogStream = require('LogStream');
 var logger = LogStream.new();//('./log/admin.log');
@@ -46,14 +46,14 @@ logger.info('node.js {version} on {platform}', process, function(){
 });
 
 var NodeProcess = require('NodeProcess');
-var config = require('./app/config');
+var config = require('./app/config');	
 
 // server process
-if( !true ){
-	var serverProcess = NodeProcess.new(process.cwd() + '/app/server/server.js');
+if( true ){
+	var server = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
-	//serverProcess.console = logger;
-	serverProcess.setRestartFiles(
+	server.console = logger;
+	server.setRestartFiles(
 		"./app/node_modules",
 		"./app/config/index.js",
 		"./app/server/server.js",
@@ -61,13 +61,7 @@ if( !true ){
 		"./app/server/lang/fr"
 	);
 
-	/*
-	serverProcess.on('listening', function(){
-		logger.info('Server listening {host}:{port}', config.host, config.port);
-	});
-	*/
-
-	serverProcess.on('crash', function(){		
+	server.on('crash', function(){
 		var http = require('http');
 		var emergencyServer = http.createServer(function(request, response){
 			response.writeHead(200, {'Content-Type': 'text/plain'});
@@ -78,45 +72,29 @@ if( !true ){
 		emergencyServer.listen(config.port, config.host, function(){
 			logger.warn('Emergency server listening {host}:{port}', config);
 
-			serverProcess.restart = function(){
+			server.restart = function(){
 				emergencyServer.close(function(){
 					logger.info('Emergency server closed');
-					serverProcess.restart = NodeProcess.restart;
-					serverProcess.restart();
+					server.restart = NodeProcess.restart;
+					server.restart();
 				});
 			};
 		});
 	});
 
-	serverProcess.start();
+	server.start();
 }
 
 // test process
 if( !true ){
-	var testProcess = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
+	var test = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
-	//testProcess.console = logger;
-	testProcess.setRestartFiles(
+	test.console = logger;
+	test.setRestartFiles(
 		"./node_modules/nodetest"
 	);
 
-	testProcess.start();
+	test.start();
 }
-
-/*
-on va utiliser un stream qui parse le JSON et re log ce qui est log
-sans utiliser fork pour ne pas pipe le stream
-
-comment on fait pour templateRepeater?
-*/
-
-//new JSONParseStream
-
-var child = require('child_process').spawn('node', ['test.js']);
-
-
-child.stdout.on('data', function(data){
-	console.log(data.toString());
-});
 
 // database process (maybe will be launched by server)

@@ -1,6 +1,6 @@
 /* global FS, util, Path, ABS_PATH, ROOT_PATH, APP_PATH, SERVER_PATH, CLIENT_PATH */
 
-Error.stackTraceLimit = 20;
+//Error.stackTraceLimit = 20;
 
 global.Path = require('path');
 global.ROOT_PATH = Path.resolve(process.cwd(), '../../');
@@ -11,9 +11,8 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 global.config = require(APP_PATH + Path.sep + 'config');
 
 require('proto');
-require('core/array');
-var property = require('property');
-property.append(global, require('function'));
+require('property');
+Object.assign(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var logger = require('LogStream').new();
