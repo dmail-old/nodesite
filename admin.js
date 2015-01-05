@@ -17,7 +17,7 @@ process.stdin.resume(); // keep process alive
 var LogStream = require('LogStream');
 var logger = LogStream.new();//('./log/admin.log');
 
-logger.Log.registerStyles({
+logger.registerStyles({
 	'version': 'yellow',
 	'platform': 'blue',
 	'path': 'magenta'
@@ -49,7 +49,7 @@ var NodeProcess = require('NodeProcess');
 var config = require('./app/config');	
 
 // server process
-if( true ){
+if( !true ){
 	var server = NodeProcess.new(process.cwd() + '/app/server/server.js');
 
 	server.console = logger;
@@ -86,7 +86,7 @@ if( true ){
 }
 
 // test process
-if( !true ){
+if( true ){
 	var test = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
 	test.console = logger;

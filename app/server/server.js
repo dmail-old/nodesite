@@ -12,7 +12,7 @@ global.config = require(APP_PATH + Path.sep + 'config');
 
 require('proto');
 require('property');
-Object.assign(global, require('function'));
+Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var logger = require('LogStream').new();
@@ -30,7 +30,7 @@ var server = {
 	},
 
 	onrequest: function(request, response){
-		var route = server.router.new(request, response);
+		var route = new server.router(request, response);
 		route.start();
 	},
 
@@ -116,14 +116,14 @@ router.use('file');
 router.use('errorHandler');
 */
 
-router.allowErrorTrace = config.debug;
+router.prototype.allowErrorTrace = config.debug;
 //router.Request.defaultAcceptedCharset = config.charset;
-router.Request.defaultCharset = config.charset;
-router.Response.defaultCharset = config.charset;
+router.prototype.Request.defaultCharset = config.charset;
+router.prototype.Response.defaultCharset = config.charset;
 
 server.open();
 
-logger.Log.registerStyles({
+logger.registerStyles({
 	'host': 'grey',
 	'port': 'red'
 });
