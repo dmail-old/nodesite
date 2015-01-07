@@ -15,7 +15,7 @@ process.on('uncaughtException', function handleNativeError(error){
 process.stdin.resume(); // keep process alive
 
 var LogStream = require('LogStream');
-var logger = LogStream.new();//('./log/admin.log');
+var logger = new LogStream();//('./log/admin.log');
 
 logger.registerStyles({
 	'version': 'yellow',
@@ -49,8 +49,8 @@ var NodeProcess = require('NodeProcess');
 var config = require('./app/config');	
 
 // server process
-if( !true ){
-	var server = NodeProcess.new(process.cwd() + '/app/server/server.js');
+if( true ){
+	var server = new NodeProcess(process.cwd() + '/app/server/server.js');
 
 	server.console = logger;
 	server.setRestartFiles(
@@ -75,7 +75,7 @@ if( !true ){
 			server.restart = function(){
 				emergencyServer.close(function(){
 					logger.info('Emergency server closed');
-					server.restart = NodeProcess.restart;
+					server.restart = NodeProcess.prototype.restart;
 					server.restart();
 				});
 			};
@@ -87,7 +87,7 @@ if( !true ){
 
 // test process
 if( true ){
-	var test = NodeProcess.new(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
+	var test = new NodeProcess(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
 	test.console = logger;
 	test.setRestartFiles(

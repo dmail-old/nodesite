@@ -15,7 +15,8 @@ require('property');
 Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
-var logger = require('LogStream').new();
+var LogStream = require('LogStream');
+var logger = new LogStream();
 var server = {
 	http: require('http'),
 	logger: logger,
@@ -30,8 +31,8 @@ var server = {
 	},
 
 	onrequest: function(request, response){
-		var route = new server.router(request, response);
-		route.start();
+		var requestHandler = server.router.createRequestHandler(request, response);
+		requestHandler.next();
 	},
 
 	onclientError: function(e){
@@ -102,7 +103,15 @@ router.use('session');
 
 router.use('autoLength');
 router.use('autoMD5');
-router.use('contentNegotiation');
+router.use('contentNegotiation', {
+	request: {
+		// defaultAcceptedCharset: config.charset,
+		defaultCharset: config.charset
+	},
+	response: {
+		defaultCharset: config.charset
+	}
+});
 */
 
 router.use('logger', server.logger);
@@ -116,10 +125,7 @@ router.use('file');
 router.use('errorHandler');
 */
 
-router.prototype.allowErrorTrace = config.debug;
-//router.Request.defaultAcceptedCharset = config.charset;
-router.prototype.Request.defaultCharset = config.charset;
-router.prototype.Response.defaultCharset = config.charset;
+router.allowErrorTrace = config.debug;
 
 server.open();
 
