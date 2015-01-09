@@ -16,11 +16,15 @@ Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var LogStream = require('LogStream');
+var Router = require('Router');
+
 var logger = new LogStream();
 var server = {
 	http: require('http'),
 	logger: logger,
-	router: require('Router'),
+	router: new Router({
+		allowErrorTrace: config.debug
+	}),
 
 	emit: function(type){
 		if( typeof process.send == 'function' ){
@@ -91,16 +95,11 @@ var server = {
 };
 
 var router = server.router;
-// use basic services
+
 // TODO : un middleware timeout pour envoyer requesttimeout au bout d'un certain temps
 
-/*
 router.use('cookieParser');
-router.use('jsonParam');
-router.use('params');
-router.use('methodOverride');
-router.use('session');
-
+/*
 router.use('autoLength');
 router.use('autoMD5');
 router.use('contentNegotiation', {
@@ -112,8 +111,12 @@ router.use('contentNegotiation', {
 		defaultCharset: config.charset
 	}
 });
+router.use('bodyParams');
 */
-
+router.use('jsonParam');
+router.use('params');
+router.use('methodOverride');
+router.use('session');
 router.use('logger', server.logger);
 
 /*
@@ -124,8 +127,6 @@ router.use('module');
 router.use('file');
 router.use('errorHandler');
 */
-
-router.allowErrorTrace = config.debug;
 
 server.open();
 
