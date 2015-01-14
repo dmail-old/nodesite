@@ -96,37 +96,33 @@ var server = {
 
 var router = server.router;
 
-// TODO : un middleware timeout pour envoyer requesttimeout au bout d'un certain temps
-
-router.use('cookieParser');
-/*
-router.use('autoLength');
-router.use('autoMD5');
-router.use('contentNegotiation', {
-	request: {
-		// defaultAcceptedCharset: config.charset,
-		defaultCharset: config.charset
-	},
-	response: {
-		defaultCharset: config.charset
-	}
+router.use('timeout', 1 * 1000);
+router.use('cookie');
+router.use('requestLength');
+router.use('requestMD5');
+router.use('requestNegotiation', {
+	// defaultAcceptedCharset: config.charset,
+	defaultCharset: config.charset
 });
-router.use('bodyParams');
-*/
-router.use('jsonParam');
-router.use('params');
+router.use('requestBody');
+router.use('requestJSON');
+router.use('requestParams');
 router.use('methodOverride');
 router.use('session');
 router.use('logger', server.logger);
+router.use('responseNegotiation', {
+	defaultCharset: config.charset
+});
 
-/*
 router.use('responseTime');
 router.use('cors');
 router.use('page');
-router.use('module');
-router.use('file');
+router.use('module', {
+	rootFolder: global.ROOT_PATH,
+	clientFolder: global.APP_PATH
+});
+router.use('file', global.CLIENT_PATH);
 router.use('errorHandler');
-*/
 
 server.open();
 

@@ -54,7 +54,7 @@ module.exports = {
 			'origin': require('url').format({
 				protocol: config.protocol,
 				host: config.host + (config.port ? ':' + config.port : ''),
-				pathname: path
+				pathname: page.request.url.pathname
 			}),
 			'metas': template.renderMetaTags(metas),
 			'title': lang.metas.title,
