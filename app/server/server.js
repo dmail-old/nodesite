@@ -116,6 +116,7 @@ router.use('responseNegotiation', {
 
 router.use('responseTime');
 router.use('cors');
+router.use('responseLength');
 router.use('page');
 router.use('module', {
 	rootFolder: global.ROOT_PATH,

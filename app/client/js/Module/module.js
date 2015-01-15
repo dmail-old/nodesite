@@ -8,29 +8,7 @@ http://fredkschott.com/post/2014/06/require-and-the-module-system/?utm_source=no
 
 */
 
-var Module = function(filename, parent){
-	var module;
-
-	if( filename in this.cache ){
-		module = this.cache[filename];
-	}
-	else{
-		module = this;
-		this.cache[filename] = module;
-		module.filename = filename;
-		module.parent = parent;
-		module.resolvedPaths = {};
-		module.children = [];
-	}
-
-	if( parent ){
-		parent.children.push(module);
-	}
-
-	return module;
-};
-
-Module.prototype = {
+var Module = {
 	cache: {},
 	filename: null, // fully resolved filename
 	parent: null, // module that called require() on this one
@@ -44,7 +22,23 @@ Module.prototype = {
 		resolve: 'x-resolve',
 		resolveParent: 'x-resolve-parent'
 	},
-	
+
+	constructor: function(filename, parent){
+		if( filename in this.cache ){
+			return this.cache[filename];
+		}
+		
+		this.cache[filename] = this;
+		this.filename = filename;
+		this.parent = parent;
+		this.resolvedPaths = {};
+		this.children = [];
+
+		if( parent ){
+			parent.children.push(this);
+		}
+	},
+
 	_resolve: function(){
 		var xhr = new XMLHttpRequest();
 
@@ -74,7 +68,9 @@ Module.prototype = {
 		return new Module(filename, this);
 	},
 
-	_load: function(){
+	loadSync: function(){
+		if( this.source ) return this.source;
+
 		var xhr = new XMLHttpRequest();
 
 		xhr.open('GET', window.location.origin, false);
@@ -82,16 +78,34 @@ Module.prototype = {
 		xhr.send(null);
 
 		if( xhr.status >= 200 || this.status < 400 ){
-			return xhr.responseText;	
+			this.source = xhr.responseText;
+			return this.source;
 		}
 		else{
 			throw new Error('not found');
 		}
 	},
 
-	load: function(){
-		if( this.source ) return this.source;
-		return this.source = this._load();
+	load: function(fn){
+		if( this.source ) return fn.call(this, null, this.source);
+
+		var xhr = new XMLHttpRequest(), module = this;
+
+		xhr.open('GET', window.location.origin, true);
+		xhr.setRequestHeader(this.headers.module, this.filename);
+		xhr.send(null);
+
+		xhr.onreadystatechange = function(){
+			if( this.readyState == 4 ){
+				if( this.status >= 200 || this.status < 400 ){
+					module.source = xhr.responseText;
+					fn.call(module, null, module.source);
+				}
+				else{
+					fn.call(module, new Error('not found'));
+				}
+			}
+		};
 	},
 
 	eval: function(source, url){
@@ -103,7 +117,7 @@ Module.prototype = {
 		if( !this.hasOwnProperty('exports') ){
 			var source, fn;
 
-			source = this.load();
+			source = this.loadSync();
 
 			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
 			try{
@@ -116,7 +130,7 @@ Module.prototype = {
 
 			this.exports = {};
 			try{
-				source.apply(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
+				fn.call(this.exports, this.exports, this.require.bind(this), this, this.filename, this.dirname);
 			}
 			catch(e){
 				// execution of the module code raise an error
@@ -153,6 +167,9 @@ Module.prototype = {
 		}
 	}
 };
+
+Module.constructor.prototype = Module;
+Module = Module.constructor;
 
 // main module
 window.module = new Module(window.location.pathname);

@@ -5,7 +5,7 @@
 	<head>
 		{%metas%}
 		<title>{%title%}</title>
-		<link href="{%origin%}/{%favicon%}" type="image/x-icon" rel="shortcut icon"/>
+		<!--<link href="{%origin%}/{%favicon%}" type="image/x-icon" rel="shortcut icon"/>-->
 		{%styles%}
 	</head>
 
@@ -25,8 +25,10 @@
 				//console.log('window error', arguments);
 			};
 		</script>
+		<!--
 		<script src="{%origin%}/js/url.js" type="text/javascript"></script>
 		<script src="{%origin%}/js/module.js" type="text/javascript"></script>
+		-->
 		<script type="text/javascript">
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
@@ -34,28 +36,6 @@
 			// app.init will be called once js&css have fully loaded
 			// setTimeout is to avoid any initial popstate event
 			window.onload = function(){	setTimeout(function(){
-
-				Module.prototype.preload = function(callback){
-					var module = this, xhr = new XMLHttpRequest();
-
-					xhr.open('GET', window.location.origin, true);
-					xhr.setRequestHeader(this.headers.module, this.filename);
-					xhr.send(null);
-
-					xhr.onreadystatechange = function(){
-						if( this.readyState == 4 ){
-							if( this.status >= 200 || this.status < 400 ){
-								module.source = xhr.responseText;
-								callback.call(module);
-							}
-							else{
-								var error = new Error('not found');
-								throw error;
-								callback.call(module, error);
-							}
-						}
-					};
-				};
 
 				function preloadModule(module, moduleTree, fn){
 					if( !moduleTree ) return fn();
@@ -79,14 +59,14 @@
 						childModule = parent.createChild(childNode.filename);						
 						// once child are loaded, load the module
 						preloadChildren(childModule, childNode, function(){
-							childModule.preload(onpreload);
+							childModule.load(onpreload);
 						});
 					}
 				}
 
 				var moduleTree = {%moduleTree%};
 				preloadModule(window.module, moduleTree, function(){
-					require('app').app.init();
+					//require('app').app.init();
 				});
 
 			}, 0};
