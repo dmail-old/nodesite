@@ -40,7 +40,7 @@ var server = {
 	},
 
 	onclientError: function(e){
-		server.logger.error('client request error', e);
+		server.logger.error(e.stack);
 	},
 
 	open: function(){
@@ -100,30 +100,24 @@ router.use('timeout', 1 * 1000);
 router.use('cookie');
 router.use('requestLength');
 router.use('requestMD5');
-router.use('requestNegotiation', {
-	// defaultAcceptedCharset: config.charset,
-	defaultCharset: config.charset
-});
+router.use('requestNegotiation', { /*defaultAcceptedCharset: config.charset,*/defaultCharset: config.charset});
 router.use('requestBody');
 router.use('requestJSON');
 router.use('requestParams');
 router.use('methodOverride');
 router.use('session');
 router.use('logger', server.logger);
-router.use('responseNegotiation', {
-	defaultCharset: config.charset
-});
+router.use('responseNegotiation', {defaultCharset: config.charset});
 
 router.use('responseTime');
 router.use('cors');
-router.use('responseLength');
+router.use('responseLength'); // doit être après responseNegotiation
 router.use('page');
-router.use('module', {
-	rootFolder: global.ROOT_PATH,
-	clientFolder: global.APP_PATH
-});
+router.use('module', {rootFolder: global.ROOT_PATH, clientFolder: global.APP_PATH});
 router.use('file', global.CLIENT_PATH);
 router.use('errorHandler');
+
+//router.use('helloworld');
 
 server.open();
 
