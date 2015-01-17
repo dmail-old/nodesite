@@ -126,6 +126,8 @@ logger.registerStyles({
 	'port': 'red'
 });
 
+console.log('{name}'.render({name: 'damien'}));
+
 server.listen(config.port, config.host, function(error){
 	if( error ){
 		if( error.code == 'EADDRINUSE' ){

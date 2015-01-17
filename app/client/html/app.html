@@ -5,7 +5,7 @@
 	<head>
 		{%metas%}
 		<title>{%title%}</title>
-		<!--<link href="{%origin%}/{%favicon%}" type="image/x-icon" rel="shortcut icon"/>-->
+		<link href="{%origin%}{%favicon%}" type="image/x-icon" rel="shortcut icon"/>
 		{%styles%}
 	</head>
 
@@ -19,16 +19,15 @@
 		</div>
 
 		<script type="text/javascript">
+			window.origin = {%origin%};
 			window.config = {%config%};
 			window.lang = {%lang%};
 			window.onerror = function(message, url, line){
 				//console.log('window error', arguments);
 			};
-		</script>
-		<!--
-		<script src="{%origin%}/js/url.js" type="text/javascript"></script>
-		<script src="{%origin%}/js/module.js" type="text/javascript"></script>
-		-->
+		</script>		
+		<!--<script src="{%origin%}js/url.js" type="text/javascript"></script>-->
+		<script src="{%origin%}js/Module/module.js" type="text/javascript"></script>
 		<script type="text/javascript">
 			window.$ = document.getElementById.bind(document);
 			document.html = document.documentElement;
@@ -69,7 +68,7 @@
 					//require('app').app.init();
 				});
 
-			}, 0};
+			}, 0)};
 		</script>
 
 		{%scripts%}

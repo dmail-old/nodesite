@@ -50,12 +50,14 @@ module.exports = {
 		});
 
 		var template = page.createTemplate();
+		var origin = require('url').format({
+			protocol: config.protocol,
+			host: config.host + (config.port ? ':' + config.port : ''),
+			pathname: page.request.url.pathname
+		});
+
 		page.send({
-			'origin': require('url').format({
-				protocol: config.protocol,
-				host: config.host + (config.port ? ':' + config.port : ''),
-				pathname: page.request.url.pathname
-			}),
+			'origin': origin,
 			'metas': template.renderMetaTags(metas),
 			'title': lang.metas.title,
 			'favicon': 'favicon.png',
