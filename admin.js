@@ -85,8 +85,11 @@ if( !true ){
 	server.start();
 }
 
+var start = new Date();
+var task = require('nodetest').testFolder('../nodesite');
+
 // test process
-if( true ){
+if( !true ){
 	var test = new NodeProcess(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
 	test.console = logger;
