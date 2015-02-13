@@ -85,7 +85,6 @@ if( !true ){
 	server.start();
 }
 
-var start = new Date();
 var task = require('nodetest').testFolder('../nodesite');
 
 // test process
