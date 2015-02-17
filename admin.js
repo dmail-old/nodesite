@@ -85,7 +85,7 @@ if( !true ){
 	server.start();
 }
 
-var task = require('nodetest').testFolder('../nodesite');
+require('TableTemplate');
 
 // test process
 if( !true ){
