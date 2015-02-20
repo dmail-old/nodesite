@@ -85,17 +85,8 @@ if( !true ){
 	server.start();
 }
 
-var Graph = require('DependencyResolver');
-
-var a = 'a', b = 'b', c = 'c';
-var graph = new Graph();
-
-graph.add(a, b, c);
-graph.add(c, b);
-console.log(graph.sort());
-
 // test process
-if( !true ){
+if( true ){
 	var test = new NodeProcess(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
 	test.console = logger;
