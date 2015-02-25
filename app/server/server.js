@@ -11,8 +11,7 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 global.config = require(APP_PATH + Path.sep + 'config');
 
 require('proto');
-require('property');
-require('Object.define');
+require('object-define');
 Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
