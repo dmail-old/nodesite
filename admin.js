@@ -86,7 +86,7 @@ if( !true ){
 }
 
 // test process
-if( !true ){
+if( true ){
 	var test = new NodeProcess(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
 	
 	test.console = logger;
