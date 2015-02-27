@@ -1,6 +1,6 @@
 // create a fake and promised version of the fs
 
-require('Promise');
+require('promise-extra');
 require('Array.prototype.find');
 var proto = require('proto');
 
