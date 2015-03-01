@@ -11,7 +11,7 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 global.config = require(APP_PATH + Path.sep + 'config');
 
 require('proto');
-require('object-define');
+require('Object.define');
 Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
@@ -125,8 +125,6 @@ logger.registerStyles({
 	'host': 'grey',
 	'port': 'red'
 });
-
-console.log('{name}'.render({name: 'damien'}));
 
 server.listen(config.port, config.host, function(error){
 	if( error ){
