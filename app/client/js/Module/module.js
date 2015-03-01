@@ -122,7 +122,7 @@ var Module = {
 
 			source = this.loadSync();
 
-			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n)';	
+			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n})';	
 			try{
 				fn = this.eval(source, this.filename);
 			}
@@ -130,6 +130,8 @@ var Module = {
 				// syntax error in module source or similar error
 				throw e;
 			}
+
+			this.fn = fn;
 
 			this.exports = {};
 			try{
