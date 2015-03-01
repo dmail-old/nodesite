@@ -39,15 +39,18 @@ var Module = {
 		}
 	},
 
-	_resolve: function(){
+	_resolve: function(path){
 		var xhr = new XMLHttpRequest();
 
 		xhr.open('GET', window.location.origin, false);
-		xhr.setRequestHeader(this.headers.resolve, this.filename);
-		xhr.setRequestHeader(this.headers.resolveParent, this.parent.filename);
+		xhr.setRequestHeader(this.headers.resolveParent, this.filename);
+		xhr.setRequestHeader(this.headers.resolve, path);
 		xhr.send(null);
 
-		if( xhr.status >= 200 || this.status < 400 ){
+		if( xhr.status >= 200 && xhr.status < 400 ){
+			if( !xhr.responseText ){
+				throw new Error('No body response to resolve request');
+			}
 			return xhr.responseText;	
 		}
 		else{
@@ -77,7 +80,7 @@ var Module = {
 		xhr.setRequestHeader(this.headers.module, this.filename);
 		xhr.send(null);
 
-		if( xhr.status >= 200 || this.status < 400 ){
+		if( xhr.status >= 200 && xhr.status < 400 ){
 			this.source = xhr.responseText;
 			return this.source;
 		}
