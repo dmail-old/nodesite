@@ -13,9 +13,9 @@
 	"indent": 4,
 	"undef": true,
 	"multistr": true, // \ as escaping char for multistr
-	"boss": true, // if(a = true)        
+	"boss": true, // if(a = true)
 	"eqnull": true, // item == null
-	"maxlen": 130,        
+	"maxlen": 130,
 	"globalstrict": false, // use strict out of a function
 	"sub": true, // objet['key'] and not object.key
 	/*

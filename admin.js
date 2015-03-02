@@ -49,7 +49,7 @@ var NodeProcess = require('NodeProcess');
 var config = require('./app/config');
 
 // server process
-if( true ){
+if( !true ){
 	var server = new NodeProcess(process.cwd() + '/app/server/server.js');
 
 	server.console = logger;
@@ -88,7 +88,7 @@ if( true ){
 // test process
 if( true ){
 	var test = new NodeProcess(process.cwd() + '/node_modules/nodetest/run.js', '../../../nodesite');
-	
+
 	test.console = logger;
 	test.setRestartFiles(
 		"./node_modules/nodetest"
