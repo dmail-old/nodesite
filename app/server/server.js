@@ -9,6 +9,7 @@ global.SERVER_PATH = APP_PATH + Path.sep + 'server';
 global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 global.config = require(APP_PATH + Path.sep + 'config');
+global.DEBUG = true;
 
 require('proto');
 require('Object.define');

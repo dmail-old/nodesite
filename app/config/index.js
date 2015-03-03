@@ -16,7 +16,19 @@ config.js = [];
 
 // fichier css qu'on envoie au client
 config.css = [
-	"site", "resize", "box", "popup", "selectionRectangle", "node", "root", "menu", "tree", "selector", "editor"
+	"site",
+	/*
+	"resize",
+	"box",
+	"popup",
+	"selectionRectangle",
+	"node",
+	"root",
+	"menu",
+	"tree",
+	"selector",
+	"editor"
+	*/
 ];
 
 /*
@@ -134,7 +146,7 @@ config.pages = {
 					var Selector = require('./client/js/util/selector/selector.js');
 
 					selector = args[1] = Selector.new(selector);
-					
+
 					var owner;
 
 					if( tableName === 'user' ){
@@ -168,7 +180,7 @@ config.pages = {
 					if( [].contains(tableName) ){
 						return false;
 					}
-					return true;				
+					return true;
 				}
 				// un invité peut ajouter un utilisateur c'est tout
 				if( action == 'insert' && tableName == 'user' ){
