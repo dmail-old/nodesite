@@ -2,36 +2,27 @@ var Stream = require('stream');
 
 //example à garder, voici comment faire se succéder des streams
 exports['native combination'] = function(test){
-	var stream = new Stream.Duplex();
-	var stream_a = new Stream.Duplex();
-	var stream_b = new Stream.Duplex();
+	var stream = new Stream.Transform();
+	var stream_a = new Stream.Transform();
+	var stream_b = new Stream.Transform();
 
-	stream._read = function(n){
-		return this.read(n);
+	stream._transform = function(chunk, enc, done){
+		done(null, chunk);
 	};
-	stream._write = function(chunk){
-		this.push(chunk);
+	stream_a._transform = function(chunk, enc, done){
+		done(null, chunk.toString() + ' stream_a');
 	};
-	stream_a._read = function(n){
-		return this.read(n);
-	};
-	stream_a._write = function(chunk){
-		this.push(chunk.toString() + ' stream_a');
-	};
-	stream_b._read = function(n){
-		return this.read(n);
-	};
-	stream_b._write = function(chunk){
-		this.push(chunk.toString() + ' stream_b');
+	stream_b._transform = function(chunk, enc, done){
+		done(null, chunk.toString() + ' stream_b');
 	};
 
-	/*
 	stream.on('data', function(chunk){
 		console.log('stream got', chunk.toString());
 	});
 	stream_a.on('data', function(chunk){
 		console.log('stream_a got', chunk.toString());
 	});
+	/*
 	stream_b.on('data', function(chunk){
 		console.log('stream_b got', chunk.toString());
 	});
@@ -41,7 +32,7 @@ exports['native combination'] = function(test){
 	stream.pipe(stream_a);
 	stream.write('hello');
 
-	//test.setTimeout(300);
+	test.setTimeout(300);
 	test.willBe(new Promise(function(resolve, reject){
 		stream_b.on('data', function(data){
 			resolve(data.toString());
@@ -51,27 +42,18 @@ exports['native combination'] = function(test){
 };
 
 exports['combine streams'] = function(test, ComputedStream){
-	var stream = new Stream.Duplex();
-	var stream_a = new Stream.Duplex();
-	var stream_b = new Stream.Duplex();
+	var stream = new Stream.Transform();
+	var stream_a = new Stream.Transform();
+	var stream_b = new Stream.Transform();
 
-	stream._read = function(n){
-		return this.read(n);
+	stream._transform = function(chunk, enc, done){
+		done(null, chunk);
 	};
-	stream._write = function(chunk){
-		this.push(chunk);
+	stream_a._transform = function(chunk, enc, done){
+		done(null, chunk.toString() + ' stream_a');
 	};
-	stream_a._read = function(n){
-		return this.read(n);
-	};
-	stream_a._write = function(chunk){
-		this.push(chunk.toString() + ' stream_a');
-	};
-	stream_b._read = function(n){
-		return this.read(n);
-	};
-	stream_b._write = function(chunk){
-		this.push(chunk.toString() + ' stream_b');
+	stream_b._transform = function(chunk, enc, done){
+		done(null, chunk.toString() + ' stream_b');
 	};
 
 	stream.on('data', function(chunk){
@@ -80,16 +62,15 @@ exports['combine streams'] = function(test, ComputedStream){
 	stream_a.on('data', function(chunk){
 		console.log('stream_a got', chunk.toString());
 	});
+	/*
 	stream_b.on('data', function(chunk){
 		console.log('stream_b got', chunk.toString());
 	});
+	*/
 
-	var computedStream = new ComputedStream();
+	var computedStream = new ComputedStream(stream, stream_a, stream_b);
 
-	computedStream.chain(stream);
-	computedStream.chain(stream_a);
-	computedStream.chain(stream_b);
-	computedStream.write('hello');
+	stream.write('hello');
 
 	test.setTimeout(300);
 	test.willBe(new Promise(function(resolve, reject){
