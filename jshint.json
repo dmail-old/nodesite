@@ -15,7 +15,7 @@
 	"multistr": true, // \ as escaping char for multistr
 	"boss": true, // if(a = true)
 	"eqnull": true, // item == null
-	"maxlen": 130,
+	"maxlen": 1430,
 	"globalstrict": false, // use strict out of a function
 	"sub": true, // objet['key'] and not object.key
 	/*
