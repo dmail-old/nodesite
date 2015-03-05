@@ -28,6 +28,9 @@ process.on('uncaughtException', function handleNativeError(error){
 	// no need to throw, but keep process alive and activate prompt for debug
 	activatePrompt();
 });
+process.on('SIGHUP', function(){
+	console.log('lost connection to console, the childprocess is over');
+});
 
 require('Object.assign');
 var LogStream = require('LogStream');
