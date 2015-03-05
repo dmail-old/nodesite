@@ -151,6 +151,30 @@ server.listen(config.port, config.host, function(error){
 	server.emit('listening');
 });
 
+function activatePrompt(){
+	var readline = require('readline'), interface = readline.createInterface(process.stdin, process.stdout);
+
+	interface.setPrompt('> ');
+	interface.prompt();
+	interface.on('line', function(line){
+		var code = line.trim();
+
+		try{
+			console.log(eval(code));
+		}
+		catch(e){
+			console.log(e.stack);
+		}
+
+		interface.prompt();
+	});
+	interface.on('close', function(){
+		process.exit(0);
+	});
+}
+
+activatePrompt();
+
 // http://joseoncode.com/2015/01/18/reloading-node-with-no-downtime/?utm_source=nodeweekly&utm_medium=email
 // http://nodejs.org/api/cluster.html#cluster_cluster
 // http://joseoncode.com/2014/07/21/graceful-shutdown-in-node-dot-js/

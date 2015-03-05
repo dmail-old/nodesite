@@ -2,7 +2,8 @@ module.exports = {
 	"path": "./app/server/server.js",
 	"args": {
 		"host": "127.0.0.1",
-		"port": 8124
+		"port": 8124,
+		"debug": false
 	},
 	"restartFiles": [
 		"./app/node_modules",
@@ -11,7 +12,7 @@ module.exports = {
 		"./app/server/node_modules",
 		"./app/server/lang/fr"
 	],
-	"log": true,
+	"log": !true,
 	"events": {
 		"crash": function(){
 			var serverProcess = this;
