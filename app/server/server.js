@@ -8,11 +8,14 @@ global.APP_PATH = ROOT_PATH + Path.sep + 'app';
 global.SERVER_PATH = APP_PATH + Path.sep + 'server';
 global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
-global.config = require(APP_PATH + Path.sep + 'config');
-global.DEBUG = true;
-
 require('proto');
 require('Object.define');
+var args = require('parseProcessArgs')(process, 'host', 'port');
+var config = require(global.APP_PATH + '/config');
+global.config = require(APP_PATH + Path.sep + 'config');
+Object.define(global.config, args);
+global.DEBUG = global.config.debug;
+
 Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
@@ -126,6 +129,12 @@ logger.registerStyles({
 	'host': 'grey',
 	'port': 'red'
 });
+logger.registerStyles({
+	'version': 'yellow',
+	'platform': 'blue',
+	'path': 'magenta'
+});
+logger.info('node.js {version} on {platform}', process);
 
 server.listen(config.port, config.host, function(error){
 	if( error ){

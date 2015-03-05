@@ -1,1 +1,1 @@
-node ./admin.js
+node manage server

@@ -1,14 +1,13 @@
 var config = {
 	"protocol": "http",
-	"host": "127.0.0.1",
-	"port": 8124,
 	// encodage des pages
+	"host": "127.0.0.1",
+	"port": 8000,
 	"charset": "utf8",
 	"lang": "fr",
 	"local": true,
 	// lorsque une erreur se produit elle est affichée même si l'utilisateur n'est pas connu
-	"debug": true,
-	"debug_modules": !true
+	"debug": true
 };
 
 // fichier js qu'on envoie au client
