@@ -13,6 +13,7 @@ module.exports = {
 		"./app/server/lang/fr"
 	],
 	"log": !true,
+	"prompt": true,
 	"events": {
 		"crash": function(){
 			var serverProcess = this;
