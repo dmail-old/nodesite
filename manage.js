@@ -22,12 +22,14 @@ function activatePrompt(){
 	});
 }
 
-process.on('uncaughtException', function handleNativeError(error){
+function handleNativeError(error){
 	require('fs').appendFileSync('./error.log', error.stack + '\n');
 	console.log(error.stack);
 	// no need to throw, but keep process alive and activate prompt for debug
 	if( !childProcess || !childProcess.config.prompt ) activatePrompt();
-});
+}
+
+process.on('uncaughtException', handleNativeError);
 /*
 process.on('SIGHUP', function(){
 	console.log('lost connection to console, the childprocess is over');
@@ -41,4 +43,5 @@ var PATH = require('path');
 var path = PATH.resolve(process.cwd(), process.argv[2]);
 var childProcess = new NodeProcess(path);
 
+childProcess.on('crash', activatePrompt);
 childProcess.start();
