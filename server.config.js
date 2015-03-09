@@ -1,4 +1,4 @@
-module.exports = {
+var config = {
 	"path": "./app/server/server.js",
 	"args": {
 		"host": "127.0.0.1",
@@ -40,3 +40,10 @@ module.exports = {
 		}
 	}
 };
+
+// To differentiate dev/pre-prod/prod
+if( process.env.NODE_ENV === 'production' ){
+	// config.args.port = 8000
+}
+
+module.exports = config;

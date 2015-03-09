@@ -38,10 +38,7 @@ process.on('SIGHUP', function(){
 */
 
 var NodeProcess = require('NodeProcess');
-var PATH = require('path');
-
-var path = PATH.resolve(process.cwd(), process.argv[2]);
-var childProcess = new NodeProcess(path);
+var childProcess = new NodeProcess(process.argv[2], process.argv[3]);
 
 childProcess.on('crash', activatePrompt);
 childProcess.start();
