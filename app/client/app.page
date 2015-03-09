@@ -64,7 +64,8 @@ module.exports = {
 			'styles': template.renderTags('style', cssFiles),
 			'scripts': template.renderTags('script', jsFiles),
 			// module requested are cached, we can use that cache to preload module on page init
-			'moduleTree': null,//require('../server/node_modules/router/middleware/module').Module.cache['/'],
+			// we got the requested module and their resolvedPaths
+			'moduleTree': null,// this.requestHandler.router.middlewares.module.RequireContext.cache,
 			'lang': lang,
 			'config': {
 				'protocol': config.protocol,
