@@ -10,7 +10,7 @@ global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 require('proto');
 require('Object.define');
-var args = require('parseProcessArgs')(process, 'host', 'port');
+var args = require('argv').parse(process.argv);
 var config = require(global.APP_PATH + '/config');
 global.config = require(APP_PATH + Path.sep + 'config');
 Object.define(global.config, args);
