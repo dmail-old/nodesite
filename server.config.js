@@ -2,8 +2,10 @@ module.exports = {
 	"path": "./app/server/server.js",
 	"args": {
 		"host": "127.0.0.1",
-		"port": 8124,
-		"debug": false
+		"port": 8124
+	},
+	"env": {
+		"DEBUG": !true
 	},
 	"restartFiles": [
 		"./app/node_modules",
