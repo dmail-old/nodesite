@@ -116,7 +116,7 @@ router.use('responseNegotiation', {defaultCharset: config.charset});
 router.use('responseTime');
 router.use('cors');
 router.use('responseLength'); // doit être après responseNegotiation
-router.use('module', {rootFolder: global.ROOT_PATH, clientFolder: global.APP_PATH});
+router.use('module', {rootFolder: global.ROOT_PATH, publicFolder: global.APP_PATH});
 router.use('page');
 router.use('file', global.CLIENT_PATH);
 router.use('errorHandler');
