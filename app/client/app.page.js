@@ -134,25 +134,22 @@ module.exports = {
 			pathname: page.request.url.pathname
 		});
 
-		// return Promise.resolve()
-		return {
-			body: {
-				'origin': origin,
-				'metas': helper.renderMetaTags(metas),
-				'title': lang.metas.title,
-				'favicon': 'favicon.png',
-				'styles': helper.renderTags('style', cssFiles),
-				'scripts': helper.renderTags('script', jsFiles),
-				// module requested are cached, we can use that cache to preload module on page init
-				// we got the requested module and their resolvedPaths
-				'moduleTree': null,// this.requestHandler.router.middlewares.module.RequireContext.cache,
-				'lang': lang,
-				'config': {
-					'protocol': config.protocol,
-					'host': config.host,
-					'port': config.port
-				}
+		return page.createTemplatePromise(null, {
+			'origin': origin,
+			'metas': helper.renderMetaTags(metas),
+			'title': lang.metas.title,
+			'favicon': 'favicon.png',
+			'styles': helper.renderTags('style', cssFiles),
+			'scripts': helper.renderTags('script', jsFiles),
+			// module requested are cached, we can use that cache to preload module on page init
+			// we got the requested module and their resolvedPaths
+			'moduleTree': null,// this.requestHandler.router.middlewares.module.RequireContext.cache,
+			'lang': lang,
+			'config': {
+				'protocol': config.protocol,
+				'host': config.host,
+				'port': config.port
 			}
-		};
+		});
 	}
 };
