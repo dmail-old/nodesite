@@ -40,7 +40,12 @@ var server = {
 
 	onrequest: function(request, response){
 		var requestHandler = server.router.createRequestHandler(request, response);
-		requestHandler.next();
+		
+		requestHandler.createPromise().then(function(value){
+			requestHandler.response.send(value);
+		}).catch(function(error){
+			requestHandler.response.send(500); // internal server error
+		});
 	},
 
 	onclientError: function(e){
