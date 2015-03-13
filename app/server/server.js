@@ -9,7 +9,7 @@ global.SERVER_PATH = APP_PATH + Path.sep + 'server';
 global.CLIENT_PATH = APP_PATH + Path.sep + 'client';
 
 require('proto');
-require('Object.define');
+require('object/define');
 var args = require('argv').parse(process.argv);
 var config = require(global.APP_PATH + '/config');
 global.config = require(APP_PATH + Path.sep + 'config');
@@ -40,7 +40,7 @@ var server = {
 
 	onrequest: function(request, response){
 		var requestHandler = server.router.createRequestHandler(request, response);
-		
+
 		requestHandler.createPromise().then(function(value){
 			requestHandler.response.send(value);
 		}).catch(function(error){

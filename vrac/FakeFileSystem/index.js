@@ -1,7 +1,7 @@
 // create a fake and promised version of the fs
 
 require('promise-extra');
-require('Array.prototype.find');
+require('array/prototype/find');
 var proto = require('proto');
 
 var FakeNode = proto.create({
