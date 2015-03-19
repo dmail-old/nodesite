@@ -1,4 +1,6 @@
-A node framework for web applications.
+# nodesite [![Build Status](https://travis-ci.org/dmail/nodesite.svg)](http://travis-ci.org/dmail/nodesite)
+
+A node framework for web applications. 
 
 WARNING: Unstable!! In developement.
 
