@@ -1,1 +1,1 @@
-node manage test
+node manage test --keepalive
