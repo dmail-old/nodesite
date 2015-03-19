@@ -1,4 +1,5 @@
 /*
+push test
 */
 function activatePrompt(){
 	var readline = require('readline'), interface = readline.createInterface(process.stdin, process.stdout);
