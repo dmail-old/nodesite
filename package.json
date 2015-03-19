@@ -1,10 +1,11 @@
 {
 	"name": "nodesite",
-	"version": "0.1",
+	"version": "0.0.1",
 	"description": "Node web framework",
 	"author": "Damien Maillard<dmaillard06@gmail.com>",
+	"private": true,
 	"scripts": {
-		"test": "node manage test"	
+		"test": "node manage test"
 	},
 	"repository": {
 		"type": "git",
