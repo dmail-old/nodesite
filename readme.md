@@ -1,4 +1,4 @@
-# nodesite [![Build Status](https://travis-ci.org/dmail/nodesite.svg)](http://travis-ci.org/dmail/nodesite)
+# nodesite [![npm version](https://badge.fury.io/js/nodesite.svg)](http://badge.fury.io/js/nodesite) [![Build Status](https://travis-ci.org/dmail/nodesite.svg)](http://travis-ci.org/dmail/nodesite)
 
 A node framework for web applications. 
 
