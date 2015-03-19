@@ -3,6 +3,9 @@
 	"version": "0.1",
 	"description": "Node web framework",
 	"author": "Damien Maillard<dmaillard06@gmail.com>",
+	"scripts": {
+		"test": "node manage test"	
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/dmail/nodesite"
