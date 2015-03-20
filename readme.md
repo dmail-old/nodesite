@@ -6,12 +6,12 @@ WARNING: Unstable!! In developement.
 
 ## Running the server
 
-`node manage server` or exec run.bat|run.sh
+`node manage server`
 
-The server config (autorestart, env, ...) is available in [server.config.js](./server.config.js)
+A config file is available in [server.config.js](./server.config.js)
 
 ## Running unit tests
 
-`node manage test --keepalive` or exec test.bat|test.sh
+`node manage test --keepalive`
 
-The unit tests config is available in [test.config.js](./test.config.js)
+A config file is available in [test.config.js](./test.config.js)
