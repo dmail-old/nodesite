@@ -1,39 +1,17 @@
 # nodesite [![npm version](https://badge.fury.io/js/nodesite.svg)](http://badge.fury.io/js/nodesite) [![Build Status](https://travis-ci.org/dmail/nodesite.svg)](http://travis-ci.org/dmail/nodesite)
 
-A node framework for web applications. 
+A modular node framework for creating any type of website.
 
 WARNING: Unstable!! In developement.
 
-## Client compatibility
+## Running the server
 
-- IE 9+
-- Firefox 6+
-- Chrome 2+
-- Opera 11.5+
-- Safari 5.1+
+`node manage server` or exec run.bat|run.sh
 
-## How modules are shared by client&server?
+The server config (autorestart, env, ...) is available in [server.config.js](./server.config.js)
 
-Module are client and server side are node (CommonJS) modules.  
-Client requires modules `synchronously` with an AJAX request to the server.
+## Running unit tests
 
-- [client/js/Module](/app/client/js/Module)
-- [router/middleware/module](/app/server/node_modules/Router/middleware/module)
+`node manage test --keepalive` or exec test.bat|test.sh
 
-## Main shared modules
-
-- [core](/app/node_modules/core)
-- [proto](/app/node_modules/proto)
-- [Emitter](/app/node_modules/Emitter)
-- [StringTemplate](/app/node_modules/StringTemplate)
-- [PropertyAccessorObserver](/app/node_modules/PropertyAccessorObserver)
-
-## Main server modules
-
-- [Router](/app/server/node_modules/Router)
-- [database](/app/server/node_modules/localDB)
-
-## Main client modules
-
-- [dom](/app/client/node_modules/dom)
-- [MDV](/app/client/node_modules/mdv)
+The unit tests config is available in [test.config.js](./test.config.js)
