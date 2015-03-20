@@ -20,15 +20,15 @@ Object.define(global, require('function'));
 global.lang = global.loadLanguageDirectory(SERVER_PATH + '/lang/' + config.lang);
 
 var LogStream = require('LogStream');
-var Router = require('Router');
+var router = require('router').create({
+	allowErrorTrace: config.debug
+});
 
 var logger = new LogStream();
 var server = {
 	http: require('http'),
 	logger: logger,
-	router: new Router({
-		allowErrorTrace: config.debug
-	}),
+	router: router,
 
 	emit: function(type){
 		if( typeof process.send == 'function' ){
