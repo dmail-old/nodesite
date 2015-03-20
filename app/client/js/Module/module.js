@@ -2,7 +2,7 @@
 
 inspiration:
 https://github.com/joyent/node/blob/master/lib/module.js
-https://github.com/joyent/node/blob/master/src/node.js 
+https://github.com/joyent/node/blob/master/src/node.js
 
 http://fredkschott.com/post/2014/06/require-and-the-module-system/?utm_source=nodeweekly&utm_medium=email
 
@@ -17,17 +17,14 @@ var Module = {
 	source: null,
 	exports: null,
 
-	headers: {
-		module: 'x-module',
-		resolve: 'x-resolve',
-		resolveParent: 'x-resolve-parent'
-	},
+	resolvePage: 'resolve?from={from}&path={path}',
+	loadPage: 'module?path={path}',
 
 	constructor: function(filename, parent){
 		if( filename in this.cache ){
 			return this.cache[filename];
 		}
-		
+
 		this.cache[filename] = this;
 		this.filename = filename;
 		this.parent = parent;
@@ -39,19 +36,42 @@ var Module = {
 		}
 	},
 
+	getResolveUrl: function(path){
+		var url = window.location.origin + '/' + this.resolvePage;
+
+		url = url.replace('{from}', encodeURIComponent(this.filename));
+		url = url.replace('{path}', encodeURIComponent(path));
+
+		return url;
+	},
+
+	getLoadUrl: function(){
+		var url = window.location.origin + '/' + this.loadPage;
+
+		url = url.replace('{path}', encodeURIComponent(this.filename));
+
+		return url;
+	},
+
 	_resolve: function(path){
 		var xhr = new XMLHttpRequest();
 
-		xhr.open('GET', window.location.origin, false);
-		xhr.setRequestHeader(this.headers.resolveParent, this.filename);
-		xhr.setRequestHeader(this.headers.resolve, path);
+		xhr.open('GET', this.getResolveUrl(path), false);
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		xhr.send(null);
+
+/*
+		xhr.send(JSON.stringify({
+			from: this.filename,
+			path: path
+		}));
+*/
 
 		if( xhr.status >= 200 && xhr.status < 400 ){
 			if( !xhr.responseText ){
 				throw new Error('No body response to resolve request');
 			}
-			return xhr.responseText;	
+			return xhr.responseText;
 		}
 		else{
 			throw new Error('not found');
@@ -76,8 +96,8 @@ var Module = {
 
 		var xhr = new XMLHttpRequest();
 
-		xhr.open('GET', window.location.origin, false);
-		xhr.setRequestHeader(this.headers.module, this.filename);
+		xhr.open('GET', this.getLoadUrl(), false);
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		xhr.send(null);
 
 		if( xhr.status >= 200 && xhr.status < 400 ){
@@ -94,8 +114,8 @@ var Module = {
 
 		var xhr = new XMLHttpRequest(), module = this;
 
-		xhr.open('GET', window.location.origin, true);
-		xhr.setRequestHeader(this.headers.module, this.filename);
+		xhr.open('GET', this.getLoadUrl(), true);
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		xhr.send(null);
 
 		xhr.onreadystatechange = function(){
@@ -122,7 +142,7 @@ var Module = {
 
 			source = this.loadSync();
 
-			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n})';	
+			source = '(function(exports, require, module, __filename, __dirname){\n\n' + source + '\n\n})';
 			try{
 				fn = this.eval(source, this.filename);
 			}
@@ -152,7 +172,7 @@ var Module = {
 		filename = this.resolve(path);
 		module = this.createChild(filename);
 		exports = module.compile();
-		
+
 		return exports;
 	},
 
@@ -177,7 +197,7 @@ Module.constructor.prototype = Module;
 Module = Module.constructor;
 
 // main module
-window.module = new Module(window.location.pathname);
+window.module = new Module('.' + window.location.pathname);
 window.require = window.module.require.bind(window.module);
 window.__filename = window.module.filename;
 window.__dirname = window.module.dirname;

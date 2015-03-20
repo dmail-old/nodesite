@@ -121,7 +121,6 @@ router.use('responseTime');
 router.use('responseLength'); // doit être après responseNegotiation
 
 router.use('cors');
-router.use('module', {rootFolder: global.ROOT_PATH, publicFolder: global.APP_PATH});
 router.use('page');
 router.use('file', global.CLIENT_PATH);
 router.use('errorHandler');
