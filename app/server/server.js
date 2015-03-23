@@ -119,6 +119,7 @@ router.use('logger', server.logger);
 router.use('responseNegotiation', {defaultCharset: config.charset});
 router.use('responseTime');
 router.use('responseLength'); // doit être après responseNegotiation
+router.use('responseBody');
 
 router.use('cors');
 router.use('page');

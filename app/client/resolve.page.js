@@ -1,14 +1,37 @@
 var RequireContext = require('RequireContext');
 var Path = require('path');
 var debug = require('debug');
-
-RequireContext.prototype.rootFolder = global.ROOT_PATH;
+var dirname = __dirname;
 
 module.exports = {
+	cache: require('page-cache').create({
+		condition: function(request, response){
+			return response.statusCode >= 200 && response.statusCode < 400; // cache only valid response
+		},
+
+		createCachedRequest: function(request){
+			return {
+				url: request.url,
+				//body: request.body
+			};
+		},
+
+		createCachedResponse: function(response){
+			return {
+				status: response.statusCode,
+				body: response.body
+			};
+		},
+
+		is: function(request, cachedRequest){
+			return request.url === cachedRequest.url;
+		}
+	}),
+
 	'*': function(page, from, path){
 		var requireContext;
 
-		from = Path.resolve(global.CLIENT_PATH, from);
+		from = Path.resolve(dirname, from);
 		requireContext = new RequireContext(from);
 
 		debug('resolving module location', path, 'from', from);
@@ -23,7 +46,7 @@ module.exports = {
 					return 503; // unauthorized
 				}
 				else{
-					var relativePath = Path.relative(global.CLIENT_PATH, filename);
+					var relativePath = Path.relative(dirname, filename);
 					relativePath = relativePath.replace(/\\/g, '/');
 					return relativePath;
 				}
