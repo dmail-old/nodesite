@@ -5,7 +5,7 @@ var config = {
 		"port": 8124
 	},
 	"env": {
-		"DEBUG": !true
+		"DEBUG": true
 	},
 	"restartFiles": [
 		"./app/node_modules",
@@ -27,7 +27,7 @@ var config = {
 			});
 
 			emergencyServer.listen(serverProcess.args.port, serverProcess.args.host, function(){
-				serverProcess.console.warn('Emergency server listening {host}:{port}', serverProcess.args);
+				serverProcess.console.warn('Emergency server listening on ' + serverProcess.args.host + ':' + serverProcess.args.port);
 
 				serverProcess.restart = function(){
 					emergencyServer.close(function(){

@@ -90,8 +90,8 @@ module.exports = {
 			'charset': config.charset,
 			'content-type': 'text/html',
 			'content-language': config.lang,
-			'description': lang.metas.description,
-			'keywords': lang.metas.keywords,
+			//'description': lang.metas.description,
+			//'keywords': lang.metas.keywords,
 			'robots': config.robot || 'all'
 			// viewport: 'width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=1;' // pour les portables
 		};
@@ -137,14 +137,14 @@ module.exports = {
 		return page.createTemplatePromise(null, {
 			'origin': origin,
 			'metas': helper.renderMetaTags(metas),
-			'title': lang.metas.title,
+			//'title': lang.metas.title,
 			'favicon': 'favicon.png',
 			'styles': helper.renderTags('style', cssFiles),
 			'scripts': helper.renderTags('script', jsFiles),
 			// module requested are cached, we can use that cache to preload module on page init
 			// we got the requested module and their resolvedPaths
 			'moduleTree': null,// this.requestHandler.router.middlewares.module.RequireContext.cache,
-			'lang': lang,
+			//'lang': lang,
 			'config': {
 				'protocol': config.protocol,
 				'host': config.host,

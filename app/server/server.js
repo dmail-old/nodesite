@@ -6,7 +6,7 @@ var repl = require('repl');
 repl.start({
 	prompt: '> ',
 }).on('exit', function(){
-	//process.exit(0);
+	process.exit(0);
 });
 
 Object.define(server.config, args);
