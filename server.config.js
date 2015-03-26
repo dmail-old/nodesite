@@ -5,7 +5,7 @@ var config = {
 		"port": 8124
 	},
 	"env": {
-		"DEBUG": true
+		"DEBUG": !true
 	},
 	"restartFiles": [
 		"./app/node_modules",
