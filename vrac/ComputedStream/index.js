@@ -33,9 +33,9 @@ function debug(){
 	console.log.apply(console, arguments);
 }
 
-var StreamCombiner = proto.extend(PassThrough, {
+var StreamCombiner = proto.extend.call(PassThrough, {
 	constructor: function(head, middleware, tail){
-		PassThrough.call(this);
+		StreamCombiner.super.constructor.call(this);
 
 		head.pipe(middleware); // head écrit dans middleware
 		middleware.pipe(tail); // middleware écrit dans tail
