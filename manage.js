@@ -40,7 +40,7 @@ process.on('SIGHUP', function(){
 
 var args = require('argv').parse(process.argv);
 
-var NodeProcess = require('NodeProcess');
+var NodeProcess = require('node-process');
 var childProcess = NodeProcess.create(args);
 
 childProcess.on('crash', activatePrompt);

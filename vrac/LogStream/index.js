@@ -58,11 +58,11 @@ module.exports = {
 		}
 		else if( stream.write || stream.read ){ // instanceof Stream.Writable || stream instanceof Stream.Readable ){
 			stream = stream;
-		}		
+		}
 		else{
 			throw new TypeError('stream expected');
 		}
 
-		return LogStream.new(stream);		
+		return LogStream.create(stream);
 	}
 };

@@ -1,5 +1,5 @@
 module.exports = {
-	"path": "./node_modules/nodetest/run.js",
+	"path": "./node_modules/node-test/run.js",
 	"args": {
 		"path": "../../../nodesite"
 	},
@@ -7,7 +7,7 @@ module.exports = {
 		"DEBUG": !true
 	},
 	"restartFiles": [
-		"./node_modules/nodetest"
+		"./node_modules/node-test"
 	],
 	"log": !true
 };
