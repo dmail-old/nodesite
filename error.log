@@ -1,0 +1,11 @@
+TypeError: Cannot read property 'create' of undefined
+    at new proto.extend.constructor (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\file-observer\index.js:74:28)
+    at proto.create (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\proto\index.js:99:29)
+    at proto.extend.observe (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\file-observer\index.js:86:15)
+    at proto.extend.call.observeFile (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\node-process\index.js:156:16)
+    at new proto.extend.call.constructor (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\node-process\index.js:46:9)
+    at proto.create (C:\Users\Damien\Documents\GitHub\nodesite\node_modules\proto\index.js:99:29)
+    at Object.<anonymous> (C:\Users\Damien\Documents\GitHub\nodesite\manage.js:44:32)
+    at Module._compile (module.js:460:26)
+    at Object.Module._extensions..js (module.js:478:10)
+    at Module.load (module.js:355:32)
