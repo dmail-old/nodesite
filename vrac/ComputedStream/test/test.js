@@ -33,7 +33,7 @@ exports['native combination'] = function(test){
 	stream.write('hello');
 
 	test.setTimeout(300);
-	test.willBe(new Promise(function(resolve, reject){
+	test.resolveTo(new Promise(function(resolve, reject){
 		stream_b.on('data', function(data){
 			resolve(data.toString());
 		});
@@ -73,7 +73,7 @@ exports['combine streams'] = function(test, ComputedStream){
 	stream.write('hello');
 
 	test.setTimeout(300);
-	test.willBe(new Promise(function(resolve, reject){
+	test.resolveTo(new Promise(function(resolve, reject){
 		computedStream.on('data', function(data){
 			console.log('computed got data', data.toString());
 			resolve(data.toString());
