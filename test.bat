@@ -1,1 +1,3 @@
-node ./node_modules/test task
+node manage test --keepalive
+
+pause
