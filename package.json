@@ -15,7 +15,7 @@
 		"framework"
 	],
 	"dependencies": {
-		"@dmail/object": "",
+		"@dmail/object": "https://github.com/dmail/object",
 		"negotiator": "*"
 	}
 }
