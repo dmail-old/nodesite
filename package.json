@@ -17,9 +17,11 @@
 	},
 	"dependencies": {
 		"@dmail/object": "*",
+		"@dmail/proto": "*",
 		"negotiator": "*"
 	},
 	"devDependencies": {
-		"@dmail/object": "git+https://github.com/dmail/object.git"
+		"@dmail/object": "git+https://github.com/dmail/object.git",
+		"@dmail/proto": "git+https://github.com/dmail/proto.git"
 	}
 }

@@ -49,7 +49,7 @@ function mergeDependencies(meta){
 }
 
 function rmdirRecursive(filename){
-	var stat = fs.statSync(filename);
+	var stat = fs.lstatSync(filename);
 
 	if( stat.isDirectory() ){
 		fs.readdirSync(filename).map(function(name){
@@ -58,7 +58,7 @@ function rmdirRecursive(filename){
 
 		fs.rmdirSync(filename);
 	}
-	else if( stat.isFile() ){
+	else if( stat.isFile() || stat.isSymbolicLink() ){
 		fs.unlinkSync(filename);
 	}
 	else{
@@ -117,7 +117,7 @@ function symlink(projectPath){
 	}
 
 	usedSourceModules.forEach(addIndirectDependency);
-
+	
 	usedSourceModules.forEach(function(sourceModule){
 		var sourcePath = sourceModule.path;
 		var modulePath = path.join(nodeModulePath, sourceModule.name);
