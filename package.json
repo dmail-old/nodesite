@@ -3,10 +3,6 @@
 	"version": "0.0.1",
 	"description": "Node web framework",
 	"author": "Damien Maillard<dmaillard06@gmail.com>",
-	"scripts": {
-		"test": "node manage test",
-		"preinstall": "node preinstall"
-	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/dmail/nodesite"
@@ -15,8 +11,15 @@
 		"nodesite",
 		"framework"
 	],
+	"scripts": {
+		"test": "node manage test",
+		"preinstall": "node symlink ../dev"
+	},
 	"dependencies": {
-		"@dmail/object": "git+https://github.com/dmail/object.git",
+		"@dmail/object": "*",
 		"negotiator": "*"
+	},
+	"devDependencies": {
+		"@dmail/object": "git+https://github.com/dmail/object.git"
 	}
 }
