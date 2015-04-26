@@ -2,7 +2,7 @@
 
 require('promise-extra');
 require('array/prototype/find');
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 var FakeNode = proto.create({
 	content: '',

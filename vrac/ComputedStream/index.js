@@ -27,7 +27,7 @@ http://bl.ocks.org/nicolashery/5910969
 
 var Stream = require('stream');
 var PassThrough = Stream.PassThrough;
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 function debug(){
 	console.log.apply(console, arguments);

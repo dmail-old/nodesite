@@ -12,7 +12,7 @@ var i = arguments.length, hash = '', arg;
 
 */
 
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 var ObjectCache = proto.create({
 	object: null,

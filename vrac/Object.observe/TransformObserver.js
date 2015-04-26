@@ -1,4 +1,4 @@
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 function identFn(value) { return value; }
 

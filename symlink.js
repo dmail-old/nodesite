@@ -121,9 +121,18 @@ function symlink(projectPath){
 	usedSourceModules.forEach(function(sourceModule){
 		var sourcePath = sourceModule.path;
 		var modulePath = path.join(nodeModulePath, sourceModule.name);
+		var lstat, exists = true;
 
-		if( fs.existsSync(modulePath) ){
-			if( fs.lstatSync(modulePath).isSymbolicLink() ){
+		try{
+			lstat = fs.lstatSync(modulePath);
+		}
+		catch(e){
+			if( e.code == 'ENOENT' ) exists = false;
+			else throw e;
+		}
+
+		if( exists ){
+			if( lstat.isSymbolicLink() ){
 				var linkPath = fs.readlinkSync(modulePath);
 
 				if( linkPath != sourcePath ){
@@ -136,6 +145,7 @@ function symlink(projectPath){
 				}				
 			}
 			else{
+				console.log('rmdirRecursive', modulePath);
 				rmdirRecursive(modulePath);
 			}
 		}
@@ -143,12 +153,10 @@ function symlink(projectPath){
 		else{
 			var directories = modulePath.split(path.sep), i = 0, j = directories.length -1, directory;
 			for(;i<j;i++){
-				directory = directories[i];
-				var dir = directories.slice(0, i + 1).join(path.sep);
-
-				if( !fs.existsSync(dir) ){
-					console.log('mkdir', dir);
-					fs.mkdirSync(dir);
+				directory = directories.slice(0, i + 1).join(path.sep);
+				if( !fs.existsSync(directory) ){
+					console.log('mkdir', directory);
+					fs.mkdirSync(directory);
 				}
 			}
 		}

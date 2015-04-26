@@ -13,7 +13,7 @@
 	],
 	"scripts": {
 		"test": "node manage test",
-		"preinstall": "node symlink ../dev"
+		"preinstall": "node symlink ../dev/node_modules/@dmail"
 	},
 	"dependencies": {
 		"@dmail/object": "*",

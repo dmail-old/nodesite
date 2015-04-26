@@ -1,4 +1,4 @@
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 var Item = proto.create({
 	object: null,

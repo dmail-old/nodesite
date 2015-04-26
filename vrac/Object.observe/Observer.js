@@ -4,7 +4,7 @@ var CLOSED = 2;
 var RESETTING = 3;
 var nextObserverId = 1;
 
-var proto = require('proto');
+var proto = require('@dmail/proto');
 
 var Observer = proto.create({
 	init: function(){

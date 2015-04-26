@@ -1,7 +1,7 @@
 require('math/extra');
 
 var AsyncProfile = require('async-profile');
-var proto = require('proto');
+var proto = require('@dmail/proto');
 var Profile = proto.create({
 	constructor: function(){
 		this.asyncProfile = new AsyncProfile({
