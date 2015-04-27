@@ -12,8 +12,7 @@
 		"framework"
 	],
 	"scripts": {
-		"test": "node manage test",
-		"preinstall": "node symlink ../dev/node_modules/@dmail"
+		"test": "node manage test"
 	},
 	"dependencies": {
 		"@dmail/object": "*",
