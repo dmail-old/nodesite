@@ -46,7 +46,9 @@
 		"expect": true,
 		"Iterator": true,
 		"Symbol": true,
-		"Promise": true
+		"Promise": true,
+		"ENV": true,
+		"include": true
 	},
 	"devel": true,
 	"node": true
