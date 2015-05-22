@@ -48,7 +48,8 @@
 		"Symbol": true,
 		"Promise": true,
 		"ENV": true,
-		"include": true
+		"include": true,
+		"URI": true
 	},
 	"devel": true,
 	"node": true
