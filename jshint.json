@@ -47,9 +47,10 @@
 		"Iterator": true,
 		"Symbol": true,
 		"Promise": true,
-		"ENV": true,
+		"jsenv": true,
 		"include": true,
-		"URI": true
+		"URI": true,
+		"Base64": true
 	},
 	"devel": true,
 	"node": true
